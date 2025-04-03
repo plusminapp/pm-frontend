@@ -10,8 +10,17 @@ node_modules
 dist
 .images
 
+.env
 dev.env
 stg.env
+lcl.env
+
+_archief/
+_bank/
+_docs/
+_transacties/
+
+
 
 ## Logs
 #logs

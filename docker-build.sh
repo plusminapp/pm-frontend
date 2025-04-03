@@ -12,6 +12,6 @@ docker build \
      --platform=$PLATFORM \
      --build-arg PORT=${PORT} \
      --build-arg STAGE=${STAGE} \
-     -t rimvanvliet/pm-frontend:${VERSION} .
+     -t plusmin/pm-frontend:${VERSION} .
 
 popd
