@@ -1,9 +1,10 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
+// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
-  "name": "Node.js & TypeScript",
+  "name": "Ubuntu",
   // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+  "image": "mcr.microsoft.com/devcontainers/base:noble",
+  // Features to add to the dev container. More info: https://containers.dev/features.
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": true,
@@ -11,9 +12,12 @@
       "installOhMyZsh": true,
       "installOhMyZshConfig": true,
       "upgradePackages": true,
-      "username": "node",
-      "userUid": "1000",
-      "userGid": "1000"
+      "username": "node"
+      // "userUid": "1000",
+      // "userGid": "1000"
+    },
+    "ghcr.io/devcontainers-community/npm-features/typescript:1": {
+      "version": "latest"
     },
     "ghcr.io/devcontainers-extra/features/npm-packages:1": {
       "packages": "eslint@9.20.1,nodemon,prettier@3.5.2"
@@ -33,28 +37,24 @@
     }
   },
 
-  // Features to add to the dev container. More info: https://containers.dev/features.
-  // "features": {},
-
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-"postCreateCommand": ".devcontainer/postcreate_actions.sh", 
+  "postCreateCommand": ".devcontainer/postcreate_actions.sh",
   // Configure tool-specific properties.
   "customizations": {
     "vscode": {
       "extensions": [
-      "dbaeumer.vscode-eslint",
-      "esbenp.prettier-vscode",
-      "dsznajder.es7-react-js-snippets",
-      "ms-azuretools.vscode-docker",
-      "hermitter.oh-lucy-vscode",
-      "pkief.material-icon-theme"
-    ]
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "dsznajder.es7-react-js-snippets",
+        "ms-azuretools.vscode-docker",
+        "hermitter.oh-lucy-vscode",
+        "pkief.material-icon-theme"
+      ]
     }
   }
-
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
   // "remoteUser": "root"
 }
