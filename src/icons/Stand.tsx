@@ -4,7 +4,7 @@ interface StandIconProps {
   color: string; // De fill color van de cirkel
   borderColor: string; // De kleur van de rand
   height: number; // De hoogte (en breedte, omdat het een cirkel is)
-  text: string | any; // De tekst in het midden van de cirkel
+  text: string | React.ReactNode; // De tekst in het midden van de cirkel
   outerText?: string; // De tekst buiten de cirkel
 }
 

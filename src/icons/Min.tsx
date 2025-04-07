@@ -1,9 +1,10 @@
 interface MinProps {
   color?: string;
+  secundaryColor?: string;
   height?: number;
 }
 
-export const MinIcon = ({color= 'red', height= 24}: MinProps) => {
+export const MinIcon = ({color= 'red', secundaryColor = 'white', height= 24}: MinProps) => {
   return (
     <svg
       height={height}
@@ -15,12 +16,21 @@ export const MinIcon = ({color= 'red', height= 24}: MinProps) => {
       <defs id="defs73" />
       <path
         d="M 0,0 H 24 V 24 H 0 Z"
-        fill="none"
+        fill='none'
         id="path235" />
       <path
+        d="M 12,2 C 6.48,2 2,6.48 2,12 2,17.52 6.48,22 12,22 17.52,22 22,17.52 22,12 22,6.48 17.52,2 12,2 Z"
+        fill={color}
+        id="circlePath" />
+      {/* Minteken */}
+      <path
+        d="M 17,13 H 7 V 11 H 17 Z"
+        fill={secundaryColor}
+        id="minusPath" />
+      {/* <path
         d="M 12,2 C 6.48,2 2,6.48 2,12 2,17.52 6.48,22 12,22 17.52,22 22,17.52 22,12 22,6.48 17.52,2 12,2 Z m 5,11 H 7 v -2 h 10 z"
         fill={color}
-        id="path237" />
+        id="path237" /> */}
     </svg>
   );
 };

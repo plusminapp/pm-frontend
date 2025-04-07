@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, Box, FormControlLabel, FormGroup, Switch, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, FormControlLabel, FormGroup, Switch, Typography } from "@mui/material";
 import Grid from '@mui/material/Grid2';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -10,13 +10,13 @@ import type { Stand } from "../model/Stand";
 import dayjs from "dayjs";
 import { PeriodeSelect } from "../components/Periode/PeriodeSelect";
 import { ArrowDropDownIcon } from "@mui/x-date-pickers";
-import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import BudgetContinuGrafiek from "../components/Budget/BudgetContinuGrafiek";
 import { betaalmethodeRekeningSoorten } from "../model/Rekening";
 import BudgetVastGrafiek from "../components/Budget/BudgetVastGrafiek";
 import BudgetInkomstenGrafiek from "../components/Budget/BudgetInkomstenGrafiek";
 import AflossingGrafiek from "../components/Budget/AflossingGrafiek";
-import StandIcon from "../icons/Stand";
+import { PlusIcon } from "../icons/Plus";
+import { MinIcon } from "../icons/Min";
 
 export default function Stand() {
 
@@ -39,6 +39,8 @@ export default function Stand() {
         let token = '';
         try { token = await getIDToken() }
         catch (error) {
+          setIsLoading(false);
+          console.error("Failed to fetch data", error);
           navigate('/login');
         }
         const response = await fetch(`/api/v1/saldo/hulpvrager/${id}/stand/${datum}`, {
@@ -63,7 +65,7 @@ export default function Stand() {
     };
     fetchSaldi();
 
-  }, [actieveHulpvrager, gekozenPeriode, getIDToken]);
+  }, [actieveHulpvrager, gekozenPeriode, getIDToken, navigate, setSnackbarMessage]);
 
   useEffect(() => {
     const fetchDatumLaatsteBetaling = async () => {
@@ -73,6 +75,8 @@ export default function Stand() {
         let token = '';
         try { token = await getIDToken() }
         catch (error) {
+          setIsLoading(false);
+          console.error("Failed to fetch data", error);
           navigate('/login');
         }
         const response = await fetch(`/api/v1/betalingen/hulpvrager/${id}/betalingvalidatie`, {
@@ -97,7 +101,7 @@ export default function Stand() {
     };
     fetchDatumLaatsteBetaling();
 
-  }, [actieveHulpvrager, getIDToken]);
+  }, [actieveHulpvrager, getIDToken, navigate, setSnackbarMessage]);
 
   const handleToonMutatiesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     localStorage.setItem('toonMutaties', event.target.checked.toString());
@@ -125,34 +129,72 @@ export default function Stand() {
               <Typography variant='body2'>
                 Laatste betaling geregistreerd op {dayjs(datumLaatsteBetaling).format('D MMMM')}.
               </Typography>
-              <StandIcon
-                color="green"
-                borderColor="green"
-                height={100}
-                text={<CheckRoundedIcon />}
-                outerText="Inkomsten"
-              />
-              <StandIcon
-                color="red"
-                borderColor="green"
-                height={100}
-                text="€ 15"
-                outerText="Boodschappen"
-              />
-              <StandIcon
-                color="red"
-                borderColor="red"
-                height={100}
-                text="€ 35"
-                outerText="Vaste lasten"
-              />
-              <StandIcon
-                color="orange"
-                borderColor="orange"
-                height={100}
-                text="€ 321"
-                outerText="Aflossingen"
-              />
+              <Grid container columns={2}>
+                <Grid sx={{ display: 'flex', alignItems: 'center', width: '48%', my: 0.8 }}>
+                  <PlusIcon
+                    height={30} />
+                  <Typography
+                    sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
+                    component="span"
+                    align="left">
+                    Inkomsten
+                  </Typography>
+                </Grid>
+                <Grid sx={{ display: 'flex', alignItems: 'center', width: '48%', my: 0.8 }}>
+                  <PlusIcon
+                    height={30} />
+                  <Typography
+                    sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
+                    component="span"
+                    align="left">
+                    Boodschappen
+                  </Typography>
+                </Grid>
+                <Grid sx={{ display: 'flex', alignItems: 'center', width: '48%', my: 0.8 }}>
+                  <MinIcon
+                    height={30} />
+                  <Typography
+                    sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
+                    component="span"
+                    align="left">
+                    Vaste lasten
+                  </Typography>
+                </Grid>
+                <Grid sx={{ display: 'flex', alignItems: 'center', width: '48%', my: 0.8 }}>
+                  <MinIcon
+                    color="green"
+                    secundaryColor="red"
+                    height={30} />
+                  <Typography
+                    sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
+                    component="span"
+                    align="left">
+                    Kruidvat
+                  </Typography>
+                </Grid>
+                <Grid sx={{ display: 'flex', alignItems: 'center', width: '48%', my: 0.8 }}>
+                  <PlusIcon
+                    color="orange"
+                    height={30} />
+                  <Typography
+                    sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
+                    component="span"
+                    align="left">
+                    Aflossen
+                  </Typography>
+                </Grid>
+                <Grid sx={{ display: 'flex', alignItems: 'center', width: '48%', my: 0.8 }}>
+                  <PlusIcon
+                    color="green"
+                    height={30} />
+                  <Typography
+                    sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
+                    component="span"
+                    align="left">
+                    Reserveren
+                  </Typography>
+                </Grid>
+              </Grid>
             </Grid>
             <Grid size={1} direction={'column'} alignItems="start">
               <PeriodeSelect />
@@ -220,7 +262,7 @@ export default function Stand() {
                   </FormGroup>
                 </Grid>
               </Grid>
-              <Box sx={{ flexGrow: 1 }}>
+              <Grid sx={{ flexGrow: 1 }}>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={toonMutaties ? { xs: 1, sm: 2, md: 4 } : { xs: 1, sm: 3, md: 3 }}>
                   <Grid size={1}>
                     <Resultaat title={'Opening'} datum={stand.periodeStartDatum} saldi={stand.openingsBalans!} />
@@ -236,7 +278,7 @@ export default function Stand() {
                     <Resultaat title={'Stand'} datum={stand.peilDatum} saldi={stand.balansOpDatum!} />
                   </Grid>
                 </Grid>
-              </Box>
+              </Grid>
             </AccordionDetails>
           </Accordion>
         </>

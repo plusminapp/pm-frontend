@@ -27,6 +27,25 @@ export default function Aflossingen() {
 
   const navigate = useNavigate();
   const fetchAflossingen = useCallback(async () => {
+    const aflossingMoetBetaaldZijn = (betaalDag: number | undefined, peilDatum: dayjs.Dayjs | undefined) => {
+      if (betaalDag === undefined || gekozenPeriode === undefined) return true;
+      const betaalDagInPeriode = dagInPeriode(betaalDag, gekozenPeriode);
+      return !betaalDagInPeriode.isAfter(peilDatum);
+    }
+    const toExtendedAflossingDTO = (aflossing: AflossingDTO): ExtendedAflossingDTO => {
+      const aflossingMoetZijnBetaald = aflossingMoetBetaaldZijn(aflossing.betaalDag, dayjs(aflossing.aflossingPeilDatum));
+      const actueleAchterstand = (aflossing.deltaStartPeriode ?? 0) + (aflossing.aflossingBetaling ?? 0) - (aflossingMoetZijnBetaald ? (aflossing.aflossingsBedrag ?? 0) : 0)
+      console.log("actueleAchterstand", actueleAchterstand, 'saldoStartPeriode', (aflossing.saldoStartPeriode ?? 0), 'aflossingBetaling', aflossing.aflossingBetaling, 'actuelestand', (aflossing.saldoStartPeriode ?? 0) + (aflossing.aflossingBetaling ?? 0));
+      return {
+        ...aflossing,
+        aflossingMoetBetaaldZijn: aflossingMoetZijnBetaald,
+        actueleStand: (aflossing.saldoStartPeriode ?? 0) - (aflossing.aflossingBetaling ?? 0),
+        actueleAchterstand: actueleAchterstand,
+        meerDanVerwacht: !aflossingMoetZijnBetaald && actueleAchterstand > 0 ? actueleAchterstand : 0,
+        minderDanVerwacht: actueleAchterstand < 0 ? -actueleAchterstand : 0,
+        meerDanMaandAflossing: aflossingMoetZijnBetaald && actueleAchterstand > 0 ? actueleAchterstand : 0
+      } as ExtendedAflossingDTO
+    }
     if (actieveHulpvrager && gekozenPeriode) {
       setIsLoading(true);
       const id = actieveHulpvrager!.id
@@ -34,6 +53,7 @@ export default function Aflossingen() {
       try {
         token = await getIDToken();
       } catch (error) {
+        console.error("Error fetching ID token", error);
         setIsLoading(false);
         navigate('/login');
       }
@@ -57,31 +77,13 @@ export default function Aflossingen() {
         })
       }
     }
-  }, [getIDToken, actieveHulpvrager, gekozenPeriode]);
+  }, [actieveHulpvrager, gekozenPeriode, getIDToken, navigate, setSnackbarMessage]);
 
   useEffect(() => {
     fetchAflossingen();
   }, [fetchAflossingen]);
 
-  const aflossingMoetBetaaldZijn = (betaalDag: number | undefined, peilDatum: dayjs.Dayjs | undefined) => {
-    if (betaalDag === undefined || gekozenPeriode === undefined) return true;
-    const betaalDagInPeriode = dagInPeriode(betaalDag, gekozenPeriode);
-    return !betaalDagInPeriode.isAfter(peilDatum);
-  }
-  const toExtendedAflossingDTO = (aflossing: AflossingDTO): ExtendedAflossingDTO => {
-    const aflossingMoetZijnBetaald = aflossingMoetBetaaldZijn(aflossing.betaalDag, dayjs(aflossing.aflossingPeilDatum));
-    const actueleAchterstand = (aflossing.deltaStartPeriode ?? 0) + (aflossing.aflossingBetaling ?? 0) - (aflossingMoetZijnBetaald ? (aflossing.aflossingsBedrag ?? 0) : 0)
-    console.log("actueleAchterstand", actueleAchterstand, 'saldoStartPeriode', (aflossing.saldoStartPeriode ?? 0), 'aflossingBetaling', aflossing.aflossingBetaling, 'actuelestand', (aflossing.saldoStartPeriode ?? 0) + (aflossing.aflossingBetaling ?? 0));
-    return {
-      ...aflossing,
-      aflossingMoetBetaaldZijn: aflossingMoetZijnBetaald,
-      actueleStand: (aflossing.saldoStartPeriode ?? 0) - (aflossing.aflossingBetaling ?? 0),
-      actueleAchterstand: actueleAchterstand,
-      meerDanVerwacht: !aflossingMoetZijnBetaald && actueleAchterstand > 0 ? actueleAchterstand : 0,
-      minderDanVerwacht: actueleAchterstand < 0 ? -actueleAchterstand : 0,
-      meerDanMaandAflossing: aflossingMoetZijnBetaald && actueleAchterstand > 0 ? actueleAchterstand : 0
-    } as ExtendedAflossingDTO
-  }
+
 
   if (isLoading) {
     return <Typography sx={{ mb: '25px' }}>De aflossingen worden opgehaald.</Typography>
