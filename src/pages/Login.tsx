@@ -397,6 +397,7 @@ export default function Login() {
         <>
           {formFields.budgetType === BudgetType.continu &&
             <BudgetContinuGrafiek
+              visualisatie={'all'}
               periode={periode}
               peilDatum={peilDatum}
               rekening={{
@@ -411,6 +412,7 @@ export default function Login() {
               }))} />}
           {formFields.budgetType === BudgetType.vast && formFields.rekeningSoort === 'uitgaven' &&
             <BudgetVastGrafiek
+              visualisatie={'all'}
               periode={periode}
               peilDatum={peilDatum}
               rekening={{
@@ -425,17 +427,19 @@ export default function Login() {
               }))} />}
           {formFields.budgetType === BudgetType.vast && formFields.rekeningSoort === 'inkomsten' &&
             <BudgetInkomstenGrafiek
+              visualisatie={'all'}
               periode={periode}
               peilDatum={peilDatum}
               rekening={{
                 ...rekeningTemplate,
-                naam: 'Inkmosten',
+                naam: 'Inkomsten',
                 rekeningSoort: RekeningSoort.inkomsten,
                 budgetType: BudgetType.vast,
               }}
               budgetten={formFields.budgetten} />}
           {formFields.rekeningSoort === 'aflossing' &&
             <AflossingGrafiek
+              visualisatie={'all'}
               periode={periode}
               peilDatum={peilDatum}
               aflossingen={formFields.aflossingen} />}

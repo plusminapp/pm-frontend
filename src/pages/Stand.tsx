@@ -15,8 +15,6 @@ import { betaalmethodeRekeningSoorten } from "../model/Rekening";
 import BudgetVastGrafiek from "../components/Budget/BudgetVastGrafiek";
 import BudgetInkomstenGrafiek from "../components/Budget/BudgetInkomstenGrafiek";
 import AflossingGrafiek from "../components/Budget/AflossingGrafiek";
-import { PlusIcon } from "../icons/Plus";
-import { MinIcon } from "../icons/Min";
 
 export default function Stand() {
 
@@ -129,71 +127,44 @@ export default function Stand() {
               <Typography variant='body2'>
                 Laatste betaling geregistreerd op {dayjs(datumLaatsteBetaling).format('D MMMM')}.
               </Typography>
+
               <Grid container columns={2}>
-                <Grid sx={{ display: 'flex', alignItems: 'center', width: '48%', my: 0.8 }}>
-                  <PlusIcon
-                    height={30} />
-                  <Typography
-                    sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
-                    component="span"
-                    align="left">
-                    Inkomsten
-                  </Typography>
-                </Grid>
-                <Grid sx={{ display: 'flex', alignItems: 'center', width: '48%', my: 0.8 }}>
-                  <PlusIcon
-                    height={30} />
-                  <Typography
-                    sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
-                    component="span"
-                    align="left">
-                    Boodschappen
-                  </Typography>
-                </Grid>
-                <Grid sx={{ display: 'flex', alignItems: 'center', width: '48%', my: 0.8 }}>
-                  <MinIcon
-                    height={30} />
-                  <Typography
-                    sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
-                    component="span"
-                    align="left">
-                    Vaste lasten
-                  </Typography>
-                </Grid>
-                <Grid sx={{ display: 'flex', alignItems: 'center', width: '48%', my: 0.8 }}>
-                  <MinIcon
-                    color="green"
-                    secundaryColor="red"
-                    height={30} />
-                  <Typography
-                    sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
-                    component="span"
-                    align="left">
-                    Kruidvat
-                  </Typography>
-                </Grid>
-                <Grid sx={{ display: 'flex', alignItems: 'center', width: '48%', my: 0.8 }}>
-                  <PlusIcon
-                    color="orange"
-                    height={30} />
-                  <Typography
-                    sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
-                    component="span"
-                    align="left">
-                    Aflossen
-                  </Typography>
-                </Grid>
-                <Grid sx={{ display: 'flex', alignItems: 'center', width: '48%', my: 0.8 }}>
-                  <PlusIcon
-                    color="green"
-                    height={30} />
-                  <Typography
-                    sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
-                    component="span"
-                    align="left">
-                    Reserveren
-                  </Typography>
-                </Grid>
+                {gekozenPeriode &&
+                  rekeningen
+                    .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1)
+                    .filter(rekening => rekening.budgetten.length >= 1)
+                    .map(rekening => (
+                      rekening.budgetType?.toLowerCase() === 'continu' ?
+                        <BudgetContinuGrafiek
+                          visualisatie='icon-klein'
+                          rekening={rekening}
+                          peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
+                          periode={gekozenPeriode}
+                          budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
+                        /> : rekening.rekeningSoort.toLowerCase() === 'inkomsten' ?
+                          <BudgetInkomstenGrafiek
+                            visualisatie='icon-klein'
+                            rekening={rekening}
+                            peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
+                            periode={gekozenPeriode}
+                            budgetten={stand.budgettenOpDatum.filter(b => b.rekeningSoort.toLowerCase() === 'inkomsten')}
+                          /> :
+                          <BudgetVastGrafiek
+                            visualisatie='icon-klein'
+                            rekening={rekening}
+                            peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
+                            periode={gekozenPeriode}
+                            budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
+                          />
+                    ))}
+
+                {gekozenPeriode && stand.aflossingenOpDatum.length > 0 &&
+                  <AflossingGrafiek
+                    visualisatie='icon-klein'
+                    peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
+                    periode={gekozenPeriode}
+                    aflossingen={stand.aflossingenOpDatum} />
+                }
               </Grid>
             </Grid>
             <Grid size={1} direction={'column'} alignItems="start">
@@ -215,18 +186,21 @@ export default function Stand() {
               .map(rekening => (
                 rekening.budgetType?.toLowerCase() === 'continu' ?
                   <BudgetContinuGrafiek
+                    visualisatie='bar'
                     rekening={rekening}
                     peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                     periode={gekozenPeriode}
                     budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
                   /> : rekening.rekeningSoort.toLowerCase() === 'inkomsten' ?
                     <BudgetInkomstenGrafiek
+                      visualisatie='bar'
                       rekening={rekening}
                       peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                       periode={gekozenPeriode}
                       budgetten={stand.budgettenOpDatum.filter(b => b.rekeningSoort.toLowerCase() === 'inkomsten')}
                     /> :
                     <BudgetVastGrafiek
+                      visualisatie='bar'
                       rekening={rekening}
                       peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                       periode={gekozenPeriode}
@@ -236,6 +210,7 @@ export default function Stand() {
 
           {gekozenPeriode && stand.aflossingenOpDatum.length > 0 &&
             <AflossingGrafiek
+              visualisatie='bar'
               peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
               periode={gekozenPeriode}
               aflossingen={stand.aflossingenOpDatum} />

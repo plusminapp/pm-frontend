@@ -42,7 +42,7 @@ const StandIcon: React.FC<StandIconProps> = ({
           y="50%"
           dominantBaseline="middle"
           textAnchor="middle"
-          fontSize={'1.5rem'} // Dynamische tekstgrootte
+          fontSize={'1rem'} // Dynamische tekstgrootte
           fill="white" // Kleur van de tekst
           fontFamily="Roboto" // Lettertype gewijzigd naar Roboto
         >
