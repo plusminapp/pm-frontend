@@ -26,6 +26,7 @@ export default function Stand() {
   const [datumLaatsteBetaling, setDatumLaatsteBetaling] = useState<dayjs.Dayjs | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(false);
   const [toonMutaties, setToonMutaties] = useState(localStorage.getItem('toonMutaties') === 'true');
+  // const [toonBarGrafiek, setToonBarGrafiek] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const fetchSaldi = async () => {
@@ -114,6 +115,11 @@ export default function Stand() {
   if (isLoading) {
     return <Typography sx={{ mb: '25px' }}>De saldi worden opgehaald.</Typography>
   };
+
+  // const handleBarGrafiek = (rekeningNaam: string) => {
+  //   if (toonBarGrafiek === rekeningNaam) setToonBarGrafiek(undefined);
+  //   else setToonBarGrafiek(rekeningNaam);
+  // }
 
   return (
     <>
