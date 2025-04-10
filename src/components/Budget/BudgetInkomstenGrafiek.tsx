@@ -106,7 +106,7 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
     if (meerDanBudget === 0 && minderDanBudget === 0 && meerDanMaandBudget === 0)
       return <StandIcon color="green" borderColor="green" height={100} text={<CheckRoundedIcon />} outerText={props.rekening.naam} />
     if (minderDanBudget > 0 && meerDanMaandBudget > 0)
-      return <StandIcon color="green" borderColor="red" height={100} text={formatAmount(minderDanBudget.toString())} outerText={props.rekening.naam} />
+      return <StandIcon color="red" borderColor="green" height={100} text={formatAmount(minderDanBudget.toString())} outerText={props.rekening.naam} />
     if (minderDanBudget > 0)
       return <StandIcon color="red" borderColor="red" height={100} text={formatAmount(minderDanBudget.toString())}  outerText={props.rekening.naam} />
     if (meerDanMaandBudget > 0)

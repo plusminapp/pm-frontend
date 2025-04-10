@@ -21,8 +21,8 @@ const StandIcon: React.FC<StandIconProps> = ({
   return (
     <svg
       width={height * 1.5} // Extra ruimte voor de buitenste tekst
-      height={height * 1.5}
-      viewBox={`0 0 ${height * 1.5} ${height * 1.5}`}
+      height={height * 1.6} // Extra ruimte aan de onderkant
+      viewBox={`0 0 ${height * 1.5} ${height * 1.6}`} // Pas de viewBox aan voor extra ruimte
       xmlns="http://www.w3.org/2000/svg"
     >
       {/* Cirkel met vulling en rand */}
@@ -39,7 +39,7 @@ const StandIcon: React.FC<StandIconProps> = ({
       {typeof text === 'string' &&
         <text
           x="50%"
-          y="50%"
+          y="47%"
           dominantBaseline="middle"
           textAnchor="middle"
           fontSize={'1rem'} // Dynamische tekstgrootte

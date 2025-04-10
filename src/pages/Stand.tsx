@@ -26,7 +26,7 @@ export default function Stand() {
   const [datumLaatsteBetaling, setDatumLaatsteBetaling] = useState<dayjs.Dayjs | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(false);
   const [toonMutaties, setToonMutaties] = useState(localStorage.getItem('toonMutaties') === 'true');
-  // const [toonBarGrafiek, setToonBarGrafiek] = useState<string | undefined>(undefined);
+  const [toonBarGrafiek, setToonBarGrafiek] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const fetchSaldi = async () => {
@@ -107,19 +107,15 @@ export default function Stand() {
     setToonMutaties(event.target.checked);
   };
 
-  // const findStandVanRekening = (rekeningNaam: string) => {
-  //   const saldo = stand?.resultaatOpDatum.find(saldo => saldo.rekeningNaam === rekeningNaam);
-  //   return saldo?.bedrag ?? 0;
-  // };
-
   if (isLoading) {
     return <Typography sx={{ mb: '25px' }}>De saldi worden opgehaald.</Typography>
   };
 
-  // const handleBarGrafiek = (rekeningNaam: string) => {
-  //   if (toonBarGrafiek === rekeningNaam) setToonBarGrafiek(undefined);
-  //   else setToonBarGrafiek(rekeningNaam);
-  // }
+  const handleBarGrafiek = (rekeningNaam: string) => {
+    console.log('handleBarGrafiek', rekeningNaam);
+    if (toonBarGrafiek === rekeningNaam) setToonBarGrafiek(undefined);
+    else setToonBarGrafiek(rekeningNaam);
+  }
 
   return (
     <>
@@ -140,36 +136,44 @@ export default function Stand() {
                     .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1)
                     .filter(rekening => rekening.budgetten.length >= 1)
                     .map(rekening => (
-                      rekening.budgetType?.toLowerCase() === 'continu' ?
-                        <BudgetContinuGrafiek
-                          visualisatie='icon-klein'
-                          rekening={rekening}
-                          peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
-                          periode={gekozenPeriode}
-                          budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
-                        /> : rekening.rekeningSoort.toLowerCase() === 'inkomsten' ?
-                          <BudgetInkomstenGrafiek
-                            visualisatie='icon-klein'
-                            rekening={rekening}
-                            peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
-                            periode={gekozenPeriode}
-                            budgetten={stand.budgettenOpDatum.filter(b => b.rekeningSoort.toLowerCase() === 'inkomsten')}
-                          /> :
-                          <BudgetVastGrafiek
+                      <Grid size={1}
+                        sx={{ cursor: 'pointer' }}
+                        onClick={() => handleBarGrafiek(rekening.naam)}>
+                        {rekening.budgetType?.toLowerCase() === 'continu' ?
+                          <BudgetContinuGrafiek
                             visualisatie='icon-klein'
                             rekening={rekening}
                             peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                             periode={gekozenPeriode}
                             budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
-                          />
+                          /> : rekening.rekeningSoort.toLowerCase() === 'inkomsten' ?
+                            <BudgetInkomstenGrafiek
+                              visualisatie='icon-klein'
+                              rekening={rekening}
+                              peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
+                              periode={gekozenPeriode}
+                              budgetten={stand.budgettenOpDatum.filter(b => b.rekeningSoort.toLowerCase() === 'inkomsten')}
+                            /> :
+                            <BudgetVastGrafiek
+                              visualisatie='icon-klein'
+                              rekening={rekening}
+                              peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
+                              periode={gekozenPeriode}
+                              budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
+                            />}
+                      </Grid>
                     ))}
 
                 {gekozenPeriode && stand.aflossingenOpDatum.length > 0 &&
-                  <AflossingGrafiek
-                    visualisatie='icon-klein'
-                    peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
-                    periode={gekozenPeriode}
-                    aflossingen={stand.aflossingenOpDatum} />
+                  <Grid size={1}
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => handleBarGrafiek('aflossingen')}>
+                    <AflossingGrafiek
+                      visualisatie='icon-klein'
+                      peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
+                      periode={gekozenPeriode}
+                      aflossingen={stand.aflossingenOpDatum} />
+                  </Grid>
                 }
               </Grid>
             </Grid>
@@ -190,31 +194,32 @@ export default function Stand() {
               .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1)
               .filter(rekening => rekening.budgetten.length >= 1)
               .map(rekening => (
-                rekening.budgetType?.toLowerCase() === 'continu' ?
-                  <BudgetContinuGrafiek
-                    visualisatie='bar'
-                    rekening={rekening}
-                    peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
-                    periode={gekozenPeriode}
-                    budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
-                  /> : rekening.rekeningSoort.toLowerCase() === 'inkomsten' ?
-                    <BudgetInkomstenGrafiek
-                      visualisatie='bar'
-                      rekening={rekening}
-                      peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
-                      periode={gekozenPeriode}
-                      budgetten={stand.budgettenOpDatum.filter(b => b.rekeningSoort.toLowerCase() === 'inkomsten')}
-                    /> :
-                    <BudgetVastGrafiek
+                rekening.naam === toonBarGrafiek && (
+                  rekening.budgetType?.toLowerCase() === 'continu' ?
+                    <BudgetContinuGrafiek
                       visualisatie='bar'
                       rekening={rekening}
                       peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                       periode={gekozenPeriode}
                       budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
-                    />
+                    /> : rekening.rekeningSoort.toLowerCase() === 'inkomsten' ?
+                      <BudgetInkomstenGrafiek
+                        visualisatie='bar'
+                        rekening={rekening}
+                        peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
+                        periode={gekozenPeriode}
+                        budgetten={stand.budgettenOpDatum.filter(b => b.rekeningSoort.toLowerCase() === 'inkomsten')}
+                      /> :
+                      <BudgetVastGrafiek
+                        visualisatie='bar'
+                        rekening={rekening}
+                        peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
+                        periode={gekozenPeriode}
+                        budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
+                      />)
               ))}
 
-          {gekozenPeriode && stand.aflossingenOpDatum.length > 0 &&
+          {gekozenPeriode && stand.aflossingenOpDatum.length > 0 && toonBarGrafiek === 'aflossingen' &&
             <AflossingGrafiek
               visualisatie='bar'
               peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
