@@ -40,21 +40,21 @@
   // "forwardPorts": [],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-"postCreateCommand": ".devcontainer/postcreate_actions.sh", 
+  "postCreateCommand": ".devcontainer/postcreate_actions.sh",
   // Configure tool-specific properties.
   "customizations": {
     "vscode": {
       "extensions": [
-      "dbaeumer.vscode-eslint",
-      "esbenp.prettier-vscode",
-      "dsznajder.es7-react-js-snippets",
-      "ms-azuretools.vscode-docker",
-      "hermitter.oh-lucy-vscode",
-      "pkief.material-icon-theme"
-    ]
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "dsznajder.es7-react-js-snippets",
+        "ms-azuretools.vscode-docker",
+        "hermitter.oh-lucy-vscode",
+        "pkief.material-icon-theme"
+      ]
     }
-  }
-
+  },
+  "runArgs": ["--network=npm_default"]
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
   // "remoteUser": "root"
 }
