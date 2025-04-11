@@ -11,7 +11,9 @@ export const AflossingStatusIcon = ({ verwachtHoog, verwachtLaag }: AflossingSta
       return <PlusIcon color={'#bdbdbd'} height={15} />;
     } else if (Number(verwachtHoog) === Number(verwachtLaag)) {
       return <PlusIcon color={'green'} height={15} />;
+    } else if (Number(verwachtHoog) < Number(verwachtLaag)) {
+      return <MinIcon color={'red'} height={15} />;
     } else {
-      return <MinIcon color={'orange'} height={15} />;
+      return <PlusIcon color={'orange'} height={15} />;
     }
 };

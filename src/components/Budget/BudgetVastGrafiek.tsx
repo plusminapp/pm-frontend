@@ -156,31 +156,33 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
 
       {(props.visualisatie === 'bar' || props.visualisatie === 'all') &&
         <>
-          <Grid display={'flex'} direction={'row'} alignItems={'center'}>
-            <Typography variant='body2'>
+          <Grid size={2} direction={'row'}>
+            <Box display="flex" alignItems="center">
+              <Typography variant='body2' sx={{ mr: 2 }}>
               <strong>{props.rekening.naam}</strong>
-            </Typography>
-            {extendedVastBudget.length >= 1 &&
-              <FormGroup >
+              </Typography>
+              {extendedVastBudget.length >= 1 &&
+              <FormGroup>
                 <FormControlLabel control={
-                  <Switch
-                    sx={{ transform: 'scale(0.6)' }}
-                    checked={toonBudgetVastDetails}
-                    onChange={handleToonBudgetVastChange}
-                    slotProps={{ input: { 'aria-label': 'controlled' } }}
-                  />}
-                  sx={{ mr: 0 }}
-                  label={
-                    <Box display="flex" fontSize={'0.875rem'} >
-                      Toon budget details
-                    </Box>
-                  } />
+                <Switch
+                  sx={{ transform: 'scale(0.6)' }}
+                  checked={toonBudgetVastDetails}
+                  onChange={handleToonBudgetVastChange}
+                  slotProps={{ input: { 'aria-label': 'controlled' } }}
+                />}
+                sx={{ mr: 0 }}
+                label={
+                  <Box display="flex" fontSize={'0.875rem'}>
+                  Toon budget details
+                  </Box>
+                } />
               </FormGroup>}
+            </Box>
           </Grid>
           {toonBudgetVastDetails &&
-            <Grid alignItems={'center'}>
+            <Grid size={2} alignItems={'flex-start'}>
               {extendedVastBudget.map((budget, index) => (
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
                   {berekenToestandVastIcoon(budget)}
                   <Typography key={index} variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
                     {budget.budgetNaam}: {formatAmount(budget.bedrag.toString())}, betaaldag {budget.betaalDag && dagInPeriode(budget.betaalDag, props.periode).format('D MMMM')},&nbsp;

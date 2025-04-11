@@ -342,7 +342,7 @@ export default function Login() {
               </Typography>
             </Grid>
             <Grid size={1} >
-              {['niets', 'te weinig', 'verwacht', 'teveel'].map((betalingNaam) =>
+              {['niets', 'minder', 'verwacht', 'meer'].map((betalingNaam) =>
                 <Button
                   color='success'
                   style={{ textTransform: 'none' }}
@@ -377,7 +377,7 @@ export default function Login() {
               </Typography>
             </Grid>
             <Grid size={1} >
-              {['niets', 'te weinig', 'verwacht', 'teveel'].map((betalingNaam) =>
+              {['niets', 'minder', 'verwacht', 'meer'].map((betalingNaam) =>
                 <Button
                   color='success'
                   style={{ textTransform: 'none' }}

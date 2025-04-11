@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Box, Link, Button, FormGroup, FormControlLabel, Switch } from '@mui/material';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Box, Link, Button, FormGroup, FormControlLabel, Switch, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { BetalingDTO, BetalingsSoort, betalingsSoortFormatter, internBetalingsSoorten } from '../../model/Betaling';
 import dayjs from 'dayjs';
 import { useCustomContext } from '../../context/CustomContext';
@@ -11,10 +11,11 @@ import { ExternalLinkIcon } from '../../icons/ExternalLink';
 import EditIcon from '@mui/icons-material/Edit';
 import { isPeriodeOpen } from '../../model/Periode';
 import UpsertBetalingDialoog from './UpsertBetalingDialoog';
-import { berekenAflossingenBedrag, berekenMaandAflossingenBedrag } from '../../model/Aflossing';
+import { AflossingDTO, berekenAflossingenBedrag, berekenMaandAflossingenBedrag } from '../../model/Aflossing';
 import { BudgetStatusIcon } from '../../icons/BudgetStatus';
 import { AflossingStatusIcon } from '../../icons/AflossingStatus';
 import { InfoIcon } from '../../icons/Info';
+import { useAuthContext } from '@asgardeo/auth-react';
 
 type BetalingTabelProps = {
   betalingen: BetalingDTO[];
@@ -28,15 +29,57 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
     currency: 'EUR',
   });
 
+  const { getIDToken } = useAuthContext();
   const { rekeningen, gekozenPeriode, actieveHulpvrager, setSnackbarMessage } = useCustomContext();
+  const navigate = useNavigate();
 
   const [selectedBetaling, setSelectedBetaling] = useState<BetalingDTO | undefined>(undefined);
   const [toonIntern, setToonIntern] = useState<boolean>(localStorage.getItem('toonIntern') === 'true');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [betaalAchterstand, setBetaalAchterstand] = useState<number>(0);
+
+  const fetchAflossingen = useCallback(async () => {
+    if (actieveHulpvrager && gekozenPeriode) {
+      setIsLoading(true);
+      const id = actieveHulpvrager!.id
+      let token
+      try {
+        token = await getIDToken();
+      } catch (error) {
+        console.error("Error fetching ID token", error);
+        setIsLoading(false);
+        navigate('/login');
+      }
+      const formDatum = dayjs().isAfter(dayjs(gekozenPeriode.periodeEindDatum)) ? dayjs(gekozenPeriode.periodeEindDatum) : dayjs();
+      const response = await fetch(`/api/v1/aflossing/hulpvrager/${id}/datum/${formDatum.toISOString().slice(0, 10)}`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      setIsLoading(false);
+      if (response.ok) {
+        const result = await response.json();
+        setBetaalAchterstand(result.reduce((acc: number, item: AflossingDTO) => acc + (item.deltaStartPeriode ?? 0) , 0));
+      } else {
+        console.error("Failed to fetch data", response.status);
+        setSnackbarMessage({
+          message: `De configuratie voor ${actieveHulpvrager!.bijnaam} is niet correct.`,
+          type: "warning"
+        })
+      }
+    }
+  }, [actieveHulpvrager, gekozenPeriode, getIDToken, navigate, setSnackbarMessage]);
+
+  useEffect(() => {
+    fetchAflossingen();
+  }, [fetchAflossingen]);
+
 
   const handleEditClick = (betaling: BetalingDTO) => {
     setSelectedBetaling(betaling);
   };
-
 
   const getFormattedBedrag = (betaling: BetalingDTO) => {
     const bedrag = betaling.betalingsSoort === BetalingsSoort.inkomsten || betaling.betalingsSoort === BetalingsSoort.rente
@@ -96,11 +139,15 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
     localStorage.setItem('toonIntern', event.target.checked.toString());
     setToonIntern(event.target.checked);
   };
-  
+
   const interneRekeningenNamen = rekeningen.filter(r => r.rekeningSoort === RekeningSoort.betaalrekening || interneRekeningSoorten.includes(r.rekeningSoort)).map(r => r.naam).join(', ')
   const toonInterneBetalingMeassage = `Interne betalingen zijn betalingen tussen eigen rekeningen (${interneRekeningenNamen}), ze maken niets uit voor het beschikbare geld, en worden daarom niet vanzelf getoond.`
   const interneBetalingKopMessage = 'Interne betalingen worden als negatief getal getoond als ze van de betaalrekening af gaan, positief als ze er bij komen.'
   const interneBetalingTotaalMessage = `Interne betalingen schuiven met geld tussen eigen rekeningen (${interneRekeningenNamen}), een totaal betekent daarom niks zinvols en daarom worden de betalingen niet opgeteld.`
+
+  if (isLoading) {
+    return <Typography sx={{ mb: '25px' }}>De aflossingen worden opgehaald.</Typography>
+  }
 
   return (
     <>
@@ -135,8 +182,6 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
             <TableRow sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey' }}>
               <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px' }}></TableCell>
               <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px', fontWeight: 'bold', maxWidth: '300px' }}>Totalen</TableCell>
-              {(heeftAflossing || heeftBudgetten) &&
-                <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px', fontWeight: 'bold' }} />}
               <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px', fontWeight: 'bold' }} align="right">{formatter.format(totalen.inkomsten)}</TableCell>
               {bestemmingen.map(bestemming => (
                 <TableCell key={bestemming} sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px', fontWeight: 'bold' }} align="right">
@@ -160,11 +205,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
               <>
                 <TableRow sx={{ borderBottom: '1px' }}>
                   <TableCell sx={{ padding: '5px' }}></TableCell>
-                  {heeftBudgetten &&
-                    <TableCell sx={{ padding: '5px' }}>Potjes</TableCell>}
-                  {!heeftBudgetten && heeftAflossing &&
-                    <TableCell sx={{ padding: '5px' }}>Aflossing</TableCell>}
-                  <TableCell sx={{ padding: '5px' }} />
+                  <TableCell sx={{ padding: '5px' }}>Potjes</TableCell>
                   <TableCell sx={{ padding: '5px' }} align="right" >
                     {maandBudget['Inkomsten'] != 0 ? formatter.format(budget['Inkomsten']) : ''}
                   </TableCell>
@@ -174,7 +215,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
                     </TableCell>
                   ))}
                   <TableCell sx={{ padding: '5px' }} align="right" >
-                    {maandBudget["aflossing"] != 0 ? formatter.format(budget["aflossing"]) : ''}
+                    {maandBudget["aflossing"] != 0 ? formatter.format(budget["aflossing"] - betaalAchterstand) : ''}
                   </TableCell>
                   {gekozenPeriode && isPeriodeOpen(gekozenPeriode) &&
                     <TableCell sx={{ padding: '5px' }} align="right" />
@@ -183,7 +224,6 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
                 <TableRow sx={{ borderBottom: '1px' }}>
                   <TableCell sx={{ padding: '5px' }}></TableCell>
                   <TableCell sx={{ padding: '5px' }}>Overschot/tekort</TableCell>
-                  <TableCell sx={{ padding: '5px' }} />
                   <TableCell key={'Inkomsten'} sx={{ padding: '5px' }} align="right">
                     {maandBudget['Inkomsten'] != 0 &&
                       <Box display="flex" alignItems="center" justifyContent="flex-end">
@@ -210,11 +250,11 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
                     <TableCell sx={{ padding: '5px' }} align="right" >
                       <Box display="flex" alignItems="center" justifyContent="flex-end">
                         <Link component={RouterLink} to="/schuld-aflossingen" display={'flex'} alignItems={'center'} justifyContent={'flex-end'}>
-                          <AflossingStatusIcon verwachtHoog={aflossingsBedrag} verwachtLaag={-totalen.aflossing} />
+                          <AflossingStatusIcon verwachtHoog={-totalen.aflossing } verwachtLaag={aflossingsBedrag - betaalAchterstand} />
                           <ExternalLinkIcon />
                         </Link>
                         &nbsp;
-                        {maandAflossingsBedrag != 0 ? formatter.format(aflossingsBedrag + totalen.aflossing) : ''}
+                        {maandAflossingsBedrag != 0 ? formatter.format(betaalAchterstand - aflossingsBedrag - totalen.aflossing) : ''}
                       </Box>
                     </TableCell>}
                   {heeftIntern && toonIntern &&
@@ -227,8 +267,6 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
             <TableRow sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey' }}>
               <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px' }}>Datum</TableCell>
               <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px', maxWidth: '300px' }}>Omschrijving</TableCell>
-              {heeftBudgetten &&
-                <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px' }}>Budget</TableCell>}
               <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px' }} align="right">Inkomsten</TableCell>
               {rekeningen.filter(r => r.rekeningSoort === RekeningSoort.uitgaven).map(uitgaveRekening => (
                 <TableCell key={uitgaveRekening.naam} sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px' }} align="right">{uitgaveRekening.naam}</TableCell>
@@ -255,35 +293,33 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
           <TableBody>
             <>
               {betalingen
-              .sort((a, b) => a.sortOrder > b.sortOrder ? -1 : 1)
-              .map((betaling) => (!isIntern(betaling) || toonIntern) &&
-                <TableRow key={betaling.id}>
-                  <TableCell sx={{ padding: '5px' }}>{dayjs(betaling.boekingsdatum).format('YYYY-MM-DD')}</TableCell>
-                  <TableCell sx={{ padding: '5px', maxWidth: '300px' }}>
-                    {isIntern(betaling) ? betaling.betalingsSoort && betalingsSoortFormatter(betaling.betalingsSoort) + ': ' : ''}
-                    {betaling.omschrijving}
-                  </TableCell>
-                  {heeftBudgetten &&
-                    <TableCell sx={{ padding: '5px' }}>{betaling.budgetNaam ? betaling.budgetNaam : ''}</TableCell>}
-                  <TableCell sx={{ padding: '5px' }} align="right">{isInkomsten(betaling) ? getFormattedBedrag(betaling) : ''}</TableCell>
-                  {bestemmingen.map(bestemming => (
-                    <TableCell key={bestemming} sx={{ padding: '5px' }} align="right">
-                      {isUitgaven(betaling) && betaling.bestemming === bestemming ? getFormattedBedrag(betaling) : ''}
+                .sort((a, b) => a.sortOrder > b.sortOrder ? -1 : 1)
+                .map((betaling) => (!isIntern(betaling) || toonIntern) &&
+                  <TableRow key={betaling.id}>
+                    <TableCell sx={{ padding: '5px' }}>{dayjs(betaling.boekingsdatum).format('YYYY-MM-DD')}</TableCell>
+                    <TableCell sx={{ padding: '5px', maxWidth: '300px' }}>
+                      {isIntern(betaling) ? betaling.betalingsSoort && betalingsSoortFormatter(betaling.betalingsSoort) + ': ' : ''}
+                      {betaling.omschrijving}
                     </TableCell>
-                  ))}
-                  {heeftAflossing &&
-                    <TableCell sx={{ padding: '5px' }} align="right">{isAflossing(betaling) ? getFormattedBedrag(betaling) : ''}</TableCell>}
-                  {heeftIntern && toonIntern &&
-                    <TableCell sx={{ padding: '5px' }} align="right">{isIntern(betaling) ? getFormattedBedrag(betaling) : ''}</TableCell>}
-                  {gekozenPeriode && isPeriodeOpen(gekozenPeriode) &&
-                    <TableCell size='small' sx={{ p: "5px" }}>
-                      <Button onClick={() => handleEditClick(betaling)} sx={{ minWidth: '24px', color: 'grey', p: "5px" }}>
-                        <EditIcon fontSize="small" />
-                      </Button>
-                    </TableCell>
-                  }
-                </TableRow>
-              )}
+                    <TableCell sx={{ padding: '5px' }} align="right">{isInkomsten(betaling) ? getFormattedBedrag(betaling) : ''}</TableCell>
+                    {bestemmingen.map(bestemming => (
+                      <TableCell key={bestemming} sx={{ padding: '5px' }} align="right">
+                        {isUitgaven(betaling) && betaling.bestemming === bestemming ? getFormattedBedrag(betaling) : ''}
+                      </TableCell>
+                    ))}
+                    {heeftAflossing &&
+                      <TableCell sx={{ padding: '5px' }} align="right">{isAflossing(betaling) ? getFormattedBedrag(betaling) : ''}</TableCell>}
+                    {heeftIntern && toonIntern &&
+                      <TableCell sx={{ padding: '5px' }} align="right">{isIntern(betaling) ? getFormattedBedrag(betaling) : ''}</TableCell>}
+                    {gekozenPeriode && isPeriodeOpen(gekozenPeriode) &&
+                      <TableCell size='small' sx={{ p: "5px" }}>
+                        <Button onClick={() => handleEditClick(betaling)} sx={{ minWidth: '24px', color: 'grey', p: "5px" }}>
+                          <EditIcon fontSize="small" />
+                        </Button>
+                      </TableCell>
+                    }
+                  </TableRow>
+                )}
 
             </>
           </TableBody>

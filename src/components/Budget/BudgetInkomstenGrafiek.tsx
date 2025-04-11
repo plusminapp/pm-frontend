@@ -108,7 +108,7 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
     if (minderDanBudget > 0 && meerDanMaandBudget > 0)
       return <StandIcon color="red" borderColor="green" height={100} text={formatAmount(minderDanBudget.toString())} outerText={props.rekening.naam} />
     if (minderDanBudget > 0)
-      return <StandIcon color="red" borderColor="red" height={100} text={formatAmount(minderDanBudget.toString())}  outerText={props.rekening.naam} />
+      return <StandIcon color="red" borderColor="red" height={100} text={formatAmount(minderDanBudget.toString())} outerText={props.rekening.naam} />
     if (meerDanMaandBudget > 0)
       return <StandIcon color="green" borderColor="green" height={100} text={formatAmount(meerDanMaandBudget.toString())} outerText={props.rekening.naam} />
     if (meerDanBudget > 0)
@@ -159,211 +159,213 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
       </Grid>
       {(props.visualisatie === 'bar' || props.visualisatie === 'all') &&
         <>
-      <Grid display={'flex'} direction={'row'} alignItems={'center'}>
-        <Typography variant='body2'>
-          <strong>{props.rekening.naam}</strong>
-        </Typography>
-        {extendedInkomstenBudget.length >= 1 &&
-          <FormGroup >
-            <FormControlLabel control={
-              <Switch
-                sx={{ transform: 'scale(0.6)' }}
-                checked={toonBudgetInkomstenDetails}
-                onChange={handleToonBudgetInkomstenChange}
-                slotProps={{ input: { 'aria-label': 'controlled' } }}
-              />}
-              sx={{ mr: 0 }}
-              label={
-                <Box display="flex" fontSize={'0.875rem'} >
-                  Toon budget details
-                </Box>
-              } />
-          </FormGroup>}
-      </Grid>
-      {toonBudgetInkomstenDetails &&
-        <Grid alignItems={'center'}>
-          {extendedInkomstenBudget.map((budget, index) => (
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              {berekenToestandInkomstenIcoon(budget)}
-              <Typography key={index} variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
-                {budget.budgetNaam}: {formatAmount(budget.bedrag.toString())}, betaaldag {budget.betaalDag && dagInPeriode(budget.betaalDag, props.periode).format('D MMMM')},&nbsp;
-                waarvan {formatAmount(budget.budgetBetaling?.toString() ?? "nvt")} is ontvangen; dit is
-                {budget.meerDanBudget === 0 && budget.minderDanBudget === 0 && budget.meerDanMaandBudget === 0 && ' zoals verwacht'}
-                {[budget.meerDanBudget > 0 && ' eerder dan verwacht',
-                budget.minderDanBudget > 0 && ` ${formatAmount(budget.minderDanBudget.toString())} minder dan verwacht`,
-                budget.meerDanMaandBudget > 0 && ` ${formatAmount(budget.meerDanMaandBudget.toString())} meer dan verwacht`
-                ].filter(Boolean).join(' en ')}.
+          <Grid size={2} direction={'row'}>
+            <Box display="flex" alignItems="center">
+              <Typography variant='body2' sx={{ mr: 2 }}>
+              <strong>{props.rekening.naam}</strong>
               </Typography>
-            </Box>
-          ))}
-        </Grid>}
-      <TableContainer >
-        <Table>
-          <TableBody>
-
-            <TableRow>
-              <TableCell width={'5%'} />
-              {ontvangenBinnenBudget > 0 &&
-                <TableCell
-                  sx={{ p: 1, fontSize: '10px', borderRight: meerDanBudget === 0 && meerDanMaandBudget === 0 ? '2px dotted #333' : 'none' }}
-                  align="right"
-                  width={`${(ontvangenBinnenBudget / tabelBreedte) * 90}%`}
+              {extendedInkomstenBudget.length >= 1 &&
+              <FormGroup>
+                <FormControlLabel control={
+                <Switch
+                  sx={{ transform: 'scale(0.6)' }}
+                  checked={toonBudgetInkomstenDetails}
+                  onChange={handleToonBudgetInkomstenChange}
+                  slotProps={{ input: { 'aria-label': 'controlled' } }}
                 />}
-              {meerDanBudget > 0 &&
-                <TableCell
-                  sx={{ p: 1, fontSize: '10px', borderRight: meerDanMaandBudget === 0 ? '2px dotted #333' : 'none', }}
-                  align="right"
-                  width={`${(meerDanBudget / tabelBreedte) * 90}%`}
-                >
-                  {formatAmount((ontvangenBinnenBudget + meerDanBudget).toString())}
-                </TableCell>}
-              {meerDanMaandBudget > 0 &&
-                <TableCell
-                  sx={{ p: 1, fontSize: '10px', borderRight: '2px dotted #333' }}
-                  align="right"
-                  width={`${(meerDanMaandBudget / tabelBreedte) * 90}%`}
-                >
-                  {formatAmount((ontvangenBinnenBudget + meerDanBudget + meerDanMaandBudget).toString())}
-                </TableCell>}
-              {minderDanBudget > 0 &&
-                <TableCell
-                  sx={{ p: 1, fontSize: '10px' }}
-                  align="right"
-                  width={`${(minderDanBudget / tabelBreedte) * 90}%`}
-                >
-                  {formatAmount((ontvangenBinnenBudget + meerDanBudget + meerDanMaandBudget + minderDanBudget).toString())}
-                </TableCell>}
-              {restMaandBudget > 0 &&
-                <TableCell
-                  sx={{ p: 1, fontSize: '10px', borderLeft: minderDanBudget === 0 ? '2px dotted #333' : 'none' }}
-                  align="right"
-                  width={`${(restMaandBudget / tabelBreedte) * 90}%`}
-                >
-                  {formatAmount((ontvangenBinnenBudget + meerDanBudget + minderDanBudget + meerDanMaandBudget + restMaandBudget).toString())}
-                </TableCell>}
-              {restMaandBudget === 0 && props.peilDatum.format('YYYY-MM-DD') != props.periode.periodeEindDatum &&
-                <TableCell />}
-            </TableRow>
+                sx={{ mr: 0 }}
+                label={
+                  <Box display="flex" fontSize={'0.875rem'}>
+                  Toon budget details
+                  </Box>
+                } />
+              </FormGroup>}
+            </Box>
+          </Grid>
+          {toonBudgetInkomstenDetails &&
+            <Grid size={2} alignItems={'flex-start'}>
+              {extendedInkomstenBudget.map((budget, index) => (
+                <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                  {berekenToestandInkomstenIcoon(budget)}
+                  <Typography key={index} variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
+                    {budget.budgetNaam}: {formatAmount(budget.bedrag.toString())}, betaaldag {budget.betaalDag && dagInPeriode(budget.betaalDag, props.periode).format('D MMMM')},&nbsp;
+                    waarvan {formatAmount(budget.budgetBetaling?.toString() ?? "nvt")} is ontvangen; dit is
+                    {budget.meerDanBudget === 0 && budget.minderDanBudget === 0 && budget.meerDanMaandBudget === 0 && ' zoals verwacht'}
+                    {[budget.meerDanBudget > 0 && ' eerder dan verwacht',
+                    budget.minderDanBudget > 0 && ` ${formatAmount(budget.minderDanBudget.toString())} minder dan verwacht`,
+                    budget.meerDanMaandBudget > 0 && ` ${formatAmount(budget.meerDanMaandBudget.toString())} meer dan verwacht`
+                    ].filter(Boolean).join(' en ')}.
+                  </Typography>
+                </Box>
+              ))}
+            </Grid>}
+          <TableContainer >
+            <Table>
+              <TableBody>
 
-            <TableRow>
-              <TableCell width={'5%'} sx={{ borderBottom: '10px solid white' }} />
-              {ontvangenBinnenBudget > 0 &&
-                <TableCell
-                  width={`${(ontvangenBinnenBudget / tabelBreedte) * 90}%`}
-                  sx={{
-                    backgroundColor: 'grey',
-                    borderBottom: '10px solid #333',
-                    color: 'white',
-                    textAlign: 'center'
-                  }}>
-                  {formatAmount(ontvangenBinnenBudget.toString())}
-                </TableCell>}
-              {meerDanBudget > 0 &&
-                <TableCell
-                  width={`${(meerDanBudget / tabelBreedte) * 90}%`}
-                  sx={{
-                    backgroundColor: 'lightGreen',
-                    borderBottom: '10px solid #333',
-                    color: 'white',
-                    textAlign: 'center'
-                  }}>
-                  {formatAmount(meerDanBudget.toString())}
-                </TableCell>}
-              {meerDanMaandBudget > 0 &&
-                <TableCell
-                  width={`${(meerDanMaandBudget / tabelBreedte) * 90}%`}
-                  sx={{
-                    backgroundColor: 'green',
-                    borderBottom: '10px solid #333',
-                    color: 'white',
-                    textAlign: 'center'
-                  }}>
-                  {formatAmount(meerDanMaandBudget.toString())}
-                </TableCell>}
-              {minderDanBudget > 0 &&
-                <TableCell
-                  width={`${(minderDanBudget / tabelBreedte) * 90}%`}
-                  sx={{
-                    backgroundColor: 'red',
-                    borderBottom: '10px solid red',
-                    color: 'white',
-                    textAlign: 'center'
-                  }}>
-                  {formatAmount(minderDanBudget.toString())}
-                </TableCell>}
-              {restMaandBudget > 0 &&
-                <TableCell
-                  width={`${(restMaandBudget / tabelBreedte) * 90}%`}
-                  sx={{
-                    backgroundColor: '#1977d3',
-                    borderBottom: '10px solid #1977d3',
-                    color: 'white',
-                    textAlign: 'center'
-                  }}>
-                  {formatAmount(restMaandBudget.toString())}
-                </TableCell>}
-              {restMaandBudget === 0 && props.peilDatum.format('YYYY-MM-DD') != props.periode.periodeEindDatum &&
-                <TableCell
-                  sx={{
-                    backgroundColor: '#333',
-                    borderBottom: '10px solid #333',
-                  }} />}
-            </TableRow>
+                <TableRow>
+                  <TableCell width={'5%'} />
+                  {ontvangenBinnenBudget > 0 &&
+                    <TableCell
+                      sx={{ p: 1, fontSize: '10px', borderRight: meerDanBudget === 0 && meerDanMaandBudget === 0 ? '2px dotted #333' : 'none' }}
+                      align="right"
+                      width={`${(ontvangenBinnenBudget / tabelBreedte) * 90}%`}
+                    />}
+                  {meerDanBudget > 0 &&
+                    <TableCell
+                      sx={{ p: 1, fontSize: '10px', borderRight: meerDanMaandBudget === 0 ? '2px dotted #333' : 'none', }}
+                      align="right"
+                      width={`${(meerDanBudget / tabelBreedte) * 90}%`}
+                    >
+                      {formatAmount((ontvangenBinnenBudget + meerDanBudget).toString())}
+                    </TableCell>}
+                  {meerDanMaandBudget > 0 &&
+                    <TableCell
+                      sx={{ p: 1, fontSize: '10px', borderRight: '2px dotted #333' }}
+                      align="right"
+                      width={`${(meerDanMaandBudget / tabelBreedte) * 90}%`}
+                    >
+                      {formatAmount((ontvangenBinnenBudget + meerDanBudget + meerDanMaandBudget).toString())}
+                    </TableCell>}
+                  {minderDanBudget > 0 &&
+                    <TableCell
+                      sx={{ p: 1, fontSize: '10px' }}
+                      align="right"
+                      width={`${(minderDanBudget / tabelBreedte) * 90}%`}
+                    >
+                      {formatAmount((ontvangenBinnenBudget + meerDanBudget + meerDanMaandBudget + minderDanBudget).toString())}
+                    </TableCell>}
+                  {restMaandBudget > 0 &&
+                    <TableCell
+                      sx={{ p: 1, fontSize: '10px', borderLeft: minderDanBudget === 0 ? '2px dotted #333' : 'none' }}
+                      align="right"
+                      width={`${(restMaandBudget / tabelBreedte) * 90}%`}
+                    >
+                      {formatAmount((ontvangenBinnenBudget + meerDanBudget + minderDanBudget + meerDanMaandBudget + restMaandBudget).toString())}
+                    </TableCell>}
+                  {restMaandBudget === 0 && props.peilDatum.format('YYYY-MM-DD') != props.periode.periodeEindDatum &&
+                    <TableCell />}
+                </TableRow>
 
-            <TableRow>
-              <TableCell
-                align="right"
-                width={'5%'}
-                sx={{ p: 1, fontSize: '10px' }} >
-                {dayjs(props.periode.periodeStartDatum).format('D/M')}
-              </TableCell>
-              {ontvangenBinnenBudget > 0 &&
-                <TableCell
-                  align="right"
-                  width={`${(ontvangenBinnenBudget / tabelBreedte) * 90}%`}
-                  sx={{ p: 1, fontSize: '10px', borderRight: meerDanBudget === 0 && meerDanMaandBudget === 0 ? '2px dotted #333' : 'none' }} >
-                  {meerDanBudget === 0 && meerDanMaandBudget === 0 && props.peilDatum.format('D/M')}
-                </TableCell>}
-              {meerDanBudget > 0 &&
-                <TableCell
-                  align="right"
-                  width={`${(meerDanBudget / tabelBreedte) * 90}%`}
-                  sx={{ p: 1, fontSize: '10px', borderRight: meerDanMaandBudget === 0 ? '2px dotted #333' : 'none', }} >
-                  {meerDanMaandBudget === 0 && props.peilDatum.format('D/M')}
-                </TableCell>}
-              {meerDanMaandBudget > 0 &&
-                <TableCell
-                  align="right"
-                  width={`${(meerDanMaandBudget / tabelBreedte) * 90}%`}
-                  sx={{ p: 1, fontSize: '10px', borderRight: '2px dotted #333' }} >
-                  {props.peilDatum.format('D/M')}
-                </TableCell>}
-              {minderDanBudget > 0 &&
-                <TableCell
-                  align="right"
-                  width={`${(minderDanBudget / tabelBreedte) * 90}%`}
-                  sx={{ p: 1, fontSize: '10px' }}>
-                  {props.peilDatum.format('YYYY-MM-DD') === props.periode.periodeEindDatum && props.peilDatum.format('D/M')}
-                </TableCell>}
-              {restMaandBudget > 0 &&
-                <TableCell
-                  align="right"
-                  width={`${(restMaandBudget / tabelBreedte) * 90}%`}
-                  sx={{ p: 1, fontSize: '10px', borderLeft: minderDanBudget === 0 ? '2px dotted #333' : 'none' }} >
-                  {dayjs(props.periode.periodeEindDatum).format('D/M')}
-                </TableCell>}
-              {restMaandBudget === 0 && props.peilDatum.format('YYYY-MM-DD') != props.periode.periodeEindDatum &&
-                <TableCell
-                  align="right"
-                  sx={{ p: 1, fontSize: '10px' }} >
-                  {dayjs(props.periode.periodeEindDatum).format('D/M')}
-                </TableCell>}
-            </TableRow>
+                <TableRow>
+                  <TableCell width={'5%'} sx={{ borderBottom: '10px solid white' }} />
+                  {ontvangenBinnenBudget > 0 &&
+                    <TableCell
+                      width={`${(ontvangenBinnenBudget / tabelBreedte) * 90}%`}
+                      sx={{
+                        backgroundColor: 'grey',
+                        borderBottom: '10px solid #333',
+                        color: 'white',
+                        textAlign: 'center'
+                      }}>
+                      {formatAmount(ontvangenBinnenBudget.toString())}
+                    </TableCell>}
+                  {meerDanBudget > 0 &&
+                    <TableCell
+                      width={`${(meerDanBudget / tabelBreedte) * 90}%`}
+                      sx={{
+                        backgroundColor: 'lightGreen',
+                        borderBottom: '10px solid #333',
+                        color: 'white',
+                        textAlign: 'center'
+                      }}>
+                      {formatAmount(meerDanBudget.toString())}
+                    </TableCell>}
+                  {meerDanMaandBudget > 0 &&
+                    <TableCell
+                      width={`${(meerDanMaandBudget / tabelBreedte) * 90}%`}
+                      sx={{
+                        backgroundColor: 'green',
+                        borderBottom: '10px solid #333',
+                        color: 'white',
+                        textAlign: 'center'
+                      }}>
+                      {formatAmount(meerDanMaandBudget.toString())}
+                    </TableCell>}
+                  {minderDanBudget > 0 &&
+                    <TableCell
+                      width={`${(minderDanBudget / tabelBreedte) * 90}%`}
+                      sx={{
+                        backgroundColor: 'red',
+                        borderBottom: '10px solid red',
+                        color: 'white',
+                        textAlign: 'center'
+                      }}>
+                      {formatAmount(minderDanBudget.toString())}
+                    </TableCell>}
+                  {restMaandBudget > 0 &&
+                    <TableCell
+                      width={`${(restMaandBudget / tabelBreedte) * 90}%`}
+                      sx={{
+                        backgroundColor: '#1977d3',
+                        borderBottom: '10px solid #1977d3',
+                        color: 'white',
+                        textAlign: 'center'
+                      }}>
+                      {formatAmount(restMaandBudget.toString())}
+                    </TableCell>}
+                  {restMaandBudget === 0 && props.peilDatum.format('YYYY-MM-DD') != props.periode.periodeEindDatum &&
+                    <TableCell
+                      sx={{
+                        backgroundColor: '#333',
+                        borderBottom: '10px solid #333',
+                      }} />}
+                </TableRow>
 
-          </TableBody>
-        </Table>
-      </TableContainer >
-      </>}
+                <TableRow>
+                  <TableCell
+                    align="right"
+                    width={'5%'}
+                    sx={{ p: 1, fontSize: '10px' }} >
+                    {dayjs(props.periode.periodeStartDatum).format('D/M')}
+                  </TableCell>
+                  {ontvangenBinnenBudget > 0 &&
+                    <TableCell
+                      align="right"
+                      width={`${(ontvangenBinnenBudget / tabelBreedte) * 90}%`}
+                      sx={{ p: 1, fontSize: '10px', borderRight: meerDanBudget === 0 && meerDanMaandBudget === 0 ? '2px dotted #333' : 'none' }} >
+                      {meerDanBudget === 0 && meerDanMaandBudget === 0 && props.peilDatum.format('D/M')}
+                    </TableCell>}
+                  {meerDanBudget > 0 &&
+                    <TableCell
+                      align="right"
+                      width={`${(meerDanBudget / tabelBreedte) * 90}%`}
+                      sx={{ p: 1, fontSize: '10px', borderRight: meerDanMaandBudget === 0 ? '2px dotted #333' : 'none', }} >
+                      {meerDanMaandBudget === 0 && props.peilDatum.format('D/M')}
+                    </TableCell>}
+                  {meerDanMaandBudget > 0 &&
+                    <TableCell
+                      align="right"
+                      width={`${(meerDanMaandBudget / tabelBreedte) * 90}%`}
+                      sx={{ p: 1, fontSize: '10px', borderRight: '2px dotted #333' }} >
+                      {props.peilDatum.format('D/M')}
+                    </TableCell>}
+                  {minderDanBudget > 0 &&
+                    <TableCell
+                      align="right"
+                      width={`${(minderDanBudget / tabelBreedte) * 90}%`}
+                      sx={{ p: 1, fontSize: '10px' }}>
+                      {props.peilDatum.format('YYYY-MM-DD') === props.periode.periodeEindDatum && props.peilDatum.format('D/M')}
+                    </TableCell>}
+                  {restMaandBudget > 0 &&
+                    <TableCell
+                      align="right"
+                      width={`${(restMaandBudget / tabelBreedte) * 90}%`}
+                      sx={{ p: 1, fontSize: '10px', borderLeft: minderDanBudget === 0 ? '2px dotted #333' : 'none' }} >
+                      {dayjs(props.periode.periodeEindDatum).format('D/M')}
+                    </TableCell>}
+                  {restMaandBudget === 0 && props.peilDatum.format('YYYY-MM-DD') != props.periode.periodeEindDatum &&
+                    <TableCell
+                      align="right"
+                      sx={{ p: 1, fontSize: '10px' }} >
+                      {dayjs(props.periode.periodeEindDatum).format('D/M')}
+                    </TableCell>}
+                </TableRow>
+
+              </TableBody>
+            </Table>
+          </TableContainer >
+        </>}
     </>
   );
 };

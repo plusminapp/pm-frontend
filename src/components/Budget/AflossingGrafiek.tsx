@@ -179,9 +179,9 @@ export const AflossingGrafiek = (props: AflossingGrafiekProps) => {
               </FormGroup>}
           </Grid>
           {toonaflossingVastDetails &&
-            <Grid alignItems={'center'}>
+        <Grid size={2} alignItems={'flex-start'}>
               {extendedAflossingDTO.map((aflossing, index) => (
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
                   {berekenToestandAflossingIcoon(aflossing)}
                   <Typography key={index} variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
                     {aflossing.rekening.naam}: {(aflossing.deltaStartPeriode ?? 0) < 0 && ` heeft bij het begin van de periode een betaalachterstand van ${formatAmount((-(aflossing.deltaStartPeriode ?? 0)).toString())}; `}
