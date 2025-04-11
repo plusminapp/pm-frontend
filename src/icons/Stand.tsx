@@ -22,6 +22,7 @@ const StandIcon: React.FC<StandIconProps> = ({
     <svg
       width={height * 1.5} // Extra ruimte voor de buitenste tekst
       height={height * 1.6} // Extra ruimte aan de onderkant
+      overflow={'visible'}
       viewBox={`0 0 ${height * 1.5} ${height * 1.6}`} // Pas de viewBox aan voor extra ruimte
       xmlns="http://www.w3.org/2000/svg"
     >

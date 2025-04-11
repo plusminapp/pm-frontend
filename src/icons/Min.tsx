@@ -8,6 +8,8 @@ export const MinIcon = ({color= 'red', secundaryColor = 'white', height= 24}: Mi
   return (
     <svg
       height={height}
+      width={height}
+      overflow={'visible'}
       viewBox="0 0 24 24"
       fill="#008000"
       version="1.1"

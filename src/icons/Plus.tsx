@@ -9,6 +9,7 @@ export const PlusIcon = ({ color = 'green', secundaryColor = 'white', height = 2
       <svg
         width={height}
         height={height}
+        overflow={'visible'}
         viewBox="0 0 24 24"
         fill="#008000"
         version="1.1"
