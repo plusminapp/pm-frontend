@@ -18,9 +18,9 @@ type AflossingGrafiekProps = {
 
 export const AflossingGrafiek = (props: AflossingGrafiekProps) => {
 
-  const [toonaflossingVastDetails, setToonaflossingVastDetails] = useState<boolean>(localStorage.getItem('toonaflossingDetails') === 'true');
+  const [toonaflossingVastDetails, setToonaflossingVastDetails] = useState<boolean>(localStorage.getItem('toonBudgetAflossingDetails') === 'true');
   const handleToonaflossingVastChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    localStorage.setItem('toonaflossingDetails', event.target.checked.toString());
+    localStorage.setItem('toonBudgetAflossingDetails', event.target.checked.toString());
     setToonaflossingVastDetails(event.target.checked);
   };
 

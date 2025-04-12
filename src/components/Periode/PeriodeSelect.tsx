@@ -2,7 +2,7 @@ import { Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEve
 import Grid from '@mui/material/Grid2';
 import { eersteOpenPeriode, formateerNlDatum, formateerNlVolgendeDag, laatsteGeslotenPeriode, Periode } from "../../model/Periode";
 import { useCustomContext } from "../../context/CustomContext";
-import { saveToLocalStorage } from "../Header";
+import { saveToLocalStorage } from "../Header/HeaderExports.ts";
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import EditIcon from '@mui/icons-material/Edit';
 

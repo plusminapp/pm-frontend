@@ -20,9 +20,9 @@ type BudgetVastGrafiekProps = {
 
 export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
 
-  const [toonBudgetVastDetails, setToonBudgetVastDetails] = useState<boolean>(localStorage.getItem('toonBudgetDetails') === 'true');
+  const [toonBudgetVastDetails, setToonBudgetVastDetails] = useState<boolean>(localStorage.getItem('toonBudgetAflossingDetails') === 'true');
   const handleToonBudgetVastChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    localStorage.setItem('toonBudgetDetails', event.target.checked.toString());
+    localStorage.setItem('toonBudgetAflossingDetails', event.target.checked.toString());
     setToonBudgetVastDetails(event.target.checked);
   };
 

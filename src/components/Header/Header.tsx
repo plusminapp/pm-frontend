@@ -14,37 +14,13 @@ import MenuItem from '@mui/material/MenuItem';
 
 import { useAuthContext } from "@asgardeo/auth-react";
 
-import { PlusMinLogo } from "../assets/PlusMinLogo";
-import { useCustomContext } from '../context/CustomContext';
-import { Rekening, RekeningPaar } from '../model/Rekening';
-import { BetalingsSoort, betalingsSoorten2RekeningenSoorten } from '../model/Betaling';
-import { Periode } from '../model/Periode';
-import { Gebruiker } from '../model/Gebruiker';
-import { berekenMaandAflossingenBedrag } from '../model/Aflossing';
-import StyledSnackbar from './StyledSnackbar';
+import { PlusMinLogo } from "../../assets/PlusMinLogo";
+import { useCustomContext } from '../../context/CustomContext';
+import { Periode } from '../../model/Periode';
+import { Gebruiker } from '../../model/Gebruiker';
+import { berekenMaandAflossingenBedrag } from '../../model/Aflossing';
+import StyledSnackbar from './../StyledSnackbar';
 
-export const saveToLocalStorage = (key: string, value: string) => {
-    localStorage.setItem(key, value);
-};
-
-export const transformRekeningenToBetalingsSoorten = (rekeningen: Rekening[]): Map<BetalingsSoort, RekeningPaar> => {
-    const result = new Map<BetalingsSoort, RekeningPaar>();
-    betalingsSoorten2RekeningenSoorten.forEach((rekeningSoortPaar, betalingsSoort) => {
-        const bronRekeningen = rekeningen
-            .filter(rekening => rekeningSoortPaar.bron.includes(rekening.rekeningSoort))
-            .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1);
-        const BestemmingRekeningen = rekeningen
-            .filter(rekening => rekeningSoortPaar.bestemming.includes(rekening.rekeningSoort))
-            .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1);
-        if (bronRekeningen.length > 0 && BestemmingRekeningen.length > 0) {
-            result.set(betalingsSoort, {
-                bron: bronRekeningen,
-                bestemming: BestemmingRekeningen
-            });
-        }
-    });
-    return result;
-}
 
 function Header() {
     const navigate = useNavigate();
@@ -83,7 +59,7 @@ function Header() {
         ahv = ahv ? ahv : gebruiker
         setActieveHulpvragerData(ahv, undefined);
         setAnchorElGebruiker(null);
-        navigate('/profiel')
+        navigate('/kasboek')
     };
 
     const fetchGebruikerMetHulpvragers = useCallback(async () => {
@@ -91,7 +67,8 @@ function Header() {
         try {
             token = await getIDToken();
         } catch (error) {
-            navigate('/home');
+            console.error("Error getting ID token:", error);
+            navigate('/login');
         }
 
         const response = await fetch('/api/v1/gebruiker/zelf', {

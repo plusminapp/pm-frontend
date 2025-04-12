@@ -24,6 +24,7 @@ export default function Stand() {
 
   const [stand, setStand] = useState<Stand | undefined>(undefined)
   const [datumLaatsteBetaling, setDatumLaatsteBetaling] = useState<dayjs.Dayjs | undefined>(undefined)
+  const [peilDatum, setPeilDatum] = useState<dayjs.Dayjs | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(false);
   const [toonMutaties, setToonMutaties] = useState(localStorage.getItem('toonMutaties') === 'true');
   const [toonBarGrafiek, setToonBarGrafiek] = useState<string | undefined>(undefined);
@@ -102,6 +103,12 @@ export default function Stand() {
 
   }, [actieveHulpvrager, getIDToken, navigate, setSnackbarMessage]);
 
+  useEffect(() => {
+    if (gekozenPeriode && gekozenPeriode.periodeStatus === 'HUIDIG')
+      setPeilDatum(dayjs());
+    else setPeilDatum(dayjs(gekozenPeriode?.periodeEindDatum));
+  }, [gekozenPeriode]);
+
   const handleToonMutatiesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     localStorage.setItem('toonMutaties', event.target.checked.toString());
     setToonMutaties(event.target.checked);
@@ -125,7 +132,7 @@ export default function Stand() {
 
           <Grid container spacing={2} columns={{ xs: 1, md: 3 }} justifyContent="space-between">
             <Grid size={2} sx={{ boxShadow: 3, p: 2 }}>
-              <Typography variant='h6'>Samenvatting {dayjs().format('D MMMM')}</Typography>
+              <Typography variant='h6'>Samenvatting {peilDatum?.format('D MMMM')}</Typography>
               <Typography variant='body2'>
                 Laatste betaling geregistreerd op {dayjs(datumLaatsteBetaling).format('D MMMM')}.
               </Typography>

@@ -20,9 +20,9 @@ type BudgetInkomstenGrafiekProps = {
 
 export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
 
-  const [toonBudgetInkomstenDetails, setToonBudgetInkomstenDetails] = useState<boolean>(localStorage.getItem('toonBudgetDetails') === 'true');
+  const [toonBudgetInkomstenDetails, setToonBudgetInkomstenDetails] = useState<boolean>(localStorage.getItem('toonBudgetAflossingDetails') === 'true');
   const handleToonBudgetInkomstenChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    localStorage.setItem('toonBudgetDetails', event.target.checked.toString());
+    localStorage.setItem('toonBudgetAflossingDetails', event.target.checked.toString());
     setToonBudgetInkomstenDetails(event.target.checked);
   };
 

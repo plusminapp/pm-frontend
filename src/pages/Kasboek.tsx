@@ -21,7 +21,7 @@ import { UitgavenIcon } from '../icons/Uitgaven';
 import { InternIcon } from '../icons/Intern';
 import { ExternalLinkIcon } from '../icons/ExternalLink';
 import PhotoCameraOutlinedIcon from '@mui/icons-material/PhotoCameraOutlined';
-import { berekenAflossingenBedrag, berekenMaandAflossingenBedrag } from '../model/Aflossing';
+import { AflossingDTO, berekenAflossingenBedrag, berekenMaandAflossingenBedrag } from '../model/Aflossing';
 import { AflossingStatusIcon } from '../icons/AflossingStatus';
 import { budgetten, maandBudgetten } from '../model/Budget';
 import { BudgetStatusIcon } from '../icons/BudgetStatus';
@@ -30,10 +30,11 @@ import dayjs from 'dayjs';
 
 export default function Kasboek() {
   const { getIDToken } = useAuthContext();
-  const { gebruiker, actieveHulpvrager, rekeningen, gekozenPeriode } = useCustomContext();
+  const { gebruiker, actieveHulpvrager, rekeningen, gekozenPeriode, setSnackbarMessage } = useCustomContext();
 
   const [betalingen, setBetalingen] = useState<BetalingDTO[]>([])
   const [isLoading, setIsLoading] = useState(false);
+  const [betaalAchterstand, setBetaalAchterstand] = useState<number>(0);
 
   const inkomstenRekeningen: Rekening[] = rekeningen.filter(rekening => inkomstenRekeningSoorten.includes(rekening.rekeningSoort))
   const uitgaveRekeningen: Rekening[] = rekeningen.filter(rekening => rekening.rekeningSoort === RekeningSoort.uitgaven)
@@ -54,6 +55,7 @@ export default function Kasboek() {
       try {
         token = await getIDToken();
       } catch (error) {
+        console.error("Error fetching token", error);
         setIsLoading(false);
         navigate('/login');
       }
@@ -73,12 +75,49 @@ export default function Kasboek() {
         console.error("Failed to fetch betalingen", response.status);
       }
     }
-  }, [getIDToken, actieveHulpvrager, gebruiker, gekozenPeriode]);
+  }, [navigate, getIDToken, actieveHulpvrager, gebruiker, gekozenPeriode]);
 
   useEffect(() => {
     fetchBetalingen();
   }, [fetchBetalingen]);
 
+  const fetchBetaalAchterstand = useCallback(async () => {
+    if (actieveHulpvrager && gekozenPeriode) {
+      setIsLoading(true);
+      const id = actieveHulpvrager!.id
+      let token
+      try {
+        token = await getIDToken();
+      } catch (error) {
+        console.error("Error fetching ID token", error);
+        setIsLoading(false);
+        navigate('/login');
+      }
+      const formDatum = dayjs().isAfter(dayjs(gekozenPeriode.periodeEindDatum)) ? dayjs(gekozenPeriode.periodeEindDatum) : dayjs();
+      const response = await fetch(`/api/v1/aflossing/hulpvrager/${id}/datum/${formDatum.toISOString().slice(0, 10)}`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      setIsLoading(false);
+      if (response.ok) {
+        const result = await response.json();
+        setBetaalAchterstand(result.reduce((acc: number, item: AflossingDTO) => acc + (item.deltaStartPeriode ?? 0) , 0));
+      } else {
+        console.error("Failed to fetch data", response.status);
+        setSnackbarMessage({
+          message: `De configuratie voor ${actieveHulpvrager!.bijnaam} is niet correct.`,
+          type: "warning"
+        })
+      }
+    }
+  }, [actieveHulpvrager, gekozenPeriode, getIDToken, navigate, setSnackbarMessage]);
+
+  useEffect(() => {
+    fetchBetaalAchterstand();
+  }, [fetchBetaalAchterstand]);
   const berekenRekeningTotaal = (rekening: Rekening) => {
     return betalingen.reduce((acc, betaling) => (acc + berekenBedragVoorRekenining(betaling, rekening)), 0)
   }
@@ -175,7 +214,8 @@ export default function Kasboek() {
         <BetaalTabel
           betalingen={betalingen}
           onBetalingBewaardChange={(betalingDTO) => onBetalingBewaardChange(betalingDTO)}
-          onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO.sortOrder)} />
+          onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO.sortOrder)} 
+          betaalAchterstand={betaalAchterstand}/>
         // </Grid>
       }
       <Grid sx={{ mb: '25px' }}>
@@ -271,12 +311,12 @@ export default function Kasboek() {
                         <Box display="flex" alignItems="center" justifyContent="flex-end">
                           <Box display="flex" alignItems="center" justifyContent="flex-end">
                             <Link component={RouterLink} to="/schuld-aflossingen" display={'flex'} alignItems={'center'} justifyContent={'flex-end'}>
-                              <AflossingStatusIcon verwachtHoog={berekenAflossingTotaal()} verwachtLaag={-aflossingsBedrag} />
+                              <AflossingStatusIcon verwachtHoog={-aflossingsBedrag} verwachtLaag={berekenAflossingTotaal()-betaalAchterstand} />
                               <ExternalLinkIcon />
                             </Link>
                           </Box>
                           &nbsp;
-                          <Typography sx={{ fontSize: '15px' }} component="span">Aflossingen: {currencyFormatter.format(berekenAflossingTotaal())} (van&nbsp;{currencyFormatter.format(-aflossingsBedrag)})</Typography>
+                          <Typography sx={{ fontSize: '15px' }} component="span">Aflossingen: {currencyFormatter.format(-berekenAflossingTotaal())} (van&nbsp;{currencyFormatter.format(aflossingsBedrag-betaalAchterstand)})</Typography>
                         </Box>
                       </AccordionSummary>
                       <AccordionDetails sx={{ p: 0 }}>

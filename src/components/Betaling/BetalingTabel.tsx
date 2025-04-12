@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Box, Link, Button, FormGroup, FormControlLabel, Switch, Typography } from '@mui/material';
+import React, { useState } from 'react';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Box, Link, Button, FormGroup, FormControlLabel, Switch } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import { BetalingDTO, BetalingsSoort, betalingsSoortFormatter, internBetalingsSoorten } from '../../model/Betaling';
 import dayjs from 'dayjs';
 import { useCustomContext } from '../../context/CustomContext';
@@ -11,71 +11,28 @@ import { ExternalLinkIcon } from '../../icons/ExternalLink';
 import EditIcon from '@mui/icons-material/Edit';
 import { isPeriodeOpen } from '../../model/Periode';
 import UpsertBetalingDialoog from './UpsertBetalingDialoog';
-import { AflossingDTO, berekenAflossingenBedrag, berekenMaandAflossingenBedrag } from '../../model/Aflossing';
+import { berekenAflossingenBedrag, berekenMaandAflossingenBedrag } from '../../model/Aflossing';
 import { BudgetStatusIcon } from '../../icons/BudgetStatus';
 import { AflossingStatusIcon } from '../../icons/AflossingStatus';
 import { InfoIcon } from '../../icons/Info';
-import { useAuthContext } from '@asgardeo/auth-react';
 
 type BetalingTabelProps = {
   betalingen: BetalingDTO[];
   onBetalingBewaardChange: (betalingDTO: BetalingDTO) => void;
   onBetalingVerwijderdChange: (betalingDTO: BetalingDTO) => void;
+  betaalAchterstand: number;
 };
 
-const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBewaardChange, onBetalingVerwijderdChange }) => {
+const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBewaardChange, onBetalingVerwijderdChange, betaalAchterstand }) => {
   const formatter = new Intl.NumberFormat('nl-NL', {
     style: 'currency',
     currency: 'EUR',
   });
 
-  const { getIDToken } = useAuthContext();
   const { rekeningen, gekozenPeriode, actieveHulpvrager, setSnackbarMessage } = useCustomContext();
-  const navigate = useNavigate();
 
   const [selectedBetaling, setSelectedBetaling] = useState<BetalingDTO | undefined>(undefined);
   const [toonIntern, setToonIntern] = useState<boolean>(localStorage.getItem('toonIntern') === 'true');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [betaalAchterstand, setBetaalAchterstand] = useState<number>(0);
-
-  const fetchAflossingen = useCallback(async () => {
-    if (actieveHulpvrager && gekozenPeriode) {
-      setIsLoading(true);
-      const id = actieveHulpvrager!.id
-      let token
-      try {
-        token = await getIDToken();
-      } catch (error) {
-        console.error("Error fetching ID token", error);
-        setIsLoading(false);
-        navigate('/login');
-      }
-      const formDatum = dayjs().isAfter(dayjs(gekozenPeriode.periodeEindDatum)) ? dayjs(gekozenPeriode.periodeEindDatum) : dayjs();
-      const response = await fetch(`/api/v1/aflossing/hulpvrager/${id}/datum/${formDatum.toISOString().slice(0, 10)}`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      setIsLoading(false);
-      if (response.ok) {
-        const result = await response.json();
-        setBetaalAchterstand(result.reduce((acc: number, item: AflossingDTO) => acc + (item.deltaStartPeriode ?? 0) , 0));
-      } else {
-        console.error("Failed to fetch data", response.status);
-        setSnackbarMessage({
-          message: `De configuratie voor ${actieveHulpvrager!.bijnaam} is niet correct.`,
-          type: "warning"
-        })
-      }
-    }
-  }, [actieveHulpvrager, gekozenPeriode, getIDToken, navigate, setSnackbarMessage]);
-
-  useEffect(() => {
-    fetchAflossingen();
-  }, [fetchAflossingen]);
-
 
   const handleEditClick = (betaling: BetalingDTO) => {
     setSelectedBetaling(betaling);
@@ -144,10 +101,6 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
   const toonInterneBetalingMeassage = `Interne betalingen zijn betalingen tussen eigen rekeningen (${interneRekeningenNamen}), ze maken niets uit voor het beschikbare geld, en worden daarom niet vanzelf getoond.`
   const interneBetalingKopMessage = 'Interne betalingen worden als negatief getal getoond als ze van de betaalrekening af gaan, positief als ze er bij komen.'
   const interneBetalingTotaalMessage = `Interne betalingen schuiven met geld tussen eigen rekeningen (${interneRekeningenNamen}), een totaal betekent daarom niks zinvols en daarom worden de betalingen niet opgeteld.`
-
-  if (isLoading) {
-    return <Typography sx={{ mb: '25px' }}>De aflossingen worden opgehaald.</Typography>
-  }
 
   return (
     <>

@@ -21,9 +21,9 @@ type BudgetContinuGrafiekProps = {
 
 export const BudgetContinuGrafiek = (props: BudgetContinuGrafiekProps) => {
 
-  const [toonBudgetContinuDetails, setToonBudgetContinuDetails] = useState<boolean>(localStorage.getItem('toonBudgetDetails') === 'true');
+  const [toonBudgetContinuDetails, setToonBudgetContinuDetails] = useState<boolean>(localStorage.getItem('toonBudgetAflossingDetails') === 'true');
   const handleToonBudgetContinuChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    localStorage.setItem('toonBudgetDetails', event.target.checked.toString());
+    localStorage.setItem('toonBudgetAflossingDetails', event.target.checked.toString());
     setToonBudgetContinuDetails(event.target.checked);
   };
 
@@ -197,7 +197,7 @@ export const BudgetContinuGrafiek = (props: BudgetContinuGrafiekProps) => {
                 <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
                   {berekenBudgetContinuIcoon(budget)}
                   <Typography key={index} variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
-                    {budget.budgetNaam}: maandBudget{formatAmount(budget.maandBudget.toString())},
+                    {budget.budgetNaam}: maandbudget{formatAmount(budget.maandBudget.toString())},
                     waarvan vandaag {formatAmount(budget.budgetOpPeilDatum.toString())} uitgegeven had mogen worden,
                     er is tot en met vandaag {formatAmount(budget.budgetBetaling?.toString() ?? "nvt")} uitgegeven; dit is
                     {budget.meerDanBudget === 0 && budget.minderDanBudget === 0 && budget.meerDanMaandBudget === 0 && ' zoals verwacht'}

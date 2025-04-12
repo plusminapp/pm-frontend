@@ -7,7 +7,7 @@ import Stand from './pages/Stand';
 import Home from './pages/Home';
 import Kasboek from './pages/Kasboek';
 import Aflossing from './pages/Aflossing';
-import Header from './components/Header';
+import Header from './components/Header/Header';
 import Budget from './pages/Budget';
 import LoginPagina from './pages/Login';
 
