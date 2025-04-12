@@ -14,7 +14,6 @@ import { PlusIcon } from "../icons/Plus";
 import dayjs from "dayjs";
 import { AflossingenAfbouwGrafiek } from "../components/Aflossing/Graph/AflossingenAfbouwGrafiek";
 import { PeriodeSelect } from "../components/Periode/PeriodeSelect";
-import { useNavigate } from "react-router-dom";
 import { dagInPeriode } from "../model/Periode";
 
 export default function Aflossingen() {
@@ -25,7 +24,6 @@ export default function Aflossingen() {
   const [aflossingen, setAflossingen] = useState<ExtendedAflossingDTO[]>([])
   const [isLoading, setIsLoading] = useState(false);
 
-  const navigate = useNavigate();
   const fetchAflossingen = useCallback(async () => {
     const aflossingMoetBetaaldZijn = (betaalDag: number | undefined, peilDatum: dayjs.Dayjs | undefined) => {
       if (betaalDag === undefined || gekozenPeriode === undefined) return true;
@@ -46,17 +44,17 @@ export default function Aflossingen() {
         meerDanMaandAflossing: aflossingMoetZijnBetaald && actueleAchterstand > 0 ? actueleAchterstand : 0
       } as ExtendedAflossingDTO
     }
-    if (actieveHulpvrager && gekozenPeriode) {
+    
+    let token
+    try {
+      token = await getIDToken();
+    } catch (error) {
+      console.error("Error fetching ID token", error);
+      setIsLoading(false);
+    }
+    if (actieveHulpvrager && gekozenPeriode && token) {
       setIsLoading(true);
-      const id = actieveHulpvrager!.id
-      let token
-      try {
-        token = await getIDToken();
-      } catch (error) {
-        console.error("Error fetching ID token", error);
-        setIsLoading(false);
-        navigate('/login');
-      }
+      const id = actieveHulpvrager.id
       const formDatum = dayjs().isAfter(dayjs(gekozenPeriode.periodeEindDatum)) ? dayjs(gekozenPeriode.periodeEindDatum) : dayjs();
       const response = await fetch(`/api/v1/aflossing/hulpvrager/${id}/datum/${formDatum.toISOString().slice(0, 10)}`, {
         method: "GET",
@@ -77,7 +75,7 @@ export default function Aflossingen() {
         })
       }
     }
-  }, [actieveHulpvrager, gekozenPeriode, getIDToken, navigate, setSnackbarMessage]);
+  }, [actieveHulpvrager, gekozenPeriode, getIDToken, setSnackbarMessage]);
 
   useEffect(() => {
     fetchAflossingen();

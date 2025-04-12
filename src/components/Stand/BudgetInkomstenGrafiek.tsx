@@ -10,7 +10,7 @@ import { PlusIcon } from '../../icons/Plus';
 import { MinIcon } from '../../icons/Min';
 import StandIcon from '../../icons/Stand';
 
-type BudgetVastGrafiekProps = {
+type BudgetInkomstenGrafiekProps = {
   peilDatum: dayjs.Dayjs;
   periode: Periode;
   rekening: Rekening
@@ -18,61 +18,60 @@ type BudgetVastGrafiekProps = {
   visualisatie: string;
 };
 
-export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
+export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
 
-  const [toonBudgetVastDetails, setToonBudgetVastDetails] = useState<boolean>(localStorage.getItem('toonBudgetAflossingDetails') === 'true');
-  const handleToonBudgetVastChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const [toonBudgetInkomstenDetails, setToonBudgetInkomstenDetails] = useState<boolean>(localStorage.getItem('toonBudgetAflossingDetails') === 'true');
+  const handleToonBudgetInkomstenChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     localStorage.setItem('toonBudgetAflossingDetails', event.target.checked.toString());
-    setToonBudgetVastDetails(event.target.checked);
+    setToonBudgetInkomstenDetails(event.target.checked);
   };
 
-  if (props.rekening.rekeningSoort.toLowerCase() !== RekeningSoort.uitgaven.toLowerCase() ||
+  if (props.rekening.rekeningSoort.toLowerCase() !== RekeningSoort.inkomsten.toLowerCase() ||
     props.budgetten.length === 0 ||
     props.budgetten.some(budget => budget.betaalDag === undefined) ||
     props.budgetten.some(budget => (budget?.betaalDag ?? 0) < 1) ||
     props.budgetten.some(budget => (budget?.betaalDag ?? 30) > 28)) {
-    throw new Error('BudgetVastGrafiek: rekeningSoort moet \'inkomsten\' zijn, er moet minimaal 1 budget zijn en alle budgetten moeten een geldige betaalDag hebben.');
+    throw new Error('BudgetInkomstenGrafiek: rekeningSoort moet \'inkomsten\' zijn, er moet minimaal 1 budget zijn en alle budgetten moeten een geldige betaalDag hebben.');
   }
 
-  const uitgaveMoetBetaaldZijn = (betaalDag: number | undefined) => {
+  const inkomstenMoetOntvangenZijn = (betaalDag: number | undefined) => {
     if (betaalDag === undefined) return true;
     const betaalDagInPeriode = dagInPeriode(betaalDag, props.periode);
     return betaalDagInPeriode.isBefore(props.peilDatum) || betaalDagInPeriode.isSame(props.peilDatum);
   }
-  type ExtendedVastBudget = BudgetDTO & {
-    uitgaveMoetBetaaldZijn: boolean;
+
+  type ExtendedInkomstenBudget = BudgetDTO & {
+    inkomstenMoetOntvangenZijn: boolean;
     meerDanBudget: number;
     minderDanBudget: number;
     meerDanMaandBudget: number;
   }
-  const extendedVastBudget = props.budgetten.map((budget) => (
+  const extendedInkomstenBudget = props.budgetten.map((budget) => (
     {
       ...budget,
-      budgetBetaling: -(budget.budgetBetaling ?? 0),
-      uitgaveMoetBetaaldZijn: uitgaveMoetBetaaldZijn(budget.betaalDag),
-      meerDanBudget: uitgaveMoetBetaaldZijn(budget.betaalDag) ? 0 : Math.min(-(budget.budgetBetaling ?? 0), budget.bedrag),
-      minderDanBudget: uitgaveMoetBetaaldZijn(budget.betaalDag) ? Math.max(0, budget.bedrag + (budget.budgetBetaling ?? 0)) : 0,
-      meerDanMaandBudget: Math.max(0, -(budget.budgetBetaling ?? 0) - budget.bedrag)
-    } as ExtendedVastBudget));
+      inkomstenMoetOntvangenZijn: inkomstenMoetOntvangenZijn(budget.betaalDag),
+      meerDanBudget: inkomstenMoetOntvangenZijn(budget.betaalDag) ? 0 : Math.min(budget.budgetBetaling ?? 0, budget.bedrag),
+      minderDanBudget: inkomstenMoetOntvangenZijn(budget.betaalDag) ? Math.max(0, budget.bedrag - (budget.budgetBetaling ?? 0)) : 0,
+      meerDanMaandBudget: Math.max(0, (budget.budgetBetaling ?? 0) - budget.bedrag),
+    }));
 
-  const maandBudget = extendedVastBudget.reduce((acc, budget) => (acc + budget.bedrag), 0)
+  const maandBudget = extendedInkomstenBudget.reduce((acc, budget) => (acc + budget.bedrag), 0)
 
-  const betaaldOpPeilDatum = extendedVastBudget.reduce((acc, budget) => (acc + (budget.budgetBetaling ?? 0)), 0);
+  const ontvangenBinnenBudget = extendedInkomstenBudget.reduce((acc, budget) =>
+    (acc + (inkomstenMoetOntvangenZijn(budget.betaalDag) ? Math.min(budget.bedrag, budget.budgetBetaling ?? 0) : 0)), 0);
 
-  const betaaldBinnenBudget = extendedVastBudget.reduce((acc, budget) =>
-    (acc + (uitgaveMoetBetaaldZijn(budget.betaalDag) ? Math.min(budget.bedrag, budget.budgetBetaling ?? 0) : 0)), 0);
+  const minderDanBudget = extendedInkomstenBudget.reduce((acc, budget) =>
+    (acc + (inkomstenMoetOntvangenZijn(budget.betaalDag) ? Math.max(0, budget.bedrag - (budget.budgetBetaling ?? 0)) : 0)), 0);
 
-  const minderDanBudget = extendedVastBudget.reduce((acc, budget) =>
-    (acc + (uitgaveMoetBetaaldZijn(budget.betaalDag) ? Math.max(0, budget.bedrag - (budget.budgetBetaling ?? 0)) : 0)), 0);
+  const meerDanBudget = extendedInkomstenBudget.reduce((acc, budget) =>
+    acc + (inkomstenMoetOntvangenZijn(budget.betaalDag) ? 0 : Math.min(budget.budgetBetaling ?? 0, budget.bedrag)), 0);
 
-  const meerDanBudget = extendedVastBudget.reduce((acc, budget) =>
-    acc + (uitgaveMoetBetaaldZijn(budget.betaalDag) ? 0 : Math.min(budget.budgetBetaling ?? 0, budget.bedrag)), 0);
-
-  const meerDanMaandBudget = extendedVastBudget.reduce((acc, budget) =>
+  // const blaatToiTnuToe = ontvangenBinnenBudget + minderDanBudget + meerDanBudget;
+  const meerDanMaandBudget = extendedInkomstenBudget.reduce((acc, budget) =>
     (acc + Math.max(0, (budget.budgetBetaling ?? 0) - budget.bedrag)), 0);
 
-  const restMaandBudget = extendedVastBudget.reduce((acc, budget) =>
-    (acc + (uitgaveMoetBetaaldZijn(budget.betaalDag) ? 0 : Math.max(0, budget.bedrag - (budget.budgetBetaling ?? 0)))), 0);
+  const restMaandBudget = extendedInkomstenBudget.reduce((acc, budget) =>
+    (acc + (inkomstenMoetOntvangenZijn(budget.betaalDag) ? 0 : Math.max(0, budget.bedrag - (budget.budgetBetaling ?? 0)))), 0);
 
 
   const formatAmount = (amount: string): string => {
@@ -81,49 +80,51 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
 
   const tabelBreedte = maandBudget + meerDanMaandBudget + 5;
 
-  const berekenToestandVastIcoon = (budget: ExtendedVastBudget): JSX.Element => {
+  const berekenToestandInkomstenIcoon = (budget: ExtendedInkomstenBudget): JSX.Element => {
     if (budget.meerDanBudget === 0 && budget.minderDanBudget === 0 && budget.meerDanMaandBudget === 0) {
-      if (!budget.uitgaveMoetBetaaldZijn)
+      if (!budget.inkomstenMoetOntvangenZijn)
         return <PlusIcon color="#1977d3" height={18} />
       else return <PlusIcon color="#green" height={18} />
     }
     if (budget.minderDanBudget > 0) return <MinIcon color="red" height={18} />
-    if (budget.meerDanMaandBudget > 0) return <PlusIcon color="orange" height={18} />
     if (budget.meerDanBudget > 0) return <PlusIcon color="lightgreen" height={18} />
+    if (budget.meerDanMaandBudget > 0) return <PlusIcon color="green" height={18} />
     return <PlusIcon color="black" />
   }
+
   const berekenRekeningContinuIcoon = (): JSX.Element => {
     if (meerDanBudget === 0 && minderDanBudget === 0 && meerDanMaandBudget === 0) return <PlusIcon color="#green" height={30} />
+    if (minderDanBudget > 0 && meerDanMaandBudget > 0) return <MinIcon color="green" height={30} />
     if (minderDanBudget > 0) return <MinIcon color="red" height={30} />
-    if (meerDanMaandBudget > 0) return <PlusIcon color="orange" height={30} />
-    if (meerDanBudget > 0) return <PlusIcon color="lightgreen" height={30} />
+    if (meerDanMaandBudget > 0) return <PlusIcon color="green" height={30} />
+    if (meerDanBudget > 0) return <PlusIcon color="green" height={30} />
     return <MinIcon color="black" />
   }
   const berekenRekeningContinuGrootIcoon = (): JSX.Element => {
     if (meerDanBudget === 0 && minderDanBudget === 0 && meerDanMaandBudget === 0)
       return <StandIcon color="green" borderColor="green" height={100} text={<CheckRoundedIcon />} outerText={props.rekening.naam} />
+    if (minderDanBudget > 0 && meerDanMaandBudget > 0)
+      return <StandIcon color="red" borderColor="green" height={100} text={formatAmount(minderDanBudget.toString())} outerText={props.rekening.naam} />
     if (minderDanBudget > 0)
       return <StandIcon color="red" borderColor="red" height={100} text={formatAmount(minderDanBudget.toString())} outerText={props.rekening.naam} />
     if (meerDanMaandBudget > 0)
-      return <StandIcon color="orange" borderColor="orange" height={100} text={formatAmount(meerDanMaandBudget.toString())} outerText={props.rekening.naam} />
+      return <StandIcon color="green" borderColor="green" height={100} text={formatAmount(meerDanMaandBudget.toString())} outerText={props.rekening.naam} />
     if (meerDanBudget > 0)
-      return <StandIcon color="lightgreen" borderColor="lightgreen" height={100} text={formatAmount(meerDanBudget.toString())} outerText={props.rekening.naam} />
+      return <StandIcon color="green" borderColor="green" height={100} text={formatAmount(meerDanBudget.toString())} outerText={props.rekening.naam} />
     return <MinIcon color="black" />
   }
-
-  console.log('----------------------------------------------');
+  // console.log('----------------------------------------------');
   // console.log('props.periode.periodeStartDatum.', JSON.stringify(props.periode.periodeStartDatum));
   // console.log('props.periode.periodeEindDatum.', JSON.stringify(props.periode.periodeEindDatum));
   // console.log('peilDatum', JSON.stringify(props.peilDatum));
   // console.log('periodeLengte', JSON.stringify(periodeLengte));
-  console.log('budgetten', JSON.stringify(extendedVastBudget));
-  console.log('maandBudget', JSON.stringify(maandBudget));
-  console.log('betaaldOpPeilDatum', JSON.stringify(betaaldOpPeilDatum));
-  console.log('betaaldBinnenBudget', JSON.stringify(betaaldBinnenBudget));
-  console.log('minderDanBudget', JSON.stringify(minderDanBudget));
-  console.log('meerDanBudget', JSON.stringify(meerDanBudget));
-  console.log('restMaandBudget', JSON.stringify(restMaandBudget));
-  console.log('meerDanMaandBudget', JSON.stringify(meerDanMaandBudget));
+  // console.log('budgetten', JSON.stringify(budgettenMetUitbreidingen));
+  // console.log('maandBudget', JSON.stringify(maandBudget));
+  // console.log('ontvangenBinnenBudget', JSON.stringify(ontvangenBinnenBudget));
+  // console.log('minderDanBudget', JSON.stringify(minderDanBudget));
+  // console.log('meerDanBudget', JSON.stringify(meerDanBudget));
+  // console.log('restMaandBudget', JSON.stringify(restMaandBudget));
+  // console.log('meerDanMaandBudget', JSON.stringify(meerDanMaandBudget));
 
   return (
     <>
@@ -153,21 +154,20 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
           </Grid>
         }
       </Grid>
-
       {(props.visualisatie === 'bar' || props.visualisatie === 'all') &&
         <>
-          <Grid size={2} direction={'row'}>
+          <Grid size={2}>
             <Box display="flex" alignItems="center">
               <Typography variant='body2' sx={{ mr: 2 }}>
               <strong>{props.rekening.naam}</strong>
               </Typography>
-              {extendedVastBudget.length >= 1 &&
+              {extendedInkomstenBudget.length >= 1 &&
               <FormGroup>
                 <FormControlLabel control={
                 <Switch
                   sx={{ transform: 'scale(0.6)' }}
-                  checked={toonBudgetVastDetails}
-                  onChange={handleToonBudgetVastChange}
+                  checked={toonBudgetInkomstenDetails}
+                  onChange={handleToonBudgetInkomstenChange}
                   slotProps={{ input: { 'aria-label': 'controlled' } }}
                 />}
                 sx={{ mr: 0 }}
@@ -179,14 +179,14 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
               </FormGroup>}
             </Box>
           </Grid>
-          {toonBudgetVastDetails &&
+          {toonBudgetInkomstenDetails &&
             <Grid size={2} alignItems={'flex-start'}>
-              {extendedVastBudget.map((budget, index) => (
-                <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                  {berekenToestandVastIcoon(budget)}
+              {extendedInkomstenBudget.map((budget, index) => (
+                <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                  {berekenToestandInkomstenIcoon(budget)}
                   <Typography key={index} variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
                     {budget.budgetNaam}: {formatAmount(budget.bedrag.toString())}, betaaldag {budget.betaalDag && dagInPeriode(budget.betaalDag, props.periode).format('D MMMM')},&nbsp;
-                    waarvan {formatAmount(budget.budgetBetaling?.toString() ?? "nvt")} is betaald; dit is
+                    waarvan {formatAmount(budget.budgetBetaling?.toString() ?? "nvt")} is ontvangen; dit is
                     {budget.meerDanBudget === 0 && budget.minderDanBudget === 0 && budget.meerDanMaandBudget === 0 && ' zoals verwacht'}
                     {[budget.meerDanBudget > 0 && ' eerder dan verwacht',
                     budget.minderDanBudget > 0 && ` ${formatAmount(budget.minderDanBudget.toString())} minder dan verwacht`,
@@ -202,11 +202,11 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
 
                 <TableRow>
                   <TableCell width={'5%'} />
-                  {betaaldBinnenBudget > 0 &&
+                  {ontvangenBinnenBudget > 0 &&
                     <TableCell
                       sx={{ p: 1, fontSize: '10px', borderRight: meerDanBudget === 0 && meerDanMaandBudget === 0 ? '2px dotted #333' : 'none' }}
                       align="right"
-                      width={`${(betaaldBinnenBudget / tabelBreedte) * 90}%`}
+                      width={`${(ontvangenBinnenBudget / tabelBreedte) * 90}%`}
                     />}
                   {meerDanBudget > 0 &&
                     <TableCell
@@ -214,7 +214,7 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
                       align="right"
                       width={`${(meerDanBudget / tabelBreedte) * 90}%`}
                     >
-                      {formatAmount((betaaldBinnenBudget + meerDanBudget).toString())}
+                      {formatAmount((ontvangenBinnenBudget + meerDanBudget).toString())}
                     </TableCell>}
                   {meerDanMaandBudget > 0 &&
                     <TableCell
@@ -222,7 +222,7 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
                       align="right"
                       width={`${(meerDanMaandBudget / tabelBreedte) * 90}%`}
                     >
-                      {formatAmount((betaaldBinnenBudget + meerDanBudget + meerDanMaandBudget).toString())}
+                      {formatAmount((ontvangenBinnenBudget + meerDanBudget + meerDanMaandBudget).toString())}
                     </TableCell>}
                   {minderDanBudget > 0 &&
                     <TableCell
@@ -230,7 +230,7 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
                       align="right"
                       width={`${(minderDanBudget / tabelBreedte) * 90}%`}
                     >
-                      {formatAmount((betaaldBinnenBudget + meerDanBudget + meerDanMaandBudget + minderDanBudget).toString())}
+                      {formatAmount((ontvangenBinnenBudget + meerDanBudget + meerDanMaandBudget + minderDanBudget).toString())}
                     </TableCell>}
                   {restMaandBudget > 0 &&
                     <TableCell
@@ -238,7 +238,7 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
                       align="right"
                       width={`${(restMaandBudget / tabelBreedte) * 90}%`}
                     >
-                      {formatAmount((betaaldBinnenBudget + meerDanBudget + minderDanBudget + meerDanMaandBudget + restMaandBudget).toString())}
+                      {formatAmount((ontvangenBinnenBudget + meerDanBudget + minderDanBudget + meerDanMaandBudget + restMaandBudget).toString())}
                     </TableCell>}
                   {restMaandBudget === 0 && props.peilDatum.format('YYYY-MM-DD') != props.periode.periodeEindDatum &&
                     <TableCell />}
@@ -246,16 +246,16 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
 
                 <TableRow>
                   <TableCell width={'5%'} sx={{ borderBottom: '10px solid white' }} />
-                  {betaaldBinnenBudget > 0 &&
+                  {ontvangenBinnenBudget > 0 &&
                     <TableCell
-                      width={`${(betaaldBinnenBudget / tabelBreedte) * 90}%`}
+                      width={`${(ontvangenBinnenBudget / tabelBreedte) * 90}%`}
                       sx={{
                         backgroundColor: 'grey',
                         borderBottom: '10px solid #333',
                         color: 'white',
                         textAlign: 'center'
                       }}>
-                      {formatAmount(betaaldBinnenBudget.toString())}
+                      {formatAmount(ontvangenBinnenBudget.toString())}
                     </TableCell>}
                   {meerDanBudget > 0 &&
                     <TableCell
@@ -272,7 +272,7 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
                     <TableCell
                       width={`${(meerDanMaandBudget / tabelBreedte) * 90}%`}
                       sx={{
-                        backgroundColor: 'orange',
+                        backgroundColor: 'green',
                         borderBottom: '10px solid #333',
                         color: 'white',
                         textAlign: 'center'
@@ -316,10 +316,10 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
                     sx={{ p: 1, fontSize: '10px' }} >
                     {dayjs(props.periode.periodeStartDatum).format('D/M')}
                   </TableCell>
-                  {betaaldBinnenBudget > 0 &&
+                  {ontvangenBinnenBudget > 0 &&
                     <TableCell
                       align="right"
-                      width={`${(betaaldBinnenBudget / tabelBreedte) * 90}%`}
+                      width={`${(ontvangenBinnenBudget / tabelBreedte) * 90}%`}
                       sx={{ p: 1, fontSize: '10px', borderRight: meerDanBudget === 0 && meerDanMaandBudget === 0 ? '2px dotted #333' : 'none' }} >
                       {meerDanBudget === 0 && meerDanMaandBudget === 0 && props.peilDatum.format('D/M')}
                     </TableCell>}
@@ -367,4 +367,4 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
   );
 };
 
-export default BudgetVastGrafiek;
+export default BudgetInkomstenGrafiek;

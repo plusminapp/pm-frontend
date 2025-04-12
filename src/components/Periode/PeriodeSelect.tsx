@@ -17,6 +17,7 @@ export function PeriodeSelect({ isProfiel = false }: PeriodeSelectProps) {
     const { periodes, gekozenPeriode, setGekozenPeriode } = useCustomContext();
 
     const handlegekozenPeriodeChange = (event: SelectChangeEvent<string>) => {
+        console.log('PeriodeSelect', event.target.value);
         const periode = periodes.find(periode => periode.periodeStartDatum.toString() === event.target.value)
         setGekozenPeriode(periode);
         saveToLocalStorage('gekozenPeriode', periode?.id + '');

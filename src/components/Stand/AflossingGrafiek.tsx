@@ -54,11 +54,6 @@ export const AflossingGrafiek = (props: AflossingGrafiekProps) => {
 
   const maandaflossing = extendedAflossingDTO.reduce((acc, aflossing) => (acc + Number(aflossing.aflossingsBedrag)) - (aflossing.deltaStartPeriode ?? 0), 0)
 
-  const betaaldOpPeilDatum = extendedAflossingDTO.reduce((acc, aflossing) => (acc + (aflossing.aflossingBetaling ?? 0)), 0);
-
-  const verwachtOpPeilDatum = extendedAflossingDTO.reduce((acc, aflossing) =>
-    (acc + (aflossingMoetBetaaldZijn(aflossing.betaalDag) ? aflossing.aflossingsBedrag - (aflossing.deltaStartPeriode ?? 0) : -(aflossing.deltaStartPeriode ?? 0))), 0);
-
   const betaaldBinnenaflossing = extendedAflossingDTO.reduce((acc, aflossing) =>
     acc + aflossing.betaaldBinnenAflossing, 0);
 
@@ -111,20 +106,19 @@ export const AflossingGrafiek = (props: AflossingGrafiekProps) => {
   }
 
 
-  console.log('----------------------------------------------');
+  // console.log('----------------------------------------------');
   // console.log('props.periode.periodeStartDatum.', JSON.stringify(props.periode.periodeStartDatum));
   // console.log('props.periode.periodeEindDatum.', JSON.stringify(props.periode.periodeEindDatum));
   // console.log('peilDatum', JSON.stringify(props.peilDatum));
   // console.log('periodeLengte', JSON.stringify(periodeLengte));
-  console.log('aflossingen', JSON.stringify(extendedAflossingDTO));
-  console.log('maandaflossing', JSON.stringify(maandaflossing));
-  console.log('verwachtOpPeilDatum', JSON.stringify(verwachtOpPeilDatum));
-  console.log('betaaldOpPeilDatum', JSON.stringify(betaaldOpPeilDatum));
-  console.log('betaaldBinnenaflossing', JSON.stringify(betaaldBinnenaflossing));
-  console.log('minderDanVerwacht', JSON.stringify(minderDanVerwacht));
-  console.log('meerDanVerwacht', JSON.stringify(meerDanVerwacht));
-  console.log('restMaandaflossing', JSON.stringify(restMaandaflossing));
-  console.log('meerDanMaandaflossing', JSON.stringify(meerDanMaandaflossing));
+  // console.log('aflossingen', JSON.stringify(extendedAflossingDTO));
+  // console.log('maandaflossing', JSON.stringify(maandaflossing));
+  // console.log('verwachtOpPeilDatum', JSON.stringify(verwachtOpPeilDatum));
+  // console.log('betaaldBinnenaflossing', JSON.stringify(betaaldBinnenaflossing));
+  // console.log('minderDanVerwacht', JSON.stringify(minderDanVerwacht));
+  // console.log('meerDanVerwacht', JSON.stringify(meerDanVerwacht));
+  // console.log('restMaandaflossing', JSON.stringify(restMaandaflossing));
+  // console.log('meerDanMaandaflossing', JSON.stringify(meerDanMaandaflossing));
 
   return (
     <>
@@ -157,7 +151,7 @@ export const AflossingGrafiek = (props: AflossingGrafiekProps) => {
 
       {(props.visualisatie === 'bar' || props.visualisatie === 'all') &&
         <>
-          <Grid display={'flex'} direction={'row'} alignItems={'center'}>
+          <Grid display={'flex'} flexDirection={'row'} alignItems={'center'}>
             <Typography variant='body2'>
               <strong>Alossingen</strong>
             </Typography>

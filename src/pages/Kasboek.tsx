@@ -6,15 +6,15 @@ import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Link, Typog
 import Grid from '@mui/material/Grid2';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useCustomContext } from '../context/CustomContext';
-import InkomstenUitgavenTabel from '../components/Betaling/InkomstenUitgavenTabel';
-import BetaalTabel from '../components/Betaling/BetalingTabel';
+import InkomstenUitgavenTabel from '../components/Kasboek/InkomstenUitgavenTabel';
+import BetaalTabel from '../components/Kasboek/BetalingTabel';
 import { berekenBedragVoorRekenining, Rekening, RekeningSoort } from '../model/Rekening';
-import UpsertBetalingDialoog from '../components/Betaling/UpsertBetalingDialoog';
+import UpsertBetalingDialoog from '../components/Kasboek/UpsertBetalingDialoog';
 import { useMediaQuery, useTheme } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 
 import { inkomstenRekeningSoorten, interneRekeningSoorten } from '../model/Rekening';
-import AflossingReserveringTabel from '../components/Betaling/AflossingReserveringTabel';
+import AflossingReserveringTabel from '../components/Kasboek/AflossingReserveringTabel';
 import { PeriodeSelect } from '../components/Periode/PeriodeSelect';
 import { InkomstenIcon } from '../icons/Inkomsten';
 import { UitgavenIcon } from '../icons/Uitgaven';
@@ -30,7 +30,7 @@ import dayjs from 'dayjs';
 
 export default function Kasboek() {
   const { getIDToken } = useAuthContext();
-  const { gebruiker, actieveHulpvrager, rekeningen, gekozenPeriode, setSnackbarMessage } = useCustomContext();
+  const { gebruiker, actieveHulpvrager, rekeningen, gekozenPeriode } = useCustomContext();
 
   const [betalingen, setBetalingen] = useState<BetalingDTO[]>([])
   const [isLoading, setIsLoading] = useState(false);
@@ -49,18 +49,17 @@ export default function Kasboek() {
   };
 
   const fetchBetalingen = useCallback(async () => {
-    if (gebruiker) {
+    let token
+    try {
+      token = await getIDToken();
+    } catch (error) {
+      console.error("Error fetching token", error);
+      setIsLoading(false);
+    }
+    if (gebruiker && token && gekozenPeriode) {
       setIsLoading(true);
-      let token
-      try {
-        token = await getIDToken();
-      } catch (error) {
-        console.error("Error fetching token", error);
-        setIsLoading(false);
-        navigate('/login');
-      }
       const id = actieveHulpvrager ? actieveHulpvrager.id : gebruiker?.id
-      const response = await fetch(`/api/v1/betalingen/hulpvrager/${id}?fromDate=${gekozenPeriode?.periodeStartDatum}&toDate=${gekozenPeriode?.periodeEindDatum}&size=-1`, {
+      const response = await fetch(`/api/v1/betalingen/hulpvrager/${id}?fromDate=${gekozenPeriode.periodeStartDatum}&toDate=${gekozenPeriode.periodeEindDatum}&size=-1`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -75,24 +74,23 @@ export default function Kasboek() {
         console.error("Failed to fetch betalingen", response.status);
       }
     }
-  }, [navigate, getIDToken, actieveHulpvrager, gebruiker, gekozenPeriode]);
+  }, [getIDToken, actieveHulpvrager, gebruiker, gekozenPeriode]);
 
   useEffect(() => {
     fetchBetalingen();
   }, [fetchBetalingen]);
 
   const fetchBetaalAchterstand = useCallback(async () => {
-    if (actieveHulpvrager && gekozenPeriode) {
+    let token
+    try {
+      token = await getIDToken();
+    } catch (error) {
+      console.error("Error fetching ID token", error);
+      setIsLoading(false);
+    }
+    if (actieveHulpvrager && gekozenPeriode && token) {
       setIsLoading(true);
       const id = actieveHulpvrager!.id
-      let token
-      try {
-        token = await getIDToken();
-      } catch (error) {
-        console.error("Error fetching ID token", error);
-        setIsLoading(false);
-        navigate('/login');
-      }
       const formDatum = dayjs().isAfter(dayjs(gekozenPeriode.periodeEindDatum)) ? dayjs(gekozenPeriode.periodeEindDatum) : dayjs();
       const response = await fetch(`/api/v1/aflossing/hulpvrager/${id}/datum/${formDatum.toISOString().slice(0, 10)}`, {
         method: "GET",
@@ -104,20 +102,17 @@ export default function Kasboek() {
       setIsLoading(false);
       if (response.ok) {
         const result = await response.json();
-        setBetaalAchterstand(result.reduce((acc: number, item: AflossingDTO) => acc + (item.deltaStartPeriode ?? 0) , 0));
+        setBetaalAchterstand(result.reduce((acc: number, item: AflossingDTO) => acc + (item.deltaStartPeriode ?? 0), 0));
       } else {
         console.error("Failed to fetch data", response.status);
-        setSnackbarMessage({
-          message: `De configuratie voor ${actieveHulpvrager!.bijnaam} is niet correct.`,
-          type: "warning"
-        })
       }
     }
-  }, [actieveHulpvrager, gekozenPeriode, getIDToken, navigate, setSnackbarMessage]);
+  }, [actieveHulpvrager, gekozenPeriode, getIDToken]);
 
   useEffect(() => {
     fetchBetaalAchterstand();
   }, [fetchBetaalAchterstand]);
+
   const berekenRekeningTotaal = (rekening: Rekening) => {
     return betalingen.reduce((acc, betaling) => (acc + berekenBedragVoorRekenining(betaling, rekening)), 0)
   }
@@ -214,8 +209,8 @@ export default function Kasboek() {
         <BetaalTabel
           betalingen={betalingen}
           onBetalingBewaardChange={(betalingDTO) => onBetalingBewaardChange(betalingDTO)}
-          onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO.sortOrder)} 
-          betaalAchterstand={betaalAchterstand}/>
+          onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO.sortOrder)}
+          betaalAchterstand={betaalAchterstand} />
         // </Grid>
       }
       <Grid sx={{ mb: '25px' }}>
@@ -239,7 +234,7 @@ export default function Kasboek() {
                   </Box>
                 }
                 {inkomstenRekeningen.map(rekening =>
-                  <Grid >
+                  <Grid key={rekening.id}>
                     <Accordion >
                       <AccordionSummary
                         expandIcon={<ArrowDropDownIcon />}
@@ -276,7 +271,7 @@ export default function Kasboek() {
                   <Typography>{currencyFormatter.format(berekenUitgavenTotaal())}</Typography>
                 </Box>
                 {uitgaveRekeningen.map(rekening =>
-                  <Grid >
+                  <Grid key={rekening.id}>
                     <Accordion >
                       <AccordionSummary
                         expandIcon={<ArrowDropDownIcon />}
@@ -311,12 +306,12 @@ export default function Kasboek() {
                         <Box display="flex" alignItems="center" justifyContent="flex-end">
                           <Box display="flex" alignItems="center" justifyContent="flex-end">
                             <Link component={RouterLink} to="/schuld-aflossingen" display={'flex'} alignItems={'center'} justifyContent={'flex-end'}>
-                              <AflossingStatusIcon verwachtHoog={-aflossingsBedrag} verwachtLaag={berekenAflossingTotaal()-betaalAchterstand} />
+                              <AflossingStatusIcon verwachtHoog={-aflossingsBedrag} verwachtLaag={berekenAflossingTotaal() - betaalAchterstand} />
                               <ExternalLinkIcon />
                             </Link>
                           </Box>
                           &nbsp;
-                          <Typography sx={{ fontSize: '15px' }} component="span">Aflossingen: {currencyFormatter.format(-berekenAflossingTotaal())} (van&nbsp;{currencyFormatter.format(aflossingsBedrag-betaalAchterstand)})</Typography>
+                          <Typography sx={{ fontSize: '15px' }} component="span">Aflossingen: {currencyFormatter.format(-berekenAflossingTotaal())} (van&nbsp;{currencyFormatter.format(aflossingsBedrag - betaalAchterstand)})</Typography>
                         </Box>
                       </AccordionSummary>
                       <AccordionDetails sx={{ p: 0 }}>
@@ -363,7 +358,7 @@ export default function Kasboek() {
                   </Box>
                 }
                 {interneRekeningen.map(rekening =>
-                  <Grid >
+                  <Grid key={rekening.id}>
                     <Accordion >
                       <AccordionSummary
                         expandIcon={<ArrowDropDownIcon />}

@@ -22,7 +22,7 @@ import { Gebruiker } from '../model/Gebruiker';
 const Profiel: React.FC = () => {
   const { state } = useAuthContext();
 
-  const { gebruiker, actieveHulpvrager, setActieveHulpvrager, setActieveHulpvragerData, hulpvragers, rekeningen, betaalMethoden, betalingsSoorten2Rekeningen, gekozenPeriode } = useCustomContext();
+  const { gebruiker, actieveHulpvrager, setActieveHulpvrager, hulpvragers, rekeningen, betaalMethoden, betalingsSoorten2Rekeningen, gekozenPeriode } = useCustomContext();
 
   const [checked, setChecked] = useState(actieveHulpvrager === gebruiker && gebruiker?.roles.includes("ROLE_VRIJWILLIGER"));
   useEffect(() => {
@@ -81,10 +81,10 @@ const Profiel: React.FC = () => {
   const handleActieveHulpvragerChange = (nieuweActieveHulpvrager: Gebruiker | undefined) => {
     if (nieuweActieveHulpvrager !== actieveHulpvrager) {
       setActieveHulpvrager(nieuweActieveHulpvrager);
-      setActieveHulpvragerData(nieuweActieveHulpvrager, undefined);
+      setActieveHulpvrager(nieuweActieveHulpvrager);
     } else {
       setActieveHulpvrager(gebruiker);
-      setActieveHulpvragerData(gebruiker, undefined);
+      setActieveHulpvrager(gebruiker);
     }
   }
 
@@ -122,7 +122,7 @@ const Profiel: React.FC = () => {
           {gebruiker?.roles.includes("ROLE_VRIJWILLIGER") &&
             <Typography sx={{ my: '25px' }}>Je begeleidt
               {hulpvragers.length === 0 ? " (nog) niemand " : hulpvragers.length > 1 ? " de hulpvragers " : " de hulpvrager "}
-              <Grid display={'flex'} direction={'row'} justifyContent={'flex-start'} alignItems={'center'}>
+              <Grid display={'flex'} flexDirection={'row'} justifyContent={'flex-start'} alignItems={'center'}>
                 {hulpvragers.map(hulpvrager => (
                   <Grid onClick={() => handleActieveHulpvragerChange(hulpvrager)} mt={1}>
                     <NaamPlaatje bijnaam={hulpvrager.bijnaam} key={hulpvrager.bijnaam} geselecteerd={hulpvrager === actieveHulpvrager} />
@@ -145,8 +145,8 @@ const Profiel: React.FC = () => {
                   sx={{ transform: 'scale(0.6)' }}
                   checked={checked}
                   onChange={handleChange}
-                  inputProps={{ 'aria-label': 'controlled' }}
-                />}
+                  slotProps={{ input: { 'aria-label': 'controlled' } }}
+                  />}
                 label={`Toon de inrichting van ${gebruiker.bijnaam}`} />
             </FormGroup>
           </>

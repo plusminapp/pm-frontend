@@ -37,7 +37,7 @@ function Header() {
         hulpvragers, setHulpvragers,
         actieveHulpvrager, setActieveHulpvrager,
         snackbarMessage, setSnackbarMessage,
-        setRekeningen, setBetalingsSoorten, setBetaalMethoden, setBetalingsSoorten2Rekeningen, setPeriodes, setActieveHulpvragerData } = useCustomContext();
+        setGekozenPeriode } = useCustomContext();
 
     const formatRoute = (page: string): string => { return page.toLowerCase().replace('/', '-') }
 
@@ -57,7 +57,7 @@ function Header() {
     const handleActieveHulpvrager = (id: number) => {
         let ahv = hulpvragers.find(hv => hv.id === id)
         ahv = ahv ? ahv : gebruiker
-        setActieveHulpvragerData(ahv, undefined);
+        setActieveHulpvrager(ahv);
         setAnchorElGebruiker(null);
         navigate('/kasboek')
     };
@@ -68,7 +68,6 @@ function Header() {
             token = await getIDToken();
         } catch (error) {
             console.error("Error getting ID token:", error);
-            navigate('/login');
         }
 
         const response = await fetch('/api/v1/gebruiker/zelf', {
@@ -85,19 +84,20 @@ function Header() {
         const opgeslagenActieveHulpvrager = Number(data.gebruiker?.id) === Number(opgeslagenActieveHulpvragerId) ?
             data.gebruiker : (data.hulpvragers as Gebruiker[]).find(hv => Number(hv.id) === Number(opgeslagenActieveHulpvragerId))
 
-        const opgeslagenGekozenPeriodeId = await localStorage.getItem('gekozenPeriode');
+        const opgeslagenGekozenPeriodeId = localStorage.getItem('gekozenPeriode');
         const opgeslagenGekozenPeriode = opgeslagenGekozenPeriodeId ?
             (opgeslagenActieveHulpvrager.periodes as Periode[])
                 .find(periode => periode.id === Number(opgeslagenGekozenPeriodeId)) : undefined;
 
         if (opgeslagenActieveHulpvrager) {
-            setActieveHulpvragerData(opgeslagenActieveHulpvrager, opgeslagenGekozenPeriode)
+            setActieveHulpvrager(opgeslagenActieveHulpvrager)
+            setGekozenPeriode(opgeslagenGekozenPeriode)
         } else if (data.gebruiker.roles.includes('ROLE_VRIJWILLIGER') && data.hulpvragers.length > 0) {
-            setActieveHulpvragerData(data.hulpvragers[0], undefined)
+            setActieveHulpvrager(data.hulpvragers[0])
         } else {
-            setActieveHulpvragerData(data.gebruiker, undefined)
+            setActieveHulpvrager(data.gebruiker)
         }
-    }, [getIDToken, setGebruiker, setHulpvragers, setActieveHulpvrager, setRekeningen, setBetalingsSoorten, setBetaalMethoden, setBetalingsSoorten2Rekeningen, setPeriodes])
+    }, [getIDToken, setActieveHulpvrager, setGebruiker, setHulpvragers, setGekozenPeriode]);
 
     useEffect(() => {
         if (state.isAuthenticated) {
@@ -112,23 +112,23 @@ function Header() {
     }, [state.isAuthenticated, navigate]);
 
     const handleLogout = async () => {
-      try {
-        await signOut();
-        console.log("User signed out");
-      } catch (error) {
-        console.error("Error during sign-out:", error);
-      }
+        try {
+            await signOut();
+            console.log("User signed out");
+        } catch (error) {
+            console.error("Error during sign-out:", error);
+        }
     };
-    
+
     const handleLogin = async () => {
-      try {
-        if (state.isAuthenticated)
-            await revokeAccessToken();
-        await signIn();
-        console.log("User signed in");
-      } catch (error) {
-        console.error("Error during sign-in:", error);
-      }
+        try {
+            if (state.isAuthenticated)
+                await revokeAccessToken();
+            await signIn();
+            console.log("User signed in");
+        } catch (error) {
+            console.error("Error during sign-in:", error);
+        }
     };
 
     const maandAflossingsBedrag = berekenMaandAflossingenBedrag(actieveHulpvrager?.aflossingen ?? [])

@@ -7,16 +7,16 @@ import 'dayjs/locale/nl'; // Import the Dutch locale
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 import { BetalingDTO, BetalingvalidatieWrapper } from '../model/Betaling';
-import { updateAfbeelding } from '../components/Ocr/UpdateAfbeelding'; // Import the updateAfbeelding function
-import { parseText } from '../components/Ocr/ParseTekst';
+import { updateAfbeelding } from '../components/Kasboek/Ocr/UpdateAfbeelding'; 
+import { parseText } from '../components/Kasboek/Ocr/ParseTekst';
 import { RekeningSelect } from '../components/Rekening/RekeningSelect';
 import { useAuthContext } from '@asgardeo/auth-react';
 import { useCustomContext } from '../context/CustomContext';
 import { useNavigate } from 'react-router-dom';
 import { Saldo } from '../model/Saldo';
 import { Rekening } from '../model/Rekening';
-import InkomstenUitgavenTabel from '../components/Betaling/InkomstenUitgavenTabel';
-import UpsertBetalingDialoog from '../components/Betaling/UpsertBetalingDialoog';
+import InkomstenUitgavenTabel from '../components/Kasboek/InkomstenUitgavenTabel';
+import UpsertBetalingDialoog from '../components/Kasboek/UpsertBetalingDialoog';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 
 dayjs.extend(customParseFormat); // Extend dayjs with the customParseFormat plugin
@@ -99,14 +99,14 @@ const BanlAppAfbeelding: React.FC = () => {
   useEffect(() => {
     // TODO? - Implement the valideerBetalingen function zonder useEffect?
     const valideerBetalingen = async () => {
-      if (actieveHulpvrager && ocrBankRekening && parsedData.length > 0) {
+      let token = '';
+      try { token = await getIDToken() }
+      catch (error) {
+        navigate('/login');
+      }
+      if (actieveHulpvrager && ocrBankRekening && token && parsedData.length > 0) {
         setIsLoading(true);
         const id = actieveHulpvrager.id
-        let token = '';
-        try { token = await getIDToken() }
-        catch (error) {
-          navigate('/login');
-        }
         const response = await fetch(`/api/v1/betalingen/hulpvrager/${id}/betalingvalidatie`, {
           method: "PUT",
           headers: {
@@ -212,8 +212,8 @@ const BanlAppAfbeelding: React.FC = () => {
               sx={{ transform: 'scale(0.6)' }}
               checked={toonAfbeelding}
               onChange={handleToonUpdatedAfbeelding}
-              inputProps={{ 'aria-label': 'controlled' }}
-            />}
+              slotProps={{ input: { 'aria-label': 'controlled' } }}
+              />}
             label={<VisibilityOutlinedIcon sx={{mt: '4px', color: toonAfbeelding ? 'green' : 'lightgrey'}}/>} />
         </FormGroup>
       </Grid>

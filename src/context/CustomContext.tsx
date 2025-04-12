@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Gebruiker } from '../model/Gebruiker';
 import { betaalmethodeRekeningSoorten, Rekening, RekeningPaar } from '../model/Rekening';
 import { BetalingsSoort } from '../model/Betaling';
@@ -11,7 +11,6 @@ interface CustomContextType {
     setGebruiker: (gebruiker: Gebruiker | undefined) => void;
     actieveHulpvrager: Gebruiker | undefined;
     setActieveHulpvrager: (actieveHulpvrager: Gebruiker | undefined) => void;
-    setActieveHulpvragerData: (gebruiker: Gebruiker | undefined, periode: Periode | undefined) => void;
     hulpvragers: Array<Gebruiker>;
     setHulpvragers: (hulpvragers: Array<Gebruiker>) => void;
     periodes: Array<Periode>;
@@ -57,45 +56,43 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
     const [betalingsSoorten2Rekeningen, setBetalingsSoorten2Rekeningen] = useState<Map<BetalingsSoort, RekeningPaar>>(new Map())
     const [snackbarMessage, setSnackbarMessage] = useState<SnackbarMessage>({ message: undefined, type: undefined });
 
-    const setActieveHulpvragerData = (gebruiker: Gebruiker | undefined, periode: Periode | undefined) => {
-        if (!gebruiker) return;
-        setActieveHulpvrager(gebruiker);
-        saveToLocalStorage('actieveHulpvrager', gebruiker.id + '');
-        setRekeningen(gebruiker.rekeningen.sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1));
-        setBetalingsSoorten(transformRekeningen2BetalingsSoorten(gebruiker.rekeningen));
-        setBetaalMethoden(transformRekeningen2Betaalmethoden(gebruiker.rekeningen));
-        setBetalingsSoorten2Rekeningen(transformRekeningenToBetalingsSoorten(gebruiker.rekeningen));
-        setPeriodes(gebruiker.periodes);
-        if (periode) {
-            setGekozenPeriode(periode);
-            saveToLocalStorage('gekozenPeriode', periode.id + '');
-        } else {
-            const huidigePeriode = gebruiker.periodes.find(periode => periode.periodeStatus === 'HUIDIG');
+    useEffect(() => {
+        if (!actieveHulpvrager) return;
+        setActieveHulpvrager(actieveHulpvrager);
+        saveToLocalStorage('actieveHulpvrager', actieveHulpvrager.id + '');
+        setRekeningen(actieveHulpvrager.rekeningen.sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1));
+        setBetalingsSoorten(transformRekeningen2BetalingsSoorten(actieveHulpvrager.rekeningen));
+        setBetaalMethoden(transformRekeningen2Betaalmethoden(actieveHulpvrager.rekeningen));
+        setBetalingsSoorten2Rekeningen(transformRekeningenToBetalingsSoorten(actieveHulpvrager.rekeningen));
+        setPeriodes(actieveHulpvrager.periodes);
+        if (gekozenPeriode && !actieveHulpvrager.periodes.includes(gekozenPeriode)) {
+            const huidigePeriode = actieveHulpvrager.periodes.find(periode => periode.periodeStatus === 'HUIDIG');
             setGekozenPeriode(huidigePeriode);
             saveToLocalStorage('gekozenPeriode', huidigePeriode?.id + '');
         }
-    }
-        const transformRekeningen2BetalingsSoorten = (rekeningen: Rekening[]) => {
-            const betalingsSoortValues = Object.values(BetalingsSoort);
-            const rekeningSoortValues = rekeningen.map((rekening: Rekening) => rekening.rekeningSoort.toLowerCase())
-            const filteredBetalingsSoorten = rekeningSoortValues.flatMap((rekeningSoort) =>
-                betalingsSoortValues.filter((betalingsSoort) =>
-                    betalingsSoort.toLowerCase().includes(rekeningSoort.toLowerCase())
-                )
-            );
-            return filteredBetalingsSoorten.filter((value, index, self) => self.indexOf(value) === index); //deduplication ...
-        }
-    
-        const transformRekeningen2Betaalmethoden = (rekeningen: Rekening[]) => {
-            return rekeningen.filter((rekening) =>
-                betaalmethodeRekeningSoorten.includes(rekening.rekeningSoort)
+    }, [actieveHulpvrager, gekozenPeriode]);
+
+    const transformRekeningen2BetalingsSoorten = (rekeningen: Rekening[]) => {
+        const betalingsSoortValues = Object.values(BetalingsSoort);
+        const rekeningSoortValues = rekeningen.map((rekening: Rekening) => rekening.rekeningSoort.toLowerCase())
+        const filteredBetalingsSoorten = rekeningSoortValues.flatMap((rekeningSoort) =>
+            betalingsSoortValues.filter((betalingsSoort) =>
+                betalingsSoort.toLowerCase().includes(rekeningSoort.toLowerCase())
             )
-        }
-    
+        );
+        return filteredBetalingsSoorten.filter((value, index, self) => self.indexOf(value) === index); //deduplication ...
+    }
+
+    const transformRekeningen2Betaalmethoden = (rekeningen: Rekening[]) => {
+        return rekeningen.filter((rekening) =>
+            betaalmethodeRekeningSoorten.includes(rekening.rekeningSoort)
+        )
+    }
+
     return (
         <CustomContext.Provider value={{
             gebruiker, setGebruiker,
-            actieveHulpvrager, setActieveHulpvrager, setActieveHulpvragerData,
+            actieveHulpvrager, setActieveHulpvrager,
             hulpvragers, setHulpvragers,
             periodes, setPeriodes,
             gekozenPeriode, setGekozenPeriode,

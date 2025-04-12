@@ -101,7 +101,7 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
             label="Weergave kiezen">
             <MenuItem value='alles'>Alle betalingen</MenuItem>
             {rekeningen.map((rekening) => (
-              <MenuItem value={rekening.naam}>{rekening.naam}</MenuItem>
+              <MenuItem key={rekening.id} value={rekening.naam}>{rekening.naam}</MenuItem>
             ))}
           </Select>
         </FormControl>

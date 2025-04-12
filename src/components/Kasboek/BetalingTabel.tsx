@@ -113,8 +113,8 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
                   sx={{ transform: 'scale(0.6)' }}
                   checked={toonIntern}
                   onChange={handleToonInternChange}
-                  inputProps={{ 'aria-label': 'controlled' }}
-                />}
+                  slotProps={{ input: { 'aria-label': 'controlled' } }}
+                  />}
                 sx={{ mr: 0 }}
                 label={
                   <Box display="flex" fontSize={'0.875rem'} >

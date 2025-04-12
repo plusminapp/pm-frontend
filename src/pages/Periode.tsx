@@ -7,14 +7,13 @@ import Grid from '@mui/material/Grid2';
 import { useAuthContext } from '@asgardeo/auth-react';
 import { Stand } from '../model/Stand';
 import { useCustomContext } from '../context/CustomContext';
-import { useNavigate } from 'react-router-dom';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 
 import Button from '@mui/material/Button';
 
 import { eersteOpenPeriode, formateerNlDatum, formateerNlVolgendeDag, laatsteGeslotenPeriode, voegEenDagToe } from '../model/Periode';
-import Resultaat from '../components/Resultaat';
+import Resultaat from '../components/Stand/Resultaat';
 
 const Periode = () => {
     const { actieveHulpvrager, setSnackbarMessage, periodes } = useCustomContext();
@@ -33,19 +32,19 @@ const Periode = () => {
     const [isLoading, setIsLoading] = useState(false);
     const { getIDToken } = useAuthContext();
 
-    const navigate = useNavigate();
     useEffect(() => {
         const fetchSaldi = async () => {
             setIsLoading(true);
+            let token = '';
+            try { token = await getIDToken() }
+            catch (error) {
+                console.error("Error fetching ID token", error);
+                setIsLoading(false);
+            }
             if (actieveHulpvrager && periode) {
                 setIsLoading(true);
                 const datum = periode.periodeEindDatum;
                 const id = actieveHulpvrager.id
-                let token = '';
-                try { token = await getIDToken() }
-                catch (error) {
-                    navigate('/login');
-                }
                 const response = await fetch(`/api/v1/saldo/hulpvrager/${id}/stand/${datum}`, {
                     method: "GET",
                     headers: {

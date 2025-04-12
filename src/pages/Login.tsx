@@ -2,7 +2,7 @@ import { Box, Button, TextField, Typography } from "@mui/material";
 import Grid from '@mui/material/Grid2';
 
 import dayjs from "dayjs";
-import BudgetContinuGrafiek from "../components/Budget/BudgetContinuGrafiek";
+import BudgetContinuGrafiek from "../components/Stand/BudgetContinuGrafiek";
 import { BudgetDTO } from "../model/Budget";
 import { dagInPeriode } from '../model/Periode';
 
@@ -11,11 +11,11 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useEffect, useState } from "react";
 import { berekenPeriodeBijPeilDatum } from "../model/Periode";
 import { BudgetType, RekeningSoort } from "../model/Rekening";
-import BudgetVastGrafiek from "../components/Budget/BudgetVastGrafiek";
-import BudgetInkomstenGrafiek from "../components/Budget/BudgetInkomstenGrafiek";
+import BudgetVastGrafiek from "../components/Stand/BudgetVastGrafiek";
+import BudgetInkomstenGrafiek from "../components/Stand/BudgetInkomstenGrafiek";
 import { aflossingen, boodschappenBudgetten, inkomstenBudgetten, rekeningTemplate, vastelastenBudgetten } from "../components/DemoData";
 import { AflossingDTO } from "../model/Aflossing";
-import AflossingGrafiek from "../components/Budget/AflossingGrafiek";
+import AflossingGrafiek from "../components/Stand/AflossingGrafiek";
 
 type FormField = {
   rekeningNaam: string;
@@ -322,9 +322,9 @@ export default function Login() {
           </Grid>
         </Grid>
         {formFields.rekeningSoort !== 'aflossing' && formFields.budgetten.map((budget, index) =>
-          <Grid container spacing={2} alignItems="center" columns={2} justifyContent={'start'}>
-            <Grid size={1} display={'flex'} direction={'row'} alignItems={'center'}>
-              <Typography key={index} variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
+          <Grid key={budget.budgetNaam+index} container spacing={2} alignItems="center" columns={2} justifyContent={'start'}>
+            <Grid size={1} display={'flex'} flexDirection={'row'} alignItems={'center'}>
+              <Typography variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
                 {budget.budgetNaam}: {formatAmount(budget.bedrag.toString())}, betaaldag {budget.betaalDag && dagInPeriode(budget.betaalDag, periode).format('D MMMM')}, waarvan er
               </Typography>
               <TextField
@@ -348,7 +348,7 @@ export default function Login() {
                   style={{ textTransform: 'none' }}
                   sx={{ p: '3px', m: '3px', fontSize: 11 }}
                   size="small"
-                  key={index}
+                  key={betalingNaam}
                   variant={betalingNamen[index] === betalingNaam ? 'contained' : 'outlined'}
                   onClick={() => handleBetalingNaamChange(peilDatum, index, betalingNaam)}>
                   {betalingNaam}
@@ -357,8 +357,8 @@ export default function Login() {
           </Grid>
         )}
         {formFields.rekeningSoort === 'aflossing' && formFields.aflossingen.map((aflossing, index) =>
-          <Grid container spacing={2} alignItems="center" columns={2} justifyContent={'start'}>
-            <Grid size={1} display={'flex'} direction={'row'} alignItems={'center'}>
+          <Grid key={aflossing.rekening.naam+index} container spacing={2} alignItems="center" columns={2} justifyContent={'start'}>
+            <Grid size={1} display={'flex'} flexDirection={'row'} alignItems={'center'}>
               <Typography key={index} variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
                 {aflossing.rekening.naam}: {formatAmount(aflossing.aflossingsBedrag.toString())}, betaaldag {aflossing.betaalDag && dagInPeriode(aflossing.betaalDag, periode).format('D MMMM')}, waarvan er
               </Typography>
@@ -383,7 +383,7 @@ export default function Login() {
                   style={{ textTransform: 'none' }}
                   sx={{ p: '3px', m: '3px', fontSize: 11 }}
                   size="small"
-                  key={index}
+                  key={betalingNaam}
                   variant={betalingNamen[index] === betalingNaam ? 'contained' : 'outlined'}
                   onClick={() => handleBetalingNaamChange(peilDatum, index, betalingNaam)}>
                   {betalingNaam}
