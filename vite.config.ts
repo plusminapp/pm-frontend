@@ -11,8 +11,10 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api/v1': {
-        target: 'http://host.docker.internal:3045',
-        changeOrigin: true,
+        // Nu nog alleen gebruik vanuit de devcontainer mogelijk. Wellicht dynamisch maken bijv met env vars en Zod
+        // https://www.raulmelo.me/en/blog/best-practices-for-handling-per-environment-config-js-ts-applications
+        target: 'http://host.docker.internal:3045', 
+        changeOrigin: false,
         secure: false,
         rewrite: (path) => path.replace(/^\/api\/v1/, '/api/v1'),
       },
