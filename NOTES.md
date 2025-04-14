@@ -17,7 +17,7 @@ Aanpassingen worden via de vscode git tools naar github gesynced (commandline pu
 - Via nginx wordt de runtime omgeving geproxyd
 - Een asguardeo login is (nu nog) nodig om met de runtime omgeving verbinding te maken.
 
-## TLDR;
+## TL;DR
 - Check de repo van pm-frontend uit (deze dus ;)
 - Navigeer naar de .devcontainer folder en selecteer de devcontainer.json file.
 - Open command pallet (mac fn+f1) en zoek "Dev Containers"
