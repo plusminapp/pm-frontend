@@ -10,7 +10,7 @@ import dayjs from "dayjs";
 import { PeriodeSelect } from "../components/Periode/PeriodeSelect";
 import { ArrowDropDownIcon } from "@mui/x-date-pickers";
 import BudgetContinuGrafiek from "../components/Stand/BudgetContinuGrafiek";
-import { betaalmethodeRekeningSoorten } from "../model/Rekening";
+import { betaalmethodeRekeningSoorten, inkomstenRekeningSoorten, RekeningSoort, uitgavenRekeningSoorten } from "../model/Rekening";
 import BudgetVastGrafiek from "../components/Stand/BudgetVastGrafiek";
 import BudgetInkomstenGrafiek from "../components/Stand/BudgetInkomstenGrafiek";
 import AflossingGrafiek from "../components/Stand/AflossingGrafiek";
@@ -120,11 +120,19 @@ export default function Stand() {
     else setToonBarGrafiek(rekeningNaam);
   }
 
+  const verwachtOverDezeMaand = () => {
+    return stand?.budgettenOpDatum.reduce((acc, budget) => 
+      acc + 
+    ((inkomstenRekeningSoorten.includes(budget.rekeningSoort.toUpperCase() as RekeningSoort) ? 1 : 0) * ((budget.budgetOpPeilDatum ?? 0) - (budget.budgetBetaling ?? 0))) +
+    ((uitgavenRekeningSoorten.includes(budget.rekeningSoort.toUpperCase() as RekeningSoort) ? 1 : 0) * ((budget.budgetOpPeilDatum ?? 0) + (budget.budgetBetaling ?? 0)))
+    , 0) ;
+  }
+
   return (
     <>
       {stand !== undefined &&
         <>
-          <Typography variant='h4' sx={{ mb: 2 }}>Hoe staan we er voor?</Typography>
+          <Typography variant='h4' sx={{ mb: 2 }}>Hi {actieveHulpvrager?.bijnaam}, hoe is 't?</Typography>
 
           <Grid container spacing={2} columns={{ xs: 1, md: 3 }} justifyContent="space-between">
             <Grid size={2} sx={{ boxShadow: 3, p: 2 }}>
@@ -220,8 +228,6 @@ export default function Stand() {
                     aflossingen={stand.aflossingenOpDatum} />
                 }
 
-
-
               </Grid>
             </Grid>
             <Grid size={1} flexDirection={'column'} alignItems="start">
@@ -277,6 +283,7 @@ export default function Stand() {
           </Accordion>
         </>
       }
+      verwachtOverDezeMaand: {verwachtOverDezeMaand()}
     </>
   )
 }

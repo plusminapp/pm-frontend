@@ -109,7 +109,7 @@ function Header() {
         if (!state.isLoading && !state.isAuthenticated) {
             navigate('/login');
         }
-    }, [state.isAuthenticated, navigate]);
+    }, [state.isAuthenticated, state.isLoading, navigate]);
 
     const handleLogout = async () => {
         try {

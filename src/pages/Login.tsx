@@ -95,13 +95,13 @@ export default function Login() {
       case 'niets':
         handleInputChange(index, '0');
         break;
-      case 'te weinig':
+      case 'minder':
         handleInputChange(index, Math.round(0.5 * verwachtBudgetBedrag).toString());
         break;
       case 'verwacht':
         handleInputChange(index, Math.round(verwachtBudgetBedrag).toString());
         break;
-      case 'teveel':
+      case 'meer':
         handleInputChange(index, Math.round(1.1 * verwachtBudgetBedrag).toString());
     }
   }
@@ -123,13 +123,13 @@ export default function Login() {
           nieuweBetalingNamen = nieuweBetalingNamen.map((item, i) => (i === index ? 'niets' : item));
           break;
         case Math.round(0.5 * verwachtBudgetBedrag):
-          nieuweBetalingNamen = nieuweBetalingNamen.map((item, i) => (i === index ? 'te weinig' : item));
+          nieuweBetalingNamen = nieuweBetalingNamen.map((item, i) => (i === index ? 'minder' : item));
           break;
         case verwachtBudgetBedrag:
           nieuweBetalingNamen = nieuweBetalingNamen.map((item, i) => (i === index ? 'verwacht' : item));
           break;
         case Math.round(1.1 * verwachtBudgetBedrag):
-          nieuweBetalingNamen = nieuweBetalingNamen.map((item, i) => (i === index ? 'teveel' : item));
+          nieuweBetalingNamen = nieuweBetalingNamen.map((item, i) => (i === index ? 'meer' : item));
           break;
         default:
           nieuweBetalingNamen = nieuweBetalingNamen.map((item, i) => (i === index ? '' : item));
@@ -148,13 +148,13 @@ export default function Login() {
           nieuweBetalingNamen = nieuweBetalingNamen.map((item, i) => (i === index ? 'niets' : item));
           break;
         case Math.round(0.5 * verwachtBudgetBedrag):
-          nieuweBetalingNamen = nieuweBetalingNamen.map((item, i) => (i === index ? 'te weinig' : item));
+          nieuweBetalingNamen = nieuweBetalingNamen.map((item, i) => (i === index ? 'minder' : item));
           break;
         case verwachtBudgetBedrag:
           nieuweBetalingNamen = nieuweBetalingNamen.map((item, i) => (i === index ? 'verwacht' : item));
           break;
         case Math.round(1.1 * verwachtBudgetBedrag):
-          nieuweBetalingNamen = nieuweBetalingNamen.map((item, i) => (i === index ? 'teveel' : item));
+          nieuweBetalingNamen = nieuweBetalingNamen.map((item, i) => (i === index ? 'meer' : item));
           break;
         default:
           nieuweBetalingNamen = nieuweBetalingNamen.map((item, i) => (i === index ? '' : item));
@@ -391,8 +391,8 @@ export default function Login() {
             </Grid>
           </Grid>
         )}
-
       </Box>
+      
       {periode &&
         <>
           {formFields.budgetType === BudgetType.continu &&

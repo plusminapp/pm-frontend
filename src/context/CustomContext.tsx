@@ -4,7 +4,7 @@ import { betaalmethodeRekeningSoorten, Rekening, RekeningPaar } from '../model/R
 import { BetalingsSoort } from '../model/Betaling';
 import { Periode } from '../model/Periode';
 import { SnackbarMessage } from '../components/StyledSnackbar';
-import { saveToLocalStorage, transformRekeningenToBetalingsSoorten } from '../components/Header/HeaderExports.ts';
+import { saveToLocalStorage, transformRekeningenToBetalingsSoorten } from '../components/Header/HeaderExports';
 
 interface CustomContextType {
     gebruiker: Gebruiker | undefined;

@@ -92,7 +92,7 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
     return <PlusIcon color="black" />
   }
 
-  const berekenRekeningContinuIcoon = (): JSX.Element => {
+  const berekenRekeningInkomstenIcoon = (): JSX.Element => {
     if (meerDanBudget === 0 && minderDanBudget === 0 && meerDanMaandBudget === 0) return <PlusIcon color="#green" height={30} />
     if (minderDanBudget > 0 && meerDanMaandBudget > 0) return <MinIcon color="green" height={30} />
     if (minderDanBudget > 0) return <MinIcon color="red" height={30} />
@@ -100,7 +100,7 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
     if (meerDanBudget > 0) return <PlusIcon color="green" height={30} />
     return <MinIcon color="black" />
   }
-  const berekenRekeningContinuGrootIcoon = (): JSX.Element => {
+  const berekenRekeningInkomstenGrootIcoon = (): JSX.Element => {
     if (meerDanBudget === 0 && minderDanBudget === 0 && meerDanMaandBudget === 0)
       return <StandIcon color="green" borderColor="green" height={100} text={<CheckRoundedIcon />} outerText={props.rekening.naam} />
     if (minderDanBudget > 0 && meerDanMaandBudget > 0)
@@ -140,7 +140,7 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
             p={props.visualisatie === 'all' ? 2 : 0}
             my={props.visualisatie === 'all' ? 5 : 1}
             boxShadow={props.visualisatie === 'all' ? 2 : 0} display="flex" alignItems="center">
-            {berekenRekeningContinuIcoon()}
+            {berekenRekeningInkomstenIcoon()}
             <Typography
               sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
               component="span"
@@ -150,7 +150,7 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
           </Grid>}
         {(props.visualisatie === 'icon-groot' || props.visualisatie === 'all') &&
           <Grid size={1} border={1} borderRadius={2} p={2} mb={5} boxShadow={2} display="flex" justifyContent="center" alignItems="center">
-            {berekenRekeningContinuGrootIcoon()}
+            {berekenRekeningInkomstenGrootIcoon()}
           </Grid>
         }
       </Grid>

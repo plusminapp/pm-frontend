@@ -90,14 +90,14 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
     if (budget.meerDanBudget > 0) return <PlusIcon color="lightgreen" height={18} />
     return <PlusIcon color="black" />
   }
-  const berekenRekeningContinuIcoon = (): JSX.Element => {
+  const berekenRekeningVastIcoon = (): JSX.Element => {
     if (meerDanBudget === 0 && minderDanBudget === 0 && meerDanMaandBudget === 0) return <PlusIcon color="#green" height={30} />
     if (minderDanBudget > 0) return <MinIcon color="red" height={30} />
     if (meerDanMaandBudget > 0) return <PlusIcon color="orange" height={30} />
     if (meerDanBudget > 0) return <PlusIcon color="lightgreen" height={30} />
     return <MinIcon color="black" />
   }
-  const berekenRekeningContinuGrootIcoon = (): JSX.Element => {
+  const berekenRekeningVastGrootIcoon = (): JSX.Element => {
     if (meerDanBudget === 0 && minderDanBudget === 0 && meerDanMaandBudget === 0)
       return <StandIcon color="green" borderColor="green" height={100} text={<CheckRoundedIcon />} outerText={props.rekening.naam} />
     if (minderDanBudget > 0)
@@ -136,7 +136,7 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
             p={props.visualisatie === 'all' ? 2 : 0}
             my={props.visualisatie === 'all' ? 5 : 1}
             boxShadow={props.visualisatie === 'all' ? 2 : 0} display="flex" alignItems="center">
-            {berekenRekeningContinuIcoon()}
+            {berekenRekeningVastIcoon()}
             <Typography
               sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
               component="span"
@@ -146,7 +146,7 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
           </Grid>}
         {(props.visualisatie === 'icon-groot' || props.visualisatie === 'all') &&
           <Grid size={1} border={1} borderRadius={2} p={2} mb={5} boxShadow={2} display="flex" justifyContent="center" alignItems="center">
-            {berekenRekeningContinuGrootIcoon()}
+            {berekenRekeningVastGrootIcoon()}
           </Grid>
         }
       </Grid>

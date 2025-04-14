@@ -99,7 +99,6 @@ const Profiel: React.FC = () => {
       }
       {state.isAuthenticated &&
         <>
-          <Typography variant='h4'>Hi {gebruiker?.bijnaam}, hoe is 't?</Typography>
           <Accordion>
             <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
               <Typography sx={{ mt: '25px' }}>

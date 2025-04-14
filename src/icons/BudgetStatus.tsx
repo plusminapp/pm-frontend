@@ -7,7 +7,7 @@ interface BudgetStatusIconProps {
 }
 
 export const BudgetStatusIcon = (props: BudgetStatusIconProps) => {
-  if (!props.verwachtLaag || !props.verwachtHoog) {
+  if (props.verwachtLaag === undefined || !props.verwachtHoog === undefined) {
     return <MinIcon color={'black'} height={15} />;
   } else if (Number(props.verwachtHoog) === 0 && Number(props.verwachtLaag === 0)) {
     return <PlusIcon color={'#bdbdbd'} height={15} />;
