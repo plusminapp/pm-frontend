@@ -145,9 +145,9 @@ export default function Kasboek() {
       .reduce((acc, betaling) => (acc - betaling.bedrag), 0)
   }
 
-  const berekenCashFlowTotaal = (): number => {
-    return Number(berekenInkomstenTotaal()) + Number(berekenUitgavenTotaal())
-  }
+  // const berekenCashFlowTotaal = (): number => {
+  //   return Number(berekenInkomstenTotaal()) + Number(berekenUitgavenTotaal())
+  // }
 
   const heeftReserverenBetalingen = () => {
     return betalingen.find((betaling) => betaling.betalingsSoort && reserverenBetalingsSoorten.includes(betaling.betalingsSoort))
@@ -188,7 +188,7 @@ export default function Kasboek() {
         </Grid>
         <Grid size={{ xs: 2, md: 3 }}>
           <Typography sx={{ mt: { xs: '0px', md: '35px' } }}>
-            IN ({currencyFormatter.format(Number(berekenInkomstenTotaal()))}) - UIT ({currencyFormatter.format(Number(berekenUitgavenTotaal()))}) = {currencyFormatter.format(berekenCashFlowTotaal())}
+            {/* IN ({currencyFormatter.format(Number(berekenInkomstenTotaal()))}) - UIT ({currencyFormatter.format(Number(berekenUitgavenTotaal()))}) = {currencyFormatter.format(berekenCashFlowTotaal())} */}
           </Typography>
         </Grid>
         {isPeriodeOpen &&
@@ -219,7 +219,7 @@ export default function Kasboek() {
             expandIcon={<ArrowDropDownIcon />}
             aria-controls={'BetalingTabel'}
             id={'BetalingTabel'}>
-            <Typography component="span">Weergave als 3 kolommen</Typography>
+            <Typography component="span">Weergave als kolommen</Typography>
           </AccordionSummary>
           <AccordionDetails sx={{ p: 0 }}>
             <Grid container spacing={{ xs: 1, md: 3 }} columns={{ xs: 1, lg: 12 }}>
@@ -247,7 +247,7 @@ export default function Kasboek() {
                             }
                           </Box>
                           &nbsp;
-                          <Typography sx={{ fontSize: '15px' }} component="span">{rekening.naam}: {currencyFormatter.format(berekenRekeningTotaal(rekening))}  (van&nbsp;{currencyFormatter.format(budget[rekening.naam])})</Typography>
+                          <Typography sx={{ fontSize: '15px' }} component="span">{rekening.naam}: {currencyFormatter.format(berekenRekeningTotaal(rekening))} {heeftBudgetten && `(van ${currencyFormatter.format(budget[rekening.naam])})`}</Typography>
                         </Box>
                       </AccordionSummary>
                       <AccordionDetails sx={{ p: 0 }}>
@@ -283,7 +283,7 @@ export default function Kasboek() {
                               <BudgetStatusIcon verwachtHoog={budget[rekening.naam]} verwachtLaag={-berekenRekeningTotaal(rekening)} />}
                           </Box>
                           &nbsp;
-                          <Typography sx={{ fontSize: '15px' }} component="span">{rekening.naam}: {currencyFormatter.format(-berekenRekeningTotaal(rekening))}   (van&nbsp;{currencyFormatter.format(budget[rekening.naam])})</Typography>
+                          <Typography sx={{ fontSize: '15px' }} component="span">{rekening.naam}: {currencyFormatter.format(-berekenRekeningTotaal(rekening))} {heeftBudgetten && `(van ${currencyFormatter.format(budget[rekening.naam])})`}</Typography>
                         </Box>
                       </AccordionSummary>
                       <AccordionDetails sx={{ p: 0 }}>
@@ -311,7 +311,7 @@ export default function Kasboek() {
                             </Link>
                           </Box>
                           &nbsp;
-                          <Typography sx={{ fontSize: '15px' }} component="span">Aflossingen: {currencyFormatter.format(-berekenAflossingTotaal())} (van&nbsp;{currencyFormatter.format(aflossingsBedrag - betaalAchterstand)})</Typography>
+                          <Typography sx={{ fontSize: '15px' }} component="span">Aflossingen: {currencyFormatter.format(-berekenAflossingTotaal())} {heeftBudgetten && `(van ${currencyFormatter.format(aflossingsBedrag - betaalAchterstand)})`}</Typography>
                         </Box>
                       </AccordionSummary>
                       <AccordionDetails sx={{ p: 0 }}>

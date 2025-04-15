@@ -10,7 +10,7 @@ import dayjs from "dayjs";
 import { PeriodeSelect } from "../components/Periode/PeriodeSelect";
 import { ArrowDropDownIcon } from "@mui/x-date-pickers";
 import BudgetContinuGrafiek from "../components/Stand/BudgetContinuGrafiek";
-import { betaalmethodeRekeningSoorten, inkomstenRekeningSoorten, RekeningSoort, uitgavenRekeningSoorten } from "../model/Rekening";
+import { betaalmethodeRekeningSoorten } from "../model/Rekening";
 import BudgetVastGrafiek from "../components/Stand/BudgetVastGrafiek";
 import BudgetInkomstenGrafiek from "../components/Stand/BudgetInkomstenGrafiek";
 import AflossingGrafiek from "../components/Stand/AflossingGrafiek";
@@ -118,14 +118,6 @@ export default function Stand() {
     console.log('handleBarGrafiek', rekeningNaam);
     if (toonBarGrafiek === rekeningNaam) setToonBarGrafiek(undefined);
     else setToonBarGrafiek(rekeningNaam);
-  }
-
-  const verwachtOverDezeMaand = () => {
-    return stand?.budgettenOpDatum.reduce((acc, budget) => 
-      acc + 
-    ((inkomstenRekeningSoorten.includes(budget.rekeningSoort.toUpperCase() as RekeningSoort) ? 1 : 0) * ((budget.budgetOpPeilDatum ?? 0) - (budget.budgetBetaling ?? 0))) +
-    ((uitgavenRekeningSoorten.includes(budget.rekeningSoort.toUpperCase() as RekeningSoort) ? 1 : 0) * ((budget.budgetOpPeilDatum ?? 0) + (budget.budgetBetaling ?? 0)))
-    , 0) ;
   }
 
   return (
@@ -283,7 +275,6 @@ export default function Stand() {
           </Accordion>
         </>
       }
-      verwachtOverDezeMaand: {verwachtOverDezeMaand()}
     </>
   )
 }

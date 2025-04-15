@@ -33,7 +33,6 @@ export default function Aflossingen() {
     const toExtendedAflossingDTO = (aflossing: AflossingDTO): ExtendedAflossingDTO => {
       const aflossingMoetZijnBetaald = aflossingMoetBetaaldZijn(aflossing.betaalDag, dayjs(aflossing.aflossingPeilDatum));
       const actueleAchterstand = (aflossing.deltaStartPeriode ?? 0) + (aflossing.aflossingBetaling ?? 0) - (aflossingMoetZijnBetaald ? (aflossing.aflossingsBedrag ?? 0) : 0)
-      console.log("actueleAchterstand", actueleAchterstand, 'saldoStartPeriode', (aflossing.saldoStartPeriode ?? 0), 'aflossingBetaling', aflossing.aflossingBetaling, 'actuelestand', (aflossing.saldoStartPeriode ?? 0) + (aflossing.aflossingBetaling ?? 0));
       return {
         ...aflossing,
         aflossingMoetBetaaldZijn: aflossingMoetZijnBetaald,
@@ -133,6 +132,7 @@ export default function Aflossingen() {
       }
       {aflossingen.map(aflossing =>
         <Accordion
+        key={aflossing.rekening.id}
           elevation={2}>
           <AccordionSummary
             expandIcon={<ArrowDropDownIcon />}

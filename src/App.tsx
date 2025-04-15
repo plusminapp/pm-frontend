@@ -15,10 +15,11 @@ import Container from '@mui/material/Container';
 import NotFound from './pages/NotFound';
 import Periode from './pages/Periode';
 import BankAppAfbeelding from './pages/BankAppAfbeelding';
+import Visualisatie from './pages/Visualisatie';
 
 const ProtectedRoute: React.FC<{ element: JSX.Element }> = ({ element }) => {
   const { state } = useAuthContext();
-  return state.isAuthenticated ? element : <Navigate to="/" />;
+  return state.isAuthenticated ? element : <Navigate to="/login" />;
 };
 
 const App: React.FC = () => {
@@ -28,10 +29,10 @@ const App: React.FC = () => {
       <Router>
         <Header />
           <Routes>
-            <Route path="/" element={<LoginPagina />} />
-            <Route path="/home" element={<Home />} />
+            <Route path="/" element={<Home />} />
             <Route path="/login" element={<LoginPagina />} />
             <Route path="/ocr" element={<BankAppAfbeelding />} />
+            <Route path="/visualisatie" element={<Visualisatie />} />
 
             {/* Beschermde routes */}
             <Route path="/stand" element={<ProtectedRoute element={<Stand />} />} />

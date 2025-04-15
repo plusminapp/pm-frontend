@@ -105,11 +105,11 @@ function Header() {
         }
     }, [state.isAuthenticated, fetchGebruikerMetHulpvragers]);
 
-    useEffect(() => {
-        if (!state.isLoading && !state.isAuthenticated) {
-            navigate('/login');
-        }
-    }, [state.isAuthenticated, state.isLoading, navigate]);
+    // useEffect(() => {
+    //     if (!state.isLoading && !state.isAuthenticated) {
+    //         navigate('/login');
+    //     }
+    // }, [state.isAuthenticated, state.isLoading, navigate]);
 
     const handleLogout = async () => {
         try {
@@ -125,9 +125,10 @@ function Header() {
             if (state.isAuthenticated)
                 await revokeAccessToken();
             await signIn();
-            console.log("User signed in");
+            navigate('/stand');
         } catch (error) {
             console.error("Error during sign-in:", error);
+            navigate('/login');
         }
     };
 
@@ -139,7 +140,7 @@ function Header() {
         <>
             <AppBar sx={{ position: 'sticky', top: 0, zIndex: 2, bgcolor: "white", color: '#333', boxShadow: 0 }}>
                 <Toolbar disableGutters>
-                    <IconButton onClick={() => handleNavigation("/")}>
+                    <IconButton onClick={() => handleNavigation("/visualisatie")}>
                         <PlusMinLogo />
                     </IconButton>
 
