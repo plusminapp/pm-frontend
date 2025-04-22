@@ -6,30 +6,33 @@ import { BetalingDTO, BetalingsSoort, betalingsSoortFormatter, internBetalingsSo
 import dayjs from 'dayjs';
 import { useCustomContext } from '../../context/CustomContext';
 import { interneRekeningSoorten, RekeningSoort } from '../../model/Rekening';
-import { budgetten, maandBudgetten } from '../../model/Budget';
+import { BudgetDTO } from '../../model/Budget';
 import { ExternalLinkIcon } from '../../icons/ExternalLink';
 import EditIcon from '@mui/icons-material/Edit';
 import { isPeriodeOpen } from '../../model/Periode';
 import UpsertBetalingDialoog from './UpsertBetalingDialoog';
-import { berekenAflossingenBedrag, berekenMaandAflossingenBedrag } from '../../model/Aflossing';
+import { AflossingDTO } from '../../model/Aflossing';
 import { BudgetStatusIcon } from '../../icons/BudgetStatus';
 import { AflossingStatusIcon } from '../../icons/AflossingStatus';
 import { InfoIcon } from '../../icons/Info';
+import BudgetInkomstenGrafiek from '../Stand/BudgetInkomstenGrafiek';
 
 type BetalingTabelProps = {
+  peilDatum: string | undefined;
   betalingen: BetalingDTO[];
+  budgetten: BudgetDTO[];
+  aflossingen: AflossingDTO[];
   onBetalingBewaardChange: (betalingDTO: BetalingDTO) => void;
   onBetalingVerwijderdChange: (betalingDTO: BetalingDTO) => void;
-  betaalAchterstand: number;
 };
 
-const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBewaardChange, onBetalingVerwijderdChange, betaalAchterstand }) => {
+const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) => {
   const formatter = new Intl.NumberFormat('nl-NL', {
     style: 'currency',
     currency: 'EUR',
   });
 
-  const { rekeningen, gekozenPeriode, actieveHulpvrager, setSnackbarMessage } = useCustomContext();
+  const { rekeningen, gekozenPeriode, setSnackbarMessage } = useCustomContext();
 
   const [selectedBetaling, setSelectedBetaling] = useState<BetalingDTO | undefined>(undefined);
   const [toonIntern, setToonIntern] = useState<boolean>(localStorage.getItem('toonIntern') === 'true');
@@ -56,7 +59,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
     }, {} as Record<string, number>)
   };
 
-  betalingen.forEach(betaling => {
+  props.betalingen.forEach(betaling => {
     const bedrag = betaling.betalingsSoort === BetalingsSoort.inkomsten || betaling.betalingsSoort === BetalingsSoort.rente
       ? betaling.bedrag
       : -betaling.bedrag;
@@ -70,13 +73,19 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
     }
   });
 
-  const maandAflossingsBedrag = berekenMaandAflossingenBedrag(actieveHulpvrager?.aflossingen ?? [])
-  const aflossingsBedrag = berekenAflossingenBedrag(actieveHulpvrager?.aflossingen ?? [], gekozenPeriode);
+  const maandAflossingsBedrag = props.aflossingen.reduce((acc, aflossing) => acc + (Number(aflossing.aflossingsBedrag) ?? 0), 0);
+  const aflossingOpPeildatum = props.aflossingen.reduce((acc, aflossing) => acc + (Number(aflossing.aflossingOpPeilDatum) ?? 0), 0);
   const heeftAflossing = maandAflossingsBedrag > 0;
 
-  const maandBudget = maandBudgetten(rekeningen, maandAflossingsBedrag);
-  const budget = budgetten(rekeningen, gekozenPeriode, aflossingsBedrag);
-  const heeftBudgetten = Object.values(maandBudget).some(bedrag => bedrag > 0);
+  const maandBudget = (rekeningNaam: string) => props.budgetten
+    .filter(b => rekeningNaam === b.rekeningNaam)
+    .reduce((acc, budget) => acc + (budget.budgetMaandBedrag ?? 0), 0)
+
+  const budgetOpPeilDatum = (rekeningNaam: string) => props.budgetten
+    .filter(b => rekeningNaam === b.rekeningNaam)
+    .reduce((acc, budget) => acc + (budget.budgetOpPeilDatum ?? 0), 0)
+
+  const heeftBudgetten = props.budgetten.length > 0;
 
   const heeftIntern = rekeningen.some(rekening => rekening.rekeningSoort && interneRekeningSoorten.includes(rekening.rekeningSoort));
 
@@ -102,6 +111,8 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
   const interneBetalingKopMessage = 'Interne betalingen worden als negatief getal getoond als ze van de betaalrekening af gaan, positief als ze er bij komen.'
   const interneBetalingTotaalMessage = `Interne betalingen schuiven met geld tussen eigen rekeningen (${interneRekeningenNamen}), een totaal betekent daarom niks zinvols en daarom worden de betalingen niet opgeteld.`
 
+  const betaalAchterstand = props.aflossingen.reduce((acc, aflossing) => acc + (Number(aflossing.deltaStartPeriode) ?? 0), 0)
+
   return (
     <>
       {heeftIntern &&
@@ -114,7 +125,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
                   checked={toonIntern}
                   onChange={handleToonInternChange}
                   slotProps={{ input: { 'aria-label': 'controlled' } }}
-                  />}
+                />}
                 sx={{ mr: 0 }}
                 label={
                   <Box display="flex" fontSize={'0.875rem'} >
@@ -158,17 +169,17 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
               <>
                 <TableRow sx={{ borderBottom: '1px' }}>
                   <TableCell sx={{ padding: '5px' }}></TableCell>
-                  <TableCell sx={{ padding: '5px' }}>Potjes</TableCell>
+                  <TableCell sx={{ padding: '5px' }}>Verwacht</TableCell>
                   <TableCell sx={{ padding: '5px' }} align="right" >
-                    {maandBudget['Inkomsten'] != 0 ? formatter.format(budget['Inkomsten']) : ''}
+                    {maandBudget('Inkomsten') != 0 ? formatter.format(budgetOpPeilDatum('Inkomsten')) : ''}
                   </TableCell>
                   {bestemmingen.map(bestemming => (
                     <TableCell key={bestemming} sx={{ padding: '5px' }} align="right">
-                      {maandBudget[bestemming] != 0 ? formatter.format(budget[bestemming]) : ''}
+                      {maandBudget(bestemming) != 0 ? formatter.format(budgetOpPeilDatum(bestemming)) : ''}
                     </TableCell>
                   ))}
                   <TableCell sx={{ padding: '5px' }} align="right" >
-                    {maandBudget["aflossing"] != 0 ? formatter.format(budget["aflossing"] - betaalAchterstand) : ''}
+                    {maandAflossingsBedrag > 0 ? formatter.format(aflossingOpPeildatum - betaalAchterstand) : ''}
                   </TableCell>
                   {gekozenPeriode && isPeriodeOpen(gekozenPeriode) &&
                     <TableCell sx={{ padding: '5px' }} align="right" />
@@ -178,24 +189,31 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
                   <TableCell sx={{ padding: '5px' }}></TableCell>
                   <TableCell sx={{ padding: '5px' }}>Overschot/tekort</TableCell>
                   <TableCell key={'Inkomsten'} sx={{ padding: '5px' }} align="right">
-                    {maandBudget['Inkomsten'] != 0 &&
+                    {maandBudget('Inkomsten') != 0 && gekozenPeriode &&
                       <Box display="flex" alignItems="center" justifyContent="flex-end">
                         <Box display="flex" alignItems="center" justifyContent="flex-end">
-                          <BudgetStatusIcon verwachtHoog={totalen['inkomsten']} verwachtLaag={budget['Inkomsten']} />
+                          {/* <BudgetStatusIcon verwachtHoog={totalen['inkomsten']} verwachtLaag={budgetOpPeilDatum('Inkomsten')} /> */}
+                          <BudgetInkomstenGrafiek
+                            peilDatum={dayjs(props.peilDatum)}
+                            periode={gekozenPeriode}
+                            rekening={rekeningen.find(r => r.rekeningSoort=== RekeningSoort.inkomsten)!}
+                            budgetten={props.budgetten.filter(b => b.rekeningNaam === 'Inkomsten')}
+                            visualisatie={'icon-xklein'}
+                            />
                         </Box>
                         &nbsp;
-                        {formatter.format(totalen['inkomsten'] - budget['Inkomsten'])}
+                        {formatter.format(totalen['inkomsten'] - budgetOpPeilDatum('Inkomsten'))}
                       </Box>}
                   </TableCell>
                   {bestemmingen.map(bestemming => (
                     <TableCell key={bestemming} sx={{ padding: '5px' }} align="right">
-                      {maandBudget[bestemming] != 0 &&
+                      {maandBudget(bestemming) != 0 &&
                         <Box display="flex" alignItems="center" justifyContent="flex-end">
                           <Box display="flex" alignItems="center" justifyContent="flex-end">
-                            <BudgetStatusIcon verwachtHoog={budget[bestemming]} verwachtLaag={Math.floor(-totalen.bestemmingen[bestemming])} />
+                            <BudgetStatusIcon verwachtHoog={budgetOpPeilDatum(bestemming)} verwachtLaag={Math.floor(-totalen.bestemmingen[bestemming])} />
                           </Box>
                           &nbsp;
-                          {formatter.format(afgerondOp2Decimalen(budget[bestemming] + totalen.bestemmingen[bestemming]))}
+                          {formatter.format(afgerondOp2Decimalen(budgetOpPeilDatum(bestemming) + totalen.bestemmingen[bestemming]))}
                         </Box>}
                     </TableCell>
                   ))}
@@ -203,11 +221,11 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
                     <TableCell sx={{ padding: '5px' }} align="right" >
                       <Box display="flex" alignItems="center" justifyContent="flex-end">
                         <Link component={RouterLink} to="/schuld-aflossingen" display={'flex'} alignItems={'center'} justifyContent={'flex-end'}>
-                          <AflossingStatusIcon verwachtHoog={-totalen.aflossing } verwachtLaag={aflossingsBedrag - betaalAchterstand} />
+                          <AflossingStatusIcon verwachtHoog={-totalen.aflossing} verwachtLaag={aflossingOpPeildatum - betaalAchterstand} />
                           <ExternalLinkIcon />
                         </Link>
                         &nbsp;
-                        {maandAflossingsBedrag != 0 ? formatter.format(betaalAchterstand - aflossingsBedrag - totalen.aflossing) : ''}
+                        {maandAflossingsBedrag != 0 ? formatter.format(betaalAchterstand - aflossingOpPeildatum - totalen.aflossing) : ''}
                       </Box>
                     </TableCell>}
                   {heeftIntern && toonIntern &&
@@ -245,7 +263,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
           </TableHead>
           <TableBody>
             <>
-              {betalingen
+              {props.betalingen
                 .sort((a, b) => a.sortOrder > b.sortOrder ? -1 : 1)
                 .map((betaling) => (!isIntern(betaling) || toonIntern) &&
                   <TableRow key={betaling.id}>
@@ -280,8 +298,8 @@ const BetalingTabel: React.FC<BetalingTabelProps> = ({ betalingen, onBetalingBew
       </TableContainer >
       {selectedBetaling &&
         <UpsertBetalingDialoog
-          onBetalingBewaardChange={(betalingDTO) => onBetalingBewaardChange(betalingDTO)}
-          onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO)}
+          onBetalingBewaardChange={(betalingDTO) => props.onBetalingBewaardChange(betalingDTO)}
+          onBetalingVerwijderdChange={(betalingDTO) => props.onBetalingVerwijderdChange(betalingDTO)}
           onUpsertBetalingClose={onUpsertBetalingClose}
           editMode={true}
           betaling={{ ...selectedBetaling, bron: selectedBetaling.bron, bestemming: selectedBetaling.bestemming }}

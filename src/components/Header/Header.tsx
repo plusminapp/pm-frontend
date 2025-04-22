@@ -20,251 +20,259 @@ import { Periode } from '../../model/Periode';
 import { Gebruiker } from '../../model/Gebruiker';
 import { berekenMaandAflossingenBedrag } from '../../model/Aflossing';
 import StyledSnackbar from './../StyledSnackbar';
+import { saveToLocalStorage } from './HeaderExports';
 
 
 function Header() {
-    const navigate = useNavigate();
-    const handleNavigation = (page: string) => {
-        setAnchorElNav(null);
-        navigate(page);
-    };
-    const { state, signIn, getIDToken, signOut, revokeAccessToken } = useAuthContext();
+  const navigate = useNavigate();
+  const handleNavigation = (page: string) => {
+    setAnchorElNav(null);
+    navigate(page);
+  };
+  const { state, signIn, getIDToken, signOut, revokeAccessToken } = useAuthContext();
 
-    const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
-    const [anchorElGebruiker, setAnchorElGebruiker] = React.useState<null | HTMLElement>(null);
+  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
+  const [anchorElGebruiker, setAnchorElGebruiker] = React.useState<null | HTMLElement>(null);
 
-    const { gebruiker, setGebruiker,
-        hulpvragers, setHulpvragers,
-        actieveHulpvrager, setActieveHulpvrager,
-        snackbarMessage, setSnackbarMessage,
-        setGekozenPeriode } = useCustomContext();
+  const { gebruiker, setGebruiker,
+    hulpvragers, setHulpvragers,
+    actieveHulpvrager, setActieveHulpvrager,
+    snackbarMessage, setSnackbarMessage,
+    gekozenPeriode, setGekozenPeriode,
+    setPeriodes } = useCustomContext();
 
-    const formatRoute = (page: string): string => { return page.toLowerCase().replace('/', '-') }
+  const formatRoute = (page: string): string => { return page.toLowerCase().replace('/', '-') }
 
-    const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorElNav(event.currentTarget);
-    };
-    const handleOpenGebruikerMenu = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorElGebruiker(event.currentTarget);
-    };
-    const handleCloseNavMenu = () => {
-        setAnchorElNav(null);
-    };
-    const handleCloseGebruikerMenu = () => {
-        setAnchorElGebruiker(null);
-    };
+  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorElNav(event.currentTarget);
+  };
+  const handleOpenGebruikerMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorElGebruiker(event.currentTarget);
+  };
+  const handleCloseNavMenu = () => {
+    setAnchorElNav(null);
+  };
+  const handleCloseGebruikerMenu = () => {
+    setAnchorElGebruiker(null);
+  };
 
-    const handleActieveHulpvrager = (id: number) => {
-        let ahv = hulpvragers.find(hv => hv.id === id)
-        ahv = ahv ? ahv : gebruiker
-        setActieveHulpvrager(ahv);
-        setAnchorElGebruiker(null);
-        navigate('/kasboek')
-    };
+  const handleActieveHulpvrager = (id: number) => {
+    let ahv = hulpvragers.find(hv => hv.id === id)
+    ahv = ahv ? ahv : gebruiker
+    setActieveHulpvrager(ahv);
+    setPeriodes(ahv!.periodes);
+    if (!gekozenPeriode || !ahv!.periodes.includes(gekozenPeriode)) {
+      const huidigePeriode = ahv!.periodes.find(periode => periode.periodeStatus === 'HUIDIG');
+      setGekozenPeriode(huidigePeriode);
+      saveToLocalStorage('gekozenPeriode', huidigePeriode?.id + '');
+    }
+    setAnchorElGebruiker(null);
+    navigate('/stand')
+  };
 
-    const fetchGebruikerMetHulpvragers = useCallback(async () => {
-        let token
-        try {
-            token = await getIDToken();
-        } catch (error) {
-            console.error("Error getting ID token:", error);
-        }
+  const fetchGebruikerMetHulpvragers = useCallback(async () => {
+    let token
+    try {
+      token = await getIDToken();
+    } catch (error) {
+      console.error("Error getting ID token:", error);
+    }
 
-        const response = await fetch('/api/v1/gebruiker/zelf', {
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json",
-            }
-        })
-        const data = await response.json();
-        setGebruiker(data.gebruiker as Gebruiker);
-        setHulpvragers(data.hulpvragers as Gebruiker[]);
+    const response = await fetch('/api/v1/gebruiker/zelf', {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      }
+    })
+    const data = await response.json();
+    setGebruiker(data.gebruiker as Gebruiker);
+    setHulpvragers(data.hulpvragers as Gebruiker[]);
 
-        const opgeslagenActieveHulpvragerId = localStorage.getItem('actieveHulpvrager');
-        const opgeslagenActieveHulpvrager = Number(data.gebruiker?.id) === Number(opgeslagenActieveHulpvragerId) ?
-            data.gebruiker : (data.hulpvragers as Gebruiker[]).find(hv => Number(hv.id) === Number(opgeslagenActieveHulpvragerId))
+    const opgeslagenActieveHulpvragerId = localStorage.getItem('actieveHulpvrager');
+    const opgeslagenActieveHulpvrager = Number(data.gebruiker?.id) === Number(opgeslagenActieveHulpvragerId) ?
+      data.gebruiker : (data.hulpvragers as Gebruiker[]).find(hv => Number(hv.id) === Number(opgeslagenActieveHulpvragerId))
 
-        const opgeslagenGekozenPeriodeId = localStorage.getItem('gekozenPeriode');
-        const opgeslagenGekozenPeriode = opgeslagenGekozenPeriodeId ?
-            (opgeslagenActieveHulpvrager.periodes as Periode[])
-                .find(periode => periode.id === Number(opgeslagenGekozenPeriodeId)) : undefined;
+    const opgeslagenGekozenPeriodeId = localStorage.getItem('gekozenPeriode');
+    const opgeslagenGekozenPeriode = opgeslagenGekozenPeriodeId ?
+      (opgeslagenActieveHulpvrager.periodes as Periode[])
+        .find(periode => periode.id === Number(opgeslagenGekozenPeriodeId)) : undefined;
 
-        if (opgeslagenActieveHulpvrager) {
-            setActieveHulpvrager(opgeslagenActieveHulpvrager)
-            setGekozenPeriode(opgeslagenGekozenPeriode)
-        } else if (data.gebruiker.roles.includes('ROLE_VRIJWILLIGER') && data.hulpvragers.length > 0) {
-            setActieveHulpvrager(data.hulpvragers[0])
-        } else {
-            setActieveHulpvrager(data.gebruiker)
-        }
-    }, [getIDToken, setActieveHulpvrager, setGebruiker, setHulpvragers, setGekozenPeriode]);
+    if (opgeslagenActieveHulpvrager) {
+      setActieveHulpvrager(opgeslagenActieveHulpvrager)
+      setGekozenPeriode(opgeslagenGekozenPeriode)
+    } else if (data.gebruiker.roles.includes('ROLE_VRIJWILLIGER') && data.hulpvragers.length > 0) {
+      setActieveHulpvrager(data.hulpvragers[0])
+    } else {
+      setActieveHulpvrager(data.gebruiker)
+    }
+  }, [getIDToken, setActieveHulpvrager, setGebruiker, setHulpvragers, setGekozenPeriode]);
 
-    useEffect(() => {
-        if (state.isAuthenticated) {
-            fetchGebruikerMetHulpvragers();
-        }
-    }, [state.isAuthenticated, fetchGebruikerMetHulpvragers]);
+  useEffect(() => {
+    if (state.isAuthenticated) {
+      fetchGebruikerMetHulpvragers();
+    }
+  }, [state.isAuthenticated, fetchGebruikerMetHulpvragers]);
 
-    // useEffect(() => {
-    //     if (!state.isLoading && !state.isAuthenticated) {
-    //         navigate('/login');
-    //     }
-    // }, [state.isAuthenticated, state.isLoading, navigate]);
+  // useEffect(() => {
+  //     if (!state.isLoading && !state.isAuthenticated) {
+  //         navigate('/login');
+  //     }
+  // }, [state.isAuthenticated, state.isLoading, navigate]);
 
-    const handleLogout = async () => {
-        try {
-            await signOut();
-            console.log("User signed out");
-        } catch (error) {
-            console.error("Error during sign-out:", error);
-        }
-    };
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      console.log("User signed out");
+    } catch (error) {
+      console.error("Error during sign-out:", error);
+    }
+  };
 
-    const handleLogin = async () => {
-        try {
-            if (state.isAuthenticated)
-                await revokeAccessToken();
-            await signIn();
-            navigate('/stand');
-        } catch (error) {
-            console.error("Error during sign-in:", error);
-            navigate('/login');
-        }
-    };
+  const handleLogin = async () => {
+    try {
+      if (state.isAuthenticated)
+        await revokeAccessToken();
+      await signIn();
+      navigate('/stand');
+    } catch (error) {
+      console.error("Error during sign-in:", error);
+      navigate('/login');
+    }
+  };
 
-    const maandAflossingsBedrag = berekenMaandAflossingenBedrag(actieveHulpvrager?.aflossingen ?? [])
-    const heeftAflossing = maandAflossingsBedrag > 0;
-    const pages = heeftAflossing ? ['Stand', 'Kasboek', 'Schuld/Aflossingen'] : ['Stand', 'Kasboek'];
+  const maandAflossingsBedrag = berekenMaandAflossingenBedrag(actieveHulpvrager?.aflossingen ?? [])
+  const heeftAflossing = maandAflossingsBedrag > 0;
+  const pages = heeftAflossing ? ['Stand', 'Kasboek', 'Schuld/Aflossingen'] : ['Stand', 'Kasboek'];
 
-    return (
-        <>
-            <AppBar sx={{ position: 'sticky', top: 0, zIndex: 2, bgcolor: "white", color: '#333', boxShadow: 0 }}>
-                <Toolbar disableGutters>
-                    <IconButton onClick={() => handleNavigation("/visualisatie")}>
-                        <PlusMinLogo />
+  return (
+    <>
+      <AppBar sx={{ position: 'sticky', top: 0, zIndex: 2, bgcolor: "white", color: '#333', boxShadow: 0 }}>
+        <Toolbar disableGutters>
+          <IconButton onClick={() => handleNavigation("/visualisatie")}>
+            <PlusMinLogo />
+          </IconButton>
+
+
+          {state.isAuthenticated &&
+            <>
+              {/* menuitems bij md+ */}
+              <Box sx={{ my: 2, display: { xs: 'none', md: 'flex' } }}>
+                {pages.map((page) => (
+                  <Button
+                    key={page}
+                    onClick={() => handleNavigation(formatRoute(page))}
+                    sx={{ mx: 2, color: '#222', display: 'block' }}
+                  >
+                    {page}
+                  </Button>
+                ))}
+              </Box>
+
+              {/* profiel & settings */}
+              <Box sx={{ ml: 'auto', display: 'flex' }}>
+                <Box onClick={() => navigate('/profiel')} sx={{ cursor: 'pointer', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                  <Typography sx={{ my: 'auto', mr: { xs: '3px', md: '10px' } }}>{actieveHulpvrager?.bijnaam}</Typography>
+                </Box>
+                <Box sx={{ flexDirection: 'row' }}>
+                  <Tooltip title="Open settings">
+                    <IconButton onClick={handleOpenGebruikerMenu} sx={{ p: 0 }}>
+                      <Box sx={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: '50%',
+                        backgroundColor: 'lightgrey',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontSize: 18,
+                        fontWeight: 'bold',
+                      }}>
+                        {gebruiker?.bijnaam.charAt(0).toUpperCase()}
+                      </Box>
                     </IconButton>
+                  </Tooltip>
+                  <Menu
+                    sx={{ mt: '45px' }}
+                    id="menu-appbar"
+                    anchorEl={anchorElGebruiker}
+                    anchorOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                    keepMounted
+                    transformOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                    open={Boolean(anchorElGebruiker)}
+                    onClose={handleCloseGebruikerMenu}
+                  >
+                    <MenuItem key={'profile'} onClick={() => handleActieveHulpvrager(gebruiker!.id)}>
+                      <Typography sx={{ textAlign: 'center' }}>
+                        {actieveHulpvrager?.id === gebruiker?.id ? '> ' : ''}
+                        {gebruiker?.bijnaam}</Typography>
+                    </MenuItem>
+                    {hulpvragers.sort((a, b) => a.bijnaam.localeCompare(b.bijnaam)).map(hulpvrager =>
+                      <MenuItem key={hulpvrager.id} onClick={() => handleActieveHulpvrager(hulpvrager.id)}>
+                        <Typography sx={{ textAlign: 'center' }}>
+                          {hulpvrager.id === actieveHulpvrager?.id ? '> ' : ''}
+                          {hulpvrager.bijnaam}</Typography>
+                      </MenuItem>)}
+                    <MenuItem key={'logout'} onClick={handleLogout}>
+                      <Typography sx={{ textAlign: 'center' }}>Uitloggen</Typography>
+                    </MenuItem>
+                  </Menu>
+                </Box>
 
+                {/* Hambuger menu */}
+                <Box sx={{ flexGrow: 1, ml: 0, display: { xs: 'flex', md: 'none' } }}>
+                  <IconButton
+                    size="large"
+                    aria-label="account of current gebruiker"
+                    aria-controls="menu-appbar"
+                    aria-haspopup="true"
+                    onClick={handleOpenNavMenu}
+                    color="inherit"
+                  >
+                    <MenuIcon />
+                  </IconButton>
+                  <Menu
+                    id="menu-appbar"
+                    anchorEl={anchorElNav}
+                    anchorOrigin={{
+                      vertical: 'bottom',
+                      horizontal: 'left',
+                    }}
+                    keepMounted
+                    transformOrigin={{
+                      vertical: 'top',
+                      horizontal: 'left',
+                    }}
+                    open={Boolean(anchorElNav)}
+                    onClose={handleCloseNavMenu}
+                    sx={{ display: { xs: 'block', md: 'none' } }}
+                  >
+                    {pages.map((page) => (
+                      <MenuItem key={page}
+                        onClick={() => handleNavigation(formatRoute(page))}>
+                        <Typography sx={{ textAlign: 'center', color: '#222' }}>{page}</Typography>
+                      </MenuItem>
+                    ))}
+                  </Menu>
 
-                    {state.isAuthenticated &&
-                        <>
-                            {/* menuitems bij md+ */}
-                            <Box sx={{ my: 2, display: { xs: 'none', md: 'flex' } }}>
-                                {pages.map((page) => (
-                                    <Button
-                                        key={page}
-                                        onClick={() => handleNavigation(formatRoute(page))}
-                                        sx={{ mx: 2, color: '#222', display: 'block' }}
-                                    >
-                                        {page}
-                                    </Button>
-                                ))}
-                            </Box>
+                </Box>
+              </Box>
+            </>
+          }
 
-                            {/* profiel & settings */}
-                            <Box sx={{ ml: 'auto', display: 'flex' }}>
-                                <Box onClick={() => navigate('/profiel')} sx={{ cursor: 'pointer', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                                    <Typography sx={{ my: 'auto', mr: { xs: '3px', md: '10px' } }}>{actieveHulpvrager?.bijnaam}</Typography>
-                                </Box>
-                                <Box sx={{ flexDirection: 'row' }}>
-                                    <Tooltip title="Open settings">
-                                        <IconButton onClick={handleOpenGebruikerMenu} sx={{ p: 0 }}>
-                                            <Box sx={{
-                                                width: 40,
-                                                height: 40,
-                                                borderRadius: '50%',
-                                                backgroundColor: 'lightgrey',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                color: 'white',
-                                                fontSize: 18,
-                                                fontWeight: 'bold',
-                                            }}>
-                                                {gebruiker?.bijnaam.charAt(0).toUpperCase()}
-                                            </Box>
-                                        </IconButton>
-                                    </Tooltip>
-                                    <Menu
-                                        sx={{ mt: '45px' }}
-                                        id="menu-appbar"
-                                        anchorEl={anchorElGebruiker}
-                                        anchorOrigin={{
-                                            vertical: 'top',
-                                            horizontal: 'right',
-                                        }}
-                                        keepMounted
-                                        transformOrigin={{
-                                            vertical: 'top',
-                                            horizontal: 'right',
-                                        }}
-                                        open={Boolean(anchorElGebruiker)}
-                                        onClose={handleCloseGebruikerMenu}
-                                    >
-                                        <MenuItem key={'profile'} onClick={() => handleActieveHulpvrager(gebruiker!.id)}>
-                                            <Typography sx={{ textAlign: 'center' }}>
-                                                {actieveHulpvrager?.id === gebruiker?.id ? '> ' : ''}
-                                                {gebruiker?.bijnaam}</Typography>
-                                        </MenuItem>
-                                        {hulpvragers.sort((a, b) => a.bijnaam.localeCompare(b.bijnaam)).map(hulpvrager =>
-                                            <MenuItem key={hulpvrager.id} onClick={() => handleActieveHulpvrager(hulpvrager.id)}>
-                                                <Typography sx={{ textAlign: 'center' }}>
-                                                    {hulpvrager.id === actieveHulpvrager?.id ? '> ' : ''}
-                                                    {hulpvrager.bijnaam}</Typography>
-                                            </MenuItem>)}
-                                        <MenuItem key={'logout'} onClick={handleLogout}>
-                                            <Typography sx={{ textAlign: 'center' }}>Uitloggen</Typography>
-                                        </MenuItem>
-                                    </Menu>
-                                </Box>
-
-                                {/* Hambuger menu */}
-                                <Box sx={{ flexGrow: 1, ml: 0, display: { xs: 'flex', md: 'none' } }}>
-                                    <IconButton
-                                        size="large"
-                                        aria-label="account of current gebruiker"
-                                        aria-controls="menu-appbar"
-                                        aria-haspopup="true"
-                                        onClick={handleOpenNavMenu}
-                                        color="inherit"
-                                    >
-                                        <MenuIcon />
-                                    </IconButton>
-                                    <Menu
-                                        id="menu-appbar"
-                                        anchorEl={anchorElNav}
-                                        anchorOrigin={{
-                                            vertical: 'bottom',
-                                            horizontal: 'left',
-                                        }}
-                                        keepMounted
-                                        transformOrigin={{
-                                            vertical: 'top',
-                                            horizontal: 'left',
-                                        }}
-                                        open={Boolean(anchorElNav)}
-                                        onClose={handleCloseNavMenu}
-                                        sx={{ display: { xs: 'block', md: 'none' } }}
-                                    >
-                                        {pages.map((page) => (
-                                            <MenuItem key={page}
-                                                onClick={() => handleNavigation(formatRoute(page))}>
-                                                <Typography sx={{ textAlign: 'center', color: '#222' }}>{page}</Typography>
-                                            </MenuItem>
-                                        ))}
-                                    </Menu>
-
-                                </Box>
-                            </Box>
-                        </>
-                    }
-
-                    {!state.isAuthenticated &&
-                        <Button variant="contained" sx={{ ml: 'auto' }} color={'success'} onClick={handleLogin}>Inloggen</Button>
-                    }
-                </Toolbar>
-            </AppBar>
-            <StyledSnackbar message={snackbarMessage.message} type={snackbarMessage.type} onClose={() => setSnackbarMessage({ message: undefined, type: undefined })} />
-        </>
-    );
+          {!state.isAuthenticated &&
+            <Button variant="contained" sx={{ ml: 'auto' }} color={'success'} onClick={handleLogin}>Inloggen</Button>
+          }
+        </Toolbar>
+      </AppBar>
+      <StyledSnackbar message={snackbarMessage.message} type={snackbarMessage.type} onClose={() => setSnackbarMessage({ message: undefined, type: undefined })} />
+    </>
+  );
 }
 export default Header;

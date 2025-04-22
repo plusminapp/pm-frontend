@@ -64,12 +64,6 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
         setBetalingsSoorten(transformRekeningen2BetalingsSoorten(actieveHulpvrager.rekeningen));
         setBetaalMethoden(transformRekeningen2Betaalmethoden(actieveHulpvrager.rekeningen));
         setBetalingsSoorten2Rekeningen(transformRekeningenToBetalingsSoorten(actieveHulpvrager.rekeningen));
-        setPeriodes(actieveHulpvrager.periodes);
-        if (gekozenPeriode && !actieveHulpvrager.periodes.includes(gekozenPeriode)) {
-            const huidigePeriode = actieveHulpvrager.periodes.find(periode => periode.periodeStatus === 'HUIDIG');
-            setGekozenPeriode(huidigePeriode);
-            saveToLocalStorage('gekozenPeriode', huidigePeriode?.id + '');
-        }
     }, [actieveHulpvrager, gekozenPeriode]);
 
     const transformRekeningen2BetalingsSoorten = (rekeningen: Rekening[]) => {

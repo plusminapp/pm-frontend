@@ -1,5 +1,5 @@
 import { BetalingDTO } from "./Betaling";
-import { Budget } from "./Budget";
+import { BudgetDTO } from "./Budget";
 
 export type Rekening = {
     id: number;
@@ -9,7 +9,7 @@ export type Rekening = {
     bankNaam: string | undefined;
     sortOrder: number;
     budgetType: BudgetType | undefined;
-    budgetten: Budget[];
+    budgetten: BudgetDTO[];
 }
 
 export enum RekeningSoort {

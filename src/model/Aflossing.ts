@@ -12,6 +12,7 @@ export type AflossingDTO = {
     dossierNummer: string,
     notities: string,
     aflossingPeilDatum?: string | undefined,
+    aflossingOpPeilDatum?: number | undefined,
     aflossingBetaling?: number | undefined,
     deltaStartPeriode?: number | undefined,
     saldoStartPeriode?: number | undefined,
@@ -45,8 +46,8 @@ export const berekenAflossingsBedrag = (aflossing: AflossingSamenvattingDTO, gek
     }
 };
 
-export const berekenMaandAflossingenBedrag = (aflossingen: AflossingSamenvattingDTO[]) => aflossingen.
-    reduce((acc: number, aflossing: AflossingSamenvattingDTO) => acc + aflossing.aflossingsBedrag, 0) ?? 0;
+export const berekenMaandAflossingenBedrag = (aflossingen: AflossingSamenvattingDTO[]) => 
+    aflossingen.reduce((acc: number, aflossing: AflossingSamenvattingDTO) => acc + aflossing.aflossingsBedrag, 0) ?? 0;
 
 export const berekenAflossingenBedrag = (aflossingen: AflossingSamenvattingDTO[], gekozenPeriode: Periode | undefined) => {
     if (gekozenPeriode === undefined) {

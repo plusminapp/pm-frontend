@@ -3,7 +3,7 @@ import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import Grid from '@mui/material/Grid2';
 import dayjs from 'dayjs';
 import { dagInPeriode, Periode } from '../../model/Periode';
-import { Rekening, RekeningSoort } from '../../model/Rekening';
+import { Rekening } from '../../model/Rekening';
 import { useState } from 'react';
 import { BudgetDTO } from '../../model/Budget';
 import { PlusIcon } from '../../icons/Plus';
@@ -26,12 +26,14 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
     setToonBudgetInkomstenDetails(event.target.checked);
   };
 
-  if (props.rekening.rekeningSoort.toLowerCase() !== RekeningSoort.inkomsten.toLowerCase() ||
-    props.budgetten.length === 0 ||
-    props.budgetten.some(budget => budget.betaalDag === undefined) ||
-    props.budgetten.some(budget => (budget?.betaalDag ?? 0) < 1) ||
-    props.budgetten.some(budget => (budget?.betaalDag ?? 30) > 28)) {
-    throw new Error('BudgetInkomstenGrafiek: rekeningSoort moet \'inkomsten\' zijn, er moet minimaal 1 budget zijn en alle budgetten moeten een geldige betaalDag hebben.');
+  if (//props.rekening.rekeningSoort.toLowerCase() !== RekeningSoort.inkomsten.toLowerCase() ||
+    props.budgetten.length ===  0) {
+    // props.budgetten.some(budget => budget.betaalDag === undefined) ||
+    // props.budgetten.some(budget => (budget?.betaalDag ?? 0) < 1) ||
+    // props.budgetten.some(budget => (budget?.betaalDag ?? 30) > 28)) {
+      // console.error(`BudgetInkomstenGrafiek: ${JSON.stringify(props.budgetten)} rekeningSoort moet \'inkomsten\' zijn, er moet minimaal 1 budget zijn en alle budgetten moeten een geldige betaalDag hebben.`);
+      return null
+    // throw new Error(`BudgetInkomstenGrafiek: ${JSON.stringify(props.budgetten)} rekeningSoort moet \'inkomsten\' zijn, er moet minimaal 1 budget zijn en alle budgetten moeten een geldige betaalDag hebben.`);
   }
 
   const inkomstenMoetOntvangenZijn = (betaalDag: number | undefined) => {
@@ -93,11 +95,13 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
   }
 
   const berekenRekeningInkomstenIcoon = (): JSX.Element => {
-    if (meerDanBudget === 0 && minderDanBudget === 0 && meerDanMaandBudget === 0) return <PlusIcon color="#green" height={30} />
-    if (minderDanBudget > 0 && meerDanMaandBudget > 0) return <MinIcon color="green" height={30} />
-    if (minderDanBudget > 0) return <MinIcon color="red" height={30} />
-    if (meerDanMaandBudget > 0) return <PlusIcon color="green" height={30} />
-    if (meerDanBudget > 0) return <PlusIcon color="green" height={30} />
+    const height = props.visualisatie === 'icon-xklein' ? 15 : 30;
+    // console.log('berekenRekeningInkomstenIcoon', height);
+    if (meerDanBudget === 0 && minderDanBudget === 0 && meerDanMaandBudget === 0) return <PlusIcon color="#green" height={height} />
+    if (minderDanBudget > 0 && meerDanMaandBudget > 0) return <MinIcon color="green" height={height} />
+    if (minderDanBudget > 0) return <MinIcon color="red" height={height} />
+    if (meerDanMaandBudget > 0) return <PlusIcon color="green" height={height} />
+    if (meerDanBudget > 0) return <PlusIcon color="green" height={height} />
     return <MinIcon color="black" />
   }
   const berekenRekeningInkomstenGrootIcoon = (): JSX.Element => {
@@ -132,7 +136,7 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
         columns={props.visualisatie === 'all' ? 2 : 0}
         size={props.visualisatie === 'all' ? 0 : 1}
         spacing={props.visualisatie === 'all' ? 2 : 0}>
-        {(props.visualisatie === 'icon-klein' || props.visualisatie === 'all') &&
+        {(props.visualisatie === 'icon-klein' || props.visualisatie === 'icon-xklein' || props.visualisatie === 'all') &&
           <Grid
             size={1}
             border={props.visualisatie === 'all' ? 1 : 0}
@@ -141,12 +145,13 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
             my={props.visualisatie === 'all' ? 5 : 1}
             boxShadow={props.visualisatie === 'all' ? 2 : 0} display="flex" alignItems="center">
             {berekenRekeningInkomstenIcoon()}
-            <Typography
+            {props.visualisatie !== 'icon-xklein' &&
+              <Typography
               sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
               component="span"
               align="left">
               <strong>{props.rekening.naam}</strong>
-            </Typography>
+            </Typography>}
           </Grid>}
         {(props.visualisatie === 'icon-groot' || props.visualisatie === 'all') &&
           <Grid size={1} border={1} borderRadius={2} p={2} mb={5} boxShadow={2} display="flex" justifyContent="center" alignItems="center">
@@ -184,7 +189,7 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
               {extendedInkomstenBudget.map((budget, index) => (
                 <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start' }}>
                   {berekenToestandInkomstenIcoon(budget)}
-                  <Typography key={index} variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
+                  <Typography variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
                     {budget.budgetNaam}: {formatAmount(budget.bedrag.toString())}, betaaldag {budget.betaalDag && dagInPeriode(budget.betaalDag, props.periode).format('D MMMM')},&nbsp;
                     waarvan {formatAmount(budget.budgetBetaling?.toString() ?? "nvt")} is ontvangen; dit is
                     {budget.meerDanBudget === 0 && budget.minderDanBudget === 0 && budget.meerDanMaandBudget === 0 && ' zoals verwacht'}

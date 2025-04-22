@@ -31,7 +31,8 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
     props.budgetten.some(budget => budget.betaalDag === undefined) ||
     props.budgetten.some(budget => (budget?.betaalDag ?? 0) < 1) ||
     props.budgetten.some(budget => (budget?.betaalDag ?? 30) > 28)) {
-    throw new Error('BudgetVastGrafiek: rekeningSoort moet \'inkomsten\' zijn, er moet minimaal 1 budget zijn en alle budgetten moeten een geldige betaalDag hebben.');
+      return null;
+    // throw new Error(`BudgetVastGrafiek: ${JSON.stringify(props.budgetten)}rekeningSoort moet \'uitgaven\' zijn, er moet minimaal 1 budget zijn en alle budgetten moeten een geldige betaalDag hebben.`);
   }
 
   const uitgaveMoetBetaaldZijn = (betaalDag: number | undefined) => {
@@ -179,9 +180,9 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
           {toonBudgetVastDetails &&
             <Grid size={2} alignItems={'flex-start'}>
               {extendedVastBudget.map((budget, index) => (
-                <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start' }}>
                   {berekenToestandVastIcoon(budget)}
-                  <Typography key={index} variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
+                  <Typography variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
                     {budget.budgetNaam}: {formatAmount(budget.bedrag.toString())}, betaaldag {budget.betaalDag && dagInPeriode(budget.betaalDag, props.periode).format('D MMMM')},&nbsp;
                     waarvan {formatAmount(budget.budgetBetaling?.toString() ?? "nvt")} is betaald; dit is
                     {budget.meerDanBudget === 0 && budget.minderDanBudget === 0 && budget.meerDanMaandBudget === 0 && ' zoals verwacht'}

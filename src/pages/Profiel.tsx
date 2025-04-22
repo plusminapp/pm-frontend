@@ -15,7 +15,6 @@ import { ArrowDropDownIcon } from '@mui/x-date-pickers';
 import { InkomstenIcon } from '../icons/Inkomsten';
 import { UitgavenIcon } from '../icons/Uitgaven';
 import { InternIcon } from '../icons/Intern';
-import NieuweAflossingDialoog from '../components/Aflossing/NieuweAflossingDialoog';
 import { NaamPlaatje } from '../components/NaamPlaatje';
 import { Gebruiker } from '../model/Gebruiker';
 
@@ -119,16 +118,18 @@ const Profiel: React.FC = () => {
             </Typography>
           }
           {gebruiker?.roles.includes("ROLE_VRIJWILLIGER") &&
-            <Typography sx={{ my: '25px' }}>Je begeleidt
-              {hulpvragers.length === 0 ? " (nog) niemand " : hulpvragers.length > 1 ? " de hulpvragers " : " de hulpvrager "}
+            <>
+              <Typography sx={{ my: '25px' }}>Je begeleidt
+                {hulpvragers.length === 0 ? " (nog) niemand " : hulpvragers.length > 1 ? " de hulpvragers " : " de hulpvrager "}
+              </Typography>
               <Grid display={'flex'} flexDirection={'row'} justifyContent={'flex-start'} alignItems={'center'}>
                 {hulpvragers.map(hulpvrager => (
-                  <Grid onClick={() => handleActieveHulpvragerChange(hulpvrager)} mt={1}>
+                  <Grid key={hulpvrager.id} onClick={() => handleActieveHulpvragerChange(hulpvrager)} mt={1}>
                     <NaamPlaatje bijnaam={hulpvrager.bijnaam} key={hulpvrager.bijnaam} geselecteerd={hulpvrager === actieveHulpvrager} />
                   </Grid>
                 ))}
               </Grid>
-            </Typography>
+            </>
           }
         </>
       }
@@ -145,7 +146,7 @@ const Profiel: React.FC = () => {
                   checked={checked}
                   onChange={handleChange}
                   slotProps={{ input: { 'aria-label': 'controlled' } }}
-                  />}
+                />}
                 label={`Toon de inrichting van ${gebruiker.bijnaam}`} />
             </FormGroup>
           </>
@@ -265,17 +266,17 @@ const Profiel: React.FC = () => {
             {/* aflossen  */}
             <Accordion expanded={false}>
               <AccordionSummary sx={{ mb: 0 }} expandIcon={<></>}>
-                <Grid container display="flex" alignItems="center" alignContent='center' justifyContent={{xs: "flex-start", sm: "space-between"}} flexDirection={{ xs: 'column', sm: 'row' }} width={'100%'}>
-                  <Grid sx={{ maxWidth: { xs: '100%', sm: `calc(100% - 200px)`}, mr: 'auto', mb:{xs: '10px', sm: 0} }}>
+                <Grid container display="flex" alignItems="center" alignContent='center' justifyContent={{ xs: "flex-start", sm: "space-between" }} flexDirection={{ xs: 'column', sm: 'row' }} width={'100%'}>
+                  <Grid sx={{ maxWidth: { xs: '100%', sm: `calc(100% - 200px)` }, mr: 'auto', mb: { xs: '10px', sm: 0 } }}>
                     <Typography >
                       <strong>Schulden/Aflossingen</strong> zijn voor {actieveHulpvrager?.bijnaam}
                       {actieveHulpvrager?.aflossingen && actieveHulpvrager?.aflossingen?.length === 0 ? " niet ingericht." : " ingericht. Bij het kasboek kun je ze zien."}
                     </Typography>
                   </Grid>
-                  <Grid sx={{ minWidth: '170px', display: 'flex', justifyContent: 'flex-end' }}>
+                  {/* <Grid sx={{ minWidth: '170px', display: 'flex', justifyContent: 'flex-end' }}>
                     <NieuweAflossingDialoog
                       onAflossingBewaardChange={() => { }} />
-                  </Grid>
+                  </Grid> */}
                 </Grid>
               </AccordionSummary>
             </Accordion>

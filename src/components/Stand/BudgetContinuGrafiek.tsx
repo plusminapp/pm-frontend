@@ -3,7 +3,7 @@ import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import Grid from '@mui/material/Grid2';
 import dayjs from 'dayjs';
 import { Periode } from '../../model/Periode';
-import { Rekening, RekeningSoort } from '../../model/Rekening';
+import { Rekening } from '../../model/Rekening';
 import { useState } from 'react';
 import { BudgetDTO } from '../../model/Budget';
 import { MinIcon } from '../../icons/Min';
@@ -27,17 +27,12 @@ export const BudgetContinuGrafiek = (props: BudgetContinuGrafiekProps) => {
     setToonBudgetContinuDetails(event.target.checked);
   };
 
-  if (props.rekening.rekeningSoort.toLowerCase() !== RekeningSoort.uitgaven.toLowerCase() ||
-    props.rekening.budgetType?.toLowerCase() !== 'continu' ||
-    props.budgetten.length === 0) {
-    throw new Error('BudgetContinuGrafiek: rekeningSoort moet \'uitgaven\' zijn, er moet minimaal 1 budget zijn en het BudgetType moet \'continu\' zijn.');
+  if (props.rekening.budgetType?.toLowerCase() !== 'continu' || props.budgetten.length === 0) {
+    return null
+    // throw new Error(`BudgetContinuGrafiek: ${JSON.stringify(props.budgetten)} er moet minimaal 1 budget zijn en het BudgetType moet \'continu\' zijn.`);
   }
   const periodeLengte = dayjs(props.periode.periodeEindDatum).diff(dayjs(props.periode.periodeStartDatum), 'day') + 1;
-  const dagenTotPeilDatum = props.peilDatum.diff(dayjs(props.periode.periodeStartDatum), 'day') + 1;
 
-  const berekenBudgetBedragOpPeilDatum = (bedrag: number) => {
-    return Math.round((dagenTotPeilDatum / periodeLengte) * bedrag);
-  }
   const berekenMaandBedrag = (periodiciteit: string, bedrag: number) => {
     if (periodiciteit.toLowerCase() === 'maand') {
       return bedrag;
@@ -48,7 +43,6 @@ export const BudgetContinuGrafiek = (props: BudgetContinuGrafiekProps) => {
 
   type ExtendedContinuBudget = BudgetDTO & {
     maandBudget: number;
-    budgetOpPeilDatum: number;
     meerDanBudget: number;
     minderDanBudget: number;
     meerDanMaandBudget: number;
@@ -56,22 +50,20 @@ export const BudgetContinuGrafiek = (props: BudgetContinuGrafiekProps) => {
   const extendedContinuBudget = props.budgetten.map((budget) => {
     const budgetBetaling = -(budget.budgetBetaling ?? 0)
     const budgetMaandBedrag = berekenMaandBedrag(budget.budgetPeriodiciteit, budget.bedrag)
-    const opPeilDatum = berekenBudgetBedragOpPeilDatum(budgetMaandBedrag)
     const meerDanMaandBudget = Math.max((budgetBetaling) - budgetMaandBedrag, 0)
     return {
       ...budget,
       budgetBetaling: budgetBetaling,
       maandBudget: budgetMaandBedrag,
       meerDanMaandBudget: meerDanMaandBudget,
-      budgetOpPeilDatum: opPeilDatum,
-      minderDanBudget: Math.max(opPeilDatum - (budgetBetaling ?? 0) - meerDanMaandBudget, 0),
-      meerDanBudget: Math.max((budgetBetaling ?? 0) - opPeilDatum, 0) - meerDanMaandBudget,
+      minderDanBudget: Math.max((budget.budgetOpPeilDatum ?? 0) - (budgetBetaling ?? 0) - meerDanMaandBudget, 0),
+      meerDanBudget: Math.max((budgetBetaling ?? 0) - (budget.budgetOpPeilDatum ?? 0), 0) - meerDanMaandBudget,
     } as ExtendedContinuBudget;
   });
 
   const geaggregeerdMaandBudget = extendedContinuBudget.reduce((acc, budget) => (acc + budget.maandBudget), 0);
 
-  const geaggregeerdBudgetOpPeilDatum = extendedContinuBudget.reduce((acc, budget) => (acc + budget.budgetOpPeilDatum), 0);
+  const geaggregeerdBudgetOpPeilDatum = extendedContinuBudget.reduce((acc, budget) => (acc + (budget.budgetOpPeilDatum ?? 0)), 0);
 
   const geaggregeerdBesteedOpPeilDatum = extendedContinuBudget.reduce((acc, budget) => (acc + (budget.budgetBetaling ?? 0)), 0);
 
@@ -81,7 +73,7 @@ export const BudgetContinuGrafiek = (props: BudgetContinuGrafiekProps) => {
   const meerDanMaandBudget = Math.max(geaggregeerdBesteedOpPeilDatum - geaggregeerdMaandBudget, 0);
 
   const meerDanBudget = Math.max(extendedContinuBudget.reduce((acc, budget) =>
-    (acc + (Math.max((budget.budgetBetaling ?? 0) - budget.budgetOpPeilDatum, 0))), 0) - meerDanMaandBudget, 0);
+    (acc + (Math.max((budget.budgetBetaling ?? 0) - (budget.budgetOpPeilDatum ?? 0), 0))), 0) - meerDanMaandBudget, 0);
 
   const minderDanBudget = Math.max(geaggregeerdBudgetOpPeilDatum - geaggregeerdBesteedOpPeilDatum - meerDanMaandBudget, 0);
 
@@ -194,11 +186,11 @@ export const BudgetContinuGrafiek = (props: BudgetContinuGrafiekProps) => {
           {toonBudgetContinuDetails &&
         <Grid size={2} alignItems={'flex-start'}>
               {extendedContinuBudget.map((budget, index) => (
-                <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                <Box  key={index} sx={{ display: 'flex', alignItems: 'flex-start' }}>
                   {berekenBudgetContinuIcoon(budget)}
-                  <Typography key={index} variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
+                  <Typography variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
                     {budget.budgetNaam}: maandbudget{formatAmount(budget.maandBudget.toString())},
-                    waarvan vandaag {formatAmount(budget.budgetOpPeilDatum.toString())} uitgegeven had mogen worden,
+                    waarvan vandaag {formatAmount((budget.budgetOpPeilDatum ?? 0).toString())} uitgegeven had mogen worden,
                     er is tot en met vandaag {formatAmount(budget.budgetBetaling?.toString() ?? "nvt")} uitgegeven; dit is
                     {budget.meerDanBudget === 0 && budget.minderDanBudget === 0 && budget.meerDanMaandBudget === 0 && ' zoals verwacht'}
                     {[

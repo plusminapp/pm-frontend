@@ -22,7 +22,6 @@ export default function Stand() {
 
   const [stand, setStand] = useState<Stand | undefined>(undefined)
   const [datumLaatsteBetaling, setDatumLaatsteBetaling] = useState<dayjs.Dayjs | undefined>(undefined)
-  const [peilDatum, setPeilDatum] = useState<dayjs.Dayjs | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(false);
   const [toonMutaties, setToonMutaties] = useState(localStorage.getItem('toonMutaties') === 'true');
   const [toonBarGrafiek, setToonBarGrafiek] = useState<string | undefined>(undefined);
@@ -53,16 +52,12 @@ export default function Stand() {
           setStand(result)
         } else {
           console.error("Failed to fetch data", response.status);
-          setSnackbarMessage({
-            message: `De configuratie voor ${actieveHulpvrager.bijnaam} is niet correct.`,
-            type: "warning",
-          })
         }
       }
     };
     fetchSaldi();
 
-  }, [actieveHulpvrager, gekozenPeriode, getIDToken, setSnackbarMessage]);
+  }, [actieveHulpvrager, gekozenPeriode, getIDToken]);
 
   useEffect(() => {
     const fetchDatumLaatsteBetaling = async () => {
@@ -99,12 +94,6 @@ export default function Stand() {
 
   }, [actieveHulpvrager, getIDToken, setSnackbarMessage]);
 
-  useEffect(() => {
-    if (gekozenPeriode && gekozenPeriode.periodeStatus === 'HUIDIG')
-      setPeilDatum(dayjs());
-    else setPeilDatum(dayjs(gekozenPeriode?.periodeEindDatum));
-  }, [gekozenPeriode]);
-
   const handleToonMutatiesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     localStorage.setItem('toonMutaties', event.target.checked.toString());
     setToonMutaties(event.target.checked);
@@ -128,7 +117,7 @@ export default function Stand() {
 
           <Grid container spacing={2} columns={{ xs: 1, md: 3 }} justifyContent="space-between">
             <Grid size={2} sx={{ boxShadow: 3, p: 2 }}>
-              <Typography variant='h6'>Samenvatting {peilDatum?.format('D MMMM')}</Typography>
+              <Typography variant='h6'>Samenvatting {dayjs(gekozenPeriode?.periodeEindDatum).isAfter(dayjs()) ? dayjs().format('YYYY-MM-DD') : gekozenPeriode?.periodeEindDatum}</Typography>
               <Typography variant='body2'>
                 Laatste betaling geregistreerd op {dayjs(datumLaatsteBetaling).format('D MMMM')}.
               </Typography>
@@ -156,15 +145,15 @@ export default function Stand() {
                               rekening={rekening}
                               peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                               periode={gekozenPeriode}
-                              budgetten={stand.budgettenOpDatum.filter(b => b.rekeningSoort.toLowerCase() === 'inkomsten')}
-                            /> :
+                              budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
+                              /> : rekening.budgetType?.toLowerCase() === 'vast' ?
                             <BudgetVastGrafiek
                               visualisatie='icon-klein'
                               rekening={rekening}
                               peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                               periode={gekozenPeriode}
                               budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
-                            />}
+                            /> : null}
                       </Grid>
                     ))}
 
@@ -201,15 +190,15 @@ export default function Stand() {
                               peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                               periode={gekozenPeriode}
                               budgetten={stand.budgettenOpDatum.filter(b => b.rekeningSoort.toLowerCase() === 'inkomsten')}
-                            /> :
-                            <BudgetVastGrafiek
+                            /> : rekening.budgetType?.toLowerCase() === 'vast' ?
+                            <BudgetVastGrafiek 
                               key={rekening.id + index}
                               visualisatie='bar'
                               rekening={rekening}
                               peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                               periode={gekozenPeriode}
                               budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
-                            />)
+                            /> : null)
                     ))}
 
                 {gekozenPeriode && stand.aflossingenOpDatum.length > 0 && toonBarGrafiek === 'aflossingen' &&
