@@ -22,7 +22,7 @@ import { BudgetDTO } from '../model/Budget';
 
 export default function Kasboek() {
   const { getIDToken } = useAuthContext();
-  const { gebruiker, actieveHulpvrager, gekozenPeriode } = useCustomContext();
+  const { actieveHulpvrager, gekozenPeriode } = useCustomContext();
 
   const [betalingen, setBetalingen] = useState<BetalingDTO[]>([])
   const [aflossingen, setAflossingen] = useState<AflossingDTO[]>([])
@@ -64,7 +64,7 @@ export default function Kasboek() {
         console.error("Failed to fetch betalingen", response.status);
       }
     }
-  }, [getIDToken, actieveHulpvrager, gebruiker, gekozenPeriode]);
+  }, [getIDToken, actieveHulpvrager, gekozenPeriode]);
 
   useEffect(() => {
     fetchBetalingen();

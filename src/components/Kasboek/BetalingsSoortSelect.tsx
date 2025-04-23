@@ -151,10 +151,10 @@ const BetalingSoortSelect = (props: BetalingSoortSelectProps) => {
           <>
             <Grid container mt={3} spacing={5} justifyContent="center">
               {countIntersection(inkomstenBetalingsSoorten, Array.from(betalingsSoorten2Rekeningen.keys())) > 1 &&
-                inkomstenBetalingsSoorten.map((betalingsSoort) =>
+                inkomstenBetalingsSoorten.map((betalingsSoort, index) =>
                   Array.from(betalingsSoorten2Rekeningen.keys()).includes(betalingsSoort) && (
                     <Button
-                      key={betalingsSoort + 'i1'}
+                      key={betalingsSoort + index}
                       color='success'
                       sx={{ m: '3px' }}
                       variant={selectedBetalingsSoort === betalingsSoort ? 'contained' : 'outlined'}
@@ -166,16 +166,16 @@ const BetalingSoortSelect = (props: BetalingSoortSelectProps) => {
                 )}
             </Grid>
             <Box mt={2}>
-              {inkomstenBetalingsSoorten.map((betalingsSoort) =>
+              {inkomstenBetalingsSoorten.map((betalingsSoort, index) =>
                 betalingsSoorten2Rekeningen.get(betalingsSoort) &&
                 Array.from(betalingsSoorten2Rekeningen.keys()).includes(betalingsSoort) && (
-                  <Grid key={betalingsSoort + 'i2'} container spacing={2} justifyContent={"center"}>
+                  <Grid key={betalingsSoort + index} container spacing={2} justifyContent={"center"}>
                     {rekeningPaar && rekeningPaar.bron.length >= 1 && betalingsSoort === selectedBetalingsSoort && (
                       <Grid container spacing={2} justifyContent={"center"}>
                         <>
-                          {rekeningPaar && rekeningPaar.bron.length > 1 && rekeningPaar?.bron.map((rekening) => (
+                          {rekeningPaar && rekeningPaar.bron.length > 1 && rekeningPaar?.bron.map((rekening, index) => (
                             <Button
-                              key={rekening.id + 'i3'}
+                              key={rekening.id + index}
                               color='success'
                               style={{ textTransform: 'none' }}
                               sx={{ m: '3px' }}
@@ -185,17 +185,17 @@ const BetalingSoortSelect = (props: BetalingSoortSelectProps) => {
                               {rekening.naam}
                             </Button>
                           ))}
-                          {rekeningPaar?.bron.map((rekening) => (
+                          {rekeningPaar?.bron.map((rekening, index) => (
                             <>
                               {selectedBronRekening !== undefined && selectedBronRekening === rekening.naam && rekening.budgetten.length > 1 &&
-                                <Grid key={rekening.id + 'i4'} container spacing={1} justifyContent={"center"} direction={"column"} >
+                                <Grid key={rekening.id + index} container spacing={1} justifyContent={"center"} direction={"column"} >
                                   <Grid >
                                     <Typography sx={{ mt: '3px', fontSize: 12, textAlign: 'center', color: 'grey' }}>Budget: </Typography>
                                   </Grid>
                                   <Grid container direction={"row"}>
-                                    {rekening.budgetten.map(budget => (
+                                    {rekening.budgetten.map((budget, index) => (
                                       <Button
-                                        key={budget.budgetNaam + 'b1'}
+                                        key={budget.budgetNaam + index}
                                         color='success'
                                         style={{ textTransform: 'none' }}
                                         sx={{ p: '3px', fontSize: 11 }}
@@ -219,9 +219,9 @@ const BetalingSoortSelect = (props: BetalingSoortSelectProps) => {
                           <Typography sx={{ mt: '3px', fontSize: 12, textAlign: 'center', color: 'grey' }}>Ik heb 't ontvangen: </Typography>
                         </Grid>
                         <Grid container direction={"row"}>
-                          {rekeningPaar?.bestemming.map((rekening) => (
+                          {rekeningPaar?.bestemming.map((rekening, index) => (
                             <Button
-                              key={rekening.id + 'i5'}
+                              key={rekening.id + index}
                               color='success'
                               style={{ textTransform: 'none' }}
                               sx={{ m: '3px' }}
@@ -247,10 +247,10 @@ const BetalingSoortSelect = (props: BetalingSoortSelectProps) => {
           <>
             <Grid container mt={3} spacing={5} justifyContent="center">
               {countIntersection(uitgavenBetalingsSoorten, Array.from(betalingsSoorten2Rekeningen.keys())) > 1 &&
-                uitgavenBetalingsSoorten.map((betalingsSoort) =>
+                uitgavenBetalingsSoorten.map((betalingsSoort, index) =>
                   Array.from(betalingsSoorten2Rekeningen.keys()).includes(betalingsSoort) && (
                     <Button
-                      key={betalingsSoort + 'u1'}
+                      key={betalingsSoort + index}
                       color='success'
                       sx={{ m: '3px' }}
                       variant={selectedBetalingsSoort === betalingsSoort ? 'contained' : 'outlined'}
@@ -262,16 +262,16 @@ const BetalingSoortSelect = (props: BetalingSoortSelectProps) => {
                 )}
             </Grid>
             <Box mt={2}>
-              {uitgavenBetalingsSoorten.map((betalingsSoort) =>
+              {uitgavenBetalingsSoorten.map((betalingsSoort, index) =>
                 betalingsSoorten2Rekeningen.get(betalingsSoort) &&
                 Array.from(betalingsSoorten2Rekeningen.keys()).includes(betalingsSoort) && (
-                  <Grid key={betalingsSoort + 'u2'} container spacing={2} justifyContent="center">
+                  <Grid key={betalingsSoort + index} container spacing={2} justifyContent="center">
                     {rekeningPaar && rekeningPaar.bestemming.length > 1 && betalingsSoort === selectedBetalingsSoort && (
                       <Grid container spacing={2} justifyContent={"center"}>
                         <>
-                          {rekeningPaar?.bestemming.map((rekening) => (
+                          {rekeningPaar?.bestemming.map((rekening, index) => (
                             <Button
-                              key={rekening.id + 'u3'}
+                              key={rekening.id + index}
                               color='success'
                               style={{ textTransform: 'none' }}
                               sx={{ m: '3px' }}
@@ -281,21 +281,21 @@ const BetalingSoortSelect = (props: BetalingSoortSelectProps) => {
                               {rekening.naam}
                             </Button>
                           ))}
-                          {rekeningPaar?.bestemming.map((rekening) => (
+                          {rekeningPaar?.bestemming.map((rekening, index) => (
                             <>
                               {selectedBestemmingRekening !== undefined && selectedBestemmingRekening === rekening.naam && rekening.budgetten.length > 1 &&
-                                <Grid key={rekening.id + 'u4'} container spacing={1} justifyContent={"center"} direction={"column"} >
+                                <Grid key={rekening.id + index} container spacing={1} justifyContent={"center"} direction={"column"} >
                                   <Grid >
                                     <Typography sx={{ mt: '3px', fontSize: 12, textAlign: 'center', color: 'grey' }}>Budget: </Typography>
                                   </Grid>
                                   <Grid container direction={"row"}>
-                                    {rekening.budgetten.map(budget => (
+                                    {rekening.budgetten.map((budget, index) => (
                                       <Button
+                                        key={budget.budgetNaam + index}
                                         color='success'
                                         style={{ textTransform: 'none' }}
                                         sx={{ p: '3px', fontSize: 11 }}
                                         size="small"
-                                        key={budget.budgetNaam}
                                         variant={selectedBudget === budget.budgetNaam ? 'contained' : 'outlined'}
                                         onClick={() => handleBudgetButtonClick(budget.budgetNaam)}>
                                         {budget.budgetNaam}
@@ -315,9 +315,9 @@ const BetalingSoortSelect = (props: BetalingSoortSelectProps) => {
                           <Typography sx={{ mt: '3px', fontSize: 12, textAlign: 'center', color: 'grey' }}>Ik heb 't betaald met: </Typography>
                         </Grid>
                         <Grid container direction={"row"}>
-                          {rekeningPaar?.bron.map((rekening) => (
+                          {rekeningPaar?.bron.map((rekening, index) => (
                             <Button
-                              key={rekening.id + 'u5'}
+                              key={rekening.id + index}
                               color='success'
                               style={{ textTransform: 'none' }}
                               sx={{ m: '3px' }}
@@ -339,13 +339,13 @@ const BetalingSoortSelect = (props: BetalingSoortSelectProps) => {
 
       {selectedCategorie === 'INTERN' && (
         <Grid container mt={3} spacing={1} justifyContent="center">
-          {internBetalingsSoorten.map((betalingsSoort) =>
+          {internBetalingsSoorten.map((betalingsSoort, index) =>
             Array.from(betalingsSoorten2Rekeningen.keys()).includes(betalingsSoort) && (
               <Button
                 color='success'
                 style={{ textTransform: 'none' }}
                 sx={{ m: '3px' }}
-                key={betalingsSoort + 'in1'}
+                key={betalingsSoort + index}
                 variant={selectedBetalingsSoort === betalingsSoort ? 'contained' : 'outlined'}
                 onClick={() => handleBetalingsSoortChange(betalingsSoort)}
               >

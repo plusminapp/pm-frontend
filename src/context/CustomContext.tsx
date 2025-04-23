@@ -59,12 +59,13 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
     useEffect(() => {
         if (!actieveHulpvrager) return;
         setActieveHulpvrager(actieveHulpvrager);
+        setPeriodes(actieveHulpvrager.periodes)
         saveToLocalStorage('actieveHulpvrager', actieveHulpvrager.id + '');
         setRekeningen(actieveHulpvrager.rekeningen.sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1));
         setBetalingsSoorten(transformRekeningen2BetalingsSoorten(actieveHulpvrager.rekeningen));
         setBetaalMethoden(transformRekeningen2Betaalmethoden(actieveHulpvrager.rekeningen));
         setBetalingsSoorten2Rekeningen(transformRekeningenToBetalingsSoorten(actieveHulpvrager.rekeningen));
-    }, [actieveHulpvrager, gekozenPeriode]);
+    }, [actieveHulpvrager]);
 
     const transformRekeningen2BetalingsSoorten = (rekeningen: Rekening[]) => {
         const betalingsSoortValues = Object.values(BetalingsSoort);

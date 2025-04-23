@@ -99,11 +99,22 @@ function Header() {
 
     if (opgeslagenActieveHulpvrager) {
       setActieveHulpvrager(opgeslagenActieveHulpvrager)
-      setGekozenPeriode(opgeslagenGekozenPeriode)
+      if (opgeslagenGekozenPeriode) {
+        setGekozenPeriode(opgeslagenGekozenPeriode)
+      } else {
+        const huidigePeriode = (opgeslagenActieveHulpvrager.periodes as Periode[])
+          .find(periode => periode.periodeStatus === 'HUIDIG');
+        setGekozenPeriode(huidigePeriode);
+        saveToLocalStorage('gekozenPeriode', huidigePeriode?.id + '');
+      }
     } else if (data.gebruiker.roles.includes('ROLE_VRIJWILLIGER') && data.hulpvragers.length > 0) {
       setActieveHulpvrager(data.hulpvragers[0])
+      setGekozenPeriode(data.hulpvragers[0].periodes[0])
+      saveToLocalStorage('gekozenPeriode', data.hulpvragers[0].periodes[0] + '');
     } else {
       setActieveHulpvrager(data.gebruiker)
+      setGekozenPeriode(data.gebruiker.periodes[0])
+      saveToLocalStorage('gekozenPeriode', data.gebruiker.periodes[0] + '');
     }
   }, [getIDToken, setActieveHulpvrager, setGebruiker, setHulpvragers, setGekozenPeriode]);
 
