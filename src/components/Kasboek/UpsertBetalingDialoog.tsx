@@ -22,7 +22,7 @@ import 'dayjs/locale/nl';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useCustomContext } from '../../context/CustomContext';
 import { useAuthContext } from '@asgardeo/auth-react';
-import BetalingsSoortSelect from '../Betaling/BetalingsSoortSelect';
+import BetalingsSoortSelect from './BetalingsSoortSelect';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -362,7 +362,7 @@ export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps)
                           sx={{ transform: 'scale(0.6)' }}
                           checked={isOntvangst}
                           onChange={handleIsOntvangstChange}
-                          inputProps={{ 'aria-label': 'controlled' }}
+                          slotProps={{ input: { 'aria-label': 'controlled' } }}
                         />}
                       label={<Typography variant='caption' fontWeight={isOntvangst ? '800' : '500'} color={isOntvangst ? 'success' : 'lightgrey'}>
                         Ik heb dit teruggekregen ipv betaald.
@@ -387,8 +387,8 @@ export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps)
             <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={"nl"}>
               <DatePicker
                 sx={{ color: 'success.main' }}
-                minDate={dayjs(eersteOpenPeriode.periodeStartDatum)}
-                maxDate={dayjs(laatstePeriode.periodeEindDatum)}
+                minDate={dayjs(eersteOpenPeriode?.periodeStartDatum)}
+                maxDate={dayjs(laatstePeriode?.periodeEindDatum)}
                 slotProps={{ textField: { variant: "standard" } }}
                 label="Wanneer was de betaling?"
                 value={betalingDTO.boekingsdatum}

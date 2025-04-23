@@ -11,7 +11,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { formateerNlDatum, Periode } from '../../model/Periode';
 import { Box, IconButton, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import Resultaat from '../Resultaat';
+import Resultaat from '../Stand/Resultaat';
 
 import { Stand } from '../../model/Stand';
 import { useAuthContext } from '@asgardeo/auth-react';
@@ -35,16 +35,16 @@ export default function SluitPeriodeDialoog(props: SluitPeriodeDialoogProps) {
   const navigate = useNavigate();
   useEffect(() => {
     const fetchSaldi = async () => {
-      if (actieveHulpvrager && props.periode) {
+      let token = '';
+      try { token = await getIDToken() }
+      catch (error) {
+        navigate('/login');
+      }
+      if (actieveHulpvrager && props.periode && token) {
         setIsLoading(true);
         const vandaag = dayjs().format('YYYY-MM-DD');
         const datum = props.periode.periodeEindDatum > vandaag ? vandaag : props.periode.periodeEindDatum;
         const id = actieveHulpvrager.id
-        let token = '';
-        try { token = await getIDToken() }
-        catch (error) {
-          navigate('/login');
-        }
         const response = await fetch(`/api/v1/saldo/hulpvrager/${id}/stand/${datum}`, {
           method: "GET",
           headers: {

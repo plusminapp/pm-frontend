@@ -9,24 +9,6 @@ export type Periode = {
     saldoLijst: Saldo[];
 }
 
-export const dagenSindsStartPeriode = (gekozenPeriode: Periode | undefined): number | undefined => {
-    if (gekozenPeriode === undefined) {
-        return undefined;
-    }
-    if (dayjs().isAfter(dayjs(gekozenPeriode.periodeEindDatum))) {
-        return dayjs(gekozenPeriode.periodeEindDatum).diff(dayjs(gekozenPeriode.periodeStartDatum), 'day') + 1;
-    } else {
-        return dayjs().diff(dayjs(gekozenPeriode.periodeStartDatum), 'day') + 1;
-    }
-}
-
-export const dagenInPeriode = (gekozenPeriode: Periode | undefined): number | undefined => {
-    if (gekozenPeriode === undefined) {
-        return undefined;
-    }
-    return dayjs(gekozenPeriode.periodeEindDatum).diff(dayjs(gekozenPeriode.periodeStartDatum), 'day') + 1;
-}
-
 export const dagInPeriode = (dag: number, gekozenPeriode: Periode) => {
     const startDatum = dayjs(gekozenPeriode.periodeStartDatum);
     const dagVanStart = startDatum.date();

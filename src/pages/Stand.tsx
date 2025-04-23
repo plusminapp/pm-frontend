@@ -1,25 +1,23 @@
 import { Accordion, AccordionDetails, AccordionSummary, FormControlLabel, FormGroup, Switch, Typography } from "@mui/material";
 import Grid from '@mui/material/Grid2';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import { useCustomContext } from "../context/CustomContext";
 import { useAuthContext } from "@asgardeo/auth-react";
-import Resultaat from "../components/Resultaat";
+import Resultaat from "../components/Stand/Resultaat";
 import type { Stand } from "../model/Stand";
 import dayjs from "dayjs";
 import { PeriodeSelect } from "../components/Periode/PeriodeSelect";
 import { ArrowDropDownIcon } from "@mui/x-date-pickers";
-import BudgetContinuGrafiek from "../components/Budget/BudgetContinuGrafiek";
+import BudgetContinuGrafiek from "../components/Stand/BudgetContinuGrafiek";
 import { betaalmethodeRekeningSoorten } from "../model/Rekening";
-import BudgetVastGrafiek from "../components/Budget/BudgetVastGrafiek";
-import BudgetInkomstenGrafiek from "../components/Budget/BudgetInkomstenGrafiek";
-import AflossingGrafiek from "../components/Budget/AflossingGrafiek";
+import BudgetVastGrafiek from "../components/Stand/BudgetVastGrafiek";
+import BudgetInkomstenGrafiek from "../components/Stand/BudgetInkomstenGrafiek";
+import AflossingGrafiek from "../components/Stand/AflossingGrafiek";
 
 export default function Stand() {
 
   const { getIDToken } = useAuthContext();
-  const navigate = useNavigate();
   const { actieveHulpvrager, gekozenPeriode, rekeningen, setSnackbarMessage } = useCustomContext();
 
   const [stand, setStand] = useState<Stand | undefined>(undefined)
@@ -30,18 +28,17 @@ export default function Stand() {
 
   useEffect(() => {
     const fetchSaldi = async () => {
-      if (actieveHulpvrager && gekozenPeriode) {
+      let token = '';
+      try { token = await getIDToken() }
+      catch (error) {
+        setIsLoading(false);
+        console.error("Failed to fetch data", error);
+      }
+      if (actieveHulpvrager && gekozenPeriode && token) {
         setIsLoading(true);
         const vandaag = dayjs().format('YYYY-MM-DD');
         const datum = gekozenPeriode.periodeEindDatum > vandaag ? vandaag : gekozenPeriode.periodeEindDatum;
         const id = actieveHulpvrager.id
-        let token = '';
-        try { token = await getIDToken() }
-        catch (error) {
-          setIsLoading(false);
-          console.error("Failed to fetch data", error);
-          navigate('/login');
-        }
         const response = await fetch(`/api/v1/saldo/hulpvrager/${id}/stand/${datum}`, {
           method: "GET",
           headers: {
@@ -55,29 +52,24 @@ export default function Stand() {
           setStand(result)
         } else {
           console.error("Failed to fetch data", response.status);
-          setSnackbarMessage({
-            message: `De configuratie voor ${actieveHulpvrager.bijnaam} is niet correct.`,
-            type: "warning",
-          })
         }
       }
     };
     fetchSaldi();
 
-  }, [actieveHulpvrager, gekozenPeriode, getIDToken, navigate, setSnackbarMessage]);
+  }, [actieveHulpvrager, gekozenPeriode, getIDToken]);
 
   useEffect(() => {
     const fetchDatumLaatsteBetaling = async () => {
+      let token = '';
+      try { token = await getIDToken() }
+      catch (error) {
+        setIsLoading(false);
+        console.error("Failed to fetch data", error);
+      }
       if (actieveHulpvrager) {
         setIsLoading(true);
         const id = actieveHulpvrager.id
-        let token = '';
-        try { token = await getIDToken() }
-        catch (error) {
-          setIsLoading(false);
-          console.error("Failed to fetch data", error);
-          navigate('/login');
-        }
         const response = await fetch(`/api/v1/betalingen/hulpvrager/${id}/betalingvalidatie`, {
           method: "GET",
           headers: {
@@ -100,7 +92,7 @@ export default function Stand() {
     };
     fetchDatumLaatsteBetaling();
 
-  }, [actieveHulpvrager, getIDToken, navigate, setSnackbarMessage]);
+  }, [actieveHulpvrager, getIDToken, setSnackbarMessage]);
 
   const handleToonMutatiesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     localStorage.setItem('toonMutaties', event.target.checked.toString());
@@ -121,11 +113,11 @@ export default function Stand() {
     <>
       {stand !== undefined &&
         <>
-          <Typography variant='h4' sx={{ mb: 2 }}>Hoe staan we er voor?</Typography>
+          <Typography variant='h4' sx={{ mb: 2 }}>Hi {actieveHulpvrager?.bijnaam}, hoe is 't?</Typography>
 
           <Grid container spacing={2} columns={{ xs: 1, md: 3 }} justifyContent="space-between">
             <Grid size={2} sx={{ boxShadow: 3, p: 2 }}>
-              <Typography variant='h6'>Samenvatting {dayjs().format('D MMMM')}</Typography>
+              <Typography variant='h6'>Samenvatting {dayjs(gekozenPeriode?.periodeEindDatum).isAfter(dayjs()) ? dayjs().format('YYYY-MM-DD') : gekozenPeriode?.periodeEindDatum}</Typography>
               <Typography variant='body2'>
                 Laatste betaling geregistreerd op {dayjs(datumLaatsteBetaling).format('D MMMM')}.
               </Typography>
@@ -137,6 +129,7 @@ export default function Stand() {
                     .filter(rekening => rekening.budgetten.length >= 1)
                     .map(rekening => (
                       <Grid size={1}
+                        key={rekening.id}
                         sx={{ cursor: 'pointer' }}
                         onClick={() => handleBarGrafiek(rekening.naam)}>
                         {rekening.budgetType?.toLowerCase() === 'continu' ?
@@ -152,15 +145,15 @@ export default function Stand() {
                               rekening={rekening}
                               peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                               periode={gekozenPeriode}
-                              budgetten={stand.budgettenOpDatum.filter(b => b.rekeningSoort.toLowerCase() === 'inkomsten')}
-                            /> :
+                              budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
+                              /> : rekening.budgetType?.toLowerCase() === 'vast' ?
                             <BudgetVastGrafiek
                               visualisatie='icon-klein'
                               rekening={rekening}
                               peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                               periode={gekozenPeriode}
                               budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
-                            />}
+                            /> : null}
                       </Grid>
                     ))}
 
@@ -179,10 +172,11 @@ export default function Stand() {
                   rekeningen
                     .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1)
                     .filter(rekening => rekening.budgetten.length >= 1)
-                    .map(rekening => (
+                    .map((rekening, index) => (
                       rekening.naam === toonBarGrafiek && (
                         rekening.budgetType?.toLowerCase() === 'continu' ?
                           <BudgetContinuGrafiek
+                            key={rekening.id + index}
                             visualisatie='bar'
                             rekening={rekening}
                             peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
@@ -190,19 +184,21 @@ export default function Stand() {
                             budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
                           /> : rekening.rekeningSoort.toLowerCase() === 'inkomsten' ?
                             <BudgetInkomstenGrafiek
+                              key={rekening.id + index}
                               visualisatie='bar'
                               rekening={rekening}
                               peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                               periode={gekozenPeriode}
                               budgetten={stand.budgettenOpDatum.filter(b => b.rekeningSoort.toLowerCase() === 'inkomsten')}
-                            /> :
-                            <BudgetVastGrafiek
+                            /> : rekening.budgetType?.toLowerCase() === 'vast' ?
+                            <BudgetVastGrafiek 
+                              key={rekening.id + index}
                               visualisatie='bar'
                               rekening={rekening}
                               peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                               periode={gekozenPeriode}
                               budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
-                            />)
+                            /> : null)
                     ))}
 
                 {gekozenPeriode && stand.aflossingenOpDatum.length > 0 && toonBarGrafiek === 'aflossingen' &&
@@ -213,11 +209,9 @@ export default function Stand() {
                     aflossingen={stand.aflossingenOpDatum} />
                 }
 
-
-
               </Grid>
             </Grid>
-            <Grid size={1} direction={'column'} alignItems="start">
+            <Grid size={1} flexDirection={'column'} alignItems="start">
               <PeriodeSelect />
               <Resultaat
                 title={'Stand van de geldrekeningen'}

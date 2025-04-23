@@ -2,7 +2,7 @@ import { Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEve
 import Grid from '@mui/material/Grid2';
 import { eersteOpenPeriode, formateerNlDatum, formateerNlVolgendeDag, laatsteGeslotenPeriode, Periode } from "../../model/Periode";
 import { useCustomContext } from "../../context/CustomContext";
-import { saveToLocalStorage } from "../Header";
+import { saveToLocalStorage } from "../Header/HeaderExports.ts";
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import EditIcon from '@mui/icons-material/Edit';
 
@@ -17,6 +17,7 @@ export function PeriodeSelect({ isProfiel = false }: PeriodeSelectProps) {
     const { periodes, gekozenPeriode, setGekozenPeriode } = useCustomContext();
 
     const handlegekozenPeriodeChange = (event: SelectChangeEvent<string>) => {
+        console.log('PeriodeSelect', event.target.value);
         const periode = periodes.find(periode => periode.periodeStartDatum.toString() === event.target.value)
         setGekozenPeriode(periode);
         saveToLocalStorage('gekozenPeriode', periode?.id + '');
@@ -60,28 +61,27 @@ export function PeriodeSelect({ isProfiel = false }: PeriodeSelectProps) {
                     {periodes
                         .sort((a, b) => a.periodeStartDatum.localeCompare(b.periodeStartDatum))
                         .map((periode: Periode) => (
-                            <>
-                                <Grid display="flex" flexDirection="row" alignItems={'center'} justifyContent="flex-start" >
-                                    {periode.periodeStartDatum === periode.periodeEindDatum &&
-                                        <Typography key={periode.periodeStartDatum}>
-                                            Opening op {formateerNlVolgendeDag(periode.periodeEindDatum)}
-                                        </Typography>}
-                                    {periode.periodeStartDatum !== periode.periodeEindDatum &&
-                                        <Typography key={periode.periodeStartDatum}>
-                                            Periode: {formateerNlDatum(periode.periodeStartDatum)} - {formateerNlDatum(periode.periodeEindDatum)} ({periode.periodeStatus.toLocaleLowerCase()})
-                                        </Typography>}
-                                    <Box alignItems={'center'} display={'flex'} sx={{ cursor: 'pointer', mr: 0, pr: 0 }}>
-                                        {periode === laatsteGeslotenPeriode(periodes) &&
-                                            <Button onClick={() => navigate('/periode?actie=wijzigen')} sx={{ minWidth: '24px', color: 'grey', p: "5px" }}>
-                                                <EditIcon fontSize="small" />
-                                            </Button>}
-                                        {periode === eersteOpenPeriode(periodes) &&
-                                            <Button onClick={() => navigate('/periode?actie=sluiten')} sx={{ minWidth: '24px', color: 'grey', p: "5px" }}>
-                                                <LockOutlinedIcon fontSize="small" />
-                                            </Button>}
-                                    </Box>
-                                </Grid>
-                            </>))}
+                            <Grid key={periode.id} display="flex" flexDirection="row" alignItems={'center'} justifyContent="flex-start" >
+                                {periode.periodeStartDatum === periode.periodeEindDatum &&
+                                    <Typography key={periode.periodeStartDatum}>
+                                        Opening op {formateerNlVolgendeDag(periode.periodeEindDatum)}
+                                    </Typography>}
+                                {periode.periodeStartDatum !== periode.periodeEindDatum &&
+                                    <Typography key={periode.periodeStartDatum}>
+                                        Periode: {formateerNlDatum(periode.periodeStartDatum)} - {formateerNlDatum(periode.periodeEindDatum)} ({periode.periodeStatus.toLocaleLowerCase()})
+                                    </Typography>}
+                                <Box alignItems={'center'} display={'flex'} sx={{ cursor: 'pointer', mr: 0, pr: 0 }}>
+                                    {periode === laatsteGeslotenPeriode(periodes) &&
+                                        <Button onClick={() => navigate('/periode?actie=wijzigen')} sx={{ minWidth: '24px', color: 'grey', p: "5px" }}>
+                                            <EditIcon fontSize="small" />
+                                        </Button>}
+                                    {periode === eersteOpenPeriode(periodes) &&
+                                        <Button onClick={() => navigate('/periode?actie=sluiten')} sx={{ minWidth: '24px', color: 'grey', p: "5px" }}>
+                                            <LockOutlinedIcon fontSize="small" />
+                                        </Button>}
+                                </Box>
+                            </Grid>
+                        ))}
                 </Box>}
         </>)
 }

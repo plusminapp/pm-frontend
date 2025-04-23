@@ -1,6 +1,6 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import { useCustomContext } from "../../context/CustomContext";
-import { saveToLocalStorage } from "../Header";
+import { saveToLocalStorage } from "../Header/HeaderExports.ts";
 
 import { bankRekeningSoorten, Rekening } from "../../model/Rekening";
 import { useEffect, useState } from "react";
@@ -26,7 +26,7 @@ export function RekeningSelect(props: RekeningSelectProps) {
             //     props.wijzigOcrBankNaam(bankRekeningen[0]);
             // }
         }
-    }, [bankRekeningen, props]);
+    }, [bankRekeningen, gekozenRekening, props]);
 
     const handlegekozenRekeningChange = (event: SelectChangeEvent<string>) => {
         const rekening = rekeningen.find(rekening => rekening.naam === event.target.value)

@@ -18,9 +18,9 @@ type AflossingGrafiekProps = {
 
 export const AflossingGrafiek = (props: AflossingGrafiekProps) => {
 
-  const [toonaflossingVastDetails, setToonaflossingVastDetails] = useState<boolean>(localStorage.getItem('toonaflossingDetails') === 'true');
+  const [toonaflossingVastDetails, setToonaflossingVastDetails] = useState<boolean>(localStorage.getItem('toonBudgetAflossingDetails') === 'true');
   const handleToonaflossingVastChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    localStorage.setItem('toonaflossingDetails', event.target.checked.toString());
+    localStorage.setItem('toonBudgetAflossingDetails', event.target.checked.toString());
     setToonaflossingVastDetails(event.target.checked);
   };
 
@@ -54,11 +54,6 @@ export const AflossingGrafiek = (props: AflossingGrafiekProps) => {
 
   const maandaflossing = extendedAflossingDTO.reduce((acc, aflossing) => (acc + Number(aflossing.aflossingsBedrag)) - (aflossing.deltaStartPeriode ?? 0), 0)
 
-  const betaaldOpPeilDatum = extendedAflossingDTO.reduce((acc, aflossing) => (acc + (aflossing.aflossingBetaling ?? 0)), 0);
-
-  const verwachtOpPeilDatum = extendedAflossingDTO.reduce((acc, aflossing) =>
-    (acc + (aflossingMoetBetaaldZijn(aflossing.betaalDag) ? aflossing.aflossingsBedrag - (aflossing.deltaStartPeriode ?? 0) : -(aflossing.deltaStartPeriode ?? 0))), 0);
-
   const betaaldBinnenaflossing = extendedAflossingDTO.reduce((acc, aflossing) =>
     acc + aflossing.betaaldBinnenAflossing, 0);
 
@@ -91,14 +86,14 @@ export const AflossingGrafiek = (props: AflossingGrafiekProps) => {
     if (aflossing.meerDanVerwacht > 0) return <PlusIcon color="lightgreen" height={18} />
     return <PlusIcon color="black" />
   }
-  const berekenRekeningContinuIcoon = (): JSX.Element => {
+  const berekenRekeningAflossingIcoon = (): JSX.Element => {
     if (meerDanVerwacht === 0 && minderDanVerwacht === 0 && meerDanMaandaflossing === 0) return <PlusIcon color="#green" height={30} />
     if (minderDanVerwacht > 0) return <MinIcon color="red" height={30} />
     if (meerDanMaandaflossing > 0) return <PlusIcon color="orange" height={30} />
     if (meerDanVerwacht > 0) return <PlusIcon color="lightgreen" height={30} />
     return <MinIcon color="black" />
   }
-  const berekenRekeningContinuGrootIcoon = (): JSX.Element => {
+  const berekenRekeningAflossingGrootIcoon = (): JSX.Element => {
     if (meerDanVerwacht === 0 && minderDanVerwacht === 0 && meerDanMaandaflossing === 0)
       return <StandIcon color="green" borderColor="green" height={100} text={<CheckRoundedIcon />} outerText={'Aflossingen'} />
     if (minderDanVerwacht > 0)
@@ -111,20 +106,19 @@ export const AflossingGrafiek = (props: AflossingGrafiekProps) => {
   }
 
 
-  console.log('----------------------------------------------');
+  // console.log('----------------------------------------------');
   // console.log('props.periode.periodeStartDatum.', JSON.stringify(props.periode.periodeStartDatum));
   // console.log('props.periode.periodeEindDatum.', JSON.stringify(props.periode.periodeEindDatum));
   // console.log('peilDatum', JSON.stringify(props.peilDatum));
   // console.log('periodeLengte', JSON.stringify(periodeLengte));
-  console.log('aflossingen', JSON.stringify(extendedAflossingDTO));
-  console.log('maandaflossing', JSON.stringify(maandaflossing));
-  console.log('verwachtOpPeilDatum', JSON.stringify(verwachtOpPeilDatum));
-  console.log('betaaldOpPeilDatum', JSON.stringify(betaaldOpPeilDatum));
-  console.log('betaaldBinnenaflossing', JSON.stringify(betaaldBinnenaflossing));
-  console.log('minderDanVerwacht', JSON.stringify(minderDanVerwacht));
-  console.log('meerDanVerwacht', JSON.stringify(meerDanVerwacht));
-  console.log('restMaandaflossing', JSON.stringify(restMaandaflossing));
-  console.log('meerDanMaandaflossing', JSON.stringify(meerDanMaandaflossing));
+  // console.log('aflossingen', JSON.stringify(extendedAflossingDTO));
+  // console.log('maandaflossing', JSON.stringify(maandaflossing));
+  // console.log('verwachtOpPeilDatum', JSON.stringify(verwachtOpPeilDatum));
+  // console.log('betaaldBinnenaflossing', JSON.stringify(betaaldBinnenaflossing));
+  // console.log('minderDanVerwacht', JSON.stringify(minderDanVerwacht));
+  // console.log('meerDanVerwacht', JSON.stringify(meerDanVerwacht));
+  // console.log('restMaandaflossing', JSON.stringify(restMaandaflossing));
+  // console.log('meerDanMaandaflossing', JSON.stringify(meerDanMaandaflossing));
 
   return (
     <>
@@ -140,7 +134,7 @@ export const AflossingGrafiek = (props: AflossingGrafiekProps) => {
             p={props.visualisatie === 'all' ? 2 : 0}
             my={props.visualisatie === 'all' ? 5 : 1}
             boxShadow={props.visualisatie === 'all' ? 2 : 0} display="flex" alignItems="center">
-            {berekenRekeningContinuIcoon()}
+            {berekenRekeningAflossingIcoon()}
             <Typography
               sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
               component="span"
@@ -150,14 +144,14 @@ export const AflossingGrafiek = (props: AflossingGrafiekProps) => {
           </Grid>}
         {(props.visualisatie === 'icon-groot' || props.visualisatie === 'all') &&
           <Grid size={1} border={1} borderRadius={2} p={2} mb={5} boxShadow={2} display="flex" justifyContent="center" alignItems="center">
-            {berekenRekeningContinuGrootIcoon()}
+            {berekenRekeningAflossingGrootIcoon()}
           </Grid>
         }
       </Grid>
 
       {(props.visualisatie === 'bar' || props.visualisatie === 'all') &&
         <>
-          <Grid display={'flex'} direction={'row'} alignItems={'center'}>
+          <Grid display={'flex'} flexDirection={'row'} alignItems={'center'}>
             <Typography variant='body2'>
               <strong>Alossingen</strong>
             </Typography>
@@ -179,11 +173,11 @@ export const AflossingGrafiek = (props: AflossingGrafiekProps) => {
               </FormGroup>}
           </Grid>
           {toonaflossingVastDetails &&
-            <Grid alignItems={'center'}>
+        <Grid size={2} alignItems={'flex-start'}>
               {extendedAflossingDTO.map((aflossing, index) => (
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start' }}>
                   {berekenToestandAflossingIcoon(aflossing)}
-                  <Typography key={index} variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
+                  <Typography variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
                     {aflossing.rekening.naam}: {(aflossing.deltaStartPeriode ?? 0) < 0 && ` heeft bij het begin van de periode een betaalachterstand van ${formatAmount((-(aflossing.deltaStartPeriode ?? 0)).toString())}; `}
                     maandbedrag: {formatAmount(aflossing.aflossingsBedrag.toString())}, betaaldag {aflossing.betaalDag && dagInPeriode(aflossing.betaalDag, props.periode).format('D MMMM')},&nbsp;
                     waarvan {formatAmount(aflossing.aflossingBetaling?.toString() ?? "nvt")} is betaald;

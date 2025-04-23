@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { BetalingDTO } from "../../model/Betaling";
+import { BetalingDTO } from "../../../model/Betaling";
 
 export const parseText = (text: string): BetalingDTO[] => {
   const dateRegex = /((vandaag|gisteren)?( - )?\d{1,2} (januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december|jan|feb|mrt|apr|mei|jun|jul|aug|sep|okt|nov|dec)( \d{4})?|(vandaag|gisteren)( - )?)/i;

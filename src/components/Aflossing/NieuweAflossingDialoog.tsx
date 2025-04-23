@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Button from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
 import Dialog from '@mui/material/Dialog';
@@ -15,7 +15,7 @@ import 'dayjs/locale/nl';
 import { useCustomContext } from '../../context/CustomContext';
 import { useAuthContext } from '@asgardeo/auth-react';
 import { Rekening, RekeningSoort } from '../../model/Rekening';
-import { transformRekeningenToBetalingsSoorten } from '../Header';
+import { transformRekeningenToBetalingsSoorten } from '../Header/HeaderExports.ts';
 import { useNavigate } from 'react-router-dom';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
@@ -74,16 +74,16 @@ export default function NieuweAflossingDialoog(props: NieuweAflossingDialoogProp
     setOpen(false);
   };
 
-  useEffect(() => {
-    const eindDatum = berekenEindDatum(aflossing.startDatum, aflossing.eindBedrag, aflossing.aflossingsBedrag, aflossing.betaalDag)
-    setAflossing({ ...aflossing, eindDatum: eindDatum } as AflossingDTO)
-  }, [aflossing.startDatum, aflossing.eindBedrag, aflossing.aflossingsBedrag, aflossing.betaalDag])
+  // useEffect(() => {
+  //   const eindDatum = berekenEindDatum(aflossing.startDatum, aflossing.eindBedrag, aflossing.aflossingsBedrag, aflossing.betaalDag)
+  //   setAflossing({ ...aflossing, eindDatum: eindDatum } as AflossingDTO)
+  // }, [aflossing.startDatum, aflossing.eindBedrag, aflossing.aflossingsBedrag, aflossing.betaalDag, aflossing])
 
-  const berekenEindDatum = (startDatum: dayjs.Dayjs | undefined, eindBedrag: number | undefined, aflossingsBedrag: number | undefined, betaalDag: number) => {
-    if (!startDatum || !eindBedrag || !aflossingsBedrag) return undefined
-    const eindDatum = startDatum.add(Math.ceil(eindBedrag / aflossingsBedrag), 'month').date(betaalDag);
-    return dayjs().date() <= betaalDag ? eindDatum.subtract(1, 'month') : eindDatum
-  }
+  // const berekenEindDatum = (startDatum: dayjs.Dayjs | undefined, eindBedrag: number | undefined, aflossingsBedrag: number | undefined, betaalDag: number) => {
+  //   if (!startDatum || !eindBedrag || !aflossingsBedrag) return undefined
+  //   const eindDatum = startDatum.add(Math.ceil(eindBedrag / aflossingsBedrag), 'month').date(betaalDag);
+  //   return dayjs().date() <= betaalDag ? eindDatum.subtract(1, 'month') : eindDatum
+  // }
 
   const handleInputAflossingWijziging = <K extends keyof AflossingDTO>(key: K, value: AflossingDTO[K]) => {
     setAflossing({ ...aflossing, [key]: value })
@@ -112,6 +112,7 @@ export default function NieuweAflossingDialoog(props: NieuweAflossingDialoogProp
         try {
           token = await getIDToken();
         } catch (error) {
+          console.error('Error getting ID token:', error);
           navigate('/login');
         }
         const id = actieveHulpvrager ? actieveHulpvrager.id : gebruiker?.id
