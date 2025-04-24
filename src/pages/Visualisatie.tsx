@@ -1,4 +1,4 @@
-import { Box, Button, TextField, Typography } from "@mui/material";
+import { Box, Button, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
 import Grid from '@mui/material/Grid2';
 
 import dayjs from "dayjs";
@@ -16,6 +16,8 @@ import BudgetInkomstenGrafiek from "../components/Stand/BudgetInkomstenGrafiek";
 import { aflossingen, boodschappenBudgetten, inkomstenBudgetten, rekeningTemplate, vastelastenBudgetten } from "../components/DemoData";
 import { AflossingDTO } from "../model/Aflossing";
 import AflossingGrafiek from "../components/Stand/AflossingGrafiek";
+import StandGeneriekIcon from "../components/Stand/StandGeneriekGrafiek";
+import PaymentsIcon from '@mui/icons-material/Payments';
 
 type FormField = {
   rekeningNaam: string;
@@ -23,6 +25,12 @@ type FormField = {
   budgetType: string;
   budgetten: BudgetDTO[];
   aflossingen: AflossingDTO[];
+  status: string;
+  percentageFill: number;
+  rekeningIcon: React.ReactNode;
+  headerText: string;
+  bodyText: string;
+  cfoText: string;
 }
 
 const initialFormFields = {
@@ -31,6 +39,11 @@ const initialFormFields = {
   budgetType: BudgetType.vast,
   budgetten: inkomstenBudgetten,
   aflossingen: aflossingen,
+  status: 'green',
+  percentageFill: 33,
+  rekeningIcon: <PaymentsIcon color="disabled" fontSize="large" />,
+  bodyText: 'Pas op met je uitgaven',
+  cfoText: 'Ga bezuinigen'
 } as FormField;
 
 export default function Visualisatie() {
@@ -231,6 +244,13 @@ export default function Visualisatie() {
     return parseFloat(amount).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
   };
 
+  const handleStandGeneriekChange = (key: string, value: string) => {
+    setFormFields({
+      ...formFields,
+      [key]: value
+    });
+  }
+
   return (
     <>
       <Box border={1} borderRadius={2} p={2} mb={5} boxShadow={2} >
@@ -309,7 +329,7 @@ export default function Visualisatie() {
           </Grid>
         </Grid>
         {formFields.rekeningSoort !== 'aflossing' && formFields.budgetten.map((budget, index) =>
-          <Grid key={budget.budgetNaam+index} container spacing={2} alignItems="center" columns={2} justifyContent={'start'}>
+          <Grid key={budget.budgetNaam + index} container spacing={2} alignItems="center" columns={2} justifyContent={'start'}>
             <Grid size={1} display={'flex'} flexDirection={'row'} alignItems={'center'}>
               <Typography variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
                 {budget.budgetNaam}: {formatAmount(budget.bedrag.toString())}, betaaldag {budget.betaalDag && dagInPeriode(budget.betaalDag, periode).format('D MMMM')}, waarvan er
@@ -344,7 +364,7 @@ export default function Visualisatie() {
           </Grid>
         )}
         {formFields.rekeningSoort === 'aflossing' && formFields.aflossingen.map((aflossing, index) =>
-          <Grid key={aflossing.rekening.naam+index} container spacing={2} alignItems="center" columns={2} justifyContent={'start'}>
+          <Grid key={aflossing.rekening.naam + index} container spacing={2} alignItems="center" columns={2} justifyContent={'start'}>
             <Grid size={1} display={'flex'} flexDirection={'row'} alignItems={'center'}>
               <Typography key={index} variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
                 {aflossing.rekening.naam}: {formatAmount(aflossing.aflossingsBedrag.toString())}, betaaldag {aflossing.betaalDag && dagInPeriode(aflossing.betaalDag, periode).format('D MMMM')}, waarvan er
@@ -379,7 +399,7 @@ export default function Visualisatie() {
           </Grid>
         )}
       </Box>
-      
+
       {periode &&
         <>
           {formFields.budgetType === BudgetType.continu &&
@@ -432,5 +452,88 @@ export default function Visualisatie() {
               aflossingen={formFields.aflossingen} />}
         </>
       }
+
+
+      <Grid container marginTop={4} spacing={2} alignItems="center" columns={5} justifyContent={'start'}>
+        <Grid size={1} display={'flex'} flexDirection={'row'} alignItems={'center'}>
+          <InputLabel id="status-select-label" sx={{ fontSize: '0.875rem', ml: 1 }}>Kleur</InputLabel>
+          <Select
+            labelId="status-select-label"
+            variant="standard"
+            id="status-select"
+            value={formFields.status}
+            onChange={(e) => handleStandGeneriekChange('status', e.target.value)}
+            sx={{ fontSize: '0.875rem', ml: 1, width: '200px', textAlign: 'right' }}
+          >
+            {['green', 'orange', 'red'].map((status) => (
+              <MenuItem key={status} value={status}>
+                {status}
+              </MenuItem>
+            ))}
+          </Select>
+        </Grid>
+        <Grid size={1} display={'flex'} flexDirection={'row'} alignItems={'center'}>
+          <TextField
+            label="Percentage gevuld"
+            sx={{ fontSize: '0.875rem', ml: 1, width: '200px', textAlign: 'right' }}
+            variant="standard"
+            slotProps={{ inputLabel: { shrink: true, } }}
+            id="besteedOpPeilDatum1"
+            value={formFields.percentageFill}
+            type="text"
+            onChange={(e) => handleStandGeneriekChange('percentageFill', e.target.value)}
+          />
+        </Grid>
+        <Grid size={1} display={'flex'} flexDirection={'row'} alignItems={'center'}>
+          <TextField
+            label="Body tekst"
+            sx={{ fontSize: '0.875rem', ml: 1, width: '300px', textAlign: 'right' }}
+            variant="standard"
+            slotProps={{ inputLabel: { shrink: true, } }}
+            id="besteedOpPeilDatum1"
+            value={formFields.bodyText}
+            type="text"
+            onChange={(e) => handleStandGeneriekChange('bodyText', e.target.value)}
+          />
+        </Grid>
+        <Grid size={1} display={'flex'} flexDirection={'row'} alignItems={'center'}>
+          <TextField
+            label="Call for action"
+            sx={{ fontSize: '0.875rem', ml: 1, width: '300px', textAlign: 'right' }}
+            variant="standard"
+            slotProps={{ inputLabel: { shrink: true, } }}
+            id="besteedOpPeilDatum1"
+            value={formFields.cfoText}
+            type="text"
+            onChange={(e) => handleStandGeneriekChange('cfoText', e.target.value)}
+          />
+        </Grid>
+        {/* <InputLabel id="demo-simple-select-label">Kies de status</InputLabel>
+          <Select
+            sx={{ fontSize: '0.875rem' }}
+            // labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={formFields.status}
+            label="Status"
+            onChange={(e) => handlegekozenStatusChange(e)}>
+            {['green', 'red', 'orange']
+              .map((status) => (
+                <MenuItem >
+                  {status}
+                </MenuItem>))}
+          </Select> */}
+      </Grid>
+
+
+      <Box marginBottom={2} marginTop={4} display={'flex'} justifyContent={'flex-start'} alignItems={'center'}>
+        <StandGeneriekIcon
+          status={formFields.status}
+          rekeningIcon={formFields.rekeningIcon}
+          percentageFill={formFields.percentageFill}
+          headerText={formFields.rekeningNaam}
+          bodyText={formFields.bodyText}
+          cfoText={formFields.cfoText}
+        />
+      </Box>
     </>)
 }

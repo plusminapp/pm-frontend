@@ -139,7 +139,7 @@ export default function Stand() {
                             peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                             periode={gekozenPeriode}
                             budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
-                          /> : rekening.rekeningSoort.toLowerCase() === 'inkomsten' ?
+                          /> : rekening.rekeningSoort.toLowerCase() === 'inkomsten' || rekening.rekeningSoort.toLowerCase() === 'rente' ?
                             <BudgetInkomstenGrafiek
                               visualisatie='icon-klein'
                               rekening={rekening}
@@ -182,14 +182,14 @@ export default function Stand() {
                             peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                             periode={gekozenPeriode}
                             budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
-                          /> : rekening.rekeningSoort.toLowerCase() === 'inkomsten' ?
+                          /> : rekening.rekeningSoort.toLowerCase() === 'inkomsten' || rekening.rekeningSoort.toLowerCase() === 'rente' ?
                             <BudgetInkomstenGrafiek
                               key={rekening.id + index}
                               visualisatie='bar'
                               rekening={rekening}
                               peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                               periode={gekozenPeriode}
-                              budgetten={stand.budgettenOpDatum.filter(b => b.rekeningSoort.toLowerCase() === 'inkomsten')}
+                              budgetten={stand.budgettenOpDatum.filter(b => b.rekeningSoort.toLowerCase() === rekening.rekeningSoort.toLowerCase())}
                             /> : rekening.budgetType?.toLowerCase() === 'vast' ?
                             <BudgetVastGrafiek 
                               key={rekening.id + index}
