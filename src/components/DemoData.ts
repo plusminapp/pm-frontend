@@ -118,6 +118,14 @@ export const aflossingen: AflossingDTO[] = [{
     deltaStartPeriode: 0,
     saldoStartPeriode: 1979,
     aflossingBetaling: 0,
+    aflossingOpPeilDatum: undefined,
+    aflossingMoetBetaaldZijn: false,
+    actueleStand: 0,
+    actueleAchterstand: 0,
+    betaaldBinnenAflossing: 0,
+    meerDanVerwacht: 0,
+    minderDanVerwacht: 0,
+    meerDanMaandAflossing: 0,
 }, {
     rekening: {
         ...rekeningTemplate,
@@ -135,6 +143,14 @@ export const aflossingen: AflossingDTO[] = [{
     deltaStartPeriode: 0,
     saldoStartPeriode: 26.4,
     aflossingBetaling: 0,
+    aflossingOpPeilDatum: undefined,
+    aflossingMoetBetaaldZijn: false,
+    actueleStand: 0,
+    actueleAchterstand: 0,
+    betaaldBinnenAflossing: 0,
+    meerDanVerwacht: 0,
+    minderDanVerwacht: 0,
+    meerDanMaandAflossing: 0,
 }, {
     rekening: {
         ...rekeningTemplate,
@@ -152,5 +168,13 @@ export const aflossingen: AflossingDTO[] = [{
     deltaStartPeriode: -25,
     saldoStartPeriode: 111.4,
     aflossingBetaling: 0,
+    aflossingOpPeilDatum: undefined,
+    aflossingMoetBetaaldZijn: false,
+    actueleStand: 0,
+    actueleAchterstand: 0,
+    betaaldBinnenAflossing: 0,
+    meerDanVerwacht: 0,
+    minderDanVerwacht: 0,
+    meerDanMaandAflossing: 0,
 }]
 

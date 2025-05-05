@@ -9,17 +9,17 @@ import PaymentsIcon from '@mui/icons-material/Payments';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 import CallMissedOutgoingIcon from '@mui/icons-material/CallMissedOutgoing';
+import FunctionsIcon from '@mui/icons-material/Functions';
 
 interface StandGeneriekIconProps {
   status: string;
   percentageFill: number;
-  rekeningIcon: React.ReactNode;
   headerText: string;
   bodyText: string;
   cfoText: string;
 }
 
-const StandGeneriekIcon: React.FC<StandGeneriekIconProps> = ({
+const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
   status,
   percentageFill,
   // rekeningIcon,
@@ -27,8 +27,6 @@ const StandGeneriekIcon: React.FC<StandGeneriekIconProps> = ({
   bodyText,
   cfoText,
 }) => {
-
-  console.log('StandGeneriekIcon', status, percentageFill, headerText, bodyText, cfoText);
 
   let statusIcon;
   switch (status) {
@@ -47,27 +45,28 @@ const StandGeneriekIcon: React.FC<StandGeneriekIconProps> = ({
   let rekeningIcon;
   switch (headerText) {
     case 'Inkomsten':
-      rekeningIcon =<PaymentsIcon color="disabled" fontSize="large" />;
+      rekeningIcon = <PaymentsIcon color="disabled" fontSize="large" />;
       break;
-      case 'Boodschappen':
-      rekeningIcon =<LocalMallIcon color="disabled" fontSize="large" />;
+    case 'Boodschappen':
+      rekeningIcon = <LocalMallIcon color="disabled" fontSize="large" />;
       break;
-      case 'Vaste lasten':
-      rekeningIcon =<ElectricalServicesIcon color="disabled" fontSize="large" />;
+    case 'Vaste lasten':
+      rekeningIcon = <ElectricalServicesIcon color="disabled" fontSize="large" />;
       break;
-      case 'Aflossing':
-      rekeningIcon =<CallMissedOutgoingIcon color="disabled" fontSize="large" />;
+    case 'Aflossing':
+      rekeningIcon = <CallMissedOutgoingIcon color="disabled" fontSize="large" />;
       break;
-      default:
+    case 'Samenvatting':
+      rekeningIcon = <FunctionsIcon color="disabled" fontSize="large" />;
+      break;
+    default:
       rekeningIcon = <VraagtekenIcon color={'grey'} height={36} />;
   }
-
-  
 
   return (
     <Grid
       sx={{
-        height: '125px',
+        // height: '125px',
         width: '100%',
         maxWidth: '500px',
         display: 'flex',
@@ -78,7 +77,7 @@ const StandGeneriekIcon: React.FC<StandGeneriekIconProps> = ({
         overflow: 'hidden',
       }}
     >
-      <Grid container width='100%' columns={12} zIndex={2} display={'flex'} alignItems='center' flexDirection={'row'} >
+      <Grid container width='100%' columns={12} zIndex={10} display={'flex'} alignItems='center' flexDirection={'row'} >
         <Grid size={2} padding={2}>
           {rekeningIcon}
         </Grid>
@@ -86,17 +85,17 @@ const StandGeneriekIcon: React.FC<StandGeneriekIconProps> = ({
         <Grid size={8} display={'flex'} flexDirection={'column'} alignItems='flex-start' justifyContent='center'>
           <Typography
             variant="h6"
-            sx={{ color: '#333', zIndex: 2, position: 'relative', }}>
+            sx={{ color: '#333', zIndex: 10, position: 'relative', }}>
             {headerText}
           </Typography>
           <Typography
             variant="body2"
-            sx={{ color: '#666', zIndex: 2, position: 'relative', }}>
+            sx={{ color: '#666', zIndex: 10, position: 'relative', }}>
             {bodyText}
           </Typography>
           <Typography
             variant="body2"
-            sx={{ color: '#333', fontWeight: 'bold', zIndex: 2, position: 'relative', }}>
+            sx={{ color: '#333', fontWeight: 'bold', zIndex: 10, position: 'relative', }}>
             {cfoText}
           </Typography>
         </Grid>
@@ -121,4 +120,4 @@ const StandGeneriekIcon: React.FC<StandGeneriekIconProps> = ({
     </Grid>)
 };
 
-export default StandGeneriekIcon;
+export default StandGeneriekGrafiek;

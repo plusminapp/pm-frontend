@@ -5,13 +5,13 @@ import TableContainer from '@mui/material/TableContainer';
 import TableRow from '@mui/material/TableRow';
 // import Paper from '@mui/material/Paper';
 
-import { ExtendedAflossingDTO } from '../../model/Aflossing';
+import { AflossingDTO } from '../../model/Aflossing';
 import { currencyFormatter } from '../../model/Betaling'
 import dayjs from 'dayjs';
 
 
 interface AflossingProps {
-  aflossing: ExtendedAflossingDTO;
+  aflossing: AflossingDTO;
 }
 
 export default function AflossingTabel(props: AflossingProps) {

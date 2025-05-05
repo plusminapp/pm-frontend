@@ -49,10 +49,10 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
   const extendedVastBudget = props.budgetten.map((budget) => (
     {
       ...budget,
-      budgetBetaling: -(budget.budgetBetaling ?? 0),
+      budgetBetaling: (budget.budgetBetaling ?? 0),
       uitgaveMoetBetaaldZijn: uitgaveMoetBetaaldZijn(budget.betaalDag),
-      meerDanBudget: uitgaveMoetBetaaldZijn(budget.betaalDag) ? 0 : Math.min(-(budget.budgetBetaling ?? 0), budget.bedrag),
-      minderDanBudget: uitgaveMoetBetaaldZijn(budget.betaalDag) ? Math.max(0, budget.bedrag + (budget.budgetBetaling ?? 0)) : 0,
+      meerDanBudget: uitgaveMoetBetaaldZijn(budget.betaalDag) ? 0 : Math.min((budget.budgetBetaling ?? 0), budget.bedrag),
+      minderDanBudget: uitgaveMoetBetaaldZijn(budget.betaalDag) ? Math.max(0, budget.bedrag - (budget.budgetBetaling ?? 0)) : 0,
       meerDanMaandBudget: Math.max(0, -(budget.budgetBetaling ?? 0) - budget.bedrag)
     } as ExtendedVastBudget));
 
@@ -89,7 +89,7 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
     if (budget.minderDanBudget > 0) return <MinIcon color="red" height={18} />
     if (budget.meerDanMaandBudget > 0) return <PlusIcon color="orange" height={18} />
     if (budget.meerDanBudget > 0) return <PlusIcon color="lightgreen" height={18} />
-    return <PlusIcon color="black" />
+    return <PlusIcon color="black" height={18} />
   }
   const berekenRekeningVastIcoon = (): JSX.Element => {
     if (meerDanBudget === 0 && minderDanBudget === 0 && meerDanMaandBudget === 0) return <PlusIcon color="#green" height={30} />
@@ -129,7 +129,7 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
         columns={props.visualisatie === 'all' ? 2 : 0}
         size={props.visualisatie === 'all' ? 0 : 1}
         spacing={props.visualisatie === 'all' ? 2 : 0}>
-        {(props.visualisatie === 'icon-klein' || props.visualisatie === 'all') &&
+        {(props.visualisatie === 'icon-sm' || props.visualisatie === 'all') &&
           <Grid
             size={1}
             border={props.visualisatie === 'all' ? 1 : 0}

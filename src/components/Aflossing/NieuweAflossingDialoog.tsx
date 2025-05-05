@@ -55,6 +55,18 @@ export default function NieuweAflossingDialoog(props: NieuweAflossingDialoogProp
     dossierNummer: "",
     notities: "",
     aflossingSaldoDTO: undefined,
+    aflossingPeilDatum: undefined,
+    aflossingOpPeilDatum: undefined,
+    aflossingBetaling: undefined,
+    deltaStartPeriode: undefined,
+    saldoStartPeriode: undefined,
+    aflossingMoetBetaaldZijn: false,
+    actueleStand: 0,
+    actueleAchterstand: 0,
+    betaaldBinnenAflossing: 0,
+    meerDanVerwacht: 0,
+    minderDanVerwacht: 0,
+    meerDanMaandAflossing: 0,
   }), [initialRekening]);
 
   const [open, setOpen] = useState(false);

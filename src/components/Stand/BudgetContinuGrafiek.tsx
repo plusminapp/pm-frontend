@@ -48,7 +48,7 @@ export const BudgetContinuGrafiek = (props: BudgetContinuGrafiekProps) => {
     meerDanMaandBudget: number;
   }
   const extendedContinuBudget = props.budgetten.map((budget) => {
-    const budgetBetaling = -(budget.budgetBetaling ?? 0)
+    const budgetBetaling = (budget.budgetBetaling ?? 0)
     const budgetMaandBedrag = berekenMaandBedrag(budget.budgetPeriodiciteit, budget.bedrag)
     const meerDanMaandBudget = Math.max((budgetBetaling) - budgetMaandBedrag, 0)
     return {
@@ -114,21 +114,21 @@ export const BudgetContinuGrafiek = (props: BudgetContinuGrafiekProps) => {
     return <MinIcon color="black" />
   }
 
-  // console.log('------------------------------------------');
-  // console.log('props.periode.periodeStartDatum.', JSON.stringify(props.periode.periodeStartDatum));
-  // console.log('props.periode.periodeEindDatum.', JSON.stringify(props.periode.periodeEindDatum));
-  // console.log('peilDatum', JSON.stringify(props.peilDatum.format('YYYY-MM-DD')));
-  // console.log('budgetten', JSON.stringify(extendedContinuBudget));
-  // console.log('budgetOpPeilDatum', JSON.stringify(geaggregeerdBudgetOpPeilDatum));
-  // console.log('besteedOpPeilDatum', JSON.stringify(geaggregeerdBesteedOpPeilDatum));
-  // console.log('periodeLengte', JSON.stringify(periodeLengte));
-  // console.log('maandBudget', JSON.stringify(geaggregeerdMaandBudget));
-  // console.log('besteed', JSON.stringify(besteedBinnenBudget));
-  // console.log('minder', JSON.stringify(minderDanBudget));
-  // console.log('meer', JSON.stringify(meerDanBudget));
-  // console.log('rest', JSON.stringify(restMaandBudget));
-  // console.log('meerDanMaand', JSON.stringify(meerDanMaandBudget));
-  // console.log('visualisatie', JSON.stringify(props.visualisatie));
+  console.log('------------------------------------------');
+  console.log('props.periode.periodeStartDatum.', JSON.stringify(props.periode.periodeStartDatum));
+  console.log('props.periode.periodeEindDatum.', JSON.stringify(props.periode.periodeEindDatum));
+  console.log('peilDatum', JSON.stringify(props.peilDatum.format('YYYY-MM-DD')));
+  console.log('budgetten', JSON.stringify(extendedContinuBudget));
+  console.log('budgetOpPeilDatum', JSON.stringify(geaggregeerdBudgetOpPeilDatum));
+  console.log('besteedOpPeilDatum', JSON.stringify(geaggregeerdBesteedOpPeilDatum));
+  console.log('periodeLengte', JSON.stringify(periodeLengte));
+  console.log('maandBudget', JSON.stringify(geaggregeerdMaandBudget));
+  console.log('besteed', JSON.stringify(besteedBinnenBudget));
+  console.log('minder', JSON.stringify(minderDanBudget));
+  console.log('meer', JSON.stringify(meerDanBudget));
+  console.log('rest', JSON.stringify(restMaandBudget));
+  console.log('meerDanMaand', JSON.stringify(meerDanMaandBudget));
+  console.log('visualisatie', JSON.stringify(props.visualisatie));
 
   return (
     <>
@@ -136,7 +136,7 @@ export const BudgetContinuGrafiek = (props: BudgetContinuGrafiekProps) => {
         columns={props.visualisatie === 'all' ? 2 : 0}
         size={props.visualisatie === 'all' ? 0 : 1}
         spacing={props.visualisatie === 'all' ? 2 : 0}>
-        {(props.visualisatie === 'icon-klein' || props.visualisatie === 'all') &&
+        {(props.visualisatie === 'icon-sm' || props.visualisatie === 'all') &&
           <Grid
             size={1}
             border={props.visualisatie === 'all' ? 1 : 0}

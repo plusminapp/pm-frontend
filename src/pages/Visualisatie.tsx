@@ -2,22 +2,21 @@ import { Box, Button, InputLabel, MenuItem, Select, TextField, Typography } from
 import Grid from '@mui/material/Grid2';
 
 import dayjs from "dayjs";
-import BudgetContinuGrafiek from "../components/Stand/BudgetContinuGrafiek";
 import { BudgetDTO } from "../model/Budget";
-import { dagInPeriode } from '../model/Periode';
 
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useEffect, useState } from "react";
-import { berekenPeriodeBijPeilDatum } from "../model/Periode";
+import { berekenPeriodeBijPeilDatum, dagInPeriode } from "../model/Periode";
 import { BudgetType, RekeningSoort } from "../model/Rekening";
-import BudgetVastGrafiek from "../components/Stand/BudgetVastGrafiek";
-import BudgetInkomstenGrafiek from "../components/Stand/BudgetInkomstenGrafiek";
 import { aflossingen, boodschappenBudgetten, inkomstenBudgetten, rekeningTemplate, vastelastenBudgetten } from "../components/DemoData";
 import { AflossingDTO } from "../model/Aflossing";
-import AflossingGrafiek from "../components/Stand/AflossingGrafiek";
 import StandGeneriekIcon from "../components/Stand/StandGeneriekGrafiek";
 import PaymentsIcon from '@mui/icons-material/Payments';
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import AflossingGrafiek from "../components/Stand/AflossingGrafiek";
+import BudgetContinuGrafiek from "../components/Stand/BudgetContinuGrafiek";
+import BudgetInkomstenGrafiek from "../components/Stand/BudgetInkomstenGrafiek";
+import BudgetVastGrafiek from "../components/Stand/BudgetVastGrafiek";
 
 type FormField = {
   rekeningNaam: string;
@@ -43,7 +42,7 @@ const initialFormFields = {
   percentageFill: 33,
   rekeningIcon: <PaymentsIcon color="disabled" fontSize="large" />,
   bodyText: 'Pas op met je uitgaven',
-  cfoText: 'Ga bezuinigen'
+  cfoText: 'Probeer te bezuinigen'
 } as FormField;
 
 export default function Visualisatie() {
@@ -449,21 +448,39 @@ export default function Visualisatie() {
               visualisatie={'all'}
               periode={periode}
               peilDatum={peilDatum}
-              aflossingen={formFields.aflossingen} />}
+              aflossingen={formFields.aflossingen} 
+              geaggregeerdeAflossingen={formFields.aflossingen[0]}
+              />}
         </>
       }
 
-
-      <Grid container marginTop={4} spacing={2} alignItems="center" columns={5} justifyContent={'start'}>
-        <Grid size={1} display={'flex'} flexDirection={'row'} alignItems={'center'}>
-          <InputLabel id="status-select-label" sx={{ fontSize: '0.875rem', ml: 1 }}>Kleur</InputLabel>
+      <Grid container marginTop={4} spacing={1} alignItems="center" columns={{ sm: 1, md: 5 }} justifyContent={'start'}>
+        <Grid size={1} display={'flex'} flexDirection={'column'} alignItems={'flex-start'}>
+          <InputLabel id="rekening-select-label" sx={{ fontSize: '0.8rem', ml: 1 }}>Rekening</InputLabel>
+          <Select
+            labelId="rekening-select-label"
+            variant="standard"
+            id="rekening-select"
+            value={formFields.rekeningNaam}
+            onChange={(e) => handleStandGeneriekChange('rekeningNaam', e.target.value)}
+            sx={{ fontSize: '0.875rem', mr: 5, width: '200px', textAlign: 'right' }}
+          >
+            {['Samenvatting', 'Inkomsten', 'Boodschappen', 'Vaste lasten', 'Aflossing'].map((rekening) => (
+              <MenuItem key={rekening} value={rekening}>
+                {rekening}
+              </MenuItem>
+            ))}
+          </Select>
+        </Grid>
+        <Grid size={1} display={'flex'} flexDirection={'column'} alignItems={'flex-start'}>
+          <InputLabel id="status-select-label" sx={{ fontSize: '0.8rem', ml: 1 }}>Kleur</InputLabel>
           <Select
             labelId="status-select-label"
             variant="standard"
             id="status-select"
             value={formFields.status}
             onChange={(e) => handleStandGeneriekChange('status', e.target.value)}
-            sx={{ fontSize: '0.875rem', ml: 1, width: '200px', textAlign: 'right' }}
+            sx={{ fontSize: '0.875rem', mr: 2, width: '200px', textAlign: 'right' }}
           >
             {['green', 'orange', 'red'].map((status) => (
               <MenuItem key={status} value={status}>
@@ -528,12 +545,21 @@ export default function Visualisatie() {
       <Box marginBottom={2} marginTop={4} display={'flex'} justifyContent={'flex-start'} alignItems={'center'}>
         <StandGeneriekIcon
           status={formFields.status}
-          rekeningIcon={formFields.rekeningIcon}
           percentageFill={formFields.percentageFill}
           headerText={formFields.rekeningNaam}
           bodyText={formFields.bodyText}
           cfoText={formFields.cfoText}
         />
       </Box>
+      {/* <Box marginBottom={2} marginTop={4} display={'flex'} justifyContent={'flex-start'} alignItems={'center'}>
+        <StandGeneriekIcon
+          status={formFields.status}
+          rekeningIcon={formFields.rekeningIcon}
+          percentageFill={formFields.percentageFill}
+          headerText={formFields.rekeningNaam}
+          bodyText={formFields.bodyText}
+          cfoText={formFields.cfoText}
+        />
+      </Box> */}
     </>)
 }

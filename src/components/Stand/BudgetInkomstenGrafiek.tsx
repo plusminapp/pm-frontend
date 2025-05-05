@@ -95,7 +95,7 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
   }
 
   const berekenRekeningInkomstenIcoon = (): JSX.Element => {
-    const height = props.visualisatie === 'icon-xklein' ? 15 : 30;
+    const height = props.visualisatie === 'icon-xs' ? 15 : 30;
     // console.log('berekenRekeningInkomstenIcoon', height);
     if (meerDanBudget === 0 && minderDanBudget === 0 && meerDanMaandBudget === 0) return <PlusIcon color="#green" height={height} />
     if (minderDanBudget > 0 && meerDanMaandBudget > 0) return <MinIcon color="green" height={height} />
@@ -136,7 +136,7 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
         columns={props.visualisatie === 'all' ? 2 : 0}
         size={props.visualisatie === 'all' ? 0 : 1}
         spacing={props.visualisatie === 'all' ? 2 : 0}>
-        {(props.visualisatie === 'icon-klein' || props.visualisatie === 'icon-xklein' || props.visualisatie === 'all') &&
+        {(props.visualisatie === 'icon-sm' || props.visualisatie === 'icon-xs' || props.visualisatie === 'all') &&
           <Grid
             size={1}
             border={props.visualisatie === 'all' ? 1 : 0}
@@ -145,7 +145,7 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
             my={props.visualisatie === 'all' ? 5 : 1}
             boxShadow={props.visualisatie === 'all' ? 2 : 0} display="flex" alignItems="center">
             {berekenRekeningInkomstenIcoon()}
-            {props.visualisatie !== 'icon-xklein' &&
+            {props.visualisatie !== 'icon-xs' &&
               <Typography
               sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
               component="span"
@@ -190,9 +190,10 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
                 <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start' }}>
                   {berekenToestandInkomstenIcoon(budget)}
                   <Typography variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
-                    {budget.budgetNaam}: {formatAmount(budget.bedrag.toString())}, betaaldag {budget.betaalDag && dagInPeriode(budget.betaalDag, props.periode).format('D MMMM')},&nbsp;
-                    waarvan {formatAmount(budget.budgetBetaling?.toString() ?? "nvt")} is ontvangen; dit is
-                    {budget.meerDanBudget === 0 && budget.minderDanBudget === 0 && budget.meerDanMaandBudget === 0 && ' zoals verwacht'}
+                    {budget.budgetNaam}: {formatAmount(budget.bedrag.toString())}<br/>
+                    Betaaldag {budget.betaalDag && dagInPeriode(budget.betaalDag, props.periode).format('D MMMM')}<br/>
+                    Ontvangen {formatAmount(budget.budgetBetaling?.toString() ?? "nvt")}<br/>
+                    Dit is {budget.meerDanBudget === 0 && budget.minderDanBudget === 0 && budget.meerDanMaandBudget === 0 && ' zoals verwacht'}
                     {[budget.meerDanBudget > 0 && ' eerder dan verwacht',
                     budget.minderDanBudget > 0 && ` ${formatAmount(budget.minderDanBudget.toString())} minder dan verwacht`,
                     budget.meerDanMaandBudget > 0 && ` ${formatAmount(budget.meerDanMaandBudget.toString())} meer dan verwacht`

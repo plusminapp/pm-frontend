@@ -16,9 +16,6 @@ export type AflossingDTO = {
     aflossingBetaling?: number | undefined,
     deltaStartPeriode?: number | undefined,
     saldoStartPeriode?: number | undefined,
-}
-
-export type ExtendedAflossingDTO = AflossingDTO & {
     aflossingMoetBetaaldZijn: boolean;
     actueleStand: number;
     actueleAchterstand: number;

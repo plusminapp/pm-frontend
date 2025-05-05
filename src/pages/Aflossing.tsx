@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import { useCallback, useEffect, useState } from "react";
 import { useCustomContext } from "../context/CustomContext";
 
-import { AflossingDTO, ExtendedAflossingDTO } from '../model/Aflossing'
+import { AflossingDTO } from '../model/Aflossing'
 import { ArrowDropDownIcon } from "@mui/x-date-pickers";
 import AflossingTabel from "../components/Aflossing/AflossingTabel";
 import { MinIcon } from "../icons/Min";
@@ -14,36 +14,16 @@ import { PlusIcon } from "../icons/Plus";
 import dayjs from "dayjs";
 import { AflossingenAfbouwGrafiek } from "../components/Aflossing/Graph/AflossingenAfbouwGrafiek";
 import { PeriodeSelect } from "../components/Periode/PeriodeSelect";
-import { dagInPeriode } from "../model/Periode";
 
 export default function Aflossingen() {
 
   const { getIDToken } = useAuthContext();
   const { actieveHulpvrager, gekozenPeriode, setSnackbarMessage } = useCustomContext();
 
-  const [aflossingen, setAflossingen] = useState<ExtendedAflossingDTO[]>([])
+  const [aflossingen, setAflossingen] = useState<AflossingDTO[]>([])
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchAflossingen = useCallback(async () => {
-    const aflossingMoetBetaaldZijn = (betaalDag: number | undefined, peilDatum: dayjs.Dayjs | undefined) => {
-      if (betaalDag === undefined || gekozenPeriode === undefined) return true;
-      const betaalDagInPeriode = dagInPeriode(betaalDag, gekozenPeriode);
-      return !betaalDagInPeriode.isAfter(peilDatum);
-    }
-    const toExtendedAflossingDTO = (aflossing: AflossingDTO): ExtendedAflossingDTO => {
-      const aflossingMoetZijnBetaald = aflossingMoetBetaaldZijn(aflossing.betaalDag, dayjs(aflossing.aflossingPeilDatum));
-      const actueleAchterstand = (aflossing.deltaStartPeriode ?? 0) + (aflossing.aflossingBetaling ?? 0) - (aflossingMoetZijnBetaald ? (aflossing.aflossingsBedrag ?? 0) : 0)
-      return {
-        ...aflossing,
-        aflossingMoetBetaaldZijn: aflossingMoetZijnBetaald,
-        actueleStand: (aflossing.saldoStartPeriode ?? 0) - (aflossing.aflossingBetaling ?? 0),
-        actueleAchterstand: actueleAchterstand,
-        meerDanVerwacht: !aflossingMoetZijnBetaald && actueleAchterstand > 0 ? actueleAchterstand : 0,
-        minderDanVerwacht: actueleAchterstand < 0 ? -actueleAchterstand : 0,
-        meerDanMaandAflossing: aflossingMoetZijnBetaald && actueleAchterstand > 0 ? actueleAchterstand : 0
-      } as ExtendedAflossingDTO
-    }
-    
     let token
     try {
       token = await getIDToken();
@@ -65,7 +45,7 @@ export default function Aflossingen() {
       setIsLoading(false);
       if (response.ok) {
         const result = await response.json();
-        setAflossingen(result.map((aflossing: AflossingDTO) => toExtendedAflossingDTO(aflossing)));
+        setAflossingen(result);
       } else {
         console.error("Failed to fetch data", response.status);
         setSnackbarMessage({
@@ -86,7 +66,7 @@ export default function Aflossingen() {
     return <Typography sx={{ mb: '25px' }}>De aflossingen worden opgehaald.</Typography>
   }
 
-  const berekenToestandAflossingIcoon = (aflossing: ExtendedAflossingDTO): JSX.Element => {
+  const berekenToestandAflossingIcoon = (aflossing: AflossingDTO): JSX.Element => {
     if (aflossing.meerDanVerwacht === 0 && aflossing.minderDanVerwacht === 0 && aflossing.meerDanMaandAflossing === 0) {
       if (!aflossing.aflossingMoetBetaaldZijn)
         return <PlusIcon color="#1977d3" height={18} />

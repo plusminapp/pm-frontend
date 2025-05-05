@@ -198,7 +198,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
                             periode={gekozenPeriode}
                             rekening={rekeningen.find(r => r.rekeningSoort=== RekeningSoort.inkomsten)!}
                             budgetten={props.budgetten.filter(b => b.rekeningNaam === 'Inkomsten')}
-                            visualisatie={'icon-xklein'}
+                            visualisatie={'icon-xs'}
                             />
                         </Box>
                         &nbsp;
