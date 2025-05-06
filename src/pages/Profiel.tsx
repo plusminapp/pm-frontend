@@ -21,7 +21,7 @@ import { Gebruiker } from '../model/Gebruiker';
 const Profiel: React.FC = () => {
   const { state } = useAuthContext();
 
-  const { gebruiker, actieveHulpvrager, setActieveHulpvrager, hulpvragers, rekeningen, betaalMethoden, betalingsSoorten2Rekeningen, gekozenPeriode } = useCustomContext();
+  const { gebruiker, actieveHulpvrager, setActieveHulpvrager, hulpvragers, rekeningen, betalingsSoorten2Rekeningen, gekozenPeriode } = useCustomContext();
 
   const [checked, setChecked] = useState(actieveHulpvrager === gebruiker && gebruiker?.roles.includes("ROLE_VRIJWILLIGER"));
   useEffect(() => {
@@ -239,7 +239,7 @@ const Profiel: React.FC = () => {
             }
 
             {/* betaalMethoden */}
-            {betaalMethoden && betaalMethoden.length > 0 &&
+            {rekeningen.filter(rekening => betaalmethodeRekeningSoorten.includes(rekening.rekeningSoort)).length > 0 &&
               <Accordion>
                 <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
                   <Typography ><strong>Betaalmethoden.</strong></Typography>

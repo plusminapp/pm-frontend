@@ -18,10 +18,10 @@ import { PlusMinLogo } from "../../assets/PlusMinLogo";
 import { useCustomContext } from '../../context/CustomContext';
 import { Periode } from '../../model/Periode';
 import { Gebruiker } from '../../model/Gebruiker';
+import { Rekening } from '../../model/Rekening';
 import { berekenMaandAflossingenBedrag } from '../../model/Aflossing';
 import StyledSnackbar from './../StyledSnackbar';
-import { saveToLocalStorage } from './HeaderExports';
-
+import { saveToLocalStorage, transformRekeningen2BetalingsSoorten, transformRekeningenToBetalingsSoorten } from './HeaderExports';
 
 function Header() {
   const navigate = useNavigate();
@@ -39,7 +39,7 @@ function Header() {
     actieveHulpvrager, setActieveHulpvrager,
     snackbarMessage, setSnackbarMessage,
     gekozenPeriode, setGekozenPeriode,
-    setPeriodes } = useCustomContext();
+    setPeriodes, setRekeningen, setBetalingsSoorten, setBetalingsSoorten2Rekeningen } = useCustomContext();
 
   const formatRoute = (page: string): string => { return page.toLowerCase().replace('/', '-') }
 
@@ -56,19 +56,42 @@ function Header() {
     setAnchorElGebruiker(null);
   };
 
-  const handleActieveHulpvrager = (id: number) => {
+  const handleActieveHulpvragerChange = async (id: number) => {
     let ahv = hulpvragers.find(hv => hv.id === id)
     ahv = ahv ? ahv : gebruiker
     setActieveHulpvrager(ahv);
     setPeriodes(ahv!.periodes);
+    let nieuweGekozenPeriode = gekozenPeriode;
     if (!gekozenPeriode || !ahv!.periodes.includes(gekozenPeriode)) {
-      const huidigePeriode = ahv!.periodes.find(periode => periode.periodeStatus === 'HUIDIG');
-      setGekozenPeriode(huidigePeriode);
-      saveToLocalStorage('gekozenPeriode', huidigePeriode?.id + '');
+      nieuweGekozenPeriode = ahv!.periodes.find(periode => periode.periodeStatus === 'HUIDIG');
+      setGekozenPeriode(nieuweGekozenPeriode);
+      saveToLocalStorage('gekozenPeriode', nieuweGekozenPeriode?.id + '');
     }
+    await fetchRekeningen(ahv!, nieuweGekozenPeriode!);
     setAnchorElGebruiker(null);
     navigate('/stand')
   };
+
+  const fetchRekeningen = useCallback(async (hulpvrager: Gebruiker, periode: Periode) => {
+    let token
+    try {
+      token = await getIDToken();
+    } catch (error) {
+      console.error("Error getting ID token:", error);
+    }
+
+    const responseRekening = await fetch(`/api/v1/rekening/hulpvrager/${hulpvrager.id}/periode/${periode.id}`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      }
+    })
+    const dataRekening = await responseRekening.json();
+    setRekeningen(dataRekening as Rekening[]);
+    setBetalingsSoorten(transformRekeningen2BetalingsSoorten(dataRekening as Rekening[]));
+    setBetalingsSoorten2Rekeningen(transformRekeningenToBetalingsSoorten(dataRekening as Rekening[]));
+
+  }, [getIDToken, setRekeningen, setBetalingsSoorten, setBetalingsSoorten2Rekeningen]);
 
   const fetchGebruikerMetHulpvragers = useCallback(async () => {
     let token
@@ -78,45 +101,49 @@ function Header() {
       console.error("Error getting ID token:", error);
     }
 
-    const response = await fetch('/api/v1/gebruiker/zelf', {
+    const responseGebruiker = await fetch('/api/v1/gebruiker/zelf', {
       headers: {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json",
       }
     })
-    const data = await response.json();
-    setGebruiker(data.gebruiker as Gebruiker);
-    setHulpvragers(data.hulpvragers as Gebruiker[]);
+    const dataGebruiker = await responseGebruiker.json();
+    setGebruiker(dataGebruiker.gebruiker as Gebruiker);
+    setHulpvragers(dataGebruiker.hulpvragers as Gebruiker[]);
 
     const opgeslagenActieveHulpvragerId = localStorage.getItem('actieveHulpvrager');
-    const opgeslagenActieveHulpvrager = Number(data.gebruiker?.id) === Number(opgeslagenActieveHulpvragerId) ?
-      data.gebruiker : (data.hulpvragers as Gebruiker[]).find(hv => Number(hv.id) === Number(opgeslagenActieveHulpvragerId))
+    const opgeslagenActieveHulpvrager = Number(dataGebruiker.gebruiker?.id) === Number(opgeslagenActieveHulpvragerId) ?
+      dataGebruiker.gebruiker : (dataGebruiker.hulpvragers as Gebruiker[]).find(hv => Number(hv.id) === Number(opgeslagenActieveHulpvragerId))
 
     const opgeslagenGekozenPeriodeId = localStorage.getItem('gekozenPeriode');
     const opgeslagenGekozenPeriode = opgeslagenGekozenPeriodeId ?
       (opgeslagenActieveHulpvrager.periodes as Periode[])
         .find(periode => periode.id === Number(opgeslagenGekozenPeriodeId)) : undefined;
 
+    let nieuweActieveHulpvrager, nieuweGekozenPeriode;
     if (opgeslagenActieveHulpvrager) {
-      setActieveHulpvrager(opgeslagenActieveHulpvrager)
+      nieuweActieveHulpvrager = opgeslagenActieveHulpvrager
       if (opgeslagenGekozenPeriode) {
-        setGekozenPeriode(opgeslagenGekozenPeriode)
+        nieuweGekozenPeriode = (opgeslagenGekozenPeriode)
       } else {
         const huidigePeriode = (opgeslagenActieveHulpvrager.periodes as Periode[])
           .find(periode => periode.periodeStatus === 'HUIDIG');
-        setGekozenPeriode(huidigePeriode);
-        saveToLocalStorage('gekozenPeriode', huidigePeriode?.id + '');
+        nieuweGekozenPeriode = (huidigePeriode);
       }
-    } else if (data.gebruiker.roles.includes('ROLE_VRIJWILLIGER') && data.hulpvragers.length > 0) {
-      setActieveHulpvrager(data.hulpvragers[0])
-      setGekozenPeriode(data.hulpvragers[0].periodes[0])
-      saveToLocalStorage('gekozenPeriode', data.hulpvragers[0].periodes[0] + '');
+    } else if (dataGebruiker.gebruiker.roles.includes('ROLE_VRIJWILLIGER') && dataGebruiker.hulpvragers.length > 0) {
+      nieuweActieveHulpvrager = (dataGebruiker.hulpvragers[0])
+      nieuweGekozenPeriode = (dataGebruiker.hulpvragers[0].periodes[0])
     } else {
-      setActieveHulpvrager(data.gebruiker)
-      setGekozenPeriode(data.gebruiker.periodes[0])
-      saveToLocalStorage('gekozenPeriode', data.gebruiker.periodes[0] + '');
+      nieuweActieveHulpvrager = (dataGebruiker.gebruiker)
+      nieuweGekozenPeriode = (dataGebruiker.gebruiker.periodes[0])
     }
-  }, [getIDToken, setActieveHulpvrager, setGebruiker, setHulpvragers, setGekozenPeriode]);
+
+    setActieveHulpvrager(nieuweActieveHulpvrager);
+    setGekozenPeriode(nieuweGekozenPeriode);
+    saveToLocalStorage('gekozenPeriode', nieuweGekozenPeriode + '');
+
+    await fetchRekeningen(nieuweActieveHulpvrager, nieuweGekozenPeriode);
+  }, [getIDToken, setActieveHulpvrager, setGebruiker, setHulpvragers, setGekozenPeriode, fetchRekeningen]);
 
   useEffect(() => {
     if (state.isAuthenticated) {
@@ -219,13 +246,13 @@ function Header() {
                     open={Boolean(anchorElGebruiker)}
                     onClose={handleCloseGebruikerMenu}
                   >
-                    <MenuItem key={'profile'} onClick={() => handleActieveHulpvrager(gebruiker!.id)}>
+                    <MenuItem key={'profile'} onClick={() => handleActieveHulpvragerChange(gebruiker!.id)}>
                       <Typography sx={{ textAlign: 'center' }}>
                         {actieveHulpvrager?.id === gebruiker?.id ? '> ' : ''}
                         {gebruiker?.bijnaam}</Typography>
                     </MenuItem>
                     {hulpvragers.sort((a, b) => a.bijnaam.localeCompare(b.bijnaam)).map(hulpvrager =>
-                      <MenuItem key={hulpvrager.id} onClick={() => handleActieveHulpvrager(hulpvrager.id)}>
+                      <MenuItem key={hulpvrager.id} onClick={() => handleActieveHulpvragerChange(hulpvrager.id)}>
                         <Typography sx={{ textAlign: 'center' }}>
                           {hulpvrager.id === actieveHulpvrager?.id ? '> ' : ''}
                           {hulpvrager.bijnaam}</Typography>

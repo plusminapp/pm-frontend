@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Gebruiker } from '../model/Gebruiker';
-import { betaalmethodeRekeningSoorten, Rekening, RekeningPaar } from '../model/Rekening';
+import { Rekening, RekeningPaar } from '../model/Rekening';
 import { BetalingsSoort } from '../model/Betaling';
 import { Periode } from '../model/Periode';
 import { SnackbarMessage } from '../components/StyledSnackbar';
-import { saveToLocalStorage, transformRekeningenToBetalingsSoorten } from '../components/Header/HeaderExports';
+import { saveToLocalStorage } from '../components/Header/HeaderExports';
 
 interface CustomContextType {
     gebruiker: Gebruiker | undefined;
@@ -21,8 +21,6 @@ interface CustomContextType {
     setRekeningen: (rekeningen: Array<Rekening>) => void;
     betalingsSoorten: Array<BetalingsSoort>;
     setBetalingsSoorten: (betalingsSoorten: Array<BetalingsSoort>) => void;
-    betaalMethoden: Array<Rekening>;
-    setBetaalMethoden: (betaalMethoden: Array<Rekening>) => void;
     betalingsSoorten2Rekeningen: Map<BetalingsSoort, RekeningPaar>;
     setBetalingsSoorten2Rekeningen: (betalingsSoorten2Rekeningen: Map<BetalingsSoort, RekeningPaar>) => void;
     snackbarMessage: SnackbarMessage;
@@ -52,7 +50,6 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
     const [gekozenPeriode, setGekozenPeriode] = useState<Periode | undefined>(undefined);
     const [rekeningen, setRekeningen] = useState<Array<Rekening>>([]);
     const [betalingsSoorten, setBetalingsSoorten] = useState<Array<BetalingsSoort>>([]);
-    const [betaalMethoden, setBetaalMethoden] = useState<Array<Rekening>>([]);
     const [betalingsSoorten2Rekeningen, setBetalingsSoorten2Rekeningen] = useState<Map<BetalingsSoort, RekeningPaar>>(new Map())
     const [snackbarMessage, setSnackbarMessage] = useState<SnackbarMessage>({ message: undefined, type: undefined });
 
@@ -61,28 +58,7 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
         setActieveHulpvrager(actieveHulpvrager);
         setPeriodes(actieveHulpvrager.periodes)
         saveToLocalStorage('actieveHulpvrager', actieveHulpvrager.id + '');
-        setRekeningen(actieveHulpvrager.rekeningen.sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1));
-        setBetalingsSoorten(transformRekeningen2BetalingsSoorten(actieveHulpvrager.rekeningen));
-        setBetaalMethoden(transformRekeningen2Betaalmethoden(actieveHulpvrager.rekeningen));
-        setBetalingsSoorten2Rekeningen(transformRekeningenToBetalingsSoorten(actieveHulpvrager.rekeningen));
     }, [actieveHulpvrager]);
-
-    const transformRekeningen2BetalingsSoorten = (rekeningen: Rekening[]) => {
-        const betalingsSoortValues = Object.values(BetalingsSoort);
-        const rekeningSoortValues = rekeningen.map((rekening: Rekening) => rekening.rekeningSoort.toLowerCase())
-        const filteredBetalingsSoorten = rekeningSoortValues.flatMap((rekeningSoort) =>
-            betalingsSoortValues.filter((betalingsSoort) =>
-                betalingsSoort.toLowerCase().includes(rekeningSoort.toLowerCase())
-            )
-        );
-        return filteredBetalingsSoorten.filter((value, index, self) => self.indexOf(value) === index); //deduplication ...
-    }
-
-    const transformRekeningen2Betaalmethoden = (rekeningen: Rekening[]) => {
-        return rekeningen.filter((rekening) =>
-            betaalmethodeRekeningSoorten.includes(rekening.rekeningSoort)
-        )
-    }
 
     return (
         <CustomContext.Provider value={{
@@ -93,7 +69,6 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
             gekozenPeriode, setGekozenPeriode,
             rekeningen, setRekeningen,
             betalingsSoorten, setBetalingsSoorten,
-            betaalMethoden, setBetaalMethoden,
             betalingsSoorten2Rekeningen, setBetalingsSoorten2Rekeningen,
             snackbarMessage, setSnackbarMessage
         }}>

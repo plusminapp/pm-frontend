@@ -26,3 +26,14 @@ export const transformRekeningenToBetalingsSoorten = (rekeningen: Rekening[]): M
     return result;
 }
 
+  export const transformRekeningen2BetalingsSoorten = (rekeningen: Rekening[]) => {
+    const betalingsSoortValues = Object.values(BetalingsSoort);
+    const rekeningSoortValues = rekeningen.map((rekening: Rekening) => rekening.rekeningSoort.toLowerCase())
+    const filteredBetalingsSoorten = rekeningSoortValues.flatMap((rekeningSoort) =>
+      betalingsSoortValues.filter((betalingsSoort) =>
+        betalingsSoort.toLowerCase().includes(rekeningSoort.toLowerCase())
+      )
+    );
+    return filteredBetalingsSoorten.filter((value, index, self) => self.indexOf(value) === index); //deduplication ...
+  }
+

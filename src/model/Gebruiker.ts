@@ -1,6 +1,5 @@
 import { AflossingSamenvattingDTO } from "./Aflossing";
 import { Periode } from "./Periode";
-import { Rekening } from "./Rekening";
 
 export type Gebruiker = {
     id: number;
@@ -10,7 +9,7 @@ export type Gebruiker = {
     roles: string[];
     vrijwilligerEmail: string | undefined;
     vrijwilligerBijnaam: string | undefined;
-    rekeningen: Rekening[];
+    // rekeningen: Rekening[];
     periodes: Periode[];
     aflossingen: AflossingSamenvattingDTO[];
 }
