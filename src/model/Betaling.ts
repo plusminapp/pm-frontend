@@ -2,6 +2,7 @@
 import dayjs from "dayjs";
 import { Rekening, RekeningSoort, RekeningSoortPaar } from "./Rekening";
 import { Saldo } from "./Saldo";
+import { Budget } from "./Budget";
 
 export type Betaling = {
   id: number;
@@ -11,7 +12,7 @@ export type Betaling = {
   betalingsSoort: BetalingsSoort;
   bron: Rekening | undefined;
   bestemming: Rekening | undefined;
-  budget: string | undefined;
+  budget: Budget | undefined;
 }
 
 export type BetalingDTO = {

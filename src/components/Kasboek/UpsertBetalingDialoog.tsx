@@ -59,9 +59,9 @@ export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps)
     bron: undefined,
     bestemming: undefined,
     budgetNaam: undefined
-  }), []);
+  }), [boekingsDatum]);
 
-  type BetalingDtoErrors = { betalingsSoort?: String, omschrijving?: string; bedrag?: string; boekingsdatum?: string }
+  type BetalingDtoErrors = { betalingsSoort?: string, omschrijving?: string; bedrag?: string; boekingsdatum?: string }
   type BetalingDtoWarnings = { boekingsdatum?: string }
 
   const initialBetalingDtoErrors = { betalingsSoort: undefined, omschrijving: undefined, bedrag: undefined, boekingsdatum: undefined }
@@ -89,7 +89,7 @@ export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps)
       setIsOntvangst(true)
       setBetalingDTO({ ...betalingDTO, bedrag: -props.betaling.bedrag })
     }
-  });
+  }, [props.editMode, props.betaling?.bedrag, betalingDTO]);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -139,7 +139,7 @@ export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps)
   };
 
   const normalizeDecimal = (value: string): string => {
-    return value.replace(/[^0-9,\-\.]/g, '').replace(',', '.');
+    return value.replace(/[^0-9,\-.]/g, '').replace(',', '.');
   };
 
   const handleInputChange = <K extends keyof BetalingDTO>(key: K, value: BetalingDTO[K]) => {
@@ -219,7 +219,11 @@ export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps)
           type: "success"
         })
         const responseJson = await response.json()
-        props.isOcr ? props.onBetalingBewaardChange(betalingDTO) : props.onBetalingBewaardChange(responseJson) // sortOrder kan gewijzigd zijn ...
+        if (props.isOcr) {
+          props.onBetalingBewaardChange(betalingDTO);
+        } else {
+          props.onBetalingBewaardChange(responseJson); // sortOrder kan gewijzigd zijn ...
+        }
         if (props.editMode) {
           handleClose()
         } else {

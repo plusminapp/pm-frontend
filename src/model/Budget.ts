@@ -8,6 +8,8 @@ export type Budget = {
   budgetPeriodiciteit: string;
   bedrag: number;
   betaalDag: number | undefined;
+  vanPeriode: Periode | undefined;
+  totEnMetPeriode: Periode | undefined;
 }
 export type BudgetDTO = {
   rekeningNaam: string;

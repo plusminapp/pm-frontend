@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useCallback, useEffect, useState } from 'react';
 
 import { Accordion, AccordionDetails, AccordionSummary, FormControlLabel, FormGroup, Paper, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
@@ -6,7 +6,7 @@ import Grid from '@mui/material/Grid2';
 import { useAuthContext } from "@asgardeo/auth-react";
 
 import { useCustomContext } from '../context/CustomContext';
-import { betalingsSoort2Categorie, betalingsSoortFormatter, currencyFormatter } from '../model/Betaling';
+import { Betaling, betalingsSoort2Categorie, betalingsSoortFormatter, currencyFormatter } from '../model/Betaling';
 import { PeriodeSelect } from '../components/Periode/PeriodeSelect';
 import { betaalmethodeRekeningSoorten, BudgetType, inkomstenRekeningSoorten, Rekening, RekeningSoort, resultaatRekeningSoorten, uitgavenRekeningSoorten } from '../model/Rekening';
 import { AflossingSamenvattingDTO } from '../model/Aflossing';
@@ -17,16 +17,46 @@ import { UitgavenIcon } from '../icons/Uitgaven';
 import { InternIcon } from '../icons/Intern';
 import { NaamPlaatje } from '../components/NaamPlaatje';
 import { Gebruiker } from '../model/Gebruiker';
+import dayjs from 'dayjs';
 
 const Profiel: React.FC = () => {
-  const { state } = useAuthContext();
+  const { state, getIDToken } = useAuthContext();
 
   const { gebruiker, actieveHulpvrager, setActieveHulpvrager, hulpvragers, rekeningen, betalingsSoorten2Rekeningen, gekozenPeriode } = useCustomContext();
+
+  const [ongeldigeBetalingen, setOngeldigeBetalingen] = React.useState<Betaling[]>([]);
 
   const [checked, setChecked] = useState(actieveHulpvrager === gebruiker && gebruiker?.roles.includes("ROLE_VRIJWILLIGER"));
   useEffect(() => {
     setChecked(actieveHulpvrager !== gebruiker || !gebruiker?.roles.includes("ROLE_VRIJWILLIGER"));
   }, [actieveHulpvrager, gebruiker]);
+
+  const fetchfetchOngeldigeBetalingen = useCallback(async () => {
+    if (!actieveHulpvrager) {
+      return;
+    }
+    let token
+    try {
+      token = await getIDToken();
+    } catch (error) {
+      console.error("Error getting ID token:", error);
+    }
+
+    const responseOngeldigeBetalingen = await fetch(`/api/v1/betalingen/hulpvrager/${actieveHulpvrager.id}/valideer-budgetten`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      }
+    })
+    const dataOngeldigeBetalingen = await responseOngeldigeBetalingen.json();
+    setOngeldigeBetalingen(dataOngeldigeBetalingen as Betaling[]);
+
+  }, [actieveHulpvrager, getIDToken]);
+  useEffect(() => {
+    if (actieveHulpvrager) {
+      fetchfetchOngeldigeBetalingen();
+    }
+  }, [actieveHulpvrager, fetchfetchOngeldigeBetalingen]);
 
   const aflossingSamenvattingBijRekening = (rekening: Rekening): AflossingSamenvattingDTO | undefined =>
     actieveHulpvrager?.aflossingen.filter(a => a.aflossingNaam === rekening.naam)[0]
@@ -63,6 +93,39 @@ const Profiel: React.FC = () => {
       (heeftInkomstenBudgetten() && heeftUitgaveBudgetten() ?
         `Verwacht over aan t einde van de maand: ${currencyFormatter.format(gebudgeteerdPerPeriode(inkomstenRekeningSoorten) - gebudgeteerdPerPeriode(uitgavenRekeningSoorten))}.` : "");
     return budgetTekst
+  }
+
+  const creeerOngeldigeBetalingenHeader = (): string => {
+    let ongeldigeBetalingenHeader
+    switch (ongeldigeBetalingen.length) {
+      case 0: {
+        ongeldigeBetalingenHeader = "Er zijn geen ongeldige betalingen.";
+        break;
+      }
+      case 1: {
+        ongeldigeBetalingenHeader = "Er is 1 ongeldige betaling.";
+        break;
+      }
+      default: {
+        ongeldigeBetalingenHeader = `Er zijn ${ongeldigeBetalingen.length} ongeldige betalingen.`;
+        break;
+      }
+    }
+    return ongeldigeBetalingenHeader
+  }
+
+  const formatAmount = (amount: string): string => {
+    return parseFloat(amount).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
+  };
+
+  const creeerOngeldigeBetalingenTekst = (betaling: Betaling): string => {
+    const naDatum = dayjs(betaling.budget?.vanPeriode?.periodeStartDatum);
+    const totDatum = dayjs(betaling.budget?.totEnMetPeriode?.periodeEindDatum);
+    const boekingsdatum = dayjs(betaling.boekingsdatum);
+
+    const geldigheid = boekingsdatum.isBefore(naDatum) ? `na ${dayjs(betaling.budget?.vanPeriode?.periodeStartDatum).format('D MMMM')}` :
+     boekingsdatum.isAfter(totDatum) ? `tot ${dayjs(betaling.budget?.totEnMetPeriode?.periodeEindDatum).format('D MMMM')}` : ""; 
+    return `${formatAmount(betaling.bedrag.toString())} met omschrijving ${betaling.omschrijving} op ${dayjs(betaling.boekingsdatum).format('D MMMM')} naar budget ${betaling.budget?.budgetNaam} dat geldig is ${geldigheid}.`
   }
 
   const berekenCategorieIcon = (categorie: string) => {
@@ -186,7 +249,8 @@ const Profiel: React.FC = () => {
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <Typography sx={{ my: '25px' }}>{creeerBudgetTekst()}</Typography>
+                  <Typography >{creeerBudgetTekst()}</Typography>
+                  <PeriodeSelect />
                   <TableContainer component={Paper} sx={{ maxWidth: "xl", m: 'auto', mt: '10px' }}>
                     <Table sx={{ width: "100%" }} aria-label="simple table">
                       <TableHead>
@@ -237,6 +301,25 @@ const Profiel: React.FC = () => {
                 </AccordionDetails>
               </Accordion>
             }
+
+            {/* ongeldige betalingen */}
+            <Accordion>
+              <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
+                <Typography >{creeerOngeldigeBetalingenHeader()}</Typography>
+              </AccordionSummary>
+              {ongeldigeBetalingen.length > 0 &&
+                <AccordionDetails>
+                  <Table sx={{ width: "100%" }} aria-label="simple table">
+                    <TableBody>
+                      {ongeldigeBetalingen.map(betaling => (
+                        <TableRow key={betaling.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }} aria-haspopup="true" >
+                          <TableCell align="left" size='small' sx={{ p: "6px" }}>{creeerOngeldigeBetalingenTekst(betaling)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </AccordionDetails>}
+            </Accordion>
 
             {/* betaalMethoden */}
             {rekeningen.filter(rekening => betaalmethodeRekeningSoorten.includes(rekening.rekeningSoort)).length > 0 &&

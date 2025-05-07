@@ -73,8 +73,8 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
     }
   });
 
-  const maandAflossingsBedrag = props.aflossingen.reduce((acc, aflossing) => acc + (Number(aflossing.aflossingsBedrag) ?? 0), 0);
-  const aflossingOpPeildatum = props.aflossingen.reduce((acc, aflossing) => acc + (Number(aflossing.aflossingOpPeilDatum) ?? 0), 0);
+  const maandAflossingsBedrag = props.aflossingen.reduce((acc, aflossing) => acc + (Number(aflossing.aflossingsBedrag)), 0);
+  const aflossingOpPeildatum = props.aflossingen.reduce((acc, aflossing) => acc + (Number(aflossing.aflossingOpPeilDatum)), 0);
   const heeftAflossing = maandAflossingsBedrag > 0;
 
   const maandBudget = (rekeningNaam: string) => props.budgetten
@@ -111,7 +111,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
   const interneBetalingKopMessage = 'Interne betalingen worden als negatief getal getoond als ze van de betaalrekening af gaan, positief als ze er bij komen.'
   const interneBetalingTotaalMessage = `Interne betalingen schuiven met geld tussen eigen rekeningen (${interneRekeningenNamen}), een totaal betekent daarom niks zinvols en daarom worden de betalingen niet opgeteld.`
 
-  const betaalAchterstand = props.aflossingen.reduce((acc, aflossing) => acc + (Number(aflossing.deltaStartPeriode) ?? 0), 0)
+  const betaalAchterstand = props.aflossingen.reduce((acc, aflossing) => acc + (Number(aflossing.deltaStartPeriode)), 0)
 
   return (
     <>
