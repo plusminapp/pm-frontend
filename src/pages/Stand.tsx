@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, FormControlLabel, FormGroup, Switch, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, FormControlLabel, FormGroup, Switch, Typography } from "@mui/material";
 import Grid from '@mui/material/Grid2';
 import { useEffect, useState } from 'react';
 
@@ -9,12 +9,11 @@ import type { Stand } from "../model/Stand";
 import dayjs from "dayjs";
 import { PeriodeSelect } from "../components/Periode/PeriodeSelect";
 import { ArrowDropDownIcon } from "@mui/x-date-pickers";
-import BudgetContinuGrafiek from "../components/Stand/BudgetContinuGrafiek";
 import { betaalmethodeRekeningSoorten } from "../model/Rekening";
-import BudgetVastGrafiek from "../components/Stand/BudgetVastGrafiek";
-import BudgetInkomstenGrafiek from "../components/Stand/BudgetInkomstenGrafiek";
 import AflossingGrafiek from "../components/Stand/AflossingGrafiek";
 import SamenvattingGrafiek from "../components/Stand/SamenvattingGrafiek";
+import BudgetGrafiek from "../components/Stand/BudgetGrafiek";
+import StandGeneriekGrafiek from "../components/Stand/StandGeneriekGrafiek";
 
 export default function Stand() {
 
@@ -25,6 +24,12 @@ export default function Stand() {
   const [isLoading, setIsLoading] = useState(false);
   const [toonMutaties, setToonMutaties] = useState(localStorage.getItem('toonMutaties') === 'true');
   const [toonBarGrafiek, setToonBarGrafiek] = useState<string | undefined>(undefined);
+
+  const [toonBudgetDetails, setToonBudgetDetails] = useState<boolean>(localStorage.getItem('toonBudgetAflossingDetails') === 'true');
+  const handleToonBudgetChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    localStorage.setItem('toonBudgetAflossingDetails', event.target.checked.toString());
+    setToonBudgetDetails(event.target.checked);
+  };
 
   useEffect(() => {
     const fetchSaldi = async () => {
@@ -106,14 +111,35 @@ export default function Stand() {
               <Typography variant='body2'>
                 {stand.datumLaatsteBetaling ? `Laatste betaling geregistreerd op ${dayjs(stand.datumLaatsteBetaling).format('D MMMM')}` : 'Er is nog geen betaling geregistreerd.'}.
               </Typography>
-              {gekozenPeriode &&
-                <SamenvattingGrafiek
-                  peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
-                  periode={gekozenPeriode}
-                  budgetSamenvatting={stand.budgetSamenvatting}
-                  visualisatie={"icon-sm"} />}
+
+              <Grid display={'flex'} flexDirection={'row'} alignItems={'center'}>
+                <FormGroup>
+                  <FormControlLabel control={
+                    <Switch
+                      sx={{ transform: 'scale(0.6)' }}
+                      checked={toonBudgetDetails}
+                      onChange={handleToonBudgetChange}
+                      slotProps={{ input: { 'aria-label': 'controlled' } }}
+                    />}
+                    sx={{ mr: 0 }}
+                    label={
+                      <Box display="flex" fontSize={'0.875rem'}>
+                        Toon budget toelichting
+                      </Box>
+                    } />
+                </FormGroup>
+              </Grid>
 
               <Grid container columns={{ sm: 1, lg: 2 }}>
+                {gekozenPeriode &&
+                  <Grid size={1}>
+                    <SamenvattingGrafiek
+                      peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
+                      periode={gekozenPeriode}
+                      budgetSamenvatting={stand.budgetSamenvatting}
+                      toonBudgetDetails={toonBudgetDetails} />
+                  </Grid>}
+
                 {gekozenPeriode &&
                   rekeningen
                     .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1)
@@ -123,28 +149,13 @@ export default function Stand() {
                         key={rekening.id}
                         sx={{ cursor: 'pointer' }}
                         onClick={() => handleBarGrafiek(rekening.naam)}>
-                        {rekening.budgetType?.toLowerCase() === 'continu' ?
-                          <BudgetContinuGrafiek
-                            visualisatie='icon-sm'
-                            rekening={rekening}
-                            peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
-                            periode={gekozenPeriode}
-                            budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
-                          /> : rekening.rekeningSoort.toLowerCase() === 'inkomsten' || rekening.rekeningSoort.toLowerCase() === 'rente' ?
-                            <BudgetInkomstenGrafiek
-                              visualisatie='icon-sm'
-                              rekening={rekening}
-                              peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
-                              periode={gekozenPeriode}
-                              budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
-                            /> : rekening.budgetType?.toLowerCase() === 'vast' ?
-                              <BudgetVastGrafiek
-                                visualisatie='icon-sm'
-                                rekening={rekening}
-                                peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
-                                periode={gekozenPeriode}
-                                budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
-                              /> : null}
+                        <StandGeneriekGrafiek
+                          status={"green"}
+                          percentageFill={50}
+                          headerText={rekening.naam}
+                          bodyText={"blaat"}
+                          cfoText={"kom op"}
+                          rekeningIconNaam={rekening.rekeningIcoonNaam} />
                       </Grid>
                     ))}
 
@@ -164,33 +175,17 @@ export default function Stand() {
                   rekeningen
                     .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1)
                     .filter(rekening => rekening.budgetten.length >= 1)
-                    .map((rekening, index) => (
+                    .map((rekening) => (
                       rekening.naam === toonBarGrafiek && (
-                        rekening.budgetType?.toLowerCase() === 'continu' ?
-                          <BudgetContinuGrafiek
-                            key={rekening.id + index}
-                            visualisatie='bar'
-                            rekening={rekening}
-                            peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
-                            periode={gekozenPeriode}
-                            budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
-                          /> : rekening.rekeningSoort.toLowerCase() === 'inkomsten' || rekening.rekeningSoort.toLowerCase() === 'rente' ?
-                            <BudgetInkomstenGrafiek
-                              key={rekening.id + index}
-                              visualisatie='bar'
-                              rekening={rekening}
-                              peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
-                              periode={gekozenPeriode}
-                              budgetten={stand.budgettenOpDatum.filter(b => b.rekeningSoort.toLowerCase() === rekening.rekeningSoort.toLowerCase())}
-                            /> : rekening.budgetType?.toLowerCase() === 'vast' ?
-                              <BudgetVastGrafiek
-                                key={rekening.id + index}
-                                visualisatie='bar'
-                                rekening={rekening}
-                                peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
-                                periode={gekozenPeriode}
-                                budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
-                              /> : null)
+                        <BudgetGrafiek
+                          key={rekening.id}
+                          visualisatie='bar'
+                          rekening={rekening}
+                          peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
+                          periode={gekozenPeriode}
+                          budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
+                          geaggregeerdBudget={stand.geaggregeerdeBudgettenOpDatum.find(b => b.rekeningNaam === rekening.naam)}
+                        />)
                     ))}
 
                 {gekozenPeriode && stand.aflossingenOpDatum.length > 0 && toonBarGrafiek === 'aflossingen' &&

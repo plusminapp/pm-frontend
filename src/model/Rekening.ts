@@ -7,6 +7,7 @@ export type Rekening = {
     rekeningSoort: RekeningSoort;
     nummer: string | undefined;
     bankNaam: string | undefined;
+    rekeningIcoonNaam: string | undefined;
     sortOrder: number;
     budgetType: BudgetType | undefined;
     budgetten: BudgetDTO[];

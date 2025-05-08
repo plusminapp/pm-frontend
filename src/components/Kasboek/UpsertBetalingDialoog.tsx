@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid2';
 import Box from '@mui/material/Box';
@@ -43,7 +43,7 @@ type UpsertBetalingDialoogProps = {
 };
 
 export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps) {
-  const { actieveHulpvrager, gebruiker, betalingsSoorten2Rekeningen, periodes, gekozenPeriode, setSnackbarMessage } = useCustomContext();
+  const { actieveHulpvrager, gebruiker, periodes, gekozenPeriode, setSnackbarMessage } = useCustomContext();
 
   const boekingsDatum = gekozenPeriode?.periodeEindDatum && dayjs().toISOString().slice(0, 10) > gekozenPeriode?.periodeEindDatum ? dayjs(gekozenPeriode?.periodeEindDatum) : dayjs()
 
@@ -74,22 +74,19 @@ export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps)
   const [isOntvangst, setIsOntvangst] = useState(false);
   const { getIDToken } = useAuthContext();
 
-  const rekeningPaar = betalingsSoorten2Rekeningen.get(BetalingsSoort.uitgaven)
-  useEffect(() => {
-    if (!props.editMode) {
-      setBetalingDTO({
-        ...initialBetalingDTO,
-        boekingsdatum: gekozenPeriode?.periodeEindDatum && dayjs().toISOString().slice(0, 10) > gekozenPeriode?.periodeEindDatum ? dayjs(gekozenPeriode?.periodeEindDatum) : dayjs(),
-      });
-    }
-  }, [rekeningPaar, initialBetalingDTO, props.editMode, props.betaling, gekozenPeriode]);
-
-  useEffect(() => {
-    if (props.editMode && !!props.betaling?.bedrag && props.betaling.bedrag < 0) {
-      setIsOntvangst(true)
-      setBetalingDTO({ ...betalingDTO, bedrag: -props.betaling.bedrag })
-    }
-  }, [props.editMode, props.betaling?.bedrag, betalingDTO]);
+  // const rekeningPaar = betalingsSoorten2Rekeningen.get(BetalingsSoort.uitgaven)
+  // useEffect(() => {
+  //   if (!props.editMode) {
+  //     setBetalingDTO({
+  //       ...initialBetalingDTO,
+  //       boekingsdatum: gekozenPeriode?.periodeEindDatum && dayjs().toISOString().slice(0, 10) > gekozenPeriode?.periodeEindDatum ? dayjs(gekozenPeriode?.periodeEindDatum) : dayjs(),
+  //     });
+  //   } else if (props.editMode && !!props.betaling?.bedrag && props.betaling.bedrag < 0) {
+  //     setIsOntvangst(true)
+  //     setBetalingDTO({ ...betalingDTO, bedrag: -props.betaling.bedrag })
+  //   }
+  // }, [initialBetalingDTO, props.editMode, props.betaling, gekozenPeriode]);
+  // }, [props.editMode, props.betaling?.bedrag, betalingDTO]);
 
   const handleClickOpen = () => {
     setOpen(true);

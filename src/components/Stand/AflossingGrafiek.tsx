@@ -70,7 +70,11 @@ export const AflossingGrafiek = (props: AflossingGrafiekProps) => {
     // if (meerDanVerwacht > 0) return <PlusIcon color="lightgreen" height={30} />
     return <StandGeneriekGrafiek
       status='green'
-      percentageFill={66} headerText={'Aflossing'} bodyText={'Op schema'} cfoText={''} />
+      percentageFill={66} 
+      headerText={'Aflossing'} 
+      bodyText={'Op schema'} 
+      cfoText={''} 
+      rekeningIconNaam={'aflossing'} />
   }
   return (
     <>

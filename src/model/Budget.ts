@@ -22,6 +22,11 @@ export type BudgetDTO = {
   budgetPeilDatum: string | undefined;
   budgetBetaling: number | undefined;
   budgetOpPeilDatum?: number | undefined;
+  betaaldBinnenBudget: number | undefined;
+  meerDanBudget: number | undefined;
+  minderDanBudget: number | undefined;
+  meerDanMaandBudget: number | undefined;
+  restMaandBudget: number | undefined;
 }
 export type BudgetSamenvatting = {
   percentagePeriodeVoorbij: number

@@ -9,11 +9,13 @@ import PaymentsIcon from '@mui/icons-material/Payments';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 import CallMissedOutgoingIcon from '@mui/icons-material/CallMissedOutgoing';
+import Redeem from '@mui/icons-material/Redeem';
 import FunctionsIcon from '@mui/icons-material/Functions';
 
 interface StandGeneriekIconProps {
   status: string;
   percentageFill: number;
+  rekeningIconNaam: string | undefined;
   headerText: string;
   bodyText: string;
   cfoText: string;
@@ -22,7 +24,7 @@ interface StandGeneriekIconProps {
 const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
   status,
   percentageFill,
-  // rekeningIcon,
+  rekeningIconNaam,
   headerText,
   bodyText,
   cfoText,
@@ -43,20 +45,23 @@ const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
       statusIcon = <VraagtekenIcon color={'grey'} height={36} />;
   }
   let rekeningIcon;
-  switch (headerText) {
-    case 'Inkomsten':
+  switch (rekeningIconNaam) {
+    case 'inkomsten':
       rekeningIcon = <PaymentsIcon color="disabled" fontSize="large" />;
       break;
-    case 'Boodschappen':
+    case 'boodschappen':
       rekeningIcon = <LocalMallIcon color="disabled" fontSize="large" />;
       break;
-    case 'Vaste lasten':
+    case 'vaste lasten':
       rekeningIcon = <ElectricalServicesIcon color="disabled" fontSize="large" />;
       break;
-    case 'Aflossing':
+    case 'andere uitgave':
+      rekeningIcon = <Redeem color="disabled" fontSize="large" />;
+      break;
+    case 'aflossing':
       rekeningIcon = <CallMissedOutgoingIcon color="disabled" fontSize="large" />;
       break;
-    case 'Samenvatting':
+    case 'samenvatting':
       rekeningIcon = <FunctionsIcon color="disabled" fontSize="large" />;
       break;
     default:
@@ -72,7 +77,6 @@ const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
         display: 'flex',
         alignItems: 'center',
         backgroundColor: '#f0f0f0',
-        borderBottom: `6px solid ${status}`,
         position: 'relative',
         overflow: 'hidden',
       }}
