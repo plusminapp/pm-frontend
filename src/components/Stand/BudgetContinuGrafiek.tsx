@@ -177,7 +177,7 @@ export const BudgetContinuGrafiek = (props: BudgetContinuGrafiekProps) => {
                 sx={{ mr: 0 }}
                 label={
                   <Box display="flex" fontSize={'0.875rem'}>
-                  Toon budget details
+                  Toon budget details continu
                   </Box>
                 } />
               </FormGroup>}

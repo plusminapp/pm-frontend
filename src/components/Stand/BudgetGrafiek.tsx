@@ -1,12 +1,12 @@
-import { Box, FormControlLabel, FormGroup, Switch, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
+import { Box, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import dayjs from 'dayjs';
 import { dagInPeriode, Periode } from '../../model/Periode';
 import { BudgetType, Rekening, RekeningSoort } from '../../model/Rekening';
-import { useState } from 'react';
 import { BudgetDTO } from '../../model/Budget';
 import { PlusIcon } from '../../icons/Plus';
 import { MinIcon } from '../../icons/Min';
+import { useState } from 'react';
 
 type BudgetGrafiekProps = {
   peilDatum: dayjs.Dayjs;
@@ -14,10 +14,11 @@ type BudgetGrafiekProps = {
   rekening: Rekening
   geaggregeerdBudget: BudgetDTO | undefined;
   budgetten: BudgetDTO[];
+  toonBudgetDetails: boolean;
   visualisatie?: 'bar' | 'icon-sm' | 'icon-xs' | 'all';
 };
 
-export const BudgetGrafiek = ({ periode, rekening, geaggregeerdBudget, budgetten, visualisatie }: BudgetGrafiekProps) => {
+export const BudgetGrafiek = ({ periode, rekening, geaggregeerdBudget, budgetten, toonBudgetDetails, visualisatie }: BudgetGrafiekProps) => {
 
   const grafiekType = rekening.rekeningSoort === RekeningSoort.inkomsten  || rekening.rekeningSoort === RekeningSoort.rente ? 'inkomsten' :
     rekening.budgetType === BudgetType.continu ? 'continu' : 
@@ -25,11 +26,6 @@ export const BudgetGrafiek = ({ periode, rekening, geaggregeerdBudget, budgetten
 
   console.log('BudgetGrafiek', grafiekType, rekening.naam);
 
-  const [toonBudgetInkomstenDetails, setToonBudgetInkomstenDetails] = useState<boolean>(localStorage.getItem('toonBudgetAflossingDetails') === 'true');
-  const handleToonBudgetInkomstenChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    localStorage.setItem('toonBudgetAflossingDetails', event.target.checked.toString());
-    setToonBudgetInkomstenDetails(event.target.checked);
-  };
   const formatAmount = (amount: string): string => {
     return parseFloat(amount).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
   };
@@ -49,9 +45,9 @@ export const BudgetGrafiek = ({ periode, rekening, geaggregeerdBudget, budgetten
         return <PlusIcon color="#1977d3" height={18} />
       else return <PlusIcon color="#green" height={18} />
     }
-    if (((budget.minderDanBudget ?? 0) ?? 0) > 0) return <MinIcon color="red" height={18} />
-    if (((budget.meerDanBudget ?? 0) ?? 0) > 0) return <PlusIcon color="lightgreen" height={18} />
-    if (((budget.meerDanMaandBudget ?? 0) ?? 0) > 0) return <PlusIcon color="green" height={18} />
+    if ((budget.minderDanBudget ?? 0) > 0) return <MinIcon color="red" height={18} />
+    if ((budget.meerDanBudget ?? 0) > 0) return <PlusIcon color="lightgreen" height={18} />
+    if ((budget.meerDanMaandBudget ?? 0) > 0) return <PlusIcon color="green" height={18} />
     return <PlusIcon color="black" />
   }
 
@@ -65,6 +61,12 @@ export const BudgetGrafiek = ({ periode, rekening, geaggregeerdBudget, budgetten
     if (meerDanBudget > 0) return <PlusIcon color="green" height={height} />
     return <MinIcon color="black" />
   }
+
+    const [detailsVisible, setDetailsVisible] = useState(false);
+    const toggleDetails = () => {
+      setDetailsVisible(!detailsVisible);
+    }
+  
   return (
     <>
       <Grid container
@@ -89,50 +91,8 @@ export const BudgetGrafiek = ({ periode, rekening, geaggregeerdBudget, budgetten
               </Typography>}
           </Grid>}
       </Grid>
-      {(visualisatie === 'bar' || visualisatie === 'all') &&
         <>
-          <Grid size={2}>
-            <Box display="flex" alignItems="center">
-              <Typography variant='body2' sx={{ mr: 2 }}>
-                <strong>{rekening.naam}</strong>
-              </Typography>
-              {budgetten.length >= 1 &&
-                <FormGroup>
-                  <FormControlLabel control={
-                    <Switch
-                      sx={{ transform: 'scale(0.6)' }}
-                      checked={toonBudgetInkomstenDetails}
-                      onChange={handleToonBudgetInkomstenChange}
-                      slotProps={{ input: { 'aria-label': 'controlled' } }}
-                    />}
-                    sx={{ mr: 0 }}
-                    label={
-                      <Box display="flex" fontSize={'0.875rem'}>
-                        Toon budget details
-                      </Box>
-                    } />
-                </FormGroup>}
-            </Box>
-          </Grid>
-          {toonBudgetInkomstenDetails &&
-            <Grid size={2} alignItems={'flex-start'}>
-              {budgetten.map((budget, index) => (
-                <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                  {berekenBudgetIcoon(budget)}
-                  <Typography variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
-                    {budget.budgetNaam}: {formatAmount((budget.budgetMaandBedrag ?? 0).toString())}<br />
-                    Betaaldag {budget.betaalDag && dagInPeriode(budget.betaalDag, periode).format('D MMMM')}<br />
-                    Betaald {formatAmount(budget.budgetBetaling?.toString() ?? "nvt")}<br />
-                    Dit is {(budget.meerDanBudget ?? 0) === 0 && (budget.minderDanBudget ?? 0) === 0 && (budget.meerDanMaandBudget ?? 0) === 0 && ' zoals verwacht'}
-                    {[(budget.meerDanBudget ?? 0) > 0 && ' eerder dan verwacht',
-                    (budget.minderDanBudget ?? 0) > 0 && ` ${formatAmount((budget.minderDanBudget ?? 0).toString())} minder dan verwacht`,
-                    (budget.meerDanMaandBudget ?? 0) > 0 && ` ${formatAmount((budget.meerDanMaandBudget ?? 0).toString())} meer dan verwacht`
-                    ].filter(Boolean).join(' en ')}.
-                  </Typography>
-                </Box>
-              ))}
-            </Grid>}
-          <TableContainer >
+          <TableContainer onClick={toggleDetails}>
             <Table>
               <TableBody>
 
@@ -233,7 +193,26 @@ export const BudgetGrafiek = ({ periode, rekening, geaggregeerdBudget, budgetten
               </TableBody>
             </Table>
           </TableContainer >
-        </>}
+          {toonBudgetDetails &&
+            <Grid size={2} alignItems={'flex-start'}>
+              {budgetten.map((budget, index) => (
+                <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                  {berekenBudgetIcoon(budget)}
+                  <Typography variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
+                    {budget.budgetNaam}: {formatAmount((budget.budgetMaandBedrag ?? 0).toString())}<br />
+                    Betaaldag {budget.betaalDag && dagInPeriode(budget.betaalDag, periode).format('D MMMM')}<br />
+                    Betaald {formatAmount(budget.budgetBetaling?.toString() ?? "nvt")}<br />
+                    Dit is {(budget.meerDanBudget ?? 0) === 0 && (budget.minderDanBudget ?? 0) === 0 && (budget.meerDanMaandBudget ?? 0) === 0 && ' zoals verwacht'}
+                    {[(budget.meerDanBudget ?? 0) > 0 && ' eerder dan verwacht',
+                    (budget.minderDanBudget ?? 0) > 0 && ` ${formatAmount((budget.minderDanBudget ?? 0).toString())} minder dan verwacht`,
+                    (budget.meerDanMaandBudget ?? 0) > 0 && ` ${formatAmount((budget.meerDanMaandBudget ?? 0).toString())} meer dan verwacht`
+                    ].filter(Boolean).join(' en ')}.
+                  </Typography>
+                </Box>
+              ))}
+            </Grid>}
+
+        </>
     </>
   );
 };

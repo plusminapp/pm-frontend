@@ -25,6 +25,11 @@ export const inkomstenBudgetten: BudgetDTO[] = [{
     rekeningSoort: "inkomsten",
     budgetPeilDatum: dayjs(periode.periodeStartDatum).format('YYYY-MM-DD'),
     budgetBetaling: 0,
+    betaaldBinnenBudget: undefined,
+    meerDanBudget: undefined,
+    minderDanBudget: undefined,
+    meerDanMaandBudget: undefined,
+    restMaandBudget: undefined
 }, {
     budgetNaam: 'Toeslagen',
     budgetPeriodiciteit: 'maand',
@@ -35,6 +40,11 @@ export const inkomstenBudgetten: BudgetDTO[] = [{
     rekeningSoort: "inkomsten",
     budgetPeilDatum: dayjs(periode.periodeStartDatum).format('YYYY-MM-DD'),
     budgetBetaling: 0,
+    betaaldBinnenBudget: undefined,
+    meerDanBudget: undefined,
+    minderDanBudget: undefined,
+    meerDanMaandBudget: undefined,
+    restMaandBudget: undefined
 }];
 
 export const boodschappenBudgetten: BudgetDTO[] = [{
@@ -47,6 +57,11 @@ export const boodschappenBudgetten: BudgetDTO[] = [{
     rekeningSoort: "uitgaven",
     budgetPeilDatum: dayjs(periode.periodeStartDatum).format('YYYY-MM-DD'),
     budgetBetaling: 0,
+    betaaldBinnenBudget: undefined,
+    meerDanBudget: undefined,
+    minderDanBudget: undefined,
+    meerDanMaandBudget: undefined,
+    restMaandBudget: undefined
 }, {
     budgetNaam: 'Overig',
     budgetPeriodiciteit: 'maand',
@@ -57,6 +72,11 @@ export const boodschappenBudgetten: BudgetDTO[] = [{
     rekeningSoort: "uitgaven",
     budgetPeilDatum: dayjs(periode.periodeStartDatum).format('YYYY-MM-DD'),
     budgetBetaling: 0,
+    betaaldBinnenBudget: undefined,
+    meerDanBudget: undefined,
+    minderDanBudget: undefined,
+    meerDanMaandBudget: undefined,
+    restMaandBudget: undefined
 }];
 
 export const vastelastenBudgetten: BudgetDTO[] = [{
@@ -69,6 +89,11 @@ export const vastelastenBudgetten: BudgetDTO[] = [{
     rekeningSoort: "uitgaven",
     budgetPeilDatum: dayjs(periode.periodeStartDatum).format('YYYY-MM-DD'),
     budgetBetaling: 0,
+    betaaldBinnenBudget: undefined,
+    meerDanBudget: undefined,
+    minderDanBudget: undefined,
+    meerDanMaandBudget: undefined,
+    restMaandBudget: undefined
 }, {
     budgetNaam: 'Greenchoice',
     budgetPeriodiciteit: 'maand',
@@ -79,6 +104,11 @@ export const vastelastenBudgetten: BudgetDTO[] = [{
     rekeningSoort: "uitgaven",
     budgetPeilDatum: dayjs(periode.periodeStartDatum).format('YYYY-MM-DD'),
     budgetBetaling: 0,
+    betaaldBinnenBudget: undefined,
+    meerDanBudget: undefined,
+    minderDanBudget: undefined,
+    meerDanMaandBudget: undefined,
+    restMaandBudget: undefined
 }, {
     budgetNaam: 'ONVZ',
     budgetPeriodiciteit: 'maand',
@@ -89,6 +119,11 @@ export const vastelastenBudgetten: BudgetDTO[] = [{
     rekeningSoort: "uitgaven",
     budgetPeilDatum: dayjs(periode.periodeStartDatum).format('YYYY-MM-DD'),
     budgetBetaling: 0,
+    betaaldBinnenBudget: undefined,
+    meerDanBudget: undefined,
+    minderDanBudget: undefined,
+    meerDanMaandBudget: undefined,
+    restMaandBudget: undefined
 }, {
     budgetNaam: 'Overig',
     budgetPeriodiciteit: 'maand',
@@ -99,6 +134,11 @@ export const vastelastenBudgetten: BudgetDTO[] = [{
     rekeningSoort: "uitgaven",
     budgetPeilDatum: dayjs(periode.periodeStartDatum).format('YYYY-MM-DD'),
     budgetBetaling: 0,
+    betaaldBinnenBudget: undefined,
+    meerDanBudget: undefined,
+    minderDanBudget: undefined,
+    meerDanMaandBudget: undefined,
+    restMaandBudget: undefined
 }];
 
 export const aflossingen: AflossingDTO[] = [{

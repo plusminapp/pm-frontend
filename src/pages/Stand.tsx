@@ -149,6 +149,13 @@ export default function Stand() {
                         key={rekening.id}
                         sx={{ cursor: 'pointer' }}
                         onClick={() => handleBarGrafiek(rekening.naam)}>
+                          <BudgetGrafiek 
+                          peilDatum={dayjs(stand.peilDatum).isAfter(dayjs()) ? dayjs() : dayjs(stand.peilDatum)} 
+                          periode={gekozenPeriode}
+                          rekening={rekening} 
+                           budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
+                           geaggregeerdBudget={stand.geaggregeerdeBudgettenOpDatum.find(b => b.rekeningNaam === rekening.naam)}
+                           toonBudgetDetails={toonBudgetDetails} /> 
                         <StandGeneriekGrafiek
                           status={"green"}
                           percentageFill={50}
@@ -184,8 +191,8 @@ export default function Stand() {
                           peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                           periode={gekozenPeriode}
                           budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
-                          geaggregeerdBudget={stand.geaggregeerdeBudgettenOpDatum.find(b => b.rekeningNaam === rekening.naam)}
-                        />)
+                          geaggregeerdBudget={stand.geaggregeerdeBudgettenOpDatum.find(b => b.rekeningNaam === rekening.naam)} 
+                          toonBudgetDetails={toonBudgetDetails}                        />)
                     ))}
 
                 {gekozenPeriode && stand.aflossingenOpDatum.length > 0 && toonBarGrafiek === 'aflossingen' &&

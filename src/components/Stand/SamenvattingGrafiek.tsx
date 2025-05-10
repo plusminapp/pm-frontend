@@ -45,7 +45,6 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
       </Box>
       <TableContainer onClick={toggleDetails} sx={{ cursor: 'pointer' }}>
         <Table size={"small"}>
-        {/* <Table size={!detailsVisible ? "small" : undefined}> */}
           <TableBody>
             <TableRow>
               {besteedTotPeilDatum > 0 && (

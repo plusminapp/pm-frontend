@@ -4,7 +4,7 @@ import Grid from '@mui/material/Grid2';
 import dayjs from "dayjs";
 import { BudgetDTO } from "../model/Budget";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { berekenPeriodeBijPeilDatum, dagInPeriode } from "../model/Periode";
 import { BudgetType, RekeningSoort } from "../model/Rekening";
 import { aflossingen, boodschappenBudgetten, inkomstenBudgetten, rekeningTemplate, vastelastenBudgetten } from "../components/DemoData";
@@ -95,9 +95,9 @@ export default function Visualisatie() {
       default:
         setGekozenPeilDatumNaam('');
     }
-  }, [peilDatum]);
+  }, [peilDatum, periode.periodeEindDatum, periode.periodeStartDatum]);
 
-  const [betalingNamen, setBetalingNamen] = useState<string[]>(inkomstenBudgetten.map(_b => 'niets'));
+  const [betalingNamen, setBetalingNamen] = useState<string[]>(inkomstenBudgetten.map(() => 'niets'));
   const handleBetalingNaamChange = (datum: dayjs.Dayjs, index: number, gekozenBetalingNaam: string) => {
     const verwachtBudgetBedrag =
       selectedVisualisatie !== 'Aflossing' ?
@@ -117,14 +117,14 @@ export default function Visualisatie() {
         handleInputChange(index, Math.round(1.1 * verwachtBudgetBedrag).toString());
     }
   }
-  const verwachtBudget = (datum: dayjs.Dayjs, budget: number): number => {
+  const verwachtBudget = useCallback((datum: dayjs.Dayjs, budget: number): number => {
     if (selectedVisualisatie !== 'Boodschappen') {
       return budget;
     }
     const periodeLengte = dayjs(periode.periodeEindDatum).diff(dayjs(periode.periodeStartDatum), 'day') + 1;
     const dagenTotPeilDatum = datum.diff(dayjs(periode.periodeStartDatum), 'day') + 1;
     return Math.round((dagenTotPeilDatum / periodeLengte) * budget);
-  }
+  }, [selectedVisualisatie, periode.periodeEindDatum, periode.periodeStartDatum]);
 
   useEffect(() => {
     let nieuweBetalingNamen = betalingNamen;
@@ -149,7 +149,7 @@ export default function Visualisatie() {
       }
     });
     setBetalingNamen(nieuweBetalingNamen);
-  }, [peilDatum, formFields.budgetten]);
+  }, [peilDatum, formFields.budgetten, betalingNamen, verwachtBudget]);
 
   useEffect(() => {
     let nieuweBetalingNamen = betalingNamen;
@@ -174,7 +174,7 @@ export default function Visualisatie() {
       }
     });
     setBetalingNamen(nieuweBetalingNamen);
-  }, [peilDatum, formFields.aflossingen]);
+  }, [peilDatum, formFields.aflossingen, betalingNamen, verwachtBudget]);
 
   const handleInputChange = (index: number, value: string) => {
     value = value === null || value === undefined || value === '' ? '0' : value;
@@ -209,7 +209,7 @@ export default function Visualisatie() {
         budgetType: BudgetType.vast,
         budgetten: inkomstenBudgetten,
       })
-      setBetalingNamen(inkomstenBudgetten.map(_b => 'niets'));
+      setBetalingNamen(inkomstenBudgetten.map(() => 'niets'));
     } else if (key === 'Boodschappen') {
       setFormFields({
         ...formFields,
@@ -218,7 +218,7 @@ export default function Visualisatie() {
         budgetType: BudgetType.continu,
         budgetten: boodschappenBudgetten,
       });
-      setBetalingNamen(boodschappenBudgetten.map(_b => 'niets'));
+      setBetalingNamen(boodschappenBudgetten.map(() => 'niets'));
     } else if (key === 'Vaste lasten') {
       setFormFields({
         ...formFields,
@@ -227,7 +227,7 @@ export default function Visualisatie() {
         budgetType: BudgetType.vast,
         budgetten: vastelastenBudgetten,
       })
-      setBetalingNamen(vastelastenBudgetten.map(_b => 'niets'));
+      setBetalingNamen(vastelastenBudgetten.map(() => 'niets'));
     } else if (key === 'Aflossing') {
       setFormFields({
         ...formFields,
@@ -236,7 +236,7 @@ export default function Visualisatie() {
         budgetType: BudgetType.vast,
         aflossingen: aflossingen,
       })
-      setBetalingNamen(aflossingen.map(_b => 'niets'));
+      setBetalingNamen(aflossingen.map(() => 'niets'));
     }
   }
   const formatAmount = (amount: string): string => {
@@ -548,8 +548,8 @@ export default function Visualisatie() {
           percentageFill={formFields.percentageFill}
           headerText={formFields.rekeningNaam}
           bodyText={formFields.bodyText}
-          cfoText={formFields.cfoText}
-        />
+          cfoText={formFields.cfoText} 
+          rekeningIconNaam={formFields.rekeningNaam.toLowerCase()}        />
       </Box>
       {/* <Box marginBottom={2} marginTop={4} display={'flex'} justifyContent={'flex-start'} alignItems={'center'}>
         <StandGeneriekIcon

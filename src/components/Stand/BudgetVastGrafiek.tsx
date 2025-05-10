@@ -171,7 +171,7 @@ export const BudgetVastGrafiek = (props: BudgetVastGrafiekProps) => {
                 sx={{ mr: 0 }}
                 label={
                   <Box display="flex" fontSize={'0.875rem'}>
-                  Toon budget details
+                  Toon budget details vast
                   </Box>
                 } />
               </FormGroup>}
