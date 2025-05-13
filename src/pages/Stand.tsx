@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, Box, FormControlLabel, FormGroup, Switch, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, FormControlLabel, FormGroup, Switch, Typography } from "@mui/material";
 import Grid from '@mui/material/Grid2';
 import { useEffect, useState } from 'react';
 
@@ -13,7 +13,6 @@ import { betaalmethodeRekeningSoorten } from "../model/Rekening";
 import AflossingGrafiek from "../components/Stand/AflossingGrafiek";
 import SamenvattingGrafiek from "../components/Stand/SamenvattingGrafiek";
 import BudgetGrafiek from "../components/Stand/BudgetGrafiek";
-import StandGeneriekGrafiek from "../components/Stand/StandGeneriekGrafiek";
 
 export default function Stand() {
 
@@ -23,12 +22,11 @@ export default function Stand() {
   const [stand, setStand] = useState<Stand | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(false);
   const [toonMutaties, setToonMutaties] = useState(localStorage.getItem('toonMutaties') === 'true');
-  const [toonBarGrafiek, setToonBarGrafiek] = useState<string | undefined>(undefined);
 
-  const [toonBudgetDetails, setToonBudgetDetails] = useState<boolean>(localStorage.getItem('toonBudgetAflossingDetails') === 'true');
-  const handleToonBudgetChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    localStorage.setItem('toonBudgetAflossingDetails', event.target.checked.toString());
-    setToonBudgetDetails(event.target.checked);
+  const [detailsVisible, setDetailsVisible] = useState<boolean>(localStorage.getItem('toonBudgetDetails') === 'true');
+  const toggleToonBudgetDetails = () => {
+    localStorage.setItem('toonBudgetDetails', (!detailsVisible).toString());
+    setDetailsVisible(!detailsVisible);
   };
 
   useEffect(() => {
@@ -73,12 +71,6 @@ export default function Stand() {
     return <Typography sx={{ mb: '25px' }}>De saldi worden opgehaald.</Typography>
   };
 
-  const handleBarGrafiek = (rekeningNaam: string) => {
-    console.log('handleBarGrafiek', rekeningNaam);
-    if (toonBarGrafiek === rekeningNaam) setToonBarGrafiek(undefined);
-    else setToonBarGrafiek(rekeningNaam);
-  }
-
   const berekenBlaat = () => {
     if (gekozenPeriode?.periodeStatus.toLowerCase() === 'huidig') {
       const dagenGeleden = dayjs().diff(dayjs(stand?.datumLaatsteBetaling), 'day');
@@ -104,7 +96,6 @@ export default function Stand() {
       {stand !== undefined &&
         <>
           <Typography variant='h4' sx={{ mb: 2 }}>Hi {actieveHulpvrager?.bijnaam}, hoe is 't?</Typography>
-
           <Grid container spacing={2} columns={{ xs: 1, md: 3 }} justifyContent="space-between">
             <Grid size={2} sx={{ boxShadow: { sm: 0, md: 3 }, p: { sm: 0, md: 2 } }}>
               <Typography variant='h6'>Samenvatting van {berekenBlaat()}</Typography>
@@ -112,13 +103,13 @@ export default function Stand() {
                 {stand.datumLaatsteBetaling ? `Laatste betaling geregistreerd op ${dayjs(stand.datumLaatsteBetaling).format('D MMMM')}` : 'Er is nog geen betaling geregistreerd.'}.
               </Typography>
 
-              <Grid display={'flex'} flexDirection={'row'} alignItems={'center'}>
+              {/* <Grid display={'flex'} flexDirection={'row'} alignItems={'center'}>
                 <FormGroup>
                   <FormControlLabel control={
                     <Switch
                       sx={{ transform: 'scale(0.6)' }}
-                      checked={toonBudgetDetails}
-                      onChange={handleToonBudgetChange}
+                      checked={detailsVisible}
+                      onChange={toggleToonBudgetDetails}
                       slotProps={{ input: { 'aria-label': 'controlled' } }}
                     />}
                     sx={{ mr: 0 }}
@@ -128,16 +119,16 @@ export default function Stand() {
                       </Box>
                     } />
                 </FormGroup>
-              </Grid>
+              </Grid> */}
 
-              <Grid container columns={{ sm: 1, lg: 2 }}>
+              <Grid container columns={{ sm: 1, lg: 2 }} onClick={toggleToonBudgetDetails} >
                 {gekozenPeriode &&
                   <Grid size={1}>
                     <SamenvattingGrafiek
                       peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                       periode={gekozenPeriode}
                       budgetSamenvatting={stand.budgetSamenvatting}
-                      toonBudgetDetails={toonBudgetDetails} />
+                      detailsVisible={detailsVisible} />
                   </Grid>}
 
                 {gekozenPeriode &&
@@ -148,28 +139,21 @@ export default function Stand() {
                       <Grid size={1}
                         key={rekening.id}
                         sx={{ cursor: 'pointer' }}
-                        onClick={() => handleBarGrafiek(rekening.naam)}>
-                          <BudgetGrafiek 
-                          peilDatum={dayjs(stand.peilDatum).isAfter(dayjs()) ? dayjs() : dayjs(stand.peilDatum)} 
+                      >
+                        <BudgetGrafiek
+                          peilDatum={dayjs(stand.peilDatum).isAfter(dayjs()) ? dayjs() : dayjs(stand.peilDatum)}
                           periode={gekozenPeriode}
-                          rekening={rekening} 
-                           budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
-                           geaggregeerdBudget={stand.geaggregeerdeBudgettenOpDatum.find(b => b.rekeningNaam === rekening.naam)}
-                           toonBudgetDetails={toonBudgetDetails} /> 
-                        <StandGeneriekGrafiek
-                          status={"green"}
-                          percentageFill={50}
-                          headerText={rekening.naam}
-                          bodyText={"blaat"}
-                          cfoText={"kom op"}
-                          rekeningIconNaam={rekening.rekeningIcoonNaam} />
+                          rekening={rekening}
+                          budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
+                          geaggregeerdBudget={stand.geaggregeerdeBudgettenOpDatum.find(b => b.rekeningNaam === rekening.naam)}
+                          detailsVisible={detailsVisible} />
                       </Grid>
                     ))}
 
                 {gekozenPeriode && stand.aflossingenOpDatum.length > 0 &&
                   <Grid size={1}
                     sx={{ cursor: 'pointer' }}
-                    onClick={() => handleBarGrafiek('aflossingen')}>
+                  >
                     <AflossingGrafiek
                       visualisatie='icon-sm'
                       peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
@@ -178,7 +162,7 @@ export default function Stand() {
                       geaggregeerdeAflossingen={stand.geaggregeerdeAflossingenOpDatum} />
                   </Grid>
                 }
-                {gekozenPeriode &&
+                {/* {gekozenPeriode &&
                   rekeningen
                     .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1)
                     .filter(rekening => rekening.budgetten.length >= 1)
@@ -192,10 +176,10 @@ export default function Stand() {
                           periode={gekozenPeriode}
                           budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
                           geaggregeerdBudget={stand.geaggregeerdeBudgettenOpDatum.find(b => b.rekeningNaam === rekening.naam)} 
-                          toonBudgetDetails={toonBudgetDetails}                        />)
-                    ))}
+                          detailsVisible={detailsVisible}                        />)
+                    ))} */}
 
-                {gekozenPeriode && stand.aflossingenOpDatum.length > 0 && toonBarGrafiek === 'aflossingen' &&
+                {gekozenPeriode && stand.aflossingenOpDatum.length > 0 && 
                   <AflossingGrafiek
                     visualisatie='bar'
                     peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}

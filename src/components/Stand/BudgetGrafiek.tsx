@@ -6,7 +6,7 @@ import { BudgetType, Rekening, RekeningSoort } from '../../model/Rekening';
 import { BudgetDTO } from '../../model/Budget';
 import { PlusIcon } from '../../icons/Plus';
 import { MinIcon } from '../../icons/Min';
-import { useState } from 'react';
+import StandGeneriekGrafiek from './StandGeneriekGrafiek';
 
 type BudgetGrafiekProps = {
   peilDatum: dayjs.Dayjs;
@@ -14,15 +14,14 @@ type BudgetGrafiekProps = {
   rekening: Rekening
   geaggregeerdBudget: BudgetDTO | undefined;
   budgetten: BudgetDTO[];
-  toonBudgetDetails: boolean;
-  visualisatie?: 'bar' | 'icon-sm' | 'icon-xs' | 'all';
+  detailsVisible: boolean;
 };
 
-export const BudgetGrafiek = ({ periode, rekening, geaggregeerdBudget, budgetten, toonBudgetDetails, visualisatie }: BudgetGrafiekProps) => {
+export const BudgetGrafiek = ({ periode, rekening, geaggregeerdBudget, budgetten, detailsVisible }: BudgetGrafiekProps) => {
 
-  const grafiekType = rekening.rekeningSoort === RekeningSoort.inkomsten  || rekening.rekeningSoort === RekeningSoort.rente ? 'inkomsten' :
-    rekening.budgetType === BudgetType.continu ? 'continu' : 
-    rekening.budgetType === BudgetType.vast ? 'vast' : 'onbekend';
+  const grafiekType = rekening.rekeningSoort === RekeningSoort.inkomsten || rekening.rekeningSoort === RekeningSoort.rente ? 'inkomsten' :
+    rekening.budgetType === BudgetType.continu ? 'continu' :
+      rekening.budgetType === BudgetType.vast ? 'vast' : 'onbekend';
 
   console.log('BudgetGrafiek', grafiekType, rekening.naam);
 
@@ -51,168 +50,121 @@ export const BudgetGrafiek = ({ periode, rekening, geaggregeerdBudget, budgetten
     return <PlusIcon color="black" />
   }
 
-  const berekenRekeningIcoon = (): JSX.Element => {
-    const height = visualisatie === 'icon-xs' ? 15 : 30;
-    // console.log('berekenRekeningInkomstenIcoon', height);
-    if (meerDanBudget === 0 && minderDanBudget === 0 && meerDanMaandBudget === 0) return <PlusIcon color="#green" height={height} />
-    if (minderDanBudget > 0 && meerDanMaandBudget > 0) return <MinIcon color="green" height={height} />
-    if (minderDanBudget > 0) return <MinIcon color="red" height={height} />
-    if (meerDanMaandBudget > 0) return <PlusIcon color="green" height={height} />
-    if (meerDanBudget > 0) return <PlusIcon color="green" height={height} />
-    return <MinIcon color="black" />
-  }
+  // const berekenRekeningIcoon = (): JSX.Element => {
+  //   const height = visualisatie === 'icon-xs' ? 15 : 30;
+  //   // console.log('berekenRekeningInkomstenIcoon', height);
+  //   if (meerDanBudget === 0 && minderDanBudget === 0 && meerDanMaandBudget === 0) return <PlusIcon color="#green" height={height} />
+  //   if (minderDanBudget > 0 && meerDanMaandBudget > 0) return <MinIcon color="green" height={height} />
+  //   if (minderDanBudget > 0) return <MinIcon color="red" height={height} />
+  //   if (meerDanMaandBudget > 0) return <PlusIcon color="green" height={height} />
+  //   if (meerDanBudget > 0) return <PlusIcon color="green" height={height} />
+  //   return <MinIcon color="black" />
+  // }
 
-    const [detailsVisible, setDetailsVisible] = useState(false);
-    const toggleDetails = () => {
-      setDetailsVisible(!detailsVisible);
-    }
-  
   return (
     <>
-      <Grid container
-        columns={visualisatie === 'all' ? 2 : 0}
-        size={visualisatie === 'all' ? 0 : 1}
-        spacing={visualisatie === 'all' ? 2 : 0}>
-        {(visualisatie === 'icon-sm' || visualisatie === 'icon-xs' || visualisatie === 'all') &&
-          <Grid
-            size={1}
-            border={visualisatie === 'all' ? 1 : 0}
-            borderRadius={2}
-            p={visualisatie === 'all' ? 2 : 0}
-            my={visualisatie === 'all' ? 5 : 1}
-            boxShadow={visualisatie === 'all' ? 2 : 0} display="flex" alignItems="center">
-            {berekenRekeningIcoon()}
-            {visualisatie !== 'icon-xs' &&
-              <Typography
-                sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
-                component="span"
-                align="left">
-                <strong>{rekening.naam}</strong>
-              </Typography>}
+      <Box sx={{ maxWidth: '500px' }}>
+        <Box sx={{ cursor: 'pointer' }}>
+
+          <StandGeneriekGrafiek
+            status={"green"}
+            percentageFill={50}
+            headerText={rekening.naam}
+            bodyText={"blaat"}
+            cfoText={"kom op"}
+            rekeningIconNaam={rekening.rekeningIcoonNaam} />
+        </Box>
+
+        <TableContainer >
+          <Table size={'small'}>
+            <TableBody>
+
+              <TableRow>
+                {betaaldBinnenBudget > 0 &&
+                  <TableCell
+                    width={`${(betaaldBinnenBudget / tabelBreedte) * 90}%`}
+                    sx={{
+                      backgroundColor: 'grey',
+                      borderBottom: detailsVisible ? '4px solid #333' : '0px',
+                      color: 'white',
+                      textAlign: 'center',
+                      fontSize: '0.7rem'
+                    }}>
+                    {detailsVisible && formatAmount(betaaldBinnenBudget.toString())}
+                  </TableCell>}
+                {meerDanBudget > 0 &&
+                  <TableCell
+                    width={`${(meerDanBudget / tabelBreedte) * 90}%`}
+                    sx={{
+                      backgroundColor: grafiekType === 'continu' ? 'red' : 'lightgreen',
+                      borderBottom: detailsVisible ? '4px solid #333' : '0px',
+                      color: 'white',
+                      textAlign: 'center',
+                      fontSize: '0.7rem'
+                    }}>
+                    {detailsVisible && formatAmount(meerDanBudget.toString())}
+                  </TableCell>}
+                {meerDanMaandBudget > 0 &&
+                  <TableCell
+                    width={`${(meerDanMaandBudget / tabelBreedte) * 90}%`}
+                    sx={{
+                      backgroundColor: grafiekType === 'inkomsten' ? 'green' : grafiekType === 'vast' ? 'orange' : '#c00',
+                      borderBottom: detailsVisible ? '4px solid #333' : '0px',
+                      color: 'white',
+                      textAlign: 'center',
+                      fontSize: '0.7rem'
+                    }}>
+                    {detailsVisible && formatAmount(meerDanMaandBudget.toString())}
+                  </TableCell>}
+                {minderDanBudget > 0 &&
+                  <TableCell
+                    width={`${(minderDanBudget / tabelBreedte) * 90}%`}
+                    sx={{
+                      backgroundColor: grafiekType === 'continu' ? 'green' : 'red',
+                      borderBottom: detailsVisible ? '4px solid red' : '0px',
+                      color: 'white',
+                      textAlign: 'center',
+                      fontSize: '0.7rem'
+                    }}>
+                    {detailsVisible && formatAmount(minderDanBudget.toString())}
+                  </TableCell>}
+                {restMaandBudget > 0 &&
+                  <TableCell
+                    width={`${(restMaandBudget / tabelBreedte) * 90}%`}
+                    sx={{
+                      backgroundColor: '#1977d3',
+                      borderBottom: detailsVisible ? '4px solid #1977d3' : '0px',
+                      color: 'white',
+                      textAlign: 'center',
+                      fontSize: '0.7rem'
+                    }}>
+                    {detailsVisible && formatAmount(restMaandBudget.toString())}
+                  </TableCell>}
+              </TableRow>
+
+            </TableBody>
+          </Table>
+        </TableContainer >
+        {detailsVisible && false &&
+          <Grid size={2} alignItems={'flex-start'}>
+            {budgetten.map((budget, index) => (
+              <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                {berekenBudgetIcoon(budget)}
+                <Typography variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
+                  {budget.budgetNaam}: {formatAmount((budget.budgetMaandBedrag ?? 0).toString())}<br />
+                  Betaaldag {budget.betaalDag && dagInPeriode(budget.betaalDag, periode).format('D MMMM')}<br />
+                  Betaald {formatAmount(budget.budgetBetaling?.toString() ?? "nvt")}<br />
+                  Dit is {(budget.meerDanBudget ?? 0) === 0 && (budget.minderDanBudget ?? 0) === 0 && (budget.meerDanMaandBudget ?? 0) === 0 && ' zoals verwacht'}
+                  {[(budget.meerDanBudget ?? 0) > 0 && ' eerder dan verwacht',
+                  (budget.minderDanBudget ?? 0) > 0 && ` ${formatAmount((budget.minderDanBudget ?? 0).toString())} minder dan verwacht`,
+                  (budget.meerDanMaandBudget ?? 0) > 0 && ` ${formatAmount((budget.meerDanMaandBudget ?? 0).toString())} meer dan verwacht`
+                  ].filter(Boolean).join(' en ')}.
+                </Typography>
+              </Box>
+            ))}
           </Grid>}
-      </Grid>
-        <>
-          <TableContainer onClick={toggleDetails}>
-            <Table>
-              <TableBody>
 
-                <TableRow>
-                  {betaaldBinnenBudget > 0 &&
-                    <TableCell
-                      width={`${(betaaldBinnenBudget / tabelBreedte) * 90}%`}
-                      sx={{
-                        backgroundColor: 'grey',
-                        borderBottom: '10px solid #333',
-                        color: 'white',
-                        textAlign: 'center'
-                      }}>
-                      {formatAmount(betaaldBinnenBudget.toString())}
-                    </TableCell>}
-                  {meerDanBudget > 0 &&
-                    <TableCell
-                      width={`${(meerDanBudget / tabelBreedte) * 90}%`}
-                      sx={{
-                        backgroundColor: grafiekType === 'continu' ? 'red' : 'lightgreen',
-                        borderBottom: '10px solid #333',
-                        color: 'white',
-                        textAlign: 'center'
-                      }}>
-                      {formatAmount(meerDanBudget.toString())}
-                    </TableCell>}
-                  {meerDanMaandBudget > 0 &&
-                    <TableCell
-                      width={`${(meerDanMaandBudget / tabelBreedte) * 90}%`}
-                      sx={{
-                        backgroundColor: grafiekType === 'inkomsten' ? 'green' : grafiekType === 'vast' ? 'orange' : '#c00',
-                        borderBottom: '10px solid #333',
-                        color: 'white',
-                        textAlign: 'center'
-                      }}>
-                      {formatAmount(meerDanMaandBudget.toString())}
-                    </TableCell>}
-                  {minderDanBudget > 0 &&
-                    <TableCell
-                      width={`${(minderDanBudget / tabelBreedte) * 90}%`}
-                      sx={{
-                        backgroundColor: grafiekType === 'continu' ? 'green' : 'red',
-                        borderBottom: '10px solid red',
-                        color: 'white',
-                        textAlign: 'center'
-                      }}>
-                      {formatAmount(minderDanBudget.toString())}
-                    </TableCell>}
-                  {restMaandBudget > 0 &&
-                    <TableCell
-                      width={`${(restMaandBudget / tabelBreedte) * 90}%`}
-                      sx={{
-                        backgroundColor: '#1977d3',
-                        borderBottom: '10px solid #1977d3',
-                        color: 'white',
-                        textAlign: 'center'
-                      }}>
-                      {formatAmount(restMaandBudget.toString())}
-                    </TableCell>}
-                </TableRow>
-
-                <TableRow>
-                  <TableCell width={'5%'} />
-                  {meerDanBudget > 0 &&
-                    <TableCell
-                      sx={{ p: 1, fontSize: '10px', borderRight: meerDanMaandBudget === 0 ? '2px dotted #333' : 'none', }}
-                      align="right"
-                      width={`${(meerDanBudget / tabelBreedte) * 90}%`}
-                    >
-                      {formatAmount((betaaldBinnenBudget + meerDanBudget).toString())}
-                    </TableCell>}
-                  {meerDanMaandBudget > 0 &&
-                    <TableCell
-                      sx={{ p: 1, fontSize: '10px' }}//, borderRight: '2px dotted #333' }}
-                      align="right"
-                      width={`${(meerDanMaandBudget / tabelBreedte) * 90}%`}
-                    >
-                      {formatAmount((betaaldBinnenBudget + meerDanBudget + meerDanMaandBudget).toString())}
-                    </TableCell>}
-                  {minderDanBudget > 0 &&
-                    <TableCell
-                      sx={{ p: 1, fontSize: '10px' }}
-                      align="right"
-                      width={`${(minderDanBudget / tabelBreedte) * 90}%`}
-                    >
-                      {formatAmount((betaaldBinnenBudget + meerDanBudget + meerDanMaandBudget + minderDanBudget).toString())}
-                    </TableCell>}
-                  {restMaandBudget > 0 &&
-                    <TableCell
-                      sx={{ p: 1, fontSize: '10px', borderLeft: minderDanBudget === 0 ? '2px dotted #333' : 'none' }}
-                      align="right"
-                      width={`${(restMaandBudget / tabelBreedte) * 90}%`}
-                    >
-                      {formatAmount((betaaldBinnenBudget + meerDanBudget + minderDanBudget + meerDanMaandBudget + restMaandBudget).toString())}
-                    </TableCell>}
-                </TableRow>
-
-              </TableBody>
-            </Table>
-          </TableContainer >
-          {toonBudgetDetails &&
-            <Grid size={2} alignItems={'flex-start'}>
-              {budgetten.map((budget, index) => (
-                <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                  {berekenBudgetIcoon(budget)}
-                  <Typography variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
-                    {budget.budgetNaam}: {formatAmount((budget.budgetMaandBedrag ?? 0).toString())}<br />
-                    Betaaldag {budget.betaalDag && dagInPeriode(budget.betaalDag, periode).format('D MMMM')}<br />
-                    Betaald {formatAmount(budget.budgetBetaling?.toString() ?? "nvt")}<br />
-                    Dit is {(budget.meerDanBudget ?? 0) === 0 && (budget.minderDanBudget ?? 0) === 0 && (budget.meerDanMaandBudget ?? 0) === 0 && ' zoals verwacht'}
-                    {[(budget.meerDanBudget ?? 0) > 0 && ' eerder dan verwacht',
-                    (budget.minderDanBudget ?? 0) > 0 && ` ${formatAmount((budget.minderDanBudget ?? 0).toString())} minder dan verwacht`,
-                    (budget.meerDanMaandBudget ?? 0) > 0 && ` ${formatAmount((budget.meerDanMaandBudget ?? 0).toString())} meer dan verwacht`
-                    ].filter(Boolean).join(' en ')}.
-                  </Typography>
-                </Box>
-              ))}
-            </Grid>}
-
-        </>
+      </Box>
     </>
   );
 };

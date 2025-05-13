@@ -1,7 +1,6 @@
 import { Box, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { Periode } from '../../model/Periode';
-import { useState } from 'react';
 import StandGeneriekGrafiek from '../../components/Stand/StandGeneriekGrafiek';
 import { BudgetSamenvatting } from '../../model/Budget';
 
@@ -9,13 +8,13 @@ type SamenvattingGrafiekProps = {
   peilDatum: dayjs.Dayjs;
   periode: Periode;
   budgetSamenvatting: BudgetSamenvatting;
-  toonBudgetDetails: boolean;
+  detailsVisible: boolean;
 };
 
 export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
 
   const { percentagePeriodeVoorbij, budgetMaandInkomstenBedrag, besteedTotPeilDatum, nogNodigNaPeilDatum, actueleBuffer } = props.budgetSamenvatting;
-
+  const detailsVisible = props.detailsVisible;
   const formatAmount = (amount: string): string => {
     return parseFloat(amount).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
   };
@@ -34,16 +33,12 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
       cfoText={''} />
   }
 
-  const [detailsVisible, setDetailsVisible] = useState(false);
-  const toggleDetails = () => {
-    setDetailsVisible(!detailsVisible);
-  }
   return (
     <Box sx={{ maxWidth: '500px' }}>
-      <Box onClick={toggleDetails} sx={{ cursor: 'pointer' }}>
+      <Box >
         {berekenStandGeneriekGrafiek()}
       </Box>
-      <TableContainer onClick={toggleDetails} sx={{ cursor: 'pointer' }}>
+      <TableContainer>
         <Table size={"small"}>
           <TableBody>
             <TableRow>
@@ -95,7 +90,7 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
         </Table>
       </TableContainer>
 
-      {props.toonBudgetDetails && detailsVisible &&
+      {detailsVisible && false && // TODO: remove false when ready
         <Box maxWidth={'500px'}>
           <Typography variant='body2' sx={{ fontSize: '0.8rem', p: 1 }}>
             Het maandinkomen is {budgetMaandInkomstenBedrag.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })} waarvan {besteedTotPeilDatum.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })} is besteed 
