@@ -1,5 +1,4 @@
 import { Box, FormControlLabel, FormGroup, Switch, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
-import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import Grid from '@mui/material/Grid2';
 import dayjs from 'dayjs';
 import { Periode } from '../../model/Periode';
@@ -8,7 +7,6 @@ import { useState } from 'react';
 import { BudgetDTO } from '../../model/Budget';
 import { MinIcon } from '../../icons/Min';
 import { PlusIcon } from '../../icons/Plus';
-import StandIcon from '../../icons/Stand';
 
 type BudgetContinuGrafiekProps = {
   peilDatum: dayjs.Dayjs;
@@ -100,19 +98,6 @@ export const BudgetContinuGrafiek = (props: BudgetContinuGrafiekProps) => {
     if (meerDanBudget > 0) return <MinIcon color="red" height={30} />
     return <MinIcon color="black" />
   }
-  const berekenRekeningContinuGrootIcoon = (): JSX.Element => {
-    if (meerDanBudget === 0 && minderDanBudget === 0 && meerDanMaandBudget === 0)
-      return <StandIcon color="green" borderColor="green" height={100} text={<CheckRoundedIcon />} outerText={props.rekening.naam} />
-    if (minderDanBudget > 0 && meerDanBudget > 0)
-      return <StandIcon color="red" borderColor="green" height={100} text={formatAmount(meerDanBudget.toString())} outerText={props.rekening.naam} />
-    if (minderDanBudget > 0)
-      return <StandIcon color="green" borderColor="green" height={100} text={<CheckRoundedIcon />} outerText={props.rekening.naam} />
-    if (meerDanMaandBudget > 0)
-      return <StandIcon color="#cc0000" borderColor="#cc0000" height={100} text={formatAmount(meerDanMaandBudget.toString())} outerText={props.rekening.naam} />
-    if (meerDanBudget > 0)
-      return <StandIcon color="red" borderColor="red" height={100} text={formatAmount(meerDanBudget.toString())} outerText={props.rekening.naam} />
-    return <MinIcon color="black" />
-  }
 
   console.log('------------------------------------------');
   console.log('props.periode.periodeStartDatum.', JSON.stringify(props.periode.periodeStartDatum));
@@ -152,11 +137,7 @@ export const BudgetContinuGrafiek = (props: BudgetContinuGrafiekProps) => {
               <strong>{props.rekening.naam}</strong>
             </Typography>
           </Grid>}
-        {(props.visualisatie === 'icon-groot' || props.visualisatie === 'all') &&
-          <Grid size={1} border={1} borderRadius={2} p={2} mb={5} boxShadow={2} display="flex" justifyContent="center" alignItems="center">
-            {berekenRekeningContinuGrootIcoon()}
-          </Grid>
-        }
+       
       </Grid>
       {(props.visualisatie === 'bar' || props.visualisatie === 'all') &&
         <>

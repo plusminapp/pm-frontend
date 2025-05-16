@@ -71,21 +71,22 @@ export default function Stand() {
     return <Typography sx={{ mb: '25px' }}>De saldi worden opgehaald.</Typography>
   };
 
-  const berekenBlaat = () => {
+  const berekenPeriodeNaam = () => {
     if (gekozenPeriode?.periodeStatus.toLowerCase() === 'huidig') {
       const dagenGeleden = dayjs().diff(dayjs(stand?.datumLaatsteBetaling), 'day');
       if (dagenGeleden === 0) {
-        return 'vandaag';
+        return 'tot en met vandaag';
       }
       if (dagenGeleden === 1) {
-        return 'gisteren';
+        return 'tot en met gisteren';
       }
       else if (dagenGeleden < 7) {
-        return `${dagenGeleden} dagen geleden`;
+        return `tot en met ${dagenGeleden} dagen geleden`;
       }
       return dayjs(stand?.datumLaatsteBetaling).format('D MMMM') ?? 'onbekend';
     };
-    const maandStart = dayjs(gekozenPeriode?.periodeStartDatum).format('MMMM YYYY');
+    const zelfdeJaar = dayjs(gekozenPeriode?.periodeStartDatum).isSame(dayjs(gekozenPeriode?.periodeEindDatum), 'year');
+    const maandStart = zelfdeJaar ? dayjs(gekozenPeriode?.periodeStartDatum).format('MMMM') : dayjs(gekozenPeriode?.periodeStartDatum).format('MMMM YYYY');
     const maandEinde = dayjs(gekozenPeriode?.periodeEindDatum).format('MMMM YYYY');
     return `periode ${maandStart}/${maandEinde}`;
   }
@@ -98,9 +99,11 @@ export default function Stand() {
           <Typography variant='h4' sx={{ mb: 2 }}>Hi {actieveHulpvrager?.bijnaam}, hoe is 't?</Typography>
           <Grid container spacing={2} columns={{ xs: 1, md: 3 }} justifyContent="space-between">
             <Grid size={2} sx={{ boxShadow: { sm: 0, md: 3 }, p: { sm: 0, md: 2 } }}>
-              <Typography variant='h6'>Samenvatting van {berekenBlaat()}</Typography>
+              <Typography variant='h6'>Samenvatting {berekenPeriodeNaam()}</Typography>
               <Typography variant='body2'>
-                {stand.datumLaatsteBetaling ? `Laatste betaling geregistreerd op ${dayjs(stand.datumLaatsteBetaling).format('D MMMM')}` : 'Er is nog geen betaling geregistreerd.'}.
+                {stand.datumLaatsteBetaling ? `Laatste betaling geregistreerd op ${dayjs(stand.datumLaatsteBetaling).format('D MMMM')}` : 'Er is nog geen betaling geregistreerd.'}. 
+                {dayjs(gekozenPeriode?.periodeEindDatum).isAfter(dayjs()) && ` Er zijn nog ${dayjs(gekozenPeriode?.periodeEindDatum).diff(dayjs(), 'day') + 1} dagen tot het einde van de periode.`}
+                {dayjs(gekozenPeriode?.periodeEindDatum).isBefore(dayjs()) && ' De periode is afgelopen.'}
               </Typography>
 
               {/* <Grid display={'flex'} flexDirection={'row'} alignItems={'center'}>
@@ -155,11 +158,11 @@ export default function Stand() {
                     sx={{ cursor: 'pointer' }}
                   >
                     <AflossingGrafiek
-                      visualisatie='icon-sm'
                       peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                       periode={gekozenPeriode}
                       aflossingen={stand.aflossingenOpDatum}
-                      geaggregeerdeAflossingen={stand.geaggregeerdeAflossingenOpDatum} />
+                      geaggregeerdeAflossingen={stand.geaggregeerdeAflossingenOpDatum}
+                      detailsVisible={detailsVisible} />
                   </Grid>
                 }
                 {/* {gekozenPeriode &&
@@ -178,15 +181,6 @@ export default function Stand() {
                           geaggregeerdBudget={stand.geaggregeerdeBudgettenOpDatum.find(b => b.rekeningNaam === rekening.naam)} 
                           detailsVisible={detailsVisible}                        />)
                     ))} */}
-
-                {gekozenPeriode && stand.aflossingenOpDatum.length > 0 && 
-                  <AflossingGrafiek
-                    visualisatie='bar'
-                    peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
-                    periode={gekozenPeriode}
-                    aflossingen={stand.aflossingenOpDatum}
-                    geaggregeerdeAflossingen={stand.geaggregeerdeAflossingenOpDatum} />
-                }
 
               </Grid>
             </Grid>

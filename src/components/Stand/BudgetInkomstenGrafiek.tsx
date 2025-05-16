@@ -1,5 +1,4 @@
 import { Box, FormControlLabel, FormGroup, Switch, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
-import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import Grid from '@mui/material/Grid2';
 import dayjs from 'dayjs';
 import { dagInPeriode, Periode } from '../../model/Periode';
@@ -8,7 +7,6 @@ import { useState } from 'react';
 import { BudgetDTO } from '../../model/Budget';
 import { PlusIcon } from '../../icons/Plus';
 import { MinIcon } from '../../icons/Min';
-import StandIcon from '../../icons/Stand';
 
 type BudgetInkomstenGrafiekProps = {
   peilDatum: dayjs.Dayjs;
@@ -104,19 +102,6 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
     if (meerDanBudget > 0) return <PlusIcon color="green" height={height} />
     return <MinIcon color="black" />
   }
-  const berekenRekeningInkomstenGrootIcoon = (): JSX.Element => {
-    if (meerDanBudget === 0 && minderDanBudget === 0 && meerDanMaandBudget === 0)
-      return <StandIcon color="green" borderColor="green" height={100} text={<CheckRoundedIcon />} outerText={props.rekening.naam} />
-    if (minderDanBudget > 0 && meerDanMaandBudget > 0)
-      return <StandIcon color="red" borderColor="green" height={100} text={formatAmount(minderDanBudget.toString())} outerText={props.rekening.naam} />
-    if (minderDanBudget > 0)
-      return <StandIcon color="red" borderColor="red" height={100} text={formatAmount(minderDanBudget.toString())} outerText={props.rekening.naam} />
-    if (meerDanMaandBudget > 0)
-      return <StandIcon color="green" borderColor="green" height={100} text={formatAmount(meerDanMaandBudget.toString())} outerText={props.rekening.naam} />
-    if (meerDanBudget > 0)
-      return <StandIcon color="green" borderColor="green" height={100} text={formatAmount(meerDanBudget.toString())} outerText={props.rekening.naam} />
-    return <MinIcon color="black" />
-  }
   // console.log('----------------------------------------------');
   // console.log('props.periode.periodeStartDatum.', JSON.stringify(props.periode.periodeStartDatum));
   // console.log('props.periode.periodeEindDatum.', JSON.stringify(props.periode.periodeEindDatum));
@@ -153,11 +138,6 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
               <strong>{props.rekening.naam}</strong>
             </Typography>}
           </Grid>}
-        {(props.visualisatie === 'icon-groot' || props.visualisatie === 'all') &&
-          <Grid size={1} border={1} borderRadius={2} p={2} mb={5} boxShadow={2} display="flex" justifyContent="center" alignItems="center">
-            {berekenRekeningInkomstenGrootIcoon()}
-          </Grid>
-        }
       </Grid>
       {(props.visualisatie === 'bar' || props.visualisatie === 'all') &&
         <>

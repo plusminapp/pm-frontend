@@ -1,35 +1,36 @@
-import { Box, FormControlLabel, FormGroup, Switch, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
-import Grid from '@mui/material/Grid2';
+import { Box, Table, TableBody, TableCell, TableContainer, TableRow } from '@mui/material';
 import dayjs from 'dayjs';
-import { dagInPeriode, Periode } from '../../model/Periode';
-import { useState } from 'react';
+import { Periode } from '../../model/Periode';
 import { AflossingDTO } from '../../model/Aflossing';
-import { PlusIcon } from '../../icons/Plus';
-import { MinIcon } from '../../icons/Min';
 import StandGeneriekGrafiek from '../../components/Stand/StandGeneriekGrafiek';
+// import { aflossingen } from '../DemoData';
 
 type AflossingGrafiekProps = {
   peilDatum: dayjs.Dayjs;
   periode: Periode;
   aflossingen: AflossingDTO[];
   geaggregeerdeAflossingen: AflossingDTO;
-  visualisatie: string;
+  detailsVisible: boolean;
 };
 
-export const AflossingGrafiek = (props: AflossingGrafiekProps) => {
+export const AflossingGrafiek = ({peilDatum, periode, aflossingen, geaggregeerdeAflossingen, detailsVisible }: AflossingGrafiekProps) => {
 
-  const { meerDanMaandAflossing, meerDanVerwacht, minderDanVerwacht, aflossingsBedrag, betaaldBinnenAflossing } = props.geaggregeerdeAflossingen;
+  const { meerDanMaandAflossing, meerDanVerwacht, minderDanVerwacht, aflossingsBedrag, betaaldBinnenAflossing } = geaggregeerdeAflossingen;
 
-  const [toonaflossingVastDetails, setToonaflossingVastDetails] = useState<boolean>(localStorage.getItem('toonBudgetAflossingDetails') === 'true');
-  const handleToonaflossingVastChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    localStorage.setItem('toonBudgetAflossingDetails', event.target.checked.toString());
-    setToonaflossingVastDetails(event.target.checked);
-  };
+  // const [toonaflossingVastDetails, setToonaflossingVastDetails] = useState<boolean>(localStorage.getItem('toonBudgetAflossingDetails') === 'true');
+  // const handleToonaflossingVastChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   localStorage.setItem('toonBudgetAflossingDetails', event.target.checked.toString());
+  //   setToonaflossingVastDetails(event.target.checked);
+  // };
+    const periodeLengte = dayjs(periode.periodeEindDatum).diff(dayjs(periode.periodeStartDatum), 'day') + 1;
+    const periodeVoorbij = dayjs(peilDatum).diff(dayjs(periode.periodeStartDatum), 'day') + 1;
+    const percentagePeriodeVoorbij = periodeVoorbij / periodeLengte * 100;
+  
 
-  if (props.aflossingen.length === 0 ||
-    props.aflossingen.some(aflossing => aflossing.betaalDag === undefined) ||
-    props.aflossingen.some(aflossing => (aflossing?.betaalDag ?? 0) < 1) ||
-    props.aflossingen.some(aflossing => (aflossing?.betaalDag ?? 30) > 28)) {
+  if (aflossingen.length === 0 ||
+    aflossingen.some(aflossing => aflossing.betaalDag === undefined) ||
+    aflossingen.some(aflossing => (aflossing?.betaalDag ?? 0) < 1) ||
+    aflossingen.some(aflossing => (aflossing?.betaalDag ?? 30) > 28)) {
     throw new Error('aflossingVastGrafiek: rekeningSoort moet \'aflossing\' zijn, er moet minimaal 1 aflossing zijn en alle aflossingen moeten een geldige betaalDag hebben.');
   }
 
@@ -45,17 +46,17 @@ export const AflossingGrafiek = (props: AflossingGrafiekProps) => {
 
   const tabelBreedte = aflossingsBedrag + meerDanMaandAflossing + 5;
 
-  const berekenToestandAflossingIcoon = (aflossing: AflossingDTO): JSX.Element => {
-    if (aflossing.meerDanVerwacht === 0 && aflossing.minderDanVerwacht === 0 && aflossing.meerDanMaandAflossing === 0) {
-      if (!aflossing.aflossingMoetBetaaldZijn)
-        return <PlusIcon color="#1977d3" height={18} />
-      else return <PlusIcon color="#green" height={18} />
-    }
-    if (aflossing.minderDanVerwacht > 0) return <MinIcon color="red" height={18} />
-    if (aflossing.meerDanMaandAflossing > 0) return <PlusIcon color="orange" height={18} />
-    if (aflossing.meerDanVerwacht > 0) return <PlusIcon color="lightgreen" height={18} />
-    return <PlusIcon color="black" />
-  }
+  // const berekenToestandAflossingIcoon = (aflossing: AflossingDTO): JSX.Element => {
+  //   if (aflossing.meerDanVerwacht === 0 && aflossing.minderDanVerwacht === 0 && aflossing.meerDanMaandAflossing === 0) {
+  //     if (!aflossing.aflossingMoetBetaaldZijn)
+  //       return <PlusIcon color="#1977d3" height={18} />
+  //     else return <PlusIcon color="#green" height={18} />
+  //   }
+  //   if (aflossing.minderDanVerwacht > 0) return <MinIcon color="red" height={18} />
+  //   if (aflossing.meerDanMaandAflossing > 0) return <PlusIcon color="orange" height={18} />
+  //   if (aflossing.meerDanVerwacht > 0) return <PlusIcon color="lightgreen" height={18} />
+  //   return <PlusIcon color="black" />
+  // }
   // const berekenRekeningAflossingIcoon = (): JSX.Element => {
   //   if (meerDanVerwacht === 0 && minderDanVerwacht === 0 && meerDanMaandAflossing === 0) return <PlusIcon color="#green" height={30} />
   //   if (minderDanVerwacht > 0) return <MinIcon color="red" height={30} />
@@ -63,34 +64,40 @@ export const AflossingGrafiek = (props: AflossingGrafiekProps) => {
   //   if (meerDanVerwacht > 0) return <PlusIcon color="lightgreen" height={30} />
   //   return <MinIcon color="black" />
   // }
-  const berekenSimonGrafiek = (): JSX.Element => {
-    // if (meerDanVerwacht === 0 && minderDanVerwacht === 0 && meerDanMaandAflossing === 0) return <PlusIcon color="#green" height={30} />
-    // if (minderDanVerwacht > 0) return <MinIcon color="red" height={30} />
-    // if (meerDanMaandAflossing > 0) return <PlusIcon color="orange" height={30} />
-    // if (meerDanVerwacht > 0) return <PlusIcon color="lightgreen" height={30} />
-    return <StandGeneriekGrafiek
-      status='green'
-      percentageFill={66} 
-      headerText={'Aflossing'} 
-      bodyText={'Op schema'} 
-      cfoText={''} 
-      rekeningIconNaam={'aflossing'} />
-  }
+  // const berekenSimonGrafiek = (): JSX.Element => {
+  //   // if (meerDanVerwacht === 0 && minderDanVerwacht === 0 && meerDanMaandAflossing === 0) return <PlusIcon color="#green" height={30} />
+  //   // if (minderDanVerwacht > 0) return <MinIcon color="red" height={30} />
+  //   // if (meerDanMaandAflossing > 0) return <PlusIcon color="orange" height={30} />
+  //   // if (meerDanVerwacht > 0) return <PlusIcon color="lightgreen" height={30} />
+  //   return <StandGeneriekGrafiek
+  //     status='green'
+  //     percentageFill={66} 
+  //     headerText={'Aflossing'} 
+  //     bodyText={'Op schema'} 
+  //     cfoText={''} 
+  //     rekeningIconNaam={'aflossing'} />
+  // }
   return (
     <>
-      {(props.visualisatie === 'icon-sm' || props.visualisatie === 'all') &&
-        <Box>
-          {berekenSimonGrafiek()}
-        </Box>
-      }
+      <Box sx={{ maxWidth: '500px' }}>
 
-      {(props.visualisatie === 'bar' || props.visualisatie === 'all') &&
+        <Box>
+          <StandGeneriekGrafiek
+            status='green'
+            percentageFill={percentagePeriodeVoorbij}
+            headerText={'Aflossing'}
+            bodyText={'Op schema'}
+            cfoText={''}
+            rekeningIconNaam={'aflossing'} />
+        </Box>
+
+
         <>
-          <Grid display={'flex'} flexDirection={'row'} alignItems={'center'}>
+          {/* <Grid display={'flex'} flexDirection={'row'} alignItems={'center'}>
             <Typography variant='body2'>
               <strong>Alossingen</strong>
             </Typography>
-            {props.aflossingen.length >= 1 &&
+            {aflossingen.length >= 1 &&
               <FormGroup >
                 <FormControlLabel control={
                   <Switch
@@ -106,10 +113,10 @@ export const AflossingGrafiek = (props: AflossingGrafiekProps) => {
                     </Box>
                   } />
               </FormGroup>}
-          </Grid>
-          {toonaflossingVastDetails &&
+          </Grid> */}
+          {/* {toonaflossingVastDetails &&
             <Grid size={2} alignItems={'flex-start'}>
-              {props.aflossingen.map((aflossing, index) => (
+              {aflossingen.map((aflossing, index) => (
                 <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start' }}>
                   {berekenToestandAflossingIcoon(aflossing)}
                   <Typography variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
@@ -125,174 +132,79 @@ export const AflossingGrafiek = (props: AflossingGrafiekProps) => {
                   </Typography>
                 </Box>
               ))}
-            </Grid>}
+            </Grid>} */}
           <TableContainer >
-            <Table>
+            <Table size='small'>
               <TableBody>
 
                 <TableRow>
-                  <TableCell width={'5%'} />
-                  {betaaldBinnenAflossing > 0 &&
-                    <TableCell
-                      sx={{ p: 1, fontSize: '10px', borderRight: meerDanVerwacht === 0 && meerDanMaandAflossing === 0 ? '2px dotted #333' : 'none' }}
-                      align="right"
-                      width={`${(betaaldBinnenAflossing / tabelBreedte) * 90}%`}
-                    />}
-                  {meerDanVerwacht > 0 &&
-                    <TableCell
-                      sx={{ p: 1, fontSize: '10px', borderRight: meerDanMaandAflossing === 0 ? '2px dotted #333' : 'none', }}
-                      align="right"
-                      width={`${(meerDanVerwacht / tabelBreedte) * 90}%`}
-                    >
-                      {formatAmount((betaaldBinnenAflossing + meerDanVerwacht).toString())}
-                    </TableCell>}
-                  {meerDanMaandAflossing > 0 &&
-                    <TableCell
-                      sx={{ p: 1, fontSize: '10px', borderRight: '2px dotted #333' }}
-                      align="right"
-                      width={`${(meerDanMaandAflossing / tabelBreedte) * 90}%`}
-                    >
-                      {formatAmount((betaaldBinnenAflossing + meerDanVerwacht + meerDanMaandAflossing).toString())}
-                    </TableCell>}
-                  {minderDanVerwacht > 0 &&
-                    <TableCell
-                      sx={{ p: 1, fontSize: '10px' }}
-                      align="right"
-                      width={`${(minderDanVerwacht / tabelBreedte) * 90}%`}
-                    >
-                      {formatAmount((betaaldBinnenAflossing + meerDanVerwacht + meerDanMaandAflossing + minderDanVerwacht).toString())}
-                    </TableCell>}
-                  {restMaandaflossing > 0 &&
-                    <TableCell
-                      sx={{ p: 1, fontSize: '10px', borderLeft: minderDanVerwacht === 0 ? '2px dotted #333' : 'none' }}
-                      align="right"
-                      width={`${(restMaandaflossing / tabelBreedte) * 90}%`}
-                    >
-                      {formatAmount((betaaldBinnenAflossing + meerDanVerwacht + minderDanVerwacht + meerDanMaandAflossing + restMaandaflossing).toString())}
-                    </TableCell>}
-                  {restMaandaflossing === 0 && props.peilDatum.format('YYYY-MM-DD') != props.periode.periodeEindDatum &&
-                    <TableCell />}
-                </TableRow>
-
-                <TableRow>
-                  <TableCell width={'5%'} sx={{ borderBottom: '10px solid white' }} />
                   {betaaldBinnenAflossing > 0 &&
                     <TableCell
                       width={`${(betaaldBinnenAflossing / tabelBreedte) * 90}%`}
                       sx={{
                         backgroundColor: 'grey',
-                        borderBottom: '10px solid #333',
+                        borderBottom: detailsVisible ? '4px solid #333' : '0px',
                         color: 'white',
-                        textAlign: 'center'
-                      }}>
-                      {formatAmount(betaaldBinnenAflossing.toString())}
+                        textAlign: 'center',
+                        fontSize: '0.7rem'
+                        }}>
+                      {detailsVisible && formatAmount(betaaldBinnenAflossing.toString())}
                     </TableCell>}
                   {meerDanVerwacht > 0 &&
                     <TableCell
                       width={`${(meerDanVerwacht / tabelBreedte) * 90}%`}
                       sx={{
                         backgroundColor: 'lightGreen',
-                        borderBottom: '10px solid #333',
+                        borderBottom: detailsVisible ? '4px solid #333' : '0px',
                         color: 'white',
-                        textAlign: 'center'
-                      }}>
-                      {formatAmount(meerDanVerwacht.toString())}
+                        textAlign: 'center',
+                        fontSize: '0.7rem'
+                        }}>
+                      {detailsVisible && formatAmount(meerDanVerwacht.toString())}
                     </TableCell>}
                   {meerDanMaandAflossing > 0 &&
                     <TableCell
                       width={`${(meerDanMaandAflossing / tabelBreedte) * 90}%`}
                       sx={{
                         backgroundColor: 'orange',
-                        borderBottom: '10px solid #333',
+                        borderBottom: detailsVisible ? '4px solid #333' : '0px',
                         color: 'white',
-                        textAlign: 'center'
-                      }}>
-                      {formatAmount(meerDanMaandAflossing.toString())}
+                        textAlign: 'center',
+                        fontSize: '0.7rem'
+                        }}>
+                      {detailsVisible && formatAmount(meerDanMaandAflossing.toString())}
                     </TableCell>}
                   {minderDanVerwacht > 0 &&
                     <TableCell
                       width={`${(minderDanVerwacht / tabelBreedte) * 90}%`}
                       sx={{
                         backgroundColor: 'red',
-                        borderBottom: '10px solid red',
+                        borderBottom: detailsVisible ? '4px solid red' : '0px',
                         color: 'white',
-                        textAlign: 'center'
-                      }}>
-                      {formatAmount(minderDanVerwacht.toString())}
+                        textAlign: 'center',
+                        fontSize: '0.7rem'
+                        }}>
+                      {detailsVisible && formatAmount(minderDanVerwacht.toString())}
                     </TableCell>}
                   {restMaandaflossing > 0 &&
                     <TableCell
                       width={`${(restMaandaflossing / tabelBreedte) * 90}%`}
                       sx={{
                         backgroundColor: '#1977d3',
-                        borderBottom: '10px solid #1977d3',
+                        borderBottom: detailsVisible ? '4px solid #1977d3' : '0px',
                         color: 'white',
-                        textAlign: 'center'
-                      }}>
-                      {formatAmount(restMaandaflossing.toString())}
-                    </TableCell>}
-                  {restMaandaflossing === 0 && props.peilDatum.format('YYYY-MM-DD') != props.periode.periodeEindDatum &&
-                    <TableCell
-                      sx={{
-                        backgroundColor: '#333',
-                        borderBottom: '10px solid #333',
-                      }} />}
-                </TableRow>
-
-                <TableRow>
-                  <TableCell
-                    align="right"
-                    width={'5%'}
-                    sx={{ p: 1, fontSize: '10px' }} >
-                    {dayjs(props.periode.periodeStartDatum).format('D/M')}
-                  </TableCell>
-                  {betaaldBinnenAflossing > 0 &&
-                    <TableCell
-                      align="right"
-                      width={`${(betaaldBinnenAflossing / tabelBreedte) * 90}%`}
-                      sx={{ p: 1, fontSize: '10px', borderRight: meerDanVerwacht === 0 && meerDanMaandAflossing === 0 ? '2px dotted #333' : 'none' }} >
-                      {meerDanVerwacht === 0 && meerDanMaandAflossing === 0 && props.peilDatum.format('D/M')}
-                    </TableCell>}
-                  {meerDanVerwacht > 0 &&
-                    <TableCell
-                      align="right"
-                      width={`${(meerDanVerwacht / tabelBreedte) * 90}%`}
-                      sx={{ p: 1, fontSize: '10px', borderRight: meerDanMaandAflossing === 0 ? '2px dotted #333' : 'none', }} >
-                      {meerDanMaandAflossing === 0 && props.peilDatum.format('D/M')}
-                    </TableCell>}
-                  {meerDanMaandAflossing > 0 &&
-                    <TableCell
-                      align="right"
-                      width={`${(meerDanMaandAflossing / tabelBreedte) * 90}%`}
-                      sx={{ p: 1, fontSize: '10px', borderRight: '2px dotted #333' }} >
-                      {props.peilDatum.format('D/M')}
-                    </TableCell>}
-                  {minderDanVerwacht > 0 &&
-                    <TableCell
-                      align="right"
-                      width={`${(minderDanVerwacht / tabelBreedte) * 90}%`}
-                      sx={{ p: 1, fontSize: '10px' }}>
-                      {props.peilDatum.format('YYYY-MM-DD') === props.periode.periodeEindDatum && props.peilDatum.format('D/M')}
-                    </TableCell>}
-                  {restMaandaflossing > 0 &&
-                    <TableCell
-                      align="right"
-                      width={`${(restMaandaflossing / tabelBreedte) * 90}%`}
-                      sx={{ p: 1, fontSize: '10px', borderLeft: minderDanVerwacht === 0 ? '2px dotted #333' : 'none' }} >
-                      {dayjs(props.periode.periodeEindDatum).format('D/M')}
-                    </TableCell>}
-                  {restMaandaflossing === 0 && props.peilDatum.format('YYYY-MM-DD') != props.periode.periodeEindDatum &&
-                    <TableCell
-                      align="right"
-                      sx={{ p: 1, fontSize: '10px' }} >
-                      {dayjs(props.periode.periodeEindDatum).format('D/M')}
+                        textAlign: 'center',
+                        fontSize: '0.7rem'
+                        }}>
+                      {detailsVisible && formatAmount(restMaandaflossing.toString())}
                     </TableCell>}
                 </TableRow>
 
               </TableBody>
             </Table>
           </TableContainer >
-        </>}
+        </>
+      </Box>
     </>
   );
 };

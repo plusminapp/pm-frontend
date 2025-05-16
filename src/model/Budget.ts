@@ -15,6 +15,7 @@ export type BudgetDTO = {
   rekeningNaam: string;
   rekeningSoort: string;
   budgetNaam: string;
+  budgetType: string;
   budgetPeriodiciteit: string;
   bedrag: number;
   betaalDag: number | undefined;
@@ -59,3 +60,31 @@ export const budgetten = (rekeningen: Rekening[], aflossingsBedrag: number) =>
     acc["aflossing"] = aflossingsBedrag;
     return acc;
   }, {} as Record<string, number>);
+
+export const berekenBudgetStand = (budget: BudgetDTO): string => {
+  let result;
+  switch (budget.rekeningSoort.toLowerCase()) {
+    case 'inkomsten':
+    case 'rente':
+      (budget.meerDanMaandBudget ?? 0) > 0 || (budget.meerDanBudget ?? 0) > 0 ? result = 'green' :
+        (budget.minderDanBudget ?? 0) > 0 ? result = 'red' : result = 'green';
+      break;
+    case 'uitgaven':
+      switch (budget.budgetType.toLowerCase()) {
+        case 'vast':
+          (budget.meerDanMaandBudget ?? 0) > 0 || (budget.meerDanBudget ?? 0) > 0 ? result = 'orange' :
+          (budget.minderDanBudget ?? 0) > 0 ? result = 'red' : result = 'green';
+          break;
+        case 'continu':
+          (budget.meerDanMaandBudget ?? 0) > 0 ? result = '#cc0000' :
+            (budget.meerDanBudget ?? 0) > 0 ? result = 'red' : result = 'green';
+          break;
+        default:
+          result = 'grey';
+      }
+      break;
+    default:
+      result = 'grey';
+  }
+  return result;
+}

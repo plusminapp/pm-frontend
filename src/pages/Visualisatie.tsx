@@ -6,17 +6,13 @@ import { BudgetDTO } from "../model/Budget";
 
 import { useCallback, useEffect, useState } from "react";
 import { berekenPeriodeBijPeilDatum, dagInPeriode } from "../model/Periode";
-import { BudgetType, RekeningSoort } from "../model/Rekening";
-import { aflossingen, boodschappenBudgetten, inkomstenBudgetten, rekeningTemplate, vastelastenBudgetten } from "../components/DemoData";
+import { BudgetType } from "../model/Rekening";
+import { aflossingen, boodschappenBudgetten, inkomstenBudgetten, vastelastenBudgetten } from "../components/DemoData";
 import { AflossingDTO } from "../model/Aflossing";
 import StandGeneriekIcon from "../components/Stand/StandGeneriekGrafiek";
 import PaymentsIcon from '@mui/icons-material/Payments';
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import AflossingGrafiek from "../components/Stand/AflossingGrafiek";
-import BudgetContinuGrafiek from "../components/Stand/BudgetContinuGrafiek";
-import BudgetInkomstenGrafiek from "../components/Stand/BudgetInkomstenGrafiek";
-import BudgetVastGrafiek from "../components/Stand/BudgetVastGrafiek";
 
 type FormField = {
   rekeningNaam: string;
@@ -399,7 +395,7 @@ export default function Visualisatie() {
         )}
       </Box>
 
-      {periode &&
+      {/* {periode &&
         <>
           {formFields.budgetType === BudgetType.continu &&
             <BudgetContinuGrafiek
@@ -452,7 +448,7 @@ export default function Visualisatie() {
               geaggregeerdeAflossingen={formFields.aflossingen[0]}
               />}
         </>
-      }
+      } */}
 
       <Grid container marginTop={4} spacing={1} alignItems="center" columns={{ sm: 1, md: 5 }} justifyContent={'start'}>
         <Grid size={1} display={'flex'} flexDirection={'column'} alignItems={'flex-start'}>

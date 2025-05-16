@@ -19,10 +19,11 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
     return parseFloat(amount).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
   };
   const gevarenZone = 0.02
-  const inGevarenZone = actueleBuffer < gevarenZone * budgetMaandInkomstenBedrag
+  const periodeAfgelopen = props.peilDatum.startOf('day').isSame(dayjs(props.periode.periodeEindDatum).startOf('day'));
+  const inGevarenZone = actueleBuffer < gevarenZone * budgetMaandInkomstenBedrag && ! periodeAfgelopen;
 
   const berekenStandGeneriekGrafiek = (): JSX.Element => {
-    const bufferTekst = props.peilDatum.startOf('day').isSame(dayjs(props.periode.periodeEindDatum).startOf('day')) ? 'Over einde periode' : 'Buffer';
+    const bufferTekst = periodeAfgelopen ? 'Over einde periode' : 'Buffer';
     const status = actueleBuffer == 0 ? 'red' : inGevarenZone ? 'orange' : 'green';
     return <StandGeneriekGrafiek
       status={status}

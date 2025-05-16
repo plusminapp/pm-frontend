@@ -9,6 +9,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "@asgardeo/auth-react";
 import { Rekening } from "../../model/Rekening.ts";
+import dayjs from "dayjs";
 
 interface PeriodeSelectProps {
   isProfiel?: boolean;
@@ -81,7 +82,7 @@ export function PeriodeSelect({ isProfiel = false }: PeriodeSelectProps) {
               {openPeriodes
                 .map((periode: Periode) => (
                   <MenuItem key={periode.periodeStartDatum.toString()} value={periode.periodeStartDatum.toString()} sx={{ fontSize: '0.875rem' }}>
-                    {`van ${periode.periodeStartDatum} tot ${periode.periodeEindDatum}`} ({periode.periodeStatus.toLocaleLowerCase()})
+                    {`van ${dayjs(periode.periodeStartDatum).format('D MMMM')} tot ${dayjs(periode.periodeEindDatum).format('D MMMM')}`} ({periode.periodeStatus.toLocaleLowerCase()})
                   </MenuItem>))}
             </Select>
           </FormControl>

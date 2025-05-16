@@ -3,7 +3,6 @@ import { Box, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { PlusIcon } from "../../icons/Plus";
 import { UitroeptekenIcon } from "../../icons/Uitroepteken";
-import { VraagtekenIcon } from "../../icons/Vraagteken";
 import { MinIcon } from "../../icons/Min";
 import PaymentsIcon from '@mui/icons-material/Payments';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
@@ -11,6 +10,8 @@ import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 import CallMissedOutgoingIcon from '@mui/icons-material/CallMissedOutgoing';
 import Redeem from '@mui/icons-material/Redeem';
 import FunctionsIcon from '@mui/icons-material/Functions';
+import SavingsOutlinedIcon from '@mui/icons-material/SavingsOutlined';
+import QuestionMarkOutlinedIcon from '@mui/icons-material/QuestionMarkOutlined';
 
 interface StandGeneriekIconProps {
   status: string;
@@ -36,13 +37,14 @@ const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
       statusIcon = <PlusIcon color={status} height={36} />;
       break;
     case 'red':
+    case '#cc0000':
       statusIcon = <MinIcon color={status} height={36} />;
       break;
     case 'orange':
       statusIcon = <UitroeptekenIcon color={status} height={36} />;
       break;
     default:
-      statusIcon = <VraagtekenIcon color={'grey'} height={36} />;
+      statusIcon = <QuestionMarkOutlinedIcon color={'disabled'} height={36} />;
   }
   let rekeningIcon;
   switch (rekeningIconNaam) {
@@ -61,11 +63,14 @@ const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
     case 'aflossing':
       rekeningIcon = <CallMissedOutgoingIcon color="disabled" fontSize="large" />;
       break;
+    case 'reservering':
+      rekeningIcon = <SavingsOutlinedIcon color="disabled" fontSize="large" />;
+      break;
     case 'samenvatting':
       rekeningIcon = <FunctionsIcon color="disabled" fontSize="large" />;
       break;
     default:
-      rekeningIcon = <VraagtekenIcon color={'grey'} height={36} />;
+      rekeningIcon = <QuestionMarkOutlinedIcon color={'disabled'} height={36} />;
   }
 
   return (

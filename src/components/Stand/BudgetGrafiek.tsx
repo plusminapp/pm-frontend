@@ -3,7 +3,7 @@ import Grid from '@mui/material/Grid2';
 import dayjs from 'dayjs';
 import { dagInPeriode, Periode } from '../../model/Periode';
 import { BudgetType, Rekening, RekeningSoort } from '../../model/Rekening';
-import { BudgetDTO } from '../../model/Budget';
+import { berekenBudgetStand, BudgetDTO } from '../../model/Budget';
 import { PlusIcon } from '../../icons/Plus';
 import { MinIcon } from '../../icons/Min';
 import StandGeneriekGrafiek from './StandGeneriekGrafiek';
@@ -12,18 +12,16 @@ type BudgetGrafiekProps = {
   peilDatum: dayjs.Dayjs;
   periode: Periode;
   rekening: Rekening
-  geaggregeerdBudget: BudgetDTO | undefined;
   budgetten: BudgetDTO[];
+  geaggregeerdBudget: BudgetDTO | undefined;
   detailsVisible: boolean;
 };
 
-export const BudgetGrafiek = ({ periode, rekening, geaggregeerdBudget, budgetten, detailsVisible }: BudgetGrafiekProps) => {
+export const BudgetGrafiek = ({ peilDatum, periode, rekening, geaggregeerdBudget, budgetten, detailsVisible }: BudgetGrafiekProps) => {
 
   const grafiekType = rekening.rekeningSoort === RekeningSoort.inkomsten || rekening.rekeningSoort === RekeningSoort.rente ? 'inkomsten' :
     rekening.budgetType === BudgetType.continu ? 'continu' :
       rekening.budgetType === BudgetType.vast ? 'vast' : 'onbekend';
-
-  console.log('BudgetGrafiek', grafiekType, rekening.naam);
 
   const formatAmount = (amount: string): string => {
     return parseFloat(amount).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
@@ -37,6 +35,10 @@ export const BudgetGrafiek = ({ periode, rekening, geaggregeerdBudget, budgetten
   const meerDanMaandBudget = geaggregeerdBudget?.meerDanMaandBudget ?? 0;
 
   const tabelBreedte = maandBudget + meerDanMaandBudget + 5;
+
+  const periodeLengte = dayjs(periode.periodeEindDatum).diff(dayjs(periode.periodeStartDatum), 'day') + 1;
+  const periodeVoorbij = dayjs(peilDatum).diff(dayjs(periode.periodeStartDatum), 'day') + 1;
+  const percentagePeriodeVoorbij = periodeVoorbij / periodeLengte * 100;
 
   const berekenBudgetIcoon = (budget: BudgetDTO): JSX.Element => {
     if ((budget.meerDanBudget ?? 0) === 0 && (budget.minderDanBudget ?? 0) === 0 && (budget.meerDanMaandBudget ?? 0) === 0) {
@@ -65,14 +67,14 @@ export const BudgetGrafiek = ({ periode, rekening, geaggregeerdBudget, budgetten
     <>
       <Box sx={{ maxWidth: '500px' }}>
         <Box sx={{ cursor: 'pointer' }}>
-
-          <StandGeneriekGrafiek
-            status={"green"}
-            percentageFill={50}
-            headerText={rekening.naam}
-            bodyText={"blaat"}
-            cfoText={"kom op"}
-            rekeningIconNaam={rekening.rekeningIcoonNaam} />
+          {geaggregeerdBudget &&
+            <StandGeneriekGrafiek
+              status={berekenBudgetStand(geaggregeerdBudget)}
+              percentageFill={percentagePeriodeVoorbij}
+              headerText={rekening.naam}
+              bodyText={"Deze tekst moet nog wijzigen, maar dat kan ik nu nog niet"}
+              cfoText={"En deze ook ..."}
+              rekeningIconNaam={rekening.rekeningIcoonNaam} />}
         </Box>
 
         <TableContainer >
@@ -121,7 +123,7 @@ export const BudgetGrafiek = ({ periode, rekening, geaggregeerdBudget, budgetten
                     width={`${(minderDanBudget / tabelBreedte) * 90}%`}
                     sx={{
                       backgroundColor: grafiekType === 'continu' ? 'green' : 'red',
-                      borderBottom: detailsVisible ? '4px solid red' : '0px',
+                      borderBottom: !detailsVisible ? '0px' : grafiekType === 'continu' ? '4px solid green' : '4px solid red',
                       color: 'white',
                       textAlign: 'center',
                       fontSize: '0.7rem'
