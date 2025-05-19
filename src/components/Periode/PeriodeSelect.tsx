@@ -76,7 +76,7 @@ export function PeriodeSelect({ isProfiel = false }: PeriodeSelectProps) {
               sx={{ fontSize: '0.875rem' }}
               labelId="demo-simple-select-label"
               id="demo-simple-select"
-              value={gekozenPeriode.periodeStartDatum.toString()}
+              value={periodes.some(periode => periode.periodeStartDatum === gekozenPeriode?.periodeStartDatum) ? gekozenPeriode?.periodeStartDatum : ''}
               label="Periode"
               onChange={handlegekozenPeriodeChange}>
               {openPeriodes
