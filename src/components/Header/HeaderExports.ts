@@ -1,4 +1,4 @@
-import { RekeningGroepDTO, RekeningGroepPaar } from '../../model/RekeningGroep';
+import { Rekening, RekeningPaar } from '../../model/Rekening';
 import { betalingsSoorten2RekeningenSoorten } from '../../model/Betaling';
 import { BetalingsSoort } from '../../model/Betaling';
 
@@ -7,31 +7,31 @@ export const saveToLocalStorage = (key: string, value: string) => {
     localStorage.setItem(key, value);
 };
 
-export const transformRekeningGroepenToBetalingsSoorten = (rekeningGroepen: RekeningGroepDTO[]): Map<BetalingsSoort, RekeningGroepPaar> => {
-    const result = new Map<BetalingsSoort, RekeningGroepPaar>();
-    betalingsSoorten2RekeningenSoorten.forEach((rekeningGroepSoortPaar, betalingsSoort) => {
-        const bronrekeningGroepen = rekeningGroepen
-            .filter(rekeningGroep => rekeningGroepSoortPaar.bron.includes(rekeningGroep.rekeningGroepSoort))
+export const transformRekeningenToBetalingsSoorten = (rekeningen: Rekening[]): Map<BetalingsSoort, RekeningPaar> => {
+    const result = new Map<BetalingsSoort, RekeningPaar>();
+    betalingsSoorten2RekeningenSoorten.forEach((rekeningSoortPaar, betalingsSoort) => {
+        const bronRekeningen = rekeningen
+            .filter(rekening => rekeningSoortPaar.bron.includes(rekening.rekeningSoort))
             .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1);
-        const BestemmingrekeningGroepen = rekeningGroepen
-            .filter(rekeningGroep => rekeningGroepSoortPaar.bestemming.includes(rekeningGroep.rekeningGroepSoort))
+        const BestemmingRekeningen = rekeningen
+            .filter(rekening => rekeningSoortPaar.bestemming.includes(rekening.rekeningSoort))
             .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1);
-        if (bronrekeningGroepen.length > 0 && BestemmingrekeningGroepen.length > 0) {
+        if (bronRekeningen.length > 0 && BestemmingRekeningen.length > 0) {
             result.set(betalingsSoort, {
-                bron: bronrekeningGroepen,
-                bestemming: BestemmingrekeningGroepen
+                bron: bronRekeningen,
+                bestemming: BestemmingRekeningen
             });
         }
     });
     return result;
 }
 
-  export const transformRekeningGroepen2BetalingsSoorten = (rekeningGroepen: RekeningGroepDTO[]) => {
+  export const transformRekeningen2BetalingsSoorten = (rekeningen: Rekening[]) => {
     const betalingsSoortValues = Object.values(BetalingsSoort);
-    const rekeningGroepSoortValues = rekeningGroepen.map((rekeningGroep: RekeningGroepDTO) => rekeningGroep.rekeningGroepSoort.toLowerCase())
-    const filteredBetalingsSoorten = rekeningGroepSoortValues.flatMap((rekeningGroepSoort) =>
+    const rekeningSoortValues = rekeningen.map((rekening: Rekening) => rekening.rekeningSoort.toLowerCase())
+    const filteredBetalingsSoorten = rekeningSoortValues.flatMap((rekeningSoort) =>
       betalingsSoortValues.filter((betalingsSoort) =>
-        betalingsSoort.toLowerCase().includes(rekeningGroepSoort.toLowerCase())
+        betalingsSoort.toLowerCase().includes(rekeningSoort.toLowerCase())
       )
     );
     return filteredBetalingsSoorten.filter((value, index, self) => self.indexOf(value) === index); //deduplication ...

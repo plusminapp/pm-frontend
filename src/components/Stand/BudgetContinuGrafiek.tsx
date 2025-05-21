@@ -2,7 +2,7 @@ import { Box, FormControlLabel, FormGroup, Switch, Table, TableBody, TableCell, 
 import Grid from '@mui/material/Grid2';
 import dayjs from 'dayjs';
 import { Periode } from '../../model/Periode';
-import { RekeningGroepDTO } from '../../model/RekeningGroep';
+import { Rekening } from '../../model/Rekening';
 import { useState } from 'react';
 import { BudgetDTO } from '../../model/Budget';
 import { MinIcon } from '../../icons/Min';
@@ -11,7 +11,7 @@ import { PlusIcon } from '../../icons/Plus';
 type BudgetContinuGrafiekProps = {
   peilDatum: dayjs.Dayjs;
   periode: Periode;
-  RekeningGroep: RekeningGroepDTO
+  rekening: Rekening
   budgetten: BudgetDTO[];
   visualisatie: string;
   onClick?: () => void;
@@ -25,7 +25,7 @@ export const BudgetContinuGrafiek = (props: BudgetContinuGrafiekProps) => {
     setToonBudgetContinuDetails(event.target.checked);
   };
 
-  if (props.RekeningGroep.budgetType?.toLowerCase() !== 'continu' || props.budgetten.length === 0) {
+  if (props.rekening.budgetType?.toLowerCase() !== 'continu' || props.budgetten.length === 0) {
     return null
     // throw new Error(`BudgetContinuGrafiek: ${JSON.stringify(props.budgetten)} er moet minimaal 1 budget zijn en het BudgetType moet \'continu\' zijn.`);
   }
@@ -134,7 +134,7 @@ export const BudgetContinuGrafiek = (props: BudgetContinuGrafiekProps) => {
               sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
               component="span"
               align="left">
-              <strong>{props.RekeningGroep.naam}</strong>
+              <strong>{props.rekening.naam}</strong>
             </Typography>
           </Grid>}
        
@@ -144,7 +144,7 @@ export const BudgetContinuGrafiek = (props: BudgetContinuGrafiekProps) => {
           <Grid size={2} flexDirection={'row'}>
             <Box display="flex" alignItems="center">
               <Typography variant='body2' sx={{ mr: 2 }}>
-              <strong>{props.RekeningGroep.naam}</strong>
+              <strong>{props.rekening.naam}</strong>
               </Typography>
               {extendedContinuBudget.length >= 1 &&
               <FormGroup>

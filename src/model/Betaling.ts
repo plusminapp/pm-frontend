@@ -1,6 +1,6 @@
 // import { Gebruiker } from "./Gebruiker";
 import dayjs from "dayjs";
-import { RekeningGroepDTO, RekeningGroepSoort, RekeningGroepSoortPaar } from "./RekeningGroep";
+import { Rekening, RekeningSoort, RekeningSoortPaar } from "./Rekening";
 import { Saldo } from "./Saldo";
 import { Budget } from "./Budget";
 
@@ -10,8 +10,8 @@ export type Betaling = {
   bedrag: number;
   omschrijving: string | undefined;
   betalingsSoort: BetalingsSoort;
-  bron: RekeningGroepDTO | undefined;
-  bestemming: RekeningGroepDTO | undefined;
+  bron: Rekening | undefined;
+  bestemming: Rekening | undefined;
   budget: Budget | undefined;
 }
 
@@ -80,19 +80,20 @@ export const currencyFormatter = new Intl.NumberFormat("nl-NL", {
   currency: "EUR",
 });
 
-export const betalingsSoorten2RekeningenSoorten = new Map<BetalingsSoort, RekeningGroepSoortPaar>([
+export const betalingsSoorten2RekeningenSoorten = new Map<BetalingsSoort, RekeningSoortPaar>([
   // Inkomsten
-  [BetalingsSoort.inkomsten, { bron: [RekeningGroepSoort.inkomsten], bestemming: [RekeningGroepSoort.betaalrekening, RekeningGroepSoort.contant] }],
+  [BetalingsSoort.inkomsten, { bron: [RekeningSoort.inkomsten], bestemming: [RekeningSoort.betaalrekening, RekeningSoort.contant] }],
+  [BetalingsSoort.rente, { bron: [RekeningSoort.rente], bestemming: [RekeningSoort.spaarrekening] }],
   // Uitgaven
-  [BetalingsSoort.uitgaven, { bron: [RekeningGroepSoort.betaalrekening, RekeningGroepSoort.contant, RekeningGroepSoort.creditcard], bestemming: [RekeningGroepSoort.uitgaven] }],
-  [BetalingsSoort.aflossen, { bron: [RekeningGroepSoort.betaalrekening], bestemming: [RekeningGroepSoort.aflossing] }],
-  [BetalingsSoort.besteden_reservering, { bron: [RekeningGroepSoort.betaalrekening, RekeningGroepSoort.contant, RekeningGroepSoort.creditcard], bestemming: [RekeningGroepSoort.reservering] }],
+  [BetalingsSoort.uitgaven, { bron: [RekeningSoort.betaalrekening, RekeningSoort.contant, RekeningSoort.creditcard], bestemming: [RekeningSoort.uitgaven] }],
+  [BetalingsSoort.aflossen, { bron: [RekeningSoort.betaalrekening], bestemming: [RekeningSoort.aflossing] }],
+  [BetalingsSoort.besteden_reservering, { bron: [RekeningSoort.betaalrekening, RekeningSoort.contant, RekeningSoort.creditcard], bestemming: [RekeningSoort.reservering] }],
   // Intern
-  [BetalingsSoort.incasso_creditcard, { bron: [RekeningGroepSoort.betaalrekening], bestemming: [RekeningGroepSoort.creditcard] }],
-  [BetalingsSoort.opnemen_spaarrekening, { bron: [RekeningGroepSoort.spaarrekening], bestemming: [RekeningGroepSoort.betaalrekening] }],
-  [BetalingsSoort.storten_spaarrekening, { bron: [RekeningGroepSoort.betaalrekening], bestemming: [RekeningGroepSoort.spaarrekening] }],
-  [BetalingsSoort.opnemen_contant, { bron: [RekeningGroepSoort.betaalrekening], bestemming: [RekeningGroepSoort.contant] }],
-  [BetalingsSoort.storten_contant, { bron: [RekeningGroepSoort.contant], bestemming: [RekeningGroepSoort.betaalrekening] }],
+  [BetalingsSoort.incasso_creditcard, { bron: [RekeningSoort.betaalrekening], bestemming: [RekeningSoort.creditcard] }],
+  [BetalingsSoort.opnemen_spaarrekening, { bron: [RekeningSoort.spaarrekening], bestemming: [RekeningSoort.betaalrekening] }],
+  [BetalingsSoort.storten_spaarrekening, { bron: [RekeningSoort.betaalrekening], bestemming: [RekeningSoort.spaarrekening] }],
+  [BetalingsSoort.opnemen_contant, { bron: [RekeningSoort.betaalrekening], bestemming: [RekeningSoort.contant] }],
+  [BetalingsSoort.storten_contant, { bron: [RekeningSoort.contant], bestemming: [RekeningSoort.betaalrekening] }],
 ]);
 
 export const inkomstenBetalingsSoorten = [BetalingsSoort.inkomsten, BetalingsSoort.rente]

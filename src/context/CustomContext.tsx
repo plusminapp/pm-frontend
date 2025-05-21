@@ -1,11 +1,10 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Gebruiker } from '../model/Gebruiker';
-import { RekeningGroepDTO } from '../model/RekeningGroep';
+import { Rekening, RekeningPaar } from '../model/Rekening';
 import { BetalingsSoort } from '../model/Betaling';
 import { Periode } from '../model/Periode';
 import { SnackbarMessage } from '../components/StyledSnackbar';
 import { saveToLocalStorage } from '../components/Header/HeaderExports';
-import { RekeningGroepPaar } from '../model/RekeningGroep';
 
 interface CustomContextType {
     gebruiker: Gebruiker | undefined;
@@ -18,12 +17,12 @@ interface CustomContextType {
     setPeriodes: (periodes: Array<Periode>) => void;
     gekozenPeriode: Periode | undefined;
     setGekozenPeriode: (gekozenPeriode: Periode | undefined) => void;
-    rekeningen: Array<RekeningGroepDTO>;
-    setRekeningen: (rekeningen: Array<RekeningGroepDTO>) => void;
+    rekeningen: Array<Rekening>;
+    setRekeningen: (rekeningen: Array<Rekening>) => void;
     betalingsSoorten: Array<BetalingsSoort>;
     setBetalingsSoorten: (betalingsSoorten: Array<BetalingsSoort>) => void;
-    betalingsSoorten2RekeningGroepen: Map<BetalingsSoort, RekeningGroepPaar>;
-    setBetalingsSoorten2Rekeningen: (betalingsSoorten2RekeningGroepen: Map<BetalingsSoort, RekeningGroepPaar>) => void;
+    betalingsSoorten2Rekeningen: Map<BetalingsSoort, RekeningPaar>;
+    setBetalingsSoorten2Rekeningen: (betalingsSoorten2Rekeningen: Map<BetalingsSoort, RekeningPaar>) => void;
     snackbarMessage: SnackbarMessage;
     setSnackbarMessage: (snackbarMessage: SnackbarMessage) => void;
 }
@@ -49,9 +48,9 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
     const [hulpvragers, setHulpvragers] = useState<Array<Gebruiker>>([]);
     const [periodes, setPeriodes] = useState<Array<Periode>>([]);
     const [gekozenPeriode, setGekozenPeriode] = useState<Periode | undefined>(undefined);
-    const [rekeningen, setRekeningen] = useState<Array<RekeningGroepDTO>>([]);
+    const [rekeningen, setRekeningen] = useState<Array<Rekening>>([]);
     const [betalingsSoorten, setBetalingsSoorten] = useState<Array<BetalingsSoort>>([]);
-    const [betalingsSoorten2Rekeningen, setBetalingsSoorten2Rekeningen] = useState<Map<BetalingsSoort, RekeningGroepPaar>>(new Map())
+    const [betalingsSoorten2Rekeningen, setBetalingsSoorten2Rekeningen] = useState<Map<BetalingsSoort, RekeningPaar>>(new Map())
     const [snackbarMessage, setSnackbarMessage] = useState<SnackbarMessage>({ message: undefined, type: undefined });
 
     useEffect(() => {
@@ -70,7 +69,7 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
             gekozenPeriode, setGekozenPeriode,
             rekeningen, setRekeningen,
             betalingsSoorten, setBetalingsSoorten,
-            betalingsSoorten2RekeningGroepen: betalingsSoorten2Rekeningen, setBetalingsSoorten2Rekeningen,
+            betalingsSoorten2Rekeningen, setBetalingsSoorten2Rekeningen,
             snackbarMessage, setSnackbarMessage
         }}>
             {children}

@@ -2,18 +2,18 @@ import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } fro
 import { useCustomContext } from "../../context/CustomContext";
 import { saveToLocalStorage } from "../Header/HeaderExports.ts";
 
-import { bankRekeningSoorten, RekeningGroepDTO } from "../../model/RekeningGroep";
+import { bankRekeningSoorten, Rekening } from "../../model/Rekening";
 import { useEffect, useState } from "react";
 
 
 interface RekeningSelectProps {
-    wijzigOcrBankNaam: (bankRekening: RekeningGroepDTO | undefined) => void;
+    wijzigOcrBankNaam: (bankRekening: Rekening | undefined) => void;
 }
 export function RekeningSelect(props: RekeningSelectProps) {
 
     const { rekeningen } = useCustomContext();
-    const bankRekeningen = rekeningen.filter(RekeningGroep => bankRekeningSoorten.includes(RekeningGroep.rekeningGroepSoort));
-    const [gekozenRekening, setGekozenRekening] = useState<RekeningGroepDTO | undefined>(undefined);
+    const bankRekeningen = rekeningen.filter(rekening => bankRekeningSoorten.includes(rekening.rekeningSoort));
+    const [gekozenRekening, setGekozenRekening] = useState<Rekening | undefined>(undefined);
 
     useEffect(() => {
         if (bankRekeningen.length > 0) {
@@ -21,7 +21,7 @@ export function RekeningSelect(props: RekeningSelectProps) {
                 setGekozenRekening(bankRekeningen[0])
                 props.wijzigOcrBankNaam(bankRekeningen[0]);
             }
-            // const uniekeBankNamen = new Set(bankRekeningen.map(RekeningGroep => RekeningGroep.bankNaam));
+            // const uniekeBankNamen = new Set(bankRekeningen.map(rekening => rekening.bankNaam));
             // if (uniekeBankNamen.size === 1) {
             //     props.wijzigOcrBankNaam(bankRekeningen[0]);
             // }
@@ -29,11 +29,11 @@ export function RekeningSelect(props: RekeningSelectProps) {
     }, [bankRekeningen, gekozenRekening, props]);
 
     const handlegekozenRekeningChange = (event: SelectChangeEvent<string>) => {
-        const RekeningGroep = rekeningen.find(RekeningGroep => RekeningGroep.naam === event.target.value)
-        if (RekeningGroep) {
-            setGekozenRekening(RekeningGroep);
-            props.wijzigOcrBankNaam(RekeningGroep);
-            saveToLocalStorage('gekozenRekening', RekeningGroep?.id + '');
+        const rekening = rekeningen.find(rekening => rekening.naam === event.target.value)
+        if (rekening) {
+            setGekozenRekening(rekening);
+            props.wijzigOcrBankNaam(rekening);
+            saveToLocalStorage('gekozenRekening', rekening?.id + '');
         }
     };
 
@@ -41,17 +41,17 @@ export function RekeningSelect(props: RekeningSelectProps) {
         <Box sx={{ my: 2, width: '340px' }}>
             {bankRekeningen?.length > 1 &&
             <FormControl variant="standard" fullWidth>
-                <InputLabel id="demo-simple-select-label">Kies de RekeningGroep</InputLabel>
+                <InputLabel id="demo-simple-select-label">Kies de rekening</InputLabel>
                 <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
                     value={gekozenRekening?.naam || ''}
-                    label="RekeningGroep"
+                    label="Rekening"
                     onChange={handlegekozenRekeningChange}>
                     {bankRekeningen
-                        .map((RekeningGroep: RekeningGroepDTO) => (
-                            <MenuItem key={RekeningGroep.naam} value={RekeningGroep.naam}>
-                                {RekeningGroep.naam} ({RekeningGroep.bankNaam})
+                        .map((rekening: Rekening) => (
+                            <MenuItem key={rekening.naam} value={rekening.naam}>
+                                {rekening.naam} ({rekening.bankNaam})
                             </MenuItem>))}
                 </Select>
             </FormControl>}
