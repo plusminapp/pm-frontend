@@ -8,7 +8,7 @@ import EditIcon from '@mui/icons-material/Edit';
 
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "@asgardeo/auth-react";
-import { Rekening } from "../../model/Rekening.ts";
+import { RekeningGroepDTO } from "../../model/RekeningGroep.ts";
 import dayjs from "dayjs";
 
 interface PeriodeSelectProps {
@@ -34,7 +34,7 @@ export function PeriodeSelect({ isProfiel = false }: PeriodeSelectProps) {
       }
 
       try {
-        const response = await fetch(`/api/v1/rekening/hulpvrager/${actieveHulpvrager.id}/periode/${periode.id}`, {
+        const response = await fetch(`/api/v1/RekeningGroep/hulpvrager/${actieveHulpvrager.id}/periode/${periode.id}`, {
           method: 'GET',
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -46,9 +46,9 @@ export function PeriodeSelect({ isProfiel = false }: PeriodeSelectProps) {
           throw new Error(`Fetch failed with status: ${response.status}`);
         }
         const dataRekening = await response.json();
-        setRekeningen(dataRekening as Rekening[]);
-        setBetalingsSoorten(transformRekeningen2BetalingsSoorten(dataRekening as Rekening[]));
-        setBetalingsSoorten2Rekeningen(transformRekeningenToBetalingsSoorten(dataRekening as Rekening[]));
+        setRekeningen(dataRekening as RekeningGroepDTO[]);
+        setBetalingsSoorten(transformRekeningen2BetalingsSoorten(dataRekening as RekeningGroepDTO[]));
+        setBetalingsSoorten2Rekeningen(transformRekeningenToBetalingsSoorten(dataRekening as RekeningGroepDTO[]));
 
       } catch (error) {
         console.error('Error fetching periode details:', error);

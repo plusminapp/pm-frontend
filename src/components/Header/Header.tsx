@@ -18,10 +18,10 @@ import { PlusMinLogo } from "../../assets/PlusMinLogo";
 import { useCustomContext } from '../../context/CustomContext';
 import { Periode } from '../../model/Periode';
 import { Gebruiker } from '../../model/Gebruiker';
-import { Rekening } from '../../model/Rekening';
+import { RekeningGroepDTO } from '../../model/RekeningGroep';
 import { berekenMaandAflossingenBedrag } from '../../model/Aflossing';
 import StyledSnackbar from './../StyledSnackbar';
-import { saveToLocalStorage, transformRekeningen2BetalingsSoorten, transformRekeningenToBetalingsSoorten } from './HeaderExports';
+import { saveToLocalStorage, transformRekeningGroepen2BetalingsSoorten, transformRekeningGroepenToBetalingsSoorten } from './HeaderExports';
 
 function Header() {
   const navigate = useNavigate();
@@ -80,16 +80,16 @@ function Header() {
       console.error("Error getting ID token:", error);
     }
 
-    const responseRekening = await fetch(`/api/v1/rekening/hulpvrager/${hulpvrager.id}/periode/${periode.id}`, {
+    const responseRekening = await fetch(`/api/v1/RekeningGroep/hulpvrager/${hulpvrager.id}/periode/${periode.id}`, {
       headers: {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json",
       }
     })
     const dataRekening = await responseRekening.json();
-    setRekeningen(dataRekening as Rekening[]);
-    setBetalingsSoorten(transformRekeningen2BetalingsSoorten(dataRekening as Rekening[]));
-    setBetalingsSoorten2Rekeningen(transformRekeningenToBetalingsSoorten(dataRekening as Rekening[]));
+    setRekeningen(dataRekening as RekeningGroepDTO[]);
+    setBetalingsSoorten(transformRekeningGroepen2BetalingsSoorten(dataRekening as RekeningGroepDTO[]));
+    setBetalingsSoorten2Rekeningen(transformRekeningGroepenToBetalingsSoorten(dataRekening as RekeningGroepDTO[]));
 
   }, [getIDToken, setRekeningen, setBetalingsSoorten, setBetalingsSoorten2Rekeningen]);
 

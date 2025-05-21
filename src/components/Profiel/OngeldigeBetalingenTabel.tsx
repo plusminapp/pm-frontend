@@ -11,13 +11,13 @@ import { useEffect, useState } from 'react';
 import { Box, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import { useCustomContext } from '../../context/CustomContext';
-import { berekenBedragVoorRekenining, Rekening } from '../../model/Rekening';
+import { berekenBedragVoorRekenining, RekeningGroepDTO } from '../../model/RekeningGroep';
 import UpsertBetalingDialoog from '../Kasboek/UpsertBetalingDialoog';
 import dayjs from 'dayjs';
 import React from 'react';
 
 interface OngeldigeBetalingenTabelProps {
-  actueleRekening: Rekening | undefined;
+  actueleRekening: RekeningGroepDTO | undefined;
   isFilterSelectable?: boolean;
   betalingen: BetalingDTO[];
   onBetalingBewaardChange: (betalingDTO: BetalingDTO) => void;
@@ -28,7 +28,7 @@ export default function OngeldigeBetalingenTabel(props: OngeldigeBetalingenTabel
 
   const { actieveHulpvrager, gebruiker, rekeningen, gekozenPeriode } = useCustomContext();
   const betalingen = props.betalingen
-  const [actueleRekening, setActueleRekening] = useState<Rekening | undefined>(props.actueleRekening)
+  const [actueleRekening, setActueleRekening] = useState<RekeningGroepDTO | undefined>(props.actueleRekening)
   const [filteredBetalingen, setFilteredBetalingen] = useState<{ [key: string]: BetalingDTO[] }>({})
   const [selectedBetaling, setSelectedBetaling] = useState<BetalingDTO | undefined>(undefined);
   // const [verwerkteBetalingen, setVerwerkteBetalingen] = useState<string[]>([]);
@@ -86,8 +86,8 @@ export default function OngeldigeBetalingenTabel(props: OngeldigeBetalingenTabel
             onChange={handleWeergaveChange}
             label="Weergave kiezen">
             <MenuItem value='alles'>Alle betalingen</MenuItem>
-            {rekeningen.map((rekening) => (
-              <MenuItem key={rekening.id} value={rekening.naam}>{rekening.naam}</MenuItem>
+            {rekeningen.map((RekeningGroep) => (
+              <MenuItem key={RekeningGroep.id} value={RekeningGroep.naam}>{RekeningGroep.naam}</MenuItem>
             ))}
           </Select>
         </FormControl>

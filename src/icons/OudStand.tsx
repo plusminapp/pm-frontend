@@ -30,7 +30,7 @@ const OudStandIcon: React.FC<StandIconProps> = ({
       <circle
         cx={height * 0.75}
         cy={height * 0.75}
-        r={radius - borderWidth / 2} // Houd rekening met de randdikte
+        r={radius - borderWidth / 2} // Houd RekeningGroep met de randdikte
         fill={color}
         stroke={borderColor}
         strokeWidth={borderWidth}

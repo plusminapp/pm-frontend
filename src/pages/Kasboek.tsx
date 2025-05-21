@@ -176,12 +176,12 @@ export default function Kasboek() {
       </Grid>
       <Grid container spacing={{ xs: 1, md: 3 }} columns={{ xs: 1, lg: 12 }}>
         <Grid size={{ xs: 1, lg: 4 }}>
-          <Accordion expanded={expanded === 'rekening'} onChange={handleChange('rekening')}>
+          <Accordion expanded={expanded === 'RekeningGroep'} onChange={handleChange('RekeningGroep')}>
             <AccordionSummary
               expandIcon={<ArrowDropDownIcon />}
               aria-controls="blaat"
               id={"blaat"}>
-              <Typography sx={{ fontSize: '15px' }} >Betalingen per rekening
+              <Typography sx={{ fontSize: '15px' }} >Betalingen per RekeningGroep
               </Typography>
             </AccordionSummary>
             <AccordionDetails sx={{ p: 0 }}>

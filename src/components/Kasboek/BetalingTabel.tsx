@@ -5,7 +5,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { BetalingDTO, BetalingsSoort, betalingsSoortFormatter, internBetalingsSoorten } from '../../model/Betaling';
 import dayjs from 'dayjs';
 import { useCustomContext } from '../../context/CustomContext';
-import { interneRekeningSoorten, RekeningSoort } from '../../model/Rekening';
+import { internerekeningGroepSoorten, RekeningGroepSoort } from '../../model/RekeningGroep';
 import { BudgetDTO } from '../../model/Budget';
 import { ExternalLinkIcon } from '../../icons/ExternalLink';
 import EditIcon from '@mui/icons-material/Edit';
@@ -48,13 +48,13 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
     return formatter.format(bedrag);
   };
 
-  const bestemmingen = rekeningen.filter(r => r.rekeningSoort === RekeningSoort.uitgaven).map(r => r.naam);
+  const bestemmingen = rekeningen.filter(r => r.rekeningGroepSoort === RekeningGroepSoort.uitgaven).map(r => r.naam);
 
   const totalen = {
     inkomsten: 0,
     aflossing: 0,
-    bestemmingen: rekeningen.reduce((acc, rekening) => {
-      acc[rekening.naam] = 0;
+    bestemmingen: rekeningen.reduce((acc, RekeningGroep) => {
+      acc[RekeningGroep.naam] = 0;
       return acc;
     }, {} as Record<string, number>)
   };
@@ -87,7 +87,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
 
   const heeftBudgetten = props.budgetten.length > 0;
 
-  const heeftIntern = rekeningen.some(rekening => rekening.rekeningSoort && interneRekeningSoorten.includes(rekening.rekeningSoort));
+  const heeftIntern = rekeningen.some(RekeningGroep => RekeningGroep.rekeningGroepSoort && internerekeningGroepSoorten.includes(RekeningGroep.rekeningGroepSoort));
 
   const isInkomsten = (betaling: BetalingDTO) => betaling.betalingsSoort === BetalingsSoort.inkomsten || betaling.betalingsSoort === BetalingsSoort.rente;
   const isUitgaven = (betaling: BetalingDTO) => betaling.betalingsSoort === BetalingsSoort.uitgaven;
@@ -106,7 +106,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
     setToonIntern(event.target.checked);
   };
 
-  const interneRekeningenNamen = rekeningen.filter(r => r.rekeningSoort === RekeningSoort.betaalrekening || interneRekeningSoorten.includes(r.rekeningSoort)).map(r => r.naam).join(', ')
+  const interneRekeningenNamen = rekeningen.filter(r => r.rekeningGroepSoort === RekeningGroepSoort.betaalrekening || internerekeningGroepSoorten.includes(r.rekeningGroepSoort)).map(r => r.naam).join(', ')
   const toonInterneBetalingMeassage = `Interne betalingen zijn betalingen tussen eigen rekeningen (${interneRekeningenNamen}), ze maken niets uit voor het beschikbare geld, en worden daarom niet vanzelf getoond.`
   const interneBetalingKopMessage = 'Interne betalingen worden als negatief getal getoond als ze van de betaalrekening af gaan, positief als ze er bij komen.'
   const interneBetalingTotaalMessage = `Interne betalingen schuiven met geld tussen eigen rekeningen (${interneRekeningenNamen}), een totaal betekent daarom niks zinvols en daarom worden de betalingen niet opgeteld.`
@@ -196,7 +196,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
                           <BudgetInkomstenGrafiek
                             peilDatum={dayjs(props.peilDatum)}
                             periode={gekozenPeriode}
-                            rekening={rekeningen.find(r => r.rekeningSoort=== RekeningSoort.inkomsten)!}
+                            RekeningGroep={rekeningen.find(r => r.rekeningGroepSoort=== RekeningGroepSoort.inkomsten)!}
                             budgetten={props.budgetten.filter(b => b.rekeningNaam === 'Inkomsten')}
                             visualisatie={'icon-xs'}
                             />
@@ -239,7 +239,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
               <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px' }}>Datum</TableCell>
               <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px', maxWidth: '300px' }}>Omschrijving</TableCell>
               <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px' }} align="right">Inkomsten</TableCell>
-              {rekeningen.filter(r => r.rekeningSoort === RekeningSoort.uitgaven).map(uitgaveRekening => (
+              {rekeningen.filter(r => r.rekeningGroepSoort === RekeningGroepSoort.uitgaven).map(uitgaveRekening => (
                 <TableCell key={uitgaveRekening.naam} sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px' }} align="right">{uitgaveRekening.naam}</TableCell>
               ))}
               {heeftAflossing &&

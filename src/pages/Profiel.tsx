@@ -8,7 +8,7 @@ import { useAuthContext } from "@asgardeo/auth-react";
 import { useCustomContext } from '../context/CustomContext';
 import { Betaling, betalingsSoort2Categorie, betalingsSoortFormatter, currencyFormatter } from '../model/Betaling';
 import { PeriodeSelect } from '../components/Periode/PeriodeSelect';
-import { betaalmethodeRekeningSoorten, BudgetType, inkomstenRekeningSoorten, Rekening, RekeningSoort, resultaatRekeningSoorten, uitgavenRekeningSoorten } from '../model/Rekening';
+import { betaalmethodeRekeningSoorten, BudgetType, inkomstenRekeningSoorten, RekeningGroepDTO, rekeningGroepSoort, resultaatRekeningSoorten, uitgavenRekeningSoorten } from '../model/RekeningGroep';
 import { AflossingSamenvattingDTO } from '../model/Aflossing';
 import { berekenPeriodeBudgetBedrag } from '../model/Budget';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers';
@@ -22,7 +22,7 @@ import dayjs from 'dayjs';
 const Profiel: React.FC = () => {
   const { state, getIDToken } = useAuthContext();
 
-  const { gebruiker, actieveHulpvrager, setActieveHulpvrager, hulpvragers, rekeningen, betalingsSoorten2Rekeningen, gekozenPeriode } = useCustomContext();
+  const { gebruiker, actieveHulpvrager, setActieveHulpvrager, hulpvragers, rekeningen, betalingsSoorten2RekeningGroepen: betalingsSoorten2Rekeningen, gekozenPeriode } = useCustomContext();
 
   const [ongeldigeBetalingen, setOngeldigeBetalingen] = React.useState<Betaling[]>([]);
 
@@ -58,29 +58,29 @@ const Profiel: React.FC = () => {
     }
   }, [actieveHulpvrager, fetchfetchOngeldigeBetalingen]);
 
-  const aflossingSamenvattingBijRekening = (rekening: Rekening): AflossingSamenvattingDTO | undefined =>
-    actieveHulpvrager?.aflossingen.filter(a => a.aflossingNaam === rekening.naam)[0]
+  const aflossingSamenvattingBijRekening = (RekeningGroep: RekeningGroepDTO): AflossingSamenvattingDTO | undefined =>
+    actieveHulpvrager?.aflossingen.filter(a => a.aflossingNaam === RekeningGroep.naam)[0]
 
-  const gebudgeteerdPerPeriode = (rekeningSoorten: RekeningSoort[]) => {
+  const gebudgeteerdPerPeriode = (rekeningSoorten: rekeningGroepSoort[]) => {
     return rekeningen?.
-      filter(rekening => rekeningSoorten.includes(rekening.rekeningSoort)).
-      reduce((uitgavenAcc, rekening) => {
-        const budgetUitgaven = rekening.budgetten.reduce((acc, budget) => {
+      filter(RekeningGroep => rekeningSoorten.includes(RekeningGroep.rekeningGroepSoort)).
+      reduce((uitgavenAcc, RekeningGroep) => {
+        const budgetUitgaven = RekeningGroep.budgetten.reduce((acc, budget) => {
           return acc + Number(berekenPeriodeBudgetBedrag(gekozenPeriode, budget));
         }, 0);
-        const aflossing = aflossingSamenvattingBijRekening(rekening)
-          ? Number(aflossingSamenvattingBijRekening(rekening)?.aflossingsBedrag)
+        const aflossing = aflossingSamenvattingBijRekening(RekeningGroep)
+          ? Number(aflossingSamenvattingBijRekening(RekeningGroep)?.aflossingsBedrag)
           : 0;
         return uitgavenAcc + budgetUitgaven + aflossing;
       }, 0) || 0;
   };
 
   const heeftInkomstenBudgetten = () => {
-    return rekeningen?.some(rekening => rekening.budgetten.length > 0 && rekening.rekeningSoort === RekeningSoort.inkomsten);
+    return rekeningen?.some(RekeningGroep => RekeningGroep.budgetten.length > 0 && RekeningGroep.rekeningGroepSoort === rekeningGroepSoort.inkomsten);
   }
 
   const heeftUitgaveBudgetten = () => {
-    return rekeningen?.some(rekening => rekening.budgetten.length > 0 && rekening.rekeningSoort === RekeningSoort.uitgaven);
+    return rekeningen?.some(RekeningGroep => RekeningGroep.budgetten.length > 0 && RekeningGroep.rekeningGroepSoort === rekeningGroepSoort.uitgaven);
   }
 
   const creeerBudgetTekst = (): string => {
@@ -261,32 +261,32 @@ const Profiel: React.FC = () => {
                       </TableHead>
                       <TableBody>
                         <>
-                          {Array.from(rekeningen.filter(rekening => resultaatRekeningSoorten.includes(rekening.rekeningSoort)).map((rekening) => (
-                            <Fragment key={rekening.naam}>
+                          {Array.from(rekeningen.filter(RekeningGroep => resultaatRekeningSoorten.includes(RekeningGroep.rekeningGroepSoort)).map((RekeningGroep) => (
+                            <Fragment key={RekeningGroep.naam}>
                               <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }} aria-haspopup="true" >
-                                <TableCell align="left" size='small' sx={{ p: "6px" }}>{rekening.naam}</TableCell>
+                                <TableCell align="left" size='small' sx={{ p: "6px" }}>{RekeningGroep.naam}</TableCell>
                                 <TableCell align="left" size='small' sx={{ p: "6px" }}>
-                                  {rekening.budgetten.length > 0 &&
+                                  {RekeningGroep.budgetten.length > 0 &&
                                     <span dangerouslySetInnerHTML={{
-                                      __html: rekening.budgetten.map(b =>
+                                      __html: RekeningGroep.budgetten.map(b =>
                                         `${b.budgetNaam} (${currencyFormatter.format(Number(b.bedrag))}/${b.budgetPeriodiciteit.toLowerCase()}
                                  ${b.budgetPeriodiciteit.toLowerCase() === 'week' ? `= ${currencyFormatter.format(berekenPeriodeBudgetBedrag(gekozenPeriode, b) ?? 0)}/maand` : ''}
-                                 ${rekening.budgetType === BudgetType.continu ? 'doorlopend' : 'op de ' + b.betaalDag + 'e'})`)
+                                 ${RekeningGroep.budgetType === BudgetType.continu ? 'doorlopend' : 'op de ' + b.betaalDag + 'e'})`)
                                         .join('<br />') +
-                                        (rekening.budgetten.length > 1 ? `<br />Totaal: ${currencyFormatter.format(rekening.budgetten.reduce((acc, b) => acc + Number(b.bedrag), 0))}/maand` : '')
+                                        (RekeningGroep.budgetten.length > 1 ? `<br />Totaal: ${currencyFormatter.format(RekeningGroep.budgetten.reduce((acc, b) => acc + Number(b.bedrag), 0))}/maand` : '')
                                     }} />}
                                 </TableCell>
                               </TableRow>
                             </Fragment>
                           )))}
-                          {Array.from(rekeningen.filter(rekening => rekening.rekeningSoort === RekeningSoort.aflossing)).length > 0 && (
+                          {Array.from(rekeningen.filter(RekeningGroep => RekeningGroep.rekeningGroepSoort === rekeningGroepSoort.aflossing)).length > 0 && (
                             <Fragment key={'aflossing'}>
                               <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }} aria-haspopup="true" >
                                 <TableCell align="left" size='small' sx={{ p: "6px" }}>Aflossing</TableCell>
                                 <TableCell align="left" size='small' sx={{ p: "6px" }}>
                                   <span dangerouslySetInnerHTML={{
-                                    __html: Array.from(rekeningen.filter(rekening => rekening.rekeningSoort === RekeningSoort.aflossing)).map(rekening =>
-                                      `${aflossingSamenvattingBijRekening(rekening)?.aflossingNaam} (${currencyFormatter.format(Number(aflossingSamenvattingBijRekening(rekening)?.aflossingsBedrag))}/maand op de ${aflossingSamenvattingBijRekening(rekening)?.betaalDag}e)`)
+                                    __html: Array.from(rekeningen.filter(RekeningGroep => RekeningGroep.rekeningGroepSoort === rekeningGroepSoort.aflossing)).map(RekeningGroep =>
+                                      `${aflossingSamenvattingBijRekening(RekeningGroep)?.aflossingNaam} (${currencyFormatter.format(Number(aflossingSamenvattingBijRekening(RekeningGroep)?.aflossingsBedrag))}/maand op de ${aflossingSamenvattingBijRekening(RekeningGroep)?.betaalDag}e)`)
                                       .join('<br />') +
                                       `<br/>Totaal per periode: ${currencyFormatter.format(actieveHulpvrager?.aflossingen?.reduce((acc, aflossing) => acc + Number(aflossing.aflossingsBedrag), 0) ?? 0)}`
                                   }} />
@@ -322,7 +322,7 @@ const Profiel: React.FC = () => {
             </Accordion>
 
             {/* betaalMethoden */}
-            {rekeningen.filter(rekening => betaalmethodeRekeningSoorten.includes(rekening.rekeningSoort)).length > 0 &&
+            {rekeningen.filter(RekeningGroep => betaalmethodeRekeningSoorten.includes(RekeningGroep.rekeningGroepSoort)).length > 0 &&
               <Accordion>
                 <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
                   <Typography ><strong>Betaalmethoden.</strong></Typography>
@@ -335,9 +335,9 @@ const Profiel: React.FC = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {rekeningen.filter(rekening => betaalmethodeRekeningSoorten.includes(rekening.rekeningSoort)).map(rekening => (
-                        <TableRow key={rekening.naam} sx={{ '&:last-child td, &:last-child th': { border: 0 } }} aria-haspopup="true" >
-                          <TableCell align="left" size='small' sx={{ p: "6px" }}>{rekening.naam} {rekening.bankNaam ? `(${rekening.bankNaam})` : ''}</TableCell>
+                      {rekeningen.filter(RekeningGroep => betaalmethodeRekeningSoorten.includes(RekeningGroep.rekeningGroepSoort)).map(RekeningGroep => (
+                        <TableRow key={RekeningGroep.naam} sx={{ '&:last-child td, &:last-child th': { border: 0 } }} aria-haspopup="true" >
+                          <TableCell align="left" size='small' sx={{ p: "6px" }}>{RekeningGroep.naam} {RekeningGroep.bankNaam ? `(${RekeningGroep.bankNaam})` : ''}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

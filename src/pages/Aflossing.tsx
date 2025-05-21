@@ -112,19 +112,19 @@ export default function Aflossingen() {
       }
       {aflossingen.map(aflossing =>
         <Accordion
-        key={aflossing.rekening.id}
+        key={aflossing.RekeningGroep.id}
           elevation={2}>
           <AccordionSummary
             expandIcon={<ArrowDropDownIcon />}
-            aria-controls={aflossing.rekening.naam}
-            id={aflossing.rekening.naam}>
+            aria-controls={aflossing.RekeningGroep.naam}
+            id={aflossing.RekeningGroep.naam}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               {berekenToestandAflossingIcoon(aflossing)}
               <Typography
                 sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
                 component="span"
                 align="left">
-                {aflossing.rekening.naam}
+                {aflossing.RekeningGroep.naam}
               </Typography>
             </Box>
           </AccordionSummary>

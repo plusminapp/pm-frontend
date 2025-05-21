@@ -1,9 +1,9 @@
 import dayjs from "dayjs";
-import { Rekening } from "./Rekening";
+import { RekeningGroepDTO } from "./RekeningGroep";
 import { Periode } from "./Periode";
 
 export type Budget = {
-  rekening: Rekening | undefined;
+  RekeningGroep: RekeningGroepDTO | undefined;
   budgetNaam: string;
   budgetPeriodiciteit: string;
   bedrag: number;
@@ -13,7 +13,7 @@ export type Budget = {
 }
 export type BudgetDTO = {
   rekeningNaam: string;
-  rekeningSoort: string;
+  rekeningGroepSoort: string;
   budgetNaam: string;
   budgetType: string;
   budgetPeriodiciteit: string;
@@ -48,22 +48,22 @@ export const berekenPeriodeBudgetBedrag = (gekozenPeriode: Periode | undefined, 
   }
 };
 
-export const maandBudgetten = (rekeningen: Rekening[], maandAflossingsBedrag: number) => rekeningen.reduce((acc: { [x: string]: number; }, rekening: Rekening) => {
-  acc[rekening.naam] = rekening.budgetten.reduce((acc, budget) => acc + budget.bedrag, 0)
+export const maandBudgetten = (rekeningen: RekeningGroepDTO[], maandAflossingsBedrag: number) => rekeningen.reduce((acc: { [x: string]: number; }, RekeningGroep: RekeningGroepDTO) => {
+  acc[RekeningGroep.naam] = RekeningGroep.budgetten.reduce((acc, budget) => acc + budget.bedrag, 0)
   acc["aflossing"] = maandAflossingsBedrag;
   return acc;
 }, {} as Record<string, number>);
 
-export const budgetten = (rekeningen: Rekening[], aflossingsBedrag: number) =>
-  rekeningen.reduce((acc: { [x: string]: number; }, rekening: Rekening) => {
-    acc[rekening.naam] = rekening.budgetten.reduce((acc, budget) => acc + (budget.budgetOpPeilDatum ?? 0), 0)
+export const budgetten = (rekeningen: RekeningGroepDTO[], aflossingsBedrag: number) =>
+  rekeningen.reduce((acc: { [x: string]: number; }, RekeningGroep: RekeningGroepDTO) => {
+    acc[RekeningGroep.naam] = RekeningGroep.budgetten.reduce((acc, budget) => acc + (budget.budgetOpPeilDatum ?? 0), 0)
     acc["aflossing"] = aflossingsBedrag;
     return acc;
   }, {} as Record<string, number>);
 
 export const berekenBudgetStand = (budget: BudgetDTO): string => {
   let result;
-  switch (budget.rekeningSoort.toLowerCase()) {
+  switch (budget.rekeningGroepSoort.toLowerCase()) {
     case 'inkomsten':
     case 'rente':
       (budget.meerDanMaandBudget ?? 0) > 0 || (budget.meerDanBudget ?? 0) > 0 ? result = 'green' :

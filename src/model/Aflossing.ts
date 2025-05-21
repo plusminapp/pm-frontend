@@ -1,9 +1,9 @@
 import dayjs from "dayjs"
-import { Rekening } from "./Rekening"
+import { RekeningGroepDTO } from "./RekeningGroep"
 import { isDagNaVandaagInPeriode, Periode } from "./Periode"
 
 export type AflossingDTO = {
-    rekening: Rekening,
+    RekeningGroep: RekeningGroepDTO,
     startDatum: dayjs.Dayjs,
     eindDatum: dayjs.Dayjs | undefined,
     eindBedrag: number,

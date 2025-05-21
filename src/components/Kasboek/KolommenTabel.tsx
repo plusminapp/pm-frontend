@@ -9,7 +9,7 @@ import { InternIcon } from "../../icons/Intern";
 import { UitgavenIcon } from "../../icons/Uitgaven";
 import { AflossingDTO } from "../../model/Aflossing";
 import { currencyFormatter, inkomstenBetalingsSoorten, BetalingsSoort, aflossenBetalingsSoorten, reserverenBetalingsSoorten, betalingsSoortFormatter, internBetalingsSoorten, BetalingDTO } from "../../model/Betaling";
-import { berekenBedragVoorRekenining, inkomstenRekeningSoorten, interneRekeningSoorten, Rekening, RekeningSoort } from "../../model/Rekening";
+import { berekenBedragVoorRekenining, inkomstenRekeningSoorten, interneRekeningSoorten, RekeningGroepDTO, rekeningGroepSoort } from "../../model/RekeningGroep";
 import AflossingReserveringTabel from "./AflossingReserveringTabel";
 import InkomstenUitgavenTabel from "./InkomstenUitgavenTabel";
 import { useCustomContext } from "../../context/CustomContext";
@@ -28,12 +28,12 @@ interface KolommenTabelProps {
 export default function KolommenTabel(props: KolommenTabelProps) {
 
   const { rekeningen } = useCustomContext();
-  const inkomstenRekeningen: Rekening[] = rekeningen.filter(rekening => inkomstenRekeningSoorten.includes(rekening.rekeningSoort))
-  const uitgaveRekeningen: Rekening[] = rekeningen.filter(rekening => rekening.rekeningSoort === RekeningSoort.uitgaven)
-  const interneRekeningen: Rekening[] = rekeningen.filter(rekening => interneRekeningSoorten.includes(rekening.rekeningSoort))
+  const inkomstenRekeningen: RekeningGroepDTO[] = rekeningen.filter(RekeningGroep => inkomstenRekeningSoorten.includes(RekeningGroep.rekeningGroepSoort))
+  const uitgaveRekeningen: RekeningGroepDTO[] = rekeningen.filter(RekeningGroep => RekeningGroep.rekeningGroepSoort === rekeningGroepSoort.uitgaven)
+  const interneRekeningen: RekeningGroepDTO[] = rekeningen.filter(RekeningGroep => interneRekeningSoorten.includes(RekeningGroep.rekeningGroepSoort))
 
-  const berekenRekeningTotaal = (rekening: Rekening) => {
-    return props.betalingen.reduce((acc, betaling) => (acc + berekenBedragVoorRekenining(betaling, rekening)), 0)
+  const berekenRekeningTotaal = (RekeningGroep: RekeningGroepDTO) => {
+    return props.betalingen.reduce((acc, betaling) => (acc + berekenBedragVoorRekenining(betaling, RekeningGroep)), 0)
   }
   const berekenAflossingTotaal = () => {
     return props.betalingen
@@ -83,26 +83,26 @@ export default function KolommenTabel(props: KolommenTabelProps) {
             <Typography>{currencyFormatter.format(berekenInkomstenTotaal())}</Typography>
           </Box>
         }
-        {inkomstenRekeningen.map(rekening =>
-          <Grid key={rekening.id}>
+        {inkomstenRekeningen.map(RekeningGroep =>
+          <Grid key={RekeningGroep.id}>
             <Accordion >
               <AccordionSummary
                 expandIcon={<ArrowDropDownIcon />}
-                aria-controls={rekening.naam}
-                id={rekening.naam}>
+                aria-controls={RekeningGroep.naam}
+                id={RekeningGroep.naam}>
                 <Box display="flex" alignItems="center" justifyContent="flex-end">
                   <Box display="flex" alignItems="center" justifyContent="flex-end">
-                    {rekening.budgetten.length > 0 &&
-                      <BudgetStatusIcon verwachtHoog={berekenRekeningTotaal(rekening)} verwachtLaag={budgetOpPeilDatum(rekening.naam)} />
+                    {RekeningGroep.budgetten.length > 0 &&
+                      <BudgetStatusIcon verwachtHoog={berekenRekeningTotaal(RekeningGroep)} verwachtLaag={budgetOpPeilDatum(RekeningGroep.naam)} />
                     }
                   </Box>
                   &nbsp;
-                  <Typography sx={{ fontSize: '15px' }} component="span">{rekening.naam}: {currencyFormatter.format(berekenRekeningTotaal(rekening))} {rekening.budgetten.length > 0 && `(van ${currencyFormatter.format(budgetOpPeilDatum(rekening.naam))})`}</Typography>
+                  <Typography sx={{ fontSize: '15px' }} component="span">{RekeningGroep.naam}: {currencyFormatter.format(berekenRekeningTotaal(RekeningGroep))} {RekeningGroep.budgetten.length > 0 && `(van ${currencyFormatter.format(budgetOpPeilDatum(RekeningGroep.naam))})`}</Typography>
                 </Box>
               </AccordionSummary>
               <AccordionDetails sx={{ p: 0 }}>
                 <InkomstenUitgavenTabel
-                  actueleRekening={rekening}
+                  actueleRekening={RekeningGroep}
                   betalingen={props.betalingen
                     .filter(betaling => betaling.betalingsSoort && inkomstenBetalingsSoorten.includes(betaling.betalingsSoort))}
                   onBetalingBewaardChange={(betalingDTO) => props.onBetalingBewaardChange(betalingDTO)}
@@ -120,25 +120,25 @@ export default function KolommenTabel(props: KolommenTabelProps) {
           &nbsp;
           <Typography>{currencyFormatter.format(berekenUitgavenTotaal())}</Typography>
         </Box>
-        {uitgaveRekeningen.map(rekening =>
-          <Grid key={rekening.id}>
+        {uitgaveRekeningen.map(RekeningGroep =>
+          <Grid key={RekeningGroep.id}>
             <Accordion >
               <AccordionSummary
                 expandIcon={<ArrowDropDownIcon />}
-                aria-controls={rekening.naam}
-                id={rekening.naam}>
+                aria-controls={RekeningGroep.naam}
+                id={RekeningGroep.naam}>
                 <Box display="flex" alignItems="center" justifyContent="flex-end">
                   <Box display="flex" alignItems="center" justifyContent="flex-end">
-                    {rekening.budgetten.length > 0 &&
-                      <BudgetStatusIcon verwachtHoog={budgetOpPeilDatum(rekening.naam)} verwachtLaag={-berekenRekeningTotaal(rekening)} />}
+                    {RekeningGroep.budgetten.length > 0 &&
+                      <BudgetStatusIcon verwachtHoog={budgetOpPeilDatum(RekeningGroep.naam)} verwachtLaag={-berekenRekeningTotaal(RekeningGroep)} />}
                   </Box>
                   &nbsp;
-                  <Typography sx={{ fontSize: '15px' }} component="span">{rekening.naam}: {currencyFormatter.format(-berekenRekeningTotaal(rekening))} {rekening.budgetten.length > 0 && `(van ${currencyFormatter.format(budgetOpPeilDatum(rekening.naam))})`}</Typography>
+                  <Typography sx={{ fontSize: '15px' }} component="span">{RekeningGroep.naam}: {currencyFormatter.format(-berekenRekeningTotaal(RekeningGroep))} {RekeningGroep.budgetten.length > 0 && `(van ${currencyFormatter.format(budgetOpPeilDatum(RekeningGroep.naam))})`}</Typography>
                 </Box>
               </AccordionSummary>
               <AccordionDetails sx={{ p: 0 }}>
                 <InkomstenUitgavenTabel
-                  actueleRekening={rekening}
+                  actueleRekening={RekeningGroep}
                   onBetalingBewaardChange={(betalingDTO) => props.onBetalingBewaardChange(betalingDTO)}
                   onBetalingVerwijderdChange={(betalingDTO) => props.onBetalingVerwijderdChange(betalingDTO)}
                   betalingen={props.betalingen.filter(betaling => betaling.betalingsSoort === BetalingsSoort.uitgaven)} />
@@ -210,21 +210,21 @@ export default function KolommenTabel(props: KolommenTabelProps) {
             <InternIcon />
           </Box>
         }
-        {interneRekeningen.map(rekening =>
-          <Grid key={rekening.id}>
+        {interneRekeningen.map(RekeningGroep =>
+          <Grid key={RekeningGroep.id}>
             <Accordion >
               <AccordionSummary
                 expandIcon={<ArrowDropDownIcon />}
-                aria-controls={rekening.naam}
-                id={rekening.naam}>
-                {(rekening.rekeningSoort === RekeningSoort.contant || rekening.rekeningSoort === RekeningSoort.spaarrekening) &&
-                  <Typography sx={{ fontSize: '15px' }} component="span">{betalingsSoortFormatter(rekening.naam)} opname/storting</Typography>}
-                {rekening.rekeningSoort === RekeningSoort.creditcard &&
-                  <Typography sx={{ fontSize: '15px' }} component="span">{betalingsSoortFormatter(rekening.naam)} incasso</Typography>}
+                aria-controls={RekeningGroep.naam}
+                id={RekeningGroep.naam}>
+                {(RekeningGroep.rekeningGroepSoort === rekeningGroepSoort.contant || RekeningGroep.rekeningGroepSoort === rekeningGroepSoort.spaarrekening) &&
+                  <Typography sx={{ fontSize: '15px' }} component="span">{betalingsSoortFormatter(RekeningGroep.naam)} opname/storting</Typography>}
+                {RekeningGroep.rekeningGroepSoort === rekeningGroepSoort.creditcard &&
+                  <Typography sx={{ fontSize: '15px' }} component="span">{betalingsSoortFormatter(RekeningGroep.naam)} incasso</Typography>}
               </AccordionSummary>
               <AccordionDetails sx={{ p: 0 }}>
                 <InkomstenUitgavenTabel
-                  actueleRekening={rekening}
+                  actueleRekening={RekeningGroep}
                   onBetalingBewaardChange={(betalingDTO) => props.onBetalingBewaardChange(betalingDTO)}
                   onBetalingVerwijderdChange={(betalingDTO) => props.onBetalingVerwijderdChange(betalingDTO)}
                   betalingen={props.betalingen.filter(betaling => betaling.betalingsSoort && internBetalingsSoorten.includes(betaling.betalingsSoort))} />

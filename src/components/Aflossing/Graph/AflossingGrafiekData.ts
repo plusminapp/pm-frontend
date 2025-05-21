@@ -38,7 +38,7 @@ const genereerAflossingSaldi = (aflossing: AflossingDTO): AflossingGrafiekData[]
       maand: huidigeMaand.format(formatter),
       aflossingSaldi: {
         id: 0,
-        rekeningNaam: aflossing.rekening.naam,
+        rekeningNaam: aflossing.RekeningGroep.naam,
         bedrag: huidigeBedrag,
       },
     });
@@ -54,8 +54,8 @@ export function getSeries(aflossingen: AflossingDTO[]) {
     return {
       type: "area",
       xKey: "month",
-      yKey: aflossing.rekening.naam.toLowerCase().replace(/\s/g, ''),
-      yName: aflossing.rekening.naam,
+      yKey: aflossing.RekeningGroep.naam.toLowerCase().replace(/\s/g, ''),
+      yName: aflossing.RekeningGroep.naam,
       stacked: true,
     };
   })

@@ -2,7 +2,7 @@ import { Box, Table, TableBody, TableCell, TableContainer, TableRow, Typography 
 import Grid from '@mui/material/Grid2';
 import dayjs from 'dayjs';
 import { dagInPeriode, Periode } from '../../model/Periode';
-import { BudgetType, Rekening, RekeningSoort } from '../../model/Rekening';
+import { BudgetType, RekeningGroepDTO, rekeningGroepSoort } from '../../model/RekeningGroep';
 import { berekenBudgetStand, BudgetDTO } from '../../model/Budget';
 import { PlusIcon } from '../../icons/Plus';
 import { MinIcon } from '../../icons/Min';
@@ -11,17 +11,17 @@ import StandGeneriekGrafiek from './StandGeneriekGrafiek';
 type BudgetGrafiekProps = {
   peilDatum: dayjs.Dayjs;
   periode: Periode;
-  rekening: Rekening
+  RekeningGroep: RekeningGroepDTO
   budgetten: BudgetDTO[];
   geaggregeerdBudget: BudgetDTO | undefined;
   detailsVisible: boolean;
 };
 
-export const BudgetGrafiek = ({ peilDatum, periode, rekening, geaggregeerdBudget, budgetten, detailsVisible }: BudgetGrafiekProps) => {
+export const BudgetGrafiek = ({ peilDatum, periode, RekeningGroep, geaggregeerdBudget, budgetten, detailsVisible }: BudgetGrafiekProps) => {
 
-  const grafiekType = rekening.rekeningSoort === RekeningSoort.inkomsten || rekening.rekeningSoort === RekeningSoort.rente ? 'inkomsten' :
-    rekening.budgetType === BudgetType.continu ? 'continu' :
-      rekening.budgetType === BudgetType.vast ? 'vast' : 'onbekend';
+  const grafiekType = RekeningGroep.rekeningGroepSoort === rekeningGroepSoort.inkomsten || RekeningGroep.rekeningGroepSoort === rekeningGroepSoort.rente ? 'inkomsten' :
+    RekeningGroep.budgetType === BudgetType.continu ? 'continu' :
+      RekeningGroep.budgetType === BudgetType.vast ? 'vast' : 'onbekend';
 
   const formatAmount = (amount: string): string => {
     return parseFloat(amount).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
@@ -71,10 +71,10 @@ export const BudgetGrafiek = ({ peilDatum, periode, rekening, geaggregeerdBudget
             <StandGeneriekGrafiek
               status={berekenBudgetStand(geaggregeerdBudget)}
               percentageFill={percentagePeriodeVoorbij}
-              headerText={rekening.naam}
+              headerText={RekeningGroep.naam}
               bodyText={"Deze tekst moet nog wijzigen, maar dat kan ik nu nog niet"}
               cfoText={"En deze ook ..."}
-              rekeningIconNaam={rekening.rekeningIcoonNaam} />}
+              rekeningIconNaam={RekeningGroep.rekeningIcoonNaam} />}
         </Box>
 
         <TableContainer >
@@ -147,7 +147,7 @@ export const BudgetGrafiek = ({ peilDatum, periode, rekening, geaggregeerdBudget
             </TableBody>
           </Table>
         </TableContainer >
-        {detailsVisible && false &&
+        {detailsVisible && 
           <Grid size={2} alignItems={'flex-start'}>
             {budgetten.map((budget, index) => (
               <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start' }}>

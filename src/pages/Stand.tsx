@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, FormControlLabel, FormGroup, Switch, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, FormControlLabel, FormGroup, Switch, Typography } from "@mui/material";
 import Grid from '@mui/material/Grid2';
 import { useEffect, useState } from 'react';
 
@@ -9,7 +9,7 @@ import type { Stand } from "../model/Stand";
 import dayjs from "dayjs";
 import { PeriodeSelect } from "../components/Periode/PeriodeSelect";
 import { ArrowDropDownIcon } from "@mui/x-date-pickers";
-import { betaalmethodeRekeningSoorten } from "../model/Rekening";
+import { betaalmethodeRekeningSoorten } from "../model/RekeningGroep";
 import AflossingGrafiek from "../components/Stand/AflossingGrafiek";
 import SamenvattingGrafiek from "../components/Stand/SamenvattingGrafiek";
 import BudgetGrafiek from "../components/Stand/BudgetGrafiek";
@@ -106,7 +106,7 @@ export default function Stand() {
                 {dayjs(gekozenPeriode?.periodeEindDatum).isBefore(dayjs()) && ' De periode is afgelopen.'}
               </Typography>
 
-              {/* <Grid display={'flex'} flexDirection={'row'} alignItems={'center'}>
+              <Grid display={'flex'} flexDirection={'row'} alignItems={'center'}>
                 <FormGroup>
                   <FormControlLabel control={
                     <Switch
@@ -122,9 +122,9 @@ export default function Stand() {
                       </Box>
                     } />
                 </FormGroup>
-              </Grid> */}
+              </Grid>
 
-              <Grid container columns={{ sm: 1, lg: 2 }} onClick={toggleToonBudgetDetails} >
+              <Grid container columns={{ sm: 1, lg: 2 }} onClick={toggleToonBudgetDetails} height={'100%'}>
                 {gekozenPeriode &&
                   <Grid size={1}>
                     <SamenvattingGrafiek
@@ -137,25 +137,24 @@ export default function Stand() {
                 {gekozenPeriode &&
                   rekeningen
                     .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1)
-                    .filter(rekening => rekening.budgetten.length >= 1)
-                    .map(rekening => (
+                    .filter(RekeningGroep => RekeningGroep.budgetten.length >= 1)
+                    .map(RekeningGroep => (
                       <Grid size={1}
-                        key={rekening.id}
+                        key={RekeningGroep.id}
                         sx={{ cursor: 'pointer' }}
                       >
                         <BudgetGrafiek
                           peilDatum={dayjs(stand.peilDatum).isAfter(dayjs()) ? dayjs() : dayjs(stand.peilDatum)}
                           periode={gekozenPeriode}
-                          rekening={rekening}
-                          budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
-                          geaggregeerdBudget={stand.geaggregeerdeBudgettenOpDatum.find(b => b.rekeningNaam === rekening.naam)}
+                          RekeningGroep={RekeningGroep}
+                          budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === RekeningGroep.naam)}
+                          geaggregeerdBudget={stand.geaggregeerdeBudgettenOpDatum.find(b => b.rekeningNaam === RekeningGroep.naam)}
                           detailsVisible={detailsVisible} />
                       </Grid>
                     ))}
 
                 {gekozenPeriode && stand.aflossingenOpDatum.length > 0 &&
-                  <Grid size={1}
-                    sx={{ cursor: 'pointer' }}
+                  <Grid size={1} sx={{ cursor: 'pointer' }} 
                   >
                     <AflossingGrafiek
                       peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
@@ -168,17 +167,17 @@ export default function Stand() {
                 {/* {gekozenPeriode &&
                   rekeningen
                     .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1)
-                    .filter(rekening => rekening.budgetten.length >= 1)
-                    .map((rekening) => (
-                      rekening.naam === toonBarGrafiek && (
+                    .filter(RekeningGroep => RekeningGroep.budgetten.length >= 1)
+                    .map((RekeningGroep) => (
+                      RekeningGroep.naam === toonBarGrafiek && (
                         <BudgetGrafiek
-                          key={rekening.id}
+                          key={RekeningGroep.id}
                           visualisatie='bar'
-                          rekening={rekening}
+                          RekeningGroep={RekeningGroep}
                           peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                           periode={gekozenPeriode}
-                          budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekening.naam)}
-                          geaggregeerdBudget={stand.geaggregeerdeBudgettenOpDatum.find(b => b.rekeningNaam === rekening.naam)} 
+                          budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === RekeningGroep.naam)}
+                          geaggregeerdBudget={stand.geaggregeerdeBudgettenOpDatum.find(b => b.rekeningNaam === RekeningGroep.naam)} 
                           detailsVisible={detailsVisible}                        />)
                     ))} */}
 
@@ -190,7 +189,7 @@ export default function Stand() {
                 title={'Stand van de geldrekeningen'}
                 datum={stand.peilDatum}
                 saldi={stand.balansOpDatum!.filter(saldo =>
-                  rekeningen.filter(r => betaalmethodeRekeningSoorten.includes(r.rekeningSoort))
+                  rekeningen.filter(r => betaalmethodeRekeningSoorten.includes(r.rekeningGroepSoort))
                     .map(r => r.naam).includes(saldo.rekeningNaam))} />
             </Grid>
           </Grid>

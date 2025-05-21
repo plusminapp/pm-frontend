@@ -9,12 +9,12 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { BetalingDTO, BetalingvalidatieWrapper } from '../model/Betaling';
 import { updateAfbeelding } from '../components/Kasboek/Ocr/UpdateAfbeelding'; 
 import { parseText } from '../components/Kasboek/Ocr/ParseTekst';
-import { RekeningSelect } from '../components/Rekening/RekeningSelect';
+import { RekeningSelect } from '../components/RekeningGroep/RekeningSelect';
 import { useAuthContext } from '@asgardeo/auth-react';
 import { useCustomContext } from '../context/CustomContext';
 import { useNavigate } from 'react-router-dom';
 import { Saldo } from '../model/Saldo';
-import { Rekening } from '../model/Rekening';
+import { RekeningGroepDTO } from '../model/RekeningGroep';
 import InkomstenUitgavenTabel from '../components/Kasboek/InkomstenUitgavenTabel';
 import UpsertBetalingDialoog from '../components/Kasboek/UpsertBetalingDialoog';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
@@ -32,7 +32,7 @@ const BanlAppAfbeelding: React.FC = () => {
   const [imageSrc, setImageSrc] = useState<string | null>(null); // Add state for image source
   const [toonAfbeelding, setToonUpdatedAfbeelding] = useState<boolean>(localStorage.getItem('toonUpdatedAfbeelding') === 'true'); // Add state for image source
   // const [updatedImageSrc, setUpdatedImageSrc] = useState<string | null>(null);
-  const [ocrBankRekening, setOcrBankRekening] = useState<Rekening | undefined>(undefined);
+  const [ocrBankRekening, setOcrBankRekening] = useState<RekeningGroepDTO | undefined>(undefined);
   const [aantalVerwerkteBetalingen, setAantalVerwerkteBetalingen] = useState<number>(0);
 
   const aantalBetalingen = validatedData.betalingen.length;
@@ -145,7 +145,7 @@ const BanlAppAfbeelding: React.FC = () => {
 
   }, [ocrBankRekening, parsedData, actieveHulpvrager, getIDToken]);
 
-  const wijzigOcrBankRekening = (bankRekening: Rekening | undefined) => {
+  const wijzigOcrBankRekening = (bankRekening: RekeningGroepDTO | undefined) => {
     setOcrBankRekening(bankRekening);
   };
 

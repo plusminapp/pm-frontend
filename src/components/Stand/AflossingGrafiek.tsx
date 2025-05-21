@@ -31,7 +31,7 @@ export const AflossingGrafiek = ({peilDatum, periode, aflossingen, geaggregeerde
     aflossingen.some(aflossing => aflossing.betaalDag === undefined) ||
     aflossingen.some(aflossing => (aflossing?.betaalDag ?? 0) < 1) ||
     aflossingen.some(aflossing => (aflossing?.betaalDag ?? 30) > 28)) {
-    throw new Error('aflossingVastGrafiek: rekeningSoort moet \'aflossing\' zijn, er moet minimaal 1 aflossing zijn en alle aflossingen moeten een geldige betaalDag hebben.');
+    throw new Error('aflossingVastGrafiek: rekeningGroepSoort moet \'aflossing\' zijn, er moet minimaal 1 aflossing zijn en alle aflossingen moeten een geldige betaalDag hebben.');
   }
 
   const formatAmount = (amount: string): string => {
@@ -120,7 +120,7 @@ export const AflossingGrafiek = ({peilDatum, periode, aflossingen, geaggregeerde
                 <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start' }}>
                   {berekenToestandAflossingIcoon(aflossing)}
                   <Typography variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
-                    {aflossing.rekening.naam}: {(aflossing.deltaStartPeriode ?? 0) > 0 && `betaalachterstand van ${formatAmount(((aflossing.deltaStartPeriode ?? 0)).toString())}; `}
+                    {aflossing.RekeningGroep.naam}: {(aflossing.deltaStartPeriode ?? 0) > 0 && `betaalachterstand van ${formatAmount(((aflossing.deltaStartPeriode ?? 0)).toString())}; `}
                     maandbedrag: {formatAmount(aflossing.aflossingsBedrag.toString())}, betaaldag {aflossing.betaalDag && dagInPeriode(aflossing.betaalDag, props.periode).format('D MMMM')},&nbsp;
                     waarvan {formatAmount(aflossing.aflossingBetaling?.toString() ?? "nvt")} is betaald;
                     dit is

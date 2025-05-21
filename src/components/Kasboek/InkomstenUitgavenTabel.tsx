@@ -12,14 +12,14 @@ import { Box, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChang
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { useCustomContext } from '../../context/CustomContext';
-import { berekenBedragVoorRekenining, Rekening } from '../../model/Rekening';
+import { berekenBedragVoorRekenining, RekeningGroepDTO } from '../../model/RekeningGroep';
 import UpsertBetalingDialoog from './UpsertBetalingDialoog';
 import dayjs from 'dayjs';
 import React from 'react';
 import { InfoIcon } from '../../icons/Info';
 
 interface InUitTabelProps {
-  actueleRekening: Rekening | undefined;
+  actueleRekening: RekeningGroepDTO | undefined;
   isFilterSelectable?: boolean;
   isOcr?: boolean;
   betalingen: BetalingDTO[];
@@ -31,7 +31,7 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
 
   const { actieveHulpvrager, gebruiker, rekeningen, gekozenPeriode, setSnackbarMessage } = useCustomContext();
   const betalingen = props.betalingen
-  const [actueleRekening, setActueleRekening] = useState<Rekening | undefined>(props.actueleRekening)
+  const [actueleRekening, setActueleRekening] = useState<RekeningGroepDTO | undefined>(props.actueleRekening)
   const [filteredBetalingen, setFilteredBetalingen] = useState<{ [key: string]: BetalingDTO[] }>({})
   const [selectedBetaling, setSelectedBetaling] = useState<BetalingDTO | undefined>(undefined);
   const [verwerkteBetalingen, setVerwerkteBetalingen] = useState<string[]>([]);
@@ -100,8 +100,8 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
             onChange={handleWeergaveChange}
             label="Weergave kiezen">
             <MenuItem value='alles'>Alle betalingen</MenuItem>
-            {rekeningen.map((rekening) => (
-              <MenuItem key={rekening.id} value={rekening.naam}>{rekening.naam}</MenuItem>
+            {rekeningen.map((RekeningGroep) => (
+              <MenuItem key={RekeningGroep.id} value={RekeningGroep.naam}>{RekeningGroep.naam}</MenuItem>
             ))}
           </Select>
         </FormControl>

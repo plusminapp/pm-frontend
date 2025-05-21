@@ -2,7 +2,7 @@ import { Box, FormControlLabel, FormGroup, Switch, Table, TableBody, TableCell, 
 import Grid from '@mui/material/Grid2';
 import dayjs from 'dayjs';
 import { dagInPeriode, Periode } from '../../model/Periode';
-import { Rekening } from '../../model/Rekening';
+import { RekeningGroepDTO } from '../../model/RekeningGroep';
 import { useState } from 'react';
 import { BudgetDTO } from '../../model/Budget';
 import { PlusIcon } from '../../icons/Plus';
@@ -11,7 +11,7 @@ import { MinIcon } from '../../icons/Min';
 type BudgetInkomstenGrafiekProps = {
   peilDatum: dayjs.Dayjs;
   periode: Periode;
-  rekening: Rekening
+  RekeningGroep: RekeningGroepDTO
   budgetten: BudgetDTO[];
   visualisatie: string;
 };
@@ -24,14 +24,14 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
     setToonBudgetInkomstenDetails(event.target.checked);
   };
 
-  if (//props.rekening.rekeningSoort.toLowerCase() !== RekeningSoort.inkomsten.toLowerCase() ||
+  if (//props.RekeningGroep.rekeningGroepSoort.toLowerCase() !== rekeningGroepSoort.inkomsten.toLowerCase() ||
     props.budgetten.length ===  0) {
     // props.budgetten.some(budget => budget.betaalDag === undefined) ||
     // props.budgetten.some(budget => (budget?.betaalDag ?? 0) < 1) ||
     // props.budgetten.some(budget => (budget?.betaalDag ?? 30) > 28)) {
-      // console.error(`BudgetInkomstenGrafiek: ${JSON.stringify(props.budgetten)} rekeningSoort moet \'inkomsten\' zijn, er moet minimaal 1 budget zijn en alle budgetten moeten een geldige betaalDag hebben.`);
+      // console.error(`BudgetInkomstenGrafiek: ${JSON.stringify(props.budgetten)} rekeningGroepSoort moet \'inkomsten\' zijn, er moet minimaal 1 budget zijn en alle budgetten moeten een geldige betaalDag hebben.`);
       return null
-    // throw new Error(`BudgetInkomstenGrafiek: ${JSON.stringify(props.budgetten)} rekeningSoort moet \'inkomsten\' zijn, er moet minimaal 1 budget zijn en alle budgetten moeten een geldige betaalDag hebben.`);
+    // throw new Error(`BudgetInkomstenGrafiek: ${JSON.stringify(props.budgetten)} rekeningGroepSoort moet \'inkomsten\' zijn, er moet minimaal 1 budget zijn en alle budgetten moeten een geldige betaalDag hebben.`);
   }
 
   const inkomstenMoetOntvangenZijn = (betaalDag: number | undefined) => {
@@ -135,7 +135,7 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
               sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
               component="span"
               align="left">
-              <strong>{props.rekening.naam}</strong>
+              <strong>{props.RekeningGroep.naam}</strong>
             </Typography>}
           </Grid>}
       </Grid>
@@ -144,7 +144,7 @@ export const BudgetInkomstenGrafiek = (props: BudgetInkomstenGrafiekProps) => {
           <Grid size={2}>
             <Box display="flex" alignItems="center">
               <Typography variant='body2' sx={{ mr: 2 }}>
-              <strong>{props.rekening.naam}</strong>
+              <strong>{props.RekeningGroep.naam}</strong>
               </Typography>
               {extendedInkomstenBudget.length >= 1 &&
               <FormGroup>
