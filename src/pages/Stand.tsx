@@ -9,15 +9,14 @@ import type { Stand } from "../model/Stand";
 import dayjs from "dayjs";
 import { PeriodeSelect } from "../components/Periode/PeriodeSelect";
 import { ArrowDropDownIcon } from "@mui/x-date-pickers";
-import { betaalmethodeRekeningSoorten } from "../model/RekeningGroep";
+import { betaalmethodeRekeningGroepSoorten } from "../model/RekeningGroep";
 import AflossingGrafiek from "../components/Stand/AflossingGrafiek";
 import SamenvattingGrafiek from "../components/Stand/SamenvattingGrafiek";
-import BudgetGrafiek from "../components/Stand/BudgetGrafiek";
 
 export default function Stand() {
 
   const { getIDToken } = useAuthContext();
-  const { actieveHulpvrager, gekozenPeriode, rekeningen } = useCustomContext();
+  const { actieveHulpvrager, gekozenPeriode, rekeningGroepen: rekeningen } = useCustomContext();
 
   const [stand, setStand] = useState<Stand | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(false);
@@ -137,19 +136,19 @@ export default function Stand() {
                 {gekozenPeriode &&
                   rekeningen
                     .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1)
-                    .filter(RekeningGroep => RekeningGroep.budgetten.length >= 1)
+                    .filter(RekeningGroep => RekeningGroep.rekeningen.length >= 1)
                     .map(RekeningGroep => (
                       <Grid size={1}
                         key={RekeningGroep.id}
                         sx={{ cursor: 'pointer' }}
                       >
-                        <BudgetGrafiek
+                        {/* <BudgetGrafiek
                           peilDatum={dayjs(stand.peilDatum).isAfter(dayjs()) ? dayjs() : dayjs(stand.peilDatum)}
                           periode={gekozenPeriode}
                           RekeningGroep={RekeningGroep}
                           budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === RekeningGroep.naam)}
                           geaggregeerdBudget={stand.geaggregeerdeBudgettenOpDatum.find(b => b.rekeningNaam === RekeningGroep.naam)}
-                          detailsVisible={detailsVisible} />
+                          detailsVisible={detailsVisible} /> */}
                       </Grid>
                     ))}
 
@@ -167,7 +166,7 @@ export default function Stand() {
                 {/* {gekozenPeriode &&
                   rekeningen
                     .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1)
-                    .filter(RekeningGroep => RekeningGroep.budgetten.length >= 1)
+                    .filter(RekeningGroep => RekeningGroep.rekeningen.length >= 1)
                     .map((RekeningGroep) => (
                       RekeningGroep.naam === toonBarGrafiek && (
                         <BudgetGrafiek
@@ -189,7 +188,7 @@ export default function Stand() {
                 title={'Stand van de geldrekeningen'}
                 datum={stand.peilDatum}
                 saldi={stand.balansOpDatum!.filter(saldo =>
-                  rekeningen.filter(r => betaalmethodeRekeningSoorten.includes(r.rekeningGroepSoort))
+                  rekeningen.filter(r => betaalmethodeRekeningGroepSoorten.includes(r.rekeningGroepSoort))
                     .map(r => r.naam).includes(saldo.rekeningNaam))} />
             </Grid>
           </Grid>

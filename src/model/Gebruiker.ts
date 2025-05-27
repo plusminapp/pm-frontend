@@ -1,4 +1,3 @@
-import { AflossingSamenvattingDTO } from "./Aflossing";
 import { Periode } from "./Periode";
 
 export type Gebruiker = {
@@ -11,5 +10,5 @@ export type Gebruiker = {
     vrijwilligerBijnaam: string | undefined;
     // rekeningen: RekeningGroep[];
     periodes: Periode[];
-    aflossingen: AflossingSamenvattingDTO[];
+    // aflossingen: AflossingSamenvattingDTO[];
 }

@@ -6,27 +6,26 @@ import { Accordion, AccordionDetails, AccordionSummary, Button, Typography } fro
 import Grid from '@mui/material/Grid2';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useCustomContext } from '../context/CustomContext';
-import InkomstenUitgavenTabel from '../components/Kasboek/InkomstenUitgavenTabel';
-import BetalingTabel from '../components/Kasboek/BetalingTabel';
+// import InkomstenUitgavenTabel from '../components/Kasboek/InkomstenUitgavenTabel';
+// import BetalingTabel from '../components/Kasboek/BetalingTabel';
 import UpsertBetalingDialoog from '../components/Kasboek/UpsertBetalingDialoog';
 import { useMediaQuery, useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 import { PeriodeSelect } from '../components/Periode/PeriodeSelect';
 import PhotoCameraOutlinedIcon from '@mui/icons-material/PhotoCameraOutlined';
-import { AflossingDTO } from '../model/Aflossing';
+// import { AflossingDTO } from '../model/Aflossing';
 import dayjs from 'dayjs';
-import { Stand } from '../model/Stand';
-import KolommenTabel from '../components/Kasboek/KolommenTabel';
-import { BudgetDTO } from '../model/Budget';
+// import { Stand } from '../model/Stand';
+// import KolommenTabel from '../components/Kasboek/KolommenTabel';
 
 export default function Kasboek() {
   const { getIDToken } = useAuthContext();
   const { actieveHulpvrager, gekozenPeriode } = useCustomContext();
 
   const [betalingen, setBetalingen] = useState<BetalingDTO[]>([])
-  const [aflossingen, setAflossingen] = useState<AflossingDTO[]>([])
-  const [budgetten, setBudgetten] = useState<BudgetDTO[]>([])
+  // const [aflossingen, setAflossingen] = useState<AflossingDTO[]>([])
+  // const [budgetten, setBudgetten] = useState<BudgetDTO[]>([])
   const [isLoading, setIsLoading] = useState(false);
 
   const theme = useTheme();
@@ -89,13 +88,13 @@ export default function Kasboek() {
         },
       });
       setIsLoading(false);
-      if (response.ok) {
-        const result = await response.json() as Stand;
-        setAflossingen(result.aflossingenOpDatum);
-        setBudgetten(result.budgettenOpDatum);
-      } else {
+      // if (response.ok) {
+      //   const result = await response.json() as Stand;
+      //   setAflossingen(result.aflossingenOpDatum);
+      //   setBudgetten(result.budgettenOpDatum);
+      // } else {
         console.error("Failed to fetch data", response.status);
-      }
+      // }
     }
   }, [actieveHulpvrager, gekozenPeriode, getIDToken]);
 
@@ -144,7 +143,7 @@ export default function Kasboek() {
               onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO.sortOrder)} />
           </Grid>}
       </Grid>
-      {isMdOrLarger && gekozenPeriode &&
+      {/* {isMdOrLarger && gekozenPeriode &&
         <BetalingTabel
           peilDatum={dayjs(gekozenPeriode.periodeEindDatum) > dayjs() ? dayjs().format('YYYY-MM-DD') : gekozenPeriode.periodeEindDatum}
           betalingen={betalingen}
@@ -153,7 +152,7 @@ export default function Kasboek() {
           onBetalingBewaardChange={(betalingDTO) => onBetalingBewaardChange(betalingDTO)}
           onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO.sortOrder)}
         />
-      }
+      } */}
       <Grid sx={{ mb: '25px' }}>
         <Accordion expanded={expanded === 'kolommen'} onChange={handleChange('kolommen')}>
           <AccordionSummary
@@ -163,13 +162,13 @@ export default function Kasboek() {
             <Typography component="span">Weergave als kolommen</Typography>
           </AccordionSummary>
           <AccordionDetails sx={{ p: 0 }}>
-            <KolommenTabel
+            {/* <KolommenTabel
               betalingen={betalingen}
               aflossingen={aflossingen}
               budgetten={budgetten}
               onBetalingBewaardChange={(betalingDTO) => onBetalingBewaardChange(betalingDTO)}
               onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO.sortOrder)}
-            />
+            /> */}
 
           </AccordionDetails>
         </Accordion>
@@ -185,12 +184,12 @@ export default function Kasboek() {
               </Typography>
             </AccordionSummary>
             <AccordionDetails sx={{ p: 0 }}>
-              <InkomstenUitgavenTabel
+              {/* <InkomstenUitgavenTabel
                 isFilterSelectable={true}
                 actueleRekening={undefined}
                 onBetalingBewaardChange={(betalingDTO) => onBetalingBewaardChange(betalingDTO)}
                 onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO.sortOrder)}
-                betalingen={betalingen} />
+                betalingen={betalingen} /> */}
             </AccordionDetails>
           </Accordion>
         </Grid>

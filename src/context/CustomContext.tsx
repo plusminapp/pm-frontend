@@ -18,12 +18,12 @@ interface CustomContextType {
     setPeriodes: (periodes: Array<Periode>) => void;
     gekozenPeriode: Periode | undefined;
     setGekozenPeriode: (gekozenPeriode: Periode | undefined) => void;
-    rekeningen: Array<RekeningGroepDTO>;
-    setRekeningen: (rekeningen: Array<RekeningGroepDTO>) => void;
+    rekeningGroepen: Array<RekeningGroepDTO>;
+    setRekeningGroepen: (rekeningGroepen: Array<RekeningGroepDTO>) => void;
     betalingsSoorten: Array<BetalingsSoort>;
     setBetalingsSoorten: (betalingsSoorten: Array<BetalingsSoort>) => void;
     betalingsSoorten2RekeningGroepen: Map<BetalingsSoort, RekeningGroepPaar>;
-    setBetalingsSoorten2Rekeningen: (betalingsSoorten2RekeningGroepen: Map<BetalingsSoort, RekeningGroepPaar>) => void;
+    setBetalingsSoorten2RekeningGroepen: (betalingsSoorten2RekeningGroepen: Map<BetalingsSoort, RekeningGroepPaar>) => void;
     snackbarMessage: SnackbarMessage;
     setSnackbarMessage: (snackbarMessage: SnackbarMessage) => void;
 }
@@ -49,12 +49,13 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
     const [hulpvragers, setHulpvragers] = useState<Array<Gebruiker>>([]);
     const [periodes, setPeriodes] = useState<Array<Periode>>([]);
     const [gekozenPeriode, setGekozenPeriode] = useState<Periode | undefined>(undefined);
-    const [rekeningen, setRekeningen] = useState<Array<RekeningGroepDTO>>([]);
+    const [rekeningGroepen, setRekeningGroepen] = useState<Array<RekeningGroepDTO>>([]);
     const [betalingsSoorten, setBetalingsSoorten] = useState<Array<BetalingsSoort>>([]);
     const [betalingsSoorten2Rekeningen, setBetalingsSoorten2Rekeningen] = useState<Map<BetalingsSoort, RekeningGroepPaar>>(new Map())
     const [snackbarMessage, setSnackbarMessage] = useState<SnackbarMessage>({ message: undefined, type: undefined });
 
     useEffect(() => {
+      // TODO? set rekeningGroepen?
         if (!actieveHulpvrager) return;
         setActieveHulpvrager(actieveHulpvrager);
         setPeriodes(actieveHulpvrager.periodes)
@@ -68,12 +69,13 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
             hulpvragers, setHulpvragers,
             periodes, setPeriodes,
             gekozenPeriode, setGekozenPeriode,
-            rekeningen, setRekeningen,
+            rekeningGroepen: rekeningGroepen, setRekeningGroepen: setRekeningGroepen,
             betalingsSoorten, setBetalingsSoorten,
-            betalingsSoorten2RekeningGroepen: betalingsSoorten2Rekeningen, setBetalingsSoorten2Rekeningen,
+            betalingsSoorten2RekeningGroepen: betalingsSoorten2Rekeningen, setBetalingsSoorten2RekeningGroepen: setBetalingsSoorten2Rekeningen,
             snackbarMessage, setSnackbarMessage
         }}>
             {children}
+            {/* {JSON.stringify(actieveHulpvrager)} */}
         </CustomContext.Provider>
     );
 };

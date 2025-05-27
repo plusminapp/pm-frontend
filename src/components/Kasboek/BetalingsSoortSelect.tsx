@@ -17,7 +17,7 @@ type BetalingSoortSelectProps = {
 };
 
 const BetalingSoortSelect = (props: BetalingSoortSelectProps) => {
-  const { betalingsSoorten2RekeningGroepen: betalingsSoorten2Rekeningen, rekeningen } = useCustomContext();
+  const { betalingsSoorten2RekeningGroepen: betalingsSoorten2Rekeningen, rekeningGroepen: rekeningen } = useCustomContext();
   const rekeningPaar = props.betalingsSoort ? betalingsSoorten2Rekeningen.get(props.betalingsSoort) : undefined;
 
   const [selectedCategorie, setSelectedCategorie] = useState<string | undefined>(betalingsSoort2Categorie(props.betalingsSoort));
@@ -77,10 +77,10 @@ const BetalingSoortSelect = (props: BetalingSoortSelectProps) => {
       const newBudget =
         inkomstenBetalingsSoorten.includes(newBetalingsSoort) ?
           (betalingsSoorten2Rekeningen.get(newBetalingsSoort)?.bron[0]?.budgetType?.length ?
-            betalingsSoorten2Rekeningen.get(newBetalingsSoort)?.bron[0]?.budgetType[0]?.budgetNaam : undefined) :
+            betalingsSoorten2Rekeningen.get(newBetalingsSoort)?.bron[0]?.budgetType : undefined) :
           uitgavenBetalingsSoorten.includes(newBetalingsSoort) ?
-            (betalingsSoorten2Rekeningen.get(newBetalingsSoort)?.bestemming[0]?.budgetType.length ?
-              betalingsSoorten2Rekeningen.get(newBetalingsSoort)?.bestemming[0]?.budgetType[0]?.budgetNaam :
+            (betalingsSoorten2Rekeningen.get(newBetalingsSoort)?.bestemming[0]?.budgetType?.length ?
+              betalingsSoorten2Rekeningen.get(newBetalingsSoort)?.bestemming[0]?.budgetType :
               undefined) : undefined
       setSelectedCategorie(betalingsSoort2Categorie(newBetalingsSoort));
       setSelectedBetalingsSoort(newBetalingsSoort);
@@ -92,7 +92,7 @@ const BetalingSoortSelect = (props: BetalingSoortSelectProps) => {
   };
 
   const handleBronButtonClick = (rekeningNaam: string) => {
-    const nieuweBudgetNaam = selectedBetalingsSoort ? betalingsSoorten2Rekeningen.get(selectedBetalingsSoort)?.bron.find(RekeningGroep => RekeningGroep.naam === rekeningNaam)?.budgetType[0]?.budgetNaam : undefined;
+    const nieuweBudgetNaam = selectedBetalingsSoort ? betalingsSoorten2Rekeningen.get(selectedBetalingsSoort)?.bron.find(RekeningGroep => RekeningGroep.naam === rekeningNaam)?.budgetType[0] : undefined;
     setSelectedBudget(nieuweBudgetNaam);
     setSelectedBronRekening(rekeningNaam);
     props.onBetalingsSoortChange(selectedBetalingsSoort, rekeningNaam, selectedBestemmingRekening, selectedBudget);
@@ -282,7 +282,7 @@ const BetalingSoortSelect = (props: BetalingSoortSelectProps) => {
                           ))}
                           {rekeningPaar?.bestemming.map((RekeningGroep, index) => (
                             <>
-                              {selectedBestemmingRekening !== undefined && selectedBestemmingRekening === RekeningGroep.naam && RekeningGroep.budgetType.length > 1 &&
+                              {selectedBestemmingRekening !== undefined && selectedBestemmingRekening === RekeningGroep.naam && RekeningGroep.budgetType?.length > 1 &&
                                 <Grid key={RekeningGroep.id + index} container spacing={1} justifyContent={"center"} direction={"column"} >
                                   <Grid >
                                     <Typography sx={{ mt: '3px', fontSize: 12, textAlign: 'center', color: 'grey' }}>Budget: </Typography>

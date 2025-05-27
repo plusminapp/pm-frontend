@@ -2,17 +2,18 @@ import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } fro
 import { useCustomContext } from "../../context/CustomContext";
 import { saveToLocalStorage } from "../Header/HeaderExports.ts";
 
-import { bankRekeningSoorten, RekeningGroepDTO } from "../../model/RekeningGroep";
+import { bankRekeningGroepSoorten, RekeningGroepDTO } from "../../model/RekeningGroep";
 import { useEffect, useState } from "react";
+import { RekeningDTO } from "../../model/Rekening.ts";
 
 
 interface RekeningSelectProps {
-    wijzigOcrBankNaam: (bankRekening: RekeningGroepDTO | undefined) => void;
+    wijzigOcrBankNaam: (bankRekening: RekeningDTO | undefined) => void;
 }
 export function RekeningSelect(props: RekeningSelectProps) {
 
-    const { rekeningen } = useCustomContext();
-    const bankRekeningen = rekeningen.filter(RekeningGroep => bankRekeningSoorten.includes(RekeningGroep.rekeningGroepSoort));
+    const { rekeningGroepen: rekeningen } = useCustomContext();
+    const bankRekeningen = rekeningen.filter(RekeningGroep => bankRekeningGroepSoorten.includes(RekeningGroep.rekeningGroepSoort));
     const [gekozenRekening, setGekozenRekening] = useState<RekeningGroepDTO | undefined>(undefined);
 
     useEffect(() => {

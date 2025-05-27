@@ -2,7 +2,7 @@ import { Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEve
 import Grid from '@mui/material/Grid2';
 import { eersteOpenPeriode, formateerNlDatum, formateerNlVolgendeDag, laatsteGeslotenPeriode, Periode } from "../../model/Periode";
 import { useCustomContext } from "../../context/CustomContext";
-import { saveToLocalStorage, transformRekeningen2BetalingsSoorten, transformRekeningenToBetalingsSoorten } from "../Header/HeaderExports.ts";
+import { saveToLocalStorage, transformRekeningGroepen2BetalingsSoorten, transformRekeningGroepenToBetalingsSoorten } from "../Header/HeaderExports.ts";
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import EditIcon from '@mui/icons-material/Edit';
 
@@ -18,7 +18,7 @@ interface PeriodeSelectProps {
 export function PeriodeSelect({ isProfiel = false }: PeriodeSelectProps) {
 
   const { getIDToken } = useAuthContext();
-  const { periodes, actieveHulpvrager, gekozenPeriode, setGekozenPeriode, setRekeningen, setBetalingsSoorten, setBetalingsSoorten2Rekeningen } = useCustomContext();
+  const { periodes, actieveHulpvrager, gekozenPeriode, setGekozenPeriode, setRekeningGroepen: setRekeningen, setBetalingsSoorten, setBetalingsSoorten2RekeningGroepen: setBetalingsSoorten2Rekeningen } = useCustomContext();
 
   const handlegekozenPeriodeChange = async (event: SelectChangeEvent<string>) => {
     const periode = periodes.find(periode => periode.periodeStartDatum.toString() === event.target.value);
@@ -34,7 +34,7 @@ export function PeriodeSelect({ isProfiel = false }: PeriodeSelectProps) {
       }
 
       try {
-        const response = await fetch(`/api/v1/RekeningGroep/hulpvrager/${actieveHulpvrager.id}/periode/${periode.id}`, {
+        const response = await fetch(`/api/v1/rekening/hulpvrager/${actieveHulpvrager.id}/periode/${periode.id}`, {
           method: 'GET',
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -47,8 +47,8 @@ export function PeriodeSelect({ isProfiel = false }: PeriodeSelectProps) {
         }
         const dataRekening = await response.json();
         setRekeningen(dataRekening as RekeningGroepDTO[]);
-        setBetalingsSoorten(transformRekeningen2BetalingsSoorten(dataRekening as RekeningGroepDTO[]));
-        setBetalingsSoorten2Rekeningen(transformRekeningenToBetalingsSoorten(dataRekening as RekeningGroepDTO[]));
+        setBetalingsSoorten(transformRekeningGroepen2BetalingsSoorten(dataRekening as RekeningGroepDTO[]));
+        setBetalingsSoorten2Rekeningen(transformRekeningGroepenToBetalingsSoorten(dataRekening as RekeningGroepDTO[]));
 
       } catch (error) {
         console.error('Error fetching periode details:', error);
@@ -64,7 +64,7 @@ export function PeriodeSelect({ isProfiel = false }: PeriodeSelectProps) {
       {!isProfiel && openPeriodes.length === 1 && gekozenPeriode &&
         <Box sx={{ mt: '37px', maxWidth: '340px' }}>
           <Typography >
-            Periode: {gekozenPeriode.periodeStartDatum} - {gekozenPeriode.periodeEindDatum} ({gekozenPeriode.periodeStatus.toLocaleLowerCase()})
+            Periode: {dayjs(gekozenPeriode.periodeStartDatum).format('D MMMM')} - {dayjs(gekozenPeriode.periodeEindDatum).format('D MMMM')} ({gekozenPeriode.periodeStatus.toLocaleLowerCase()})
           </Typography>
         </Box>}
 

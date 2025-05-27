@@ -5,7 +5,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { BetalingDTO, BetalingsSoort, betalingsSoortFormatter, internBetalingsSoorten } from '../../model/Betaling';
 import dayjs from 'dayjs';
 import { useCustomContext } from '../../context/CustomContext';
-import { internerekeningGroepSoorten, RekeningGroepSoort } from '../../model/RekeningGroep';
+import { interneRekeningGroepSoorten, RekeningGroepSoort } from '../../model/RekeningGroep';
 import { BudgetDTO } from '../../model/Budget';
 import { ExternalLinkIcon } from '../../icons/ExternalLink';
 import EditIcon from '@mui/icons-material/Edit';
@@ -32,7 +32,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
     currency: 'EUR',
   });
 
-  const { rekeningen, gekozenPeriode, setSnackbarMessage } = useCustomContext();
+  const { rekeningGroepen: rekeningen, gekozenPeriode, setSnackbarMessage } = useCustomContext();
 
   const [selectedBetaling, setSelectedBetaling] = useState<BetalingDTO | undefined>(undefined);
   const [toonIntern, setToonIntern] = useState<boolean>(localStorage.getItem('toonIntern') === 'true');
@@ -87,7 +87,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
 
   const heeftBudgetten = props.budgetten.length > 0;
 
-  const heeftIntern = rekeningen.some(RekeningGroep => RekeningGroep.rekeningGroepSoort && internerekeningGroepSoorten.includes(RekeningGroep.rekeningGroepSoort));
+  const heeftIntern = rekeningen.some(RekeningGroep => RekeningGroep.rekeningGroepSoort && interneRekeningGroepSoorten.includes(RekeningGroep.rekeningGroepSoort));
 
   const isInkomsten = (betaling: BetalingDTO) => betaling.betalingsSoort === BetalingsSoort.inkomsten || betaling.betalingsSoort === BetalingsSoort.rente;
   const isUitgaven = (betaling: BetalingDTO) => betaling.betalingsSoort === BetalingsSoort.uitgaven;
@@ -106,7 +106,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
     setToonIntern(event.target.checked);
   };
 
-  const interneRekeningenNamen = rekeningen.filter(r => r.rekeningGroepSoort === RekeningGroepSoort.betaalrekening || internerekeningGroepSoorten.includes(r.rekeningGroepSoort)).map(r => r.naam).join(', ')
+  const interneRekeningenNamen = rekeningen.filter(r => r.rekeningGroepSoort === RekeningGroepSoort.betaalrekening || interneRekeningGroepSoorten.includes(r.rekeningGroepSoort)).map(r => r.naam).join(', ')
   const toonInterneBetalingMeassage = `Interne betalingen zijn betalingen tussen eigen rekeningen (${interneRekeningenNamen}), ze maken niets uit voor het beschikbare geld, en worden daarom niet vanzelf getoond.`
   const interneBetalingKopMessage = 'Interne betalingen worden als negatief getal getoond als ze van de betaalrekening af gaan, positief als ze er bij komen.'
   const interneBetalingTotaalMessage = `Interne betalingen schuiven met geld tussen eigen rekeningen (${interneRekeningenNamen}), een totaal betekent daarom niks zinvols en daarom worden de betalingen niet opgeteld.`

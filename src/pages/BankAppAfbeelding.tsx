@@ -9,15 +9,16 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { BetalingDTO, BetalingvalidatieWrapper } from '../model/Betaling';
 import { updateAfbeelding } from '../components/Kasboek/Ocr/UpdateAfbeelding'; 
 import { parseText } from '../components/Kasboek/Ocr/ParseTekst';
-import { RekeningSelect } from '../components/RekeningGroep/RekeningSelect';
+import { RekeningSelect } from '../components/Rekening/RekeningSelect';
 import { useAuthContext } from '@asgardeo/auth-react';
 import { useCustomContext } from '../context/CustomContext';
 import { useNavigate } from 'react-router-dom';
 import { Saldo } from '../model/Saldo';
-import { RekeningGroepDTO } from '../model/RekeningGroep';
-import InkomstenUitgavenTabel from '../components/Kasboek/InkomstenUitgavenTabel';
+// import { RekeningGroepDTO } from '../model/RekeningGroep';
+// import InkomstenUitgavenTabel from '../components/Kasboek/InkomstenUitgavenTabel';
 import UpsertBetalingDialoog from '../components/Kasboek/UpsertBetalingDialoog';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import { RekeningDTO } from '../model/Rekening';
 
 dayjs.extend(customParseFormat); // Extend dayjs with the customParseFormat plugin
 dayjs.locale('nl'); // Set the locale to Dutch
@@ -27,15 +28,15 @@ const BanlAppAfbeelding: React.FC = () => {
   const [ocrData, setOcdData] = useState<string>('');
   const [parsedData, setParsedData] = useState<BetalingDTO[]>([]);
   const [validatedData, setValidatedData] = useState<BetalingvalidatieWrapper>({ betalingen: [] });
-  const [groupedData, setGroupedData] = useState<{ [key: string]: BetalingDTO[] }>({});
+  // const [groupedData, setGroupedData] = useState<{ [key: string]: BetalingDTO[] }>({});
   const [confidence, setConfidence] = useState<number | null>(null); // Add state for confidence
   const [imageSrc, setImageSrc] = useState<string | null>(null); // Add state for image source
   const [toonAfbeelding, setToonUpdatedAfbeelding] = useState<boolean>(localStorage.getItem('toonUpdatedAfbeelding') === 'true'); // Add state for image source
   // const [updatedImageSrc, setUpdatedImageSrc] = useState<string | null>(null);
-  const [ocrBankRekening, setOcrBankRekening] = useState<RekeningGroepDTO | undefined>(undefined);
-  const [aantalVerwerkteBetalingen, setAantalVerwerkteBetalingen] = useState<number>(0);
+  const [ocrBankRekening, setOcrBankRekening] = useState<RekeningDTO | undefined>(undefined);
+  // const [aantalVerwerkteBetalingen, setAantalVerwerkteBetalingen] = useState<number>(0);
 
-  const aantalBetalingen = validatedData.betalingen.length;
+  // const aantalBetalingen = validatedData.betalingen.length;
 
   const { getIDToken } = useAuthContext();
   const { actieveHulpvrager, setSnackbarMessage } = useCustomContext();
@@ -145,16 +146,16 @@ const BanlAppAfbeelding: React.FC = () => {
 
   }, [ocrBankRekening, parsedData, actieveHulpvrager, getIDToken]);
 
-  const wijzigOcrBankRekening = (bankRekening: RekeningGroepDTO | undefined) => {
+  const wijzigOcrBankRekening = (bankRekening: RekeningDTO | undefined) => {
     setOcrBankRekening(bankRekening);
   };
 
-  const onBetalingChange = (_sortOrder: string) => {
-    // const newValidatedBetalingen = validatedData.betalingen.filter(item => item.sortOrder !== sortOrder)
-    // console.log('onBetalingChange', newValidatedBetalingen, ', ', sortOrder);
-    setAantalVerwerkteBetalingen(aantalVerwerkteBetalingen + 1);
-    // setValidatedData({ ...validatedData, betalingen: newValidatedBetalingen });
-  };
+  // const onBetalingChange = (_sortOrder: string) => {
+  //   const newValidatedBetalingen = validatedData.betalingen.filter(item => item.sortOrder !== sortOrder)
+  //   console.log('onBetalingChange', newValidatedBetalingen, ', ', sortOrder);
+  //   setAantalVerwerkteBetalingen(aantalVerwerkteBetalingen + 1);
+  //   setValidatedData({ ...validatedData, betalingen: newValidatedBetalingen });
+  // };
 
   const onBetalingBewaardChange = (sortOrder: string) => {
     console.log('onBetalingBewaardChange', sortOrder);
@@ -164,15 +165,15 @@ const BanlAppAfbeelding: React.FC = () => {
     console.log('onBetalingVerwijderdChange', sortOrder);
   }
 
-  useEffect(() => {
-    setGroupedData(validatedData.betalingen.reduce((acc, item) => {
-      if (!acc[item.boekingsdatum.format('YYYY-MM-DD')]) {
-        acc[item.boekingsdatum.format('YYYY-MM-DD')] = [];
-      }
-      acc[item.boekingsdatum.format('YYYY-MM-DD')].push(item);
-      return acc;
-    }, {} as { [key: string]: BetalingDTO[] }))
-  }, [validatedData]);
+  // useEffect(() => {
+  //   setGroupedData(validatedData.betalingen.reduce((acc, item) => {
+  //     if (!acc[item.boekingsdatum.format('YYYY-MM-DD')]) {
+  //       acc[item.boekingsdatum.format('YYYY-MM-DD')] = [];
+  //     }
+  //     acc[item.boekingsdatum.format('YYYY-MM-DD')].push(item);
+  //     return acc;
+  //   }, {} as { [key: string]: BetalingDTO[] }))
+  // }, [validatedData]);
 
   return (
     <Box>
@@ -219,16 +220,16 @@ const BanlAppAfbeelding: React.FC = () => {
       </Grid>
       <Grid container spacing={2} sx={{ mt: 2 }}>
         <Grid size={{ xs: 12, md: toonAfbeelding ? 6 : 12 }}>
-          <Typography variant="caption">
+          {/* <Typography variant="caption">
             aantal: {aantalBetalingen}, verwerkt: {aantalVerwerkteBetalingen}, te gaan: {aantalBetalingen - aantalVerwerkteBetalingen}
-          </Typography>
+          </Typography> */}
           <Box sx={{ display: 'flex', justifyContent: 'center', height: { xs: '67vh', md: '80vh' }, overflow: 'auto', alignItems: 'flex-start', border: '1px solid grey', borderRadius: '5px' }}>
             {validatedData.betalingen.length === 0 && (
               <Typography variant={isXs ? "h5" : isSm ? "h4" : isMdUp ? "h3" : "body1"} width={'50%'} textAlign={'center'} margin='auto' fontWeight={'bold'} color='lightgrey'>
                 Hier komen de voorgestelde betalingen zodra de afbeelding is verwerkt
               </Typography>
             )}
-            {Object.keys(groupedData).length > 0 && (
+            {/* {Object.keys(groupedData).length > 0 && (
               <>
                 <InkomstenUitgavenTabel
                   actueleRekening={undefined}
@@ -237,7 +238,7 @@ const BanlAppAfbeelding: React.FC = () => {
                   onBetalingBewaardChange={(betalingDTO) => onBetalingChange(betalingDTO.sortOrder)}
                   onBetalingVerwijderdChange={(betalingDTO) => onBetalingChange(betalingDTO.sortOrder)} />
               </>
-            )}
+            )} */}
           </Box>
         </Grid>
         {toonAfbeelding &&

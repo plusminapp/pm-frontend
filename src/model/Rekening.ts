@@ -1,11 +1,21 @@
-import { RekeningGroepDTO } from "./RekeningGroep";
 
 export type RekeningDTO = {
-    id: number;
-    naam: string;
-    rekeningGroep: RekeningGroepDTO
-    nummer: string | undefined;
-    bankNaam: string | undefined;
-    rekeningIcoonNaam: string | undefined;
-    sortOrder: number;
+  id: number;
+  naam: string;
+  nummer: string | undefined;
+  sortOrder: number;
+  bankNaam: string | undefined;
+  budgetPeriodiciteit: string;
+  budgetBedrag: number;
+  budgetBetaalDag: number | undefined;
+  betaalMethoden: RekeningDTO[] | undefined
+  budgetMaandBedrag: number | undefined;
+  budgetPeilDatum: string | undefined;
+  budgetBetaling: number | undefined;
+  budgetOpPeilDatum?: number | undefined;
+  betaaldBinnenBudget: number | undefined;
+  meerDanBudget: number | undefined;
+  minderDanBudget: number | undefined;
+  meerDanMaandBudget: number | undefined;
+  restMaandBudget: number | undefined;
 }  

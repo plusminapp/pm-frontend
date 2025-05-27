@@ -1,92 +1,100 @@
+import { RekeningDTO } from "./Rekening";
 
 export type RekeningGroepDTO = {
-    id: number;
-    naam: string;
-    rekeningGroepSoort: RekeningGroepSoort;
-    rekeningGroepIcoonNaam: string | undefined;
-    sortOrder: number;
-    budgetType: BudgetType | undefined;
+  id: number;
+  naam: string;
+  rekeningGroepSoort: RekeningGroepSoort;
+  rekeningGroepIcoonNaam: string | undefined;
+  sortOrder: number;
+  budgetType: BudgetType | undefined;
+  rekeningen: RekeningDTO[];
 }
 
 export enum RekeningGroepSoort {
-    inkomsten = 'INKOMSTEN',
-    uitgaven = 'UITGAVEN',
-    betaalrekening = 'BETAALREKENING',
-    spaarrekening = 'SPAARREKENING',
-    contant = 'CONTANT',
-    creditcard = 'CREDITCARD',
-    aflossing = 'AFLOSSING',
-    reservering = 'RESERVERING'
+  inkomsten = 'INKOMSTEN',
+  uitgaven = 'UITGAVEN',
+  betaalmethode = 'BETAALMETHODE',
+  betaalrekening = 'BETAALREKENING',
+  spaarrekening = 'SPAARREKENING',
+  contant = 'CONTANT',
+  creditcard = 'CREDITCARD',
+  aflossing = 'AFLOSSING',
+  reservering = 'RESERVERING'
 }
 export enum BudgetType {
-    continu = 'CONTINU',
-    vast = 'VAST',
+  continu = 'CONTINU',
+  vast = 'VAST',
 }
 
 export type RekeningGroepSoortPaar = {
-    bron: RekeningGroepSoort[];
-    bestemming: RekeningGroepSoort[];
+  bron: RekeningGroepSoort;
+  bestemming: RekeningGroepSoort;
 }
 
 export type RekeningGroepPaar = {
-    bron: RekeningGroepDTO[];
-    bestemming: RekeningGroepDTO[];
+  bron: RekeningGroepDTO[];
+  bestemming: RekeningGroepDTO[];
 }
 
-export const balansrekeningGroepSoorten: RekeningGroepSoort[] = [
-    RekeningGroepSoort.betaalrekening,
-    RekeningGroepSoort.spaarrekening,
-    RekeningGroepSoort.contant,
-    RekeningGroepSoort.creditcard,
-    RekeningGroepSoort.aflossing,
-    RekeningGroepSoort.reservering];
+export const balansRekeningGroepSoorten: RekeningGroepSoort[] = [
+  RekeningGroepSoort.betaalrekening,
+  RekeningGroepSoort.spaarrekening,
+  RekeningGroepSoort.contant,
+  RekeningGroepSoort.creditcard,
+  RekeningGroepSoort.aflossing,
+  RekeningGroepSoort.reservering];
 
-export const resultaatrekeningGroepSoorten = [
-    RekeningGroepSoort.inkomsten,
-    RekeningGroepSoort.uitgaven];
+export const resultaatRekeningGroepSoorten = [
+  RekeningGroepSoort.inkomsten,
+  RekeningGroepSoort.uitgaven];
 
-export const aflossenrekeningGroepSoorten = [
-    RekeningGroepSoort.creditcard,
-    RekeningGroepSoort.aflossing];
+export const blaatRekeningGroepSoorten = [
+  RekeningGroepSoort.inkomsten,
+  RekeningGroepSoort.uitgaven,
+  RekeningGroepSoort.aflossing];
 
-export const reserverenrekeningGroepSoorten = [
-    RekeningGroepSoort.reservering];
+export const aflossenRekeningGroepSoorten = [
+  RekeningGroepSoort.creditcard,
+  RekeningGroepSoort.aflossing];
 
-export const betaalmethoderekeningGroepSoorten = [
-    RekeningGroepSoort.betaalrekening,
-    RekeningGroepSoort.spaarrekening,
-    RekeningGroepSoort.contant,
-    RekeningGroepSoort.creditcard,
+export const reserverenRekeningGroepSoorten = [
+  RekeningGroepSoort.reservering];
+
+export const betaalmethodeRekeningGroepSoorten = [
+  RekeningGroepSoort.betaalrekening,
+  RekeningGroepSoort.spaarrekening,
+  RekeningGroepSoort.contant,
+  RekeningGroepSoort.creditcard,
 ]
 
-export const bankrekeningGroepSoorten = [
-    RekeningGroepSoort.betaalrekening,
-    RekeningGroepSoort.spaarrekening,
-    RekeningGroepSoort.creditcard,
+export const bankRekeningGroepSoorten = [
+  RekeningGroepSoort.betaalrekening,
+  RekeningGroepSoort.spaarrekening,
+  RekeningGroepSoort.creditcard,
 ]
 
-export const inkomstenrekeningGroepSoorten = [
-    RekeningGroepSoort.inkomsten,
+export const inkomstenRekeningGroepSoorten = [
+  RekeningGroepSoort.inkomsten,
 ]
 
-export const uitgavenrekeningGroepSoorten = [
-    RekeningGroepSoort.uitgaven,
-    RekeningGroepSoort.aflossing,
-    RekeningGroepSoort.reservering,
+export const uitgavenRekeningGroepSoorten = [
+  RekeningGroepSoort.uitgaven,
+  RekeningGroepSoort.aflossing,
+  RekeningGroepSoort.reservering,
 ]
 
-export const internerekeningGroepSoorten = [ 
-    RekeningGroepSoort.spaarrekening,
-    RekeningGroepSoort.contant,
-    RekeningGroepSoort.creditcard,
-    RekeningGroepSoort.reservering,
+export const interneRekeningGroepSoorten = [
+  RekeningGroepSoort.spaarrekening,
+  RekeningGroepSoort.contant,
+  RekeningGroepSoort.creditcard,
+  RekeningGroepSoort.reservering,
 ]
 
-export const cashflowrekeningGroepSoorten = [
-    RekeningGroepSoort.betaalrekening,
-    RekeningGroepSoort.spaarrekening,
-    RekeningGroepSoort.contant,
-    RekeningGroepSoort.creditcard,
+export const cashflowRekeningGroepSoorten = [
+  RekeningGroepSoort.betaalrekening,
+  RekeningGroepSoort.spaarrekening,
+  RekeningGroepSoort.contant,
+  RekeningGroepSoort.creditcard,
 ]
 
 // export const berekenBedragVoorRekenining = (betaling: BetalingDTO, RekeningGroep: RekeningGroep | undefined) => {
@@ -96,4 +104,3 @@ export const cashflowrekeningGroepSoorten = [
 //     if (betaling.bestemming === RekeningGroep.naam) return Number(betaling.bedrag) * factor
 //     return 0
 //   }
-  

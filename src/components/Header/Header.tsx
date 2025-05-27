@@ -19,7 +19,6 @@ import { useCustomContext } from '../../context/CustomContext';
 import { Periode } from '../../model/Periode';
 import { Gebruiker } from '../../model/Gebruiker';
 import { RekeningGroepDTO } from '../../model/RekeningGroep';
-import { berekenMaandAflossingenBedrag } from '../../model/Aflossing';
 import StyledSnackbar from './../StyledSnackbar';
 import { saveToLocalStorage, transformRekeningGroepen2BetalingsSoorten, transformRekeningGroepenToBetalingsSoorten } from './HeaderExports';
 
@@ -39,7 +38,8 @@ function Header() {
     actieveHulpvrager, setActieveHulpvrager,
     snackbarMessage, setSnackbarMessage,
     gekozenPeriode, setGekozenPeriode,
-    setPeriodes, setRekeningen, setBetalingsSoorten, setBetalingsSoorten2Rekeningen } = useCustomContext();
+    rekeningGroepen, setRekeningGroepen,
+    setPeriodes, setBetalingsSoorten, setBetalingsSoorten2RekeningGroepen } = useCustomContext();
 
   const formatRoute = (page: string): string => { return page.toLowerCase().replace('/', '-') }
 
@@ -69,7 +69,7 @@ function Header() {
     }
     await fetchRekeningen(ahv!, nieuweGekozenPeriode!);
     setAnchorElGebruiker(null);
-    navigate('/stand')
+    navigate('/profiel')
   };
 
   const fetchRekeningen = useCallback(async (hulpvrager: Gebruiker, periode: Periode) => {
@@ -80,18 +80,18 @@ function Header() {
       console.error("Error getting ID token:", error);
     }
 
-    const responseRekening = await fetch(`/api/v1/RekeningGroep/hulpvrager/${hulpvrager.id}/periode/${periode.id}`, {
+    const responseRekening = await fetch(`/api/v1/rekening/hulpvrager/${hulpvrager.id}/periode/${periode.id}`, {
       headers: {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json",
       }
     })
     const dataRekening = await responseRekening.json();
-    setRekeningen(dataRekening as RekeningGroepDTO[]);
+    setRekeningGroepen(dataRekening as RekeningGroepDTO[]);
     setBetalingsSoorten(transformRekeningGroepen2BetalingsSoorten(dataRekening as RekeningGroepDTO[]));
-    setBetalingsSoorten2Rekeningen(transformRekeningGroepenToBetalingsSoorten(dataRekening as RekeningGroepDTO[]));
+    setBetalingsSoorten2RekeningGroepen(transformRekeningGroepenToBetalingsSoorten(dataRekening as RekeningGroepDTO[]));
 
-  }, [getIDToken, setRekeningen, setBetalingsSoorten, setBetalingsSoorten2Rekeningen]);
+  }, [getIDToken, setRekeningGroepen, setBetalingsSoorten, setBetalingsSoorten2RekeningGroepen]);
 
   const fetchGebruikerMetHulpvragers = useCallback(async () => {
     let token
@@ -112,8 +112,9 @@ function Header() {
     setHulpvragers(dataGebruiker.hulpvragers as Gebruiker[]);
 
     const opgeslagenActieveHulpvragerId = localStorage.getItem('actieveHulpvrager');
-    const opgeslagenActieveHulpvrager = Number(dataGebruiker.gebruiker?.id) === Number(opgeslagenActieveHulpvragerId) ?
-      dataGebruiker.gebruiker : (dataGebruiker.hulpvragers as Gebruiker[]).find(hv => Number(hv.id) === Number(opgeslagenActieveHulpvragerId))
+    const opgeslagenActieveHulpvrager = opgeslagenActieveHulpvragerId === undefined ? dataGebruiker.gebruiker :
+      Number(dataGebruiker.gebruiker?.id) === Number(opgeslagenActieveHulpvragerId) ?
+        dataGebruiker.gebruiker : (dataGebruiker.hulpvragers as Gebruiker[]).find(hv => Number(hv.id) === Number(opgeslagenActieveHulpvragerId))
 
     const opgeslagenGekozenPeriodeId = localStorage.getItem('gekozenPeriode');
     const opgeslagenGekozenPeriode = opgeslagenGekozenPeriodeId ?
@@ -140,7 +141,7 @@ function Header() {
 
     setActieveHulpvrager(nieuweActieveHulpvrager);
     setGekozenPeriode(nieuweGekozenPeriode);
-    saveToLocalStorage('gekozenPeriode', nieuweGekozenPeriode + '');
+    saveToLocalStorage('gekozenPeriode', nieuweGekozenPeriode.id + '');
 
     await fetchRekeningen(nieuweActieveHulpvrager, nieuweGekozenPeriode);
   }, [getIDToken, setActieveHulpvrager, setGebruiker, setHulpvragers, setGekozenPeriode, fetchRekeningen]);
@@ -171,15 +172,15 @@ function Header() {
       if (state.isAuthenticated)
         await revokeAccessToken();
       await signIn();
-      navigate('/stand');
+      navigate('/profiel');
     } catch (error) {
       console.error("Error during sign-in:", error);
       navigate('/login');
     }
   };
 
-  const maandAflossingsBedrag = berekenMaandAflossingenBedrag(actieveHulpvrager?.aflossingen ?? [])
-  const heeftAflossing = maandAflossingsBedrag > 0;
+  // const maandAflossingsBedrag = berekenMaandAflossingenBedrag(actieveHulpvrager?.aflossingen ?? [])
+  const heeftAflossing = rekeningGroepen.some((rekeningGroep) => rekeningGroep.rekeningGroepSoort === 'AFLOSSING');
   const pages = heeftAflossing ? ['Stand', 'Kasboek', 'Schuld/Aflossingen'] : ['Stand', 'Kasboek'];
 
   return (

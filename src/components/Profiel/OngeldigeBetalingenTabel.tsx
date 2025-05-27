@@ -26,7 +26,7 @@ interface OngeldigeBetalingenTabelProps {
 
 export default function OngeldigeBetalingenTabel(props: OngeldigeBetalingenTabelProps) {
 
-  const { actieveHulpvrager, gebruiker, rekeningen, gekozenPeriode } = useCustomContext();
+  const { actieveHulpvrager, gebruiker, rekeningGroepen: rekeningen, gekozenPeriode } = useCustomContext();
   const betalingen = props.betalingen
   const [actueleRekening, setActueleRekening] = useState<RekeningGroepDTO | undefined>(props.actueleRekening)
   const [filteredBetalingen, setFilteredBetalingen] = useState<{ [key: string]: BetalingDTO[] }>({})
