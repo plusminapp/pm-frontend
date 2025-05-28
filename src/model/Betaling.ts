@@ -1,7 +1,8 @@
 // import { Gebruiker } from "./Gebruiker";
 import dayjs from "dayjs";
-import { RekeningGroepDTO, RekeningGroepSoort, RekeningGroepSoortPaar } from "./RekeningGroep";
+import { RekeningGroepSoort, RekeningGroepSoortPaar } from "./RekeningGroep";
 import { Saldo } from "./Saldo";
+import { RekeningDTO } from "./Rekening";
 
 export type Betaling = {
   id: number;
@@ -9,8 +10,8 @@ export type Betaling = {
   bedrag: number;
   omschrijving: string | undefined;
   betalingsSoort: BetalingsSoort;
-  bron: RekeningGroepDTO | undefined;
-  bestemming: RekeningGroepDTO | undefined;
+  bron: RekeningDTO | undefined;
+  bestemming: RekeningDTO | undefined;
 }
 
 export type BetalingDTO = {
@@ -24,7 +25,6 @@ export type BetalingDTO = {
   bestaatAl: boolean;
   bron: string | undefined;
   bestemming: string | undefined;
-  budgetNaam: string | undefined;
 }
 
 export type BetalingvalidatieWrapper = {

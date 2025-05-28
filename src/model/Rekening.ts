@@ -1,3 +1,4 @@
+import { Periode } from "./Periode";
 
 export type RekeningDTO = {
   id: number;
@@ -6,6 +7,8 @@ export type RekeningDTO = {
   sortOrder: number;
   bankNaam: string | undefined;
   budgetPeriodiciteit: string;
+  vanPeriode: Periode | undefined;
+  totEnMetPeriode: Periode | undefined;
   budgetBedrag: number;
   budgetBetaalDag: number | undefined;
   betaalMethoden: RekeningDTO[] | undefined

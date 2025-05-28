@@ -107,13 +107,13 @@ const Profiel: React.FC = () => {
   };
 
   const creeerOngeldigeBetalingenTekst = (betaling: Betaling): string => {
-    const naDatum = dayjs(betaling.budget?.vanPeriode?.periodeStartDatum);
-    const totDatum = dayjs(betaling.budget?.totEnMetPeriode?.periodeEindDatum);
+    const naDatum = dayjs(betaling.bron?.vanPeriode?.periodeStartDatum);
+    const totEnMetDatum = dayjs(betaling.bestemming?.totEnMetPeriode?.periodeEindDatum);
     const boekingsdatum = dayjs(betaling.boekingsdatum);
 
-    const geldigheid = boekingsdatum.isBefore(naDatum) ? `na ${dayjs(betaling.budget?.vanPeriode?.periodeStartDatum).format('D MMMM')}` :
-      boekingsdatum.isAfter(totDatum) ? `tot ${dayjs(betaling.budget?.totEnMetPeriode?.periodeEindDatum).format('D MMMM')}` : "";
-    return `${formatAmount(betaling.bedrag.toString())} met omschrijving ${betaling.omschrijving} op ${dayjs(betaling.boekingsdatum).format('D MMMM')} naar budget ${betaling.budget?.budgetNaam} dat geldig is ${geldigheid}.`
+    const geldigheid = boekingsdatum.isBefore(naDatum) ? `na ${dayjs(betaling.bron?.vanPeriode?.periodeStartDatum).format('D MMMM')}` :
+      boekingsdatum.isAfter(totEnMetDatum) ? `tot ${dayjs(betaling.bron?.totEnMetPeriode?.periodeEindDatum).format('D MMMM')}` : "";
+    return `${formatAmount(betaling.bedrag.toString())} met omschrijving ${betaling.omschrijving} op ${dayjs(betaling.boekingsdatum).format('D MMMM')} naar budget ${betaling.bron?.naam} dat geldig is ${geldigheid}.`
   }
 
   const berekenCategorieIcon = (categorie: string) => {
