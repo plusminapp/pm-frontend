@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Gebruiker } from '../model/Gebruiker';
-import { RekeningGroepDTO } from '../model/RekeningGroep';
+import { RekeningGroepDTO, RekeningGroepPerBetalingsSoort } from '../model/RekeningGroep';
 import { BetalingsSoort } from '../model/Betaling';
 import { Periode } from '../model/Periode';
 import { SnackbarMessage } from '../components/StyledSnackbar';
@@ -20,6 +20,8 @@ interface CustomContextType {
     setGekozenPeriode: (gekozenPeriode: Periode | undefined) => void;
     rekeningGroepen: Array<RekeningGroepDTO>;
     setRekeningGroepen: (rekeningGroepen: Array<RekeningGroepDTO>) => void;
+    rekeningGroepPerBetalingsSoort: Array<RekeningGroepPerBetalingsSoort>;
+    setRekeningGroepPerBetalingsSoort: (rekeningGroepPerBetalingsSoort: Array<RekeningGroepPerBetalingsSoort>) => void;
     betalingsSoorten: Array<BetalingsSoort>;
     setBetalingsSoorten: (betalingsSoorten: Array<BetalingsSoort>) => void;
     betalingsSoorten2RekeningGroepen: Map<BetalingsSoort, RekeningGroepPaar>;
@@ -50,6 +52,7 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
     const [periodes, setPeriodes] = useState<Array<Periode>>([]);
     const [gekozenPeriode, setGekozenPeriode] = useState<Periode | undefined>(undefined);
     const [rekeningGroepen, setRekeningGroepen] = useState<Array<RekeningGroepDTO>>([]);
+    const [rekeningGroepPerBetalingsSoort, setRekeningGroepPerBetalingsSoort] = useState<Array<RekeningGroepPerBetalingsSoort>>([]);
     const [betalingsSoorten, setBetalingsSoorten] = useState<Array<BetalingsSoort>>([]);
     const [betalingsSoorten2Rekeningen, setBetalingsSoorten2Rekeningen] = useState<Map<BetalingsSoort, RekeningGroepPaar>>(new Map())
     const [snackbarMessage, setSnackbarMessage] = useState<SnackbarMessage>({ message: undefined, type: undefined });
@@ -69,7 +72,8 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
             hulpvragers, setHulpvragers,
             periodes, setPeriodes,
             gekozenPeriode, setGekozenPeriode,
-            rekeningGroepen: rekeningGroepen, setRekeningGroepen: setRekeningGroepen,
+            rekeningGroepen, setRekeningGroepen,
+            rekeningGroepPerBetalingsSoort, setRekeningGroepPerBetalingsSoort,
             betalingsSoorten, setBetalingsSoorten,
             betalingsSoorten2RekeningGroepen: betalingsSoorten2Rekeningen, setBetalingsSoorten2RekeningGroepen: setBetalingsSoorten2Rekeningen,
             snackbarMessage, setSnackbarMessage

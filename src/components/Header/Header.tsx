@@ -18,9 +18,9 @@ import { PlusMinLogo } from "../../assets/PlusMinLogo";
 import { useCustomContext } from '../../context/CustomContext';
 import { Periode } from '../../model/Periode';
 import { Gebruiker } from '../../model/Gebruiker';
-import { RekeningGroepDTO } from '../../model/RekeningGroep';
+import { RekeningGroepPerBetalingsSoort } from '../../model/RekeningGroep';
 import StyledSnackbar from './../StyledSnackbar';
-import { saveToLocalStorage, transformRekeningGroepen2BetalingsSoorten, transformRekeningGroepenToBetalingsSoorten } from './HeaderExports';
+import { saveToLocalStorage } from './HeaderExports';
 
 function Header() {
   const navigate = useNavigate();
@@ -38,8 +38,7 @@ function Header() {
     actieveHulpvrager, setActieveHulpvrager,
     snackbarMessage, setSnackbarMessage,
     gekozenPeriode, setGekozenPeriode,
-    rekeningGroepen, setRekeningGroepen,
-    setPeriodes, setBetalingsSoorten, setBetalingsSoorten2RekeningGroepen } = useCustomContext();
+    setRekeningGroepPerBetalingsSoort, setPeriodes } = useCustomContext();
 
   const formatRoute = (page: string): string => { return page.toLowerCase().replace('/', '-') }
 
@@ -87,11 +86,9 @@ function Header() {
       }
     })
     const dataRekening = await responseRekening.json();
-    setRekeningGroepen(dataRekening as RekeningGroepDTO[]);
-    setBetalingsSoorten(transformRekeningGroepen2BetalingsSoorten(dataRekening as RekeningGroepDTO[]));
-    setBetalingsSoorten2RekeningGroepen(transformRekeningGroepenToBetalingsSoorten(dataRekening as RekeningGroepDTO[]));
+    setRekeningGroepPerBetalingsSoort(dataRekening as RekeningGroepPerBetalingsSoort[]);
 
-  }, [getIDToken, setRekeningGroepen, setBetalingsSoorten, setBetalingsSoorten2RekeningGroepen]);
+  }, [getIDToken, setRekeningGroepPerBetalingsSoort]);
 
   const fetchGebruikerMetHulpvragers = useCallback(async () => {
     let token
@@ -180,8 +177,9 @@ function Header() {
   };
 
   // const maandAflossingsBedrag = berekenMaandAflossingenBedrag(actieveHulpvrager?.aflossingen ?? [])
-  const heeftAflossing = rekeningGroepen.some((rekeningGroep) => rekeningGroep.rekeningGroepSoort === 'AFLOSSING');
-  const pages = heeftAflossing ? ['Stand', 'Kasboek', 'Schuld/Aflossingen'] : ['Stand', 'Kasboek'];
+  // const heeftAflossing = rekeningGroepen.some((rekeningGroep) => rekeningGroep.rekeningGroepSoort === 'AFLOSSING');
+  // const pages = heeftAflossing ? ['Stand', 'Kasboek', 'Schuld/Aflossingen'] : ['Stand', 'Kasboek'];
+  const pages = ['Stand', 'Kasboek'];
 
   return (
     <>

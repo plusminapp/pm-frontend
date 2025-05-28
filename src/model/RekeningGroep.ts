@@ -1,3 +1,4 @@
+import { BetalingsSoort } from "./Betaling";
 import { RekeningDTO } from "./Rekening";
 
 export type RekeningGroepDTO = {
@@ -24,6 +25,11 @@ export enum RekeningGroepSoort {
 export enum BudgetType {
   continu = 'CONTINU',
   vast = 'VAST',
+}
+
+export type RekeningGroepPerBetalingsSoort = {
+  betalingsSoort: BetalingsSoort;
+  rekeningGroepen: RekeningGroepDTO[];
 }
 
 export type RekeningGroepSoortPaar = {

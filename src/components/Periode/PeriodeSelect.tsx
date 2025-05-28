@@ -2,13 +2,13 @@ import { Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEve
 import Grid from '@mui/material/Grid2';
 import { eersteOpenPeriode, formateerNlDatum, formateerNlVolgendeDag, laatsteGeslotenPeriode, Periode } from "../../model/Periode";
 import { useCustomContext } from "../../context/CustomContext";
-import { saveToLocalStorage, transformRekeningGroepen2BetalingsSoorten, transformRekeningGroepenToBetalingsSoorten } from "../Header/HeaderExports.ts";
+import { saveToLocalStorage } from "../Header/HeaderExports.ts";
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import EditIcon from '@mui/icons-material/Edit';
 
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "@asgardeo/auth-react";
-import { RekeningGroepDTO } from "../../model/RekeningGroep.ts";
+import { RekeningGroepPerBetalingsSoort } from "../../model/RekeningGroep.ts";
 import dayjs from "dayjs";
 
 interface PeriodeSelectProps {
@@ -18,7 +18,7 @@ interface PeriodeSelectProps {
 export function PeriodeSelect({ isProfiel = false }: PeriodeSelectProps) {
 
   const { getIDToken } = useAuthContext();
-  const { periodes, actieveHulpvrager, gekozenPeriode, setGekozenPeriode, setRekeningGroepen: setRekeningen, setBetalingsSoorten, setBetalingsSoorten2RekeningGroepen: setBetalingsSoorten2Rekeningen } = useCustomContext();
+  const { periodes, actieveHulpvrager, gekozenPeriode, setGekozenPeriode, setRekeningGroepPerBetalingsSoort } = useCustomContext();
 
   const handlegekozenPeriodeChange = async (event: SelectChangeEvent<string>) => {
     const periode = periodes.find(periode => periode.periodeStartDatum.toString() === event.target.value);
@@ -46,9 +46,9 @@ export function PeriodeSelect({ isProfiel = false }: PeriodeSelectProps) {
           throw new Error(`Fetch failed with status: ${response.status}`);
         }
         const dataRekening = await response.json();
-        setRekeningen(dataRekening as RekeningGroepDTO[]);
-        setBetalingsSoorten(transformRekeningGroepen2BetalingsSoorten(dataRekening as RekeningGroepDTO[]));
-        setBetalingsSoorten2Rekeningen(transformRekeningGroepenToBetalingsSoorten(dataRekening as RekeningGroepDTO[]));
+    setRekeningGroepPerBetalingsSoort(dataRekening as RekeningGroepPerBetalingsSoort[]);
+        // setBetalingsSoorten(transformRekeningGroepen2BetalingsSoorten(dataRekening as RekeningGroepDTO[]));
+        // setBetalingsSoorten2Rekeningen(transformRekeningGroepenToBetalingsSoorten(dataRekening as RekeningGroepDTO[]));
 
       } catch (error) {
         console.error('Error fetching periode details:', error);

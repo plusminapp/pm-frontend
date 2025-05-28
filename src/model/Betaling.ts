@@ -58,6 +58,12 @@ export enum BetalingsSoort {
   toevoegen_reservering = 'TOEVOEGEN_RESERVERING',
 }
 
+export const bestemmingBetalingsSoorten = [
+  BetalingsSoort.inkomsten,
+  BetalingsSoort.storten_contant,
+  BetalingsSoort.opnemen_spaarrekening,
+]
+
 export const aflossenBetalingsSoorten = [
   // BetalingsSoort.lenen,
   BetalingsSoort.aflossen,
@@ -78,13 +84,13 @@ export const currencyFormatter = new Intl.NumberFormat("nl-NL", {
   currency: "EUR",
 });
 
-export const betalingsSoorten2RekeningenSoorten = new Map<BetalingsSoort, RekeningGroepSoortPaar>([
+export const betalingsSoorten2RekeningGroepSoorten = new Map<BetalingsSoort, RekeningGroepSoortPaar>([
   // Inkomsten
   [BetalingsSoort.inkomsten, { bron: RekeningGroepSoort.inkomsten, bestemming: RekeningGroepSoort.betaalmethode}],
   // Uitgaven
   [BetalingsSoort.uitgaven, { bron: RekeningGroepSoort.betaalmethode, bestemming: RekeningGroepSoort.uitgaven }],
   [BetalingsSoort.aflossen, { bron: RekeningGroepSoort.betaalmethode, bestemming: RekeningGroepSoort.aflossing }],
-  [BetalingsSoort.besteden_reservering, { bron: RekeningGroepSoort.betaalrekening, bestemming: RekeningGroepSoort.reservering }],
+  [BetalingsSoort.besteden_reservering, { bron: RekeningGroepSoort.betaalmethode, bestemming: RekeningGroepSoort.reservering }],
   // Intern
   [BetalingsSoort.incasso_creditcard, { bron: RekeningGroepSoort.betaalrekening, bestemming: RekeningGroepSoort.creditcard }],
   [BetalingsSoort.opnemen_spaarrekening, { bron: RekeningGroepSoort.spaarrekening, bestemming: RekeningGroepSoort.betaalrekening }],

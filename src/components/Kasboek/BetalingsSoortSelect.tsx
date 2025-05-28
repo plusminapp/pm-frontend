@@ -8,7 +8,7 @@ import { InkomstenIcon } from '../../icons/Inkomsten';
 import { UitgavenIcon } from '../../icons/Uitgaven';
 import { RekeningGroepSoort } from '../../model/RekeningGroep';
 
-type BetalingSoortSelectProps = {
+type BetalingsSoortSelectProps = {
   betalingsSoort: BetalingsSoort | undefined;
   bron: string | undefined;
   bestemming: string | undefined;
@@ -16,8 +16,8 @@ type BetalingSoortSelectProps = {
   onBetalingsSoortChange: (betalingsSoort: BetalingsSoort | undefined, bron: string | undefined, bestemming: string | undefined, budget: string | undefined) => void;
 };
 
-const BetalingSoortSelect = (props: BetalingSoortSelectProps) => {
-  const { betalingsSoorten2RekeningGroepen: betalingsSoorten2Rekeningen, rekeningGroepen: rekeningen } = useCustomContext();
+const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
+  const { betalingsSoorten2RekeningGroepen: betalingsSoorten2Rekeningen, rekeningGroepen } = useCustomContext();
   const rekeningPaar = props.betalingsSoort ? betalingsSoorten2Rekeningen.get(props.betalingsSoort) : undefined;
 
   const [selectedCategorie, setSelectedCategorie] = useState<string | undefined>(betalingsSoort2Categorie(props.betalingsSoort));
@@ -37,9 +37,9 @@ const BetalingSoortSelect = (props: BetalingSoortSelectProps) => {
   const categorie2DefaultBetalingsSoort = (categorie: string): BetalingsSoort | undefined => {
     if (categorie === 'INKOMSTEN') return BetalingsSoort.inkomsten;
     if (categorie === 'UITGAVEN') return BetalingsSoort.uitgaven;
-    if (categorie === 'INTERN' && arrayContainsObjectWithAttribute(rekeningen, 'rekeningGroepSoort', RekeningGroepSoort.creditcard)) return BetalingsSoort.incasso_creditcard;
-    if (categorie === 'INTERN' && arrayContainsObjectWithAttribute(rekeningen, 'rekeningGroepSoort', RekeningGroepSoort.spaarrekening)) return BetalingsSoort.opnemen_spaarrekening;
-    if (categorie === 'INTERN' && arrayContainsObjectWithAttribute(rekeningen, 'rekeningGroepSoort', RekeningGroepSoort.contant)) return BetalingsSoort.opnemen_contant;
+    if (categorie === 'INTERN' && arrayContainsObjectWithAttribute(rekeningGroepen, 'rekeningGroepSoort', RekeningGroepSoort.creditcard)) return BetalingsSoort.incasso_creditcard;
+    if (categorie === 'INTERN' && arrayContainsObjectWithAttribute(rekeningGroepen, 'rekeningGroepSoort', RekeningGroepSoort.spaarrekening)) return BetalingsSoort.opnemen_spaarrekening;
+    if (categorie === 'INTERN' && arrayContainsObjectWithAttribute(rekeningGroepen, 'rekeningGroepSoort', RekeningGroepSoort.contant)) return BetalingsSoort.opnemen_contant;
     return undefined;
   }
 
@@ -363,4 +363,4 @@ const BetalingSoortSelect = (props: BetalingSoortSelectProps) => {
   );
 };
 
-export default BetalingSoortSelect;
+export default BetalingsSoortSelect;

@@ -5,7 +5,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Paper, Table, TableBody,
 import { useAuthContext } from "@asgardeo/auth-react";
 
 import { useCustomContext } from '../context/CustomContext';
-import { Betaling, betalingsSoort2Categorie, betalingsSoortFormatter, currencyFormatter } from '../model/Betaling';
+import { bestemmingBetalingsSoorten, Betaling, currencyFormatter } from '../model/Betaling';
 import { PeriodeSelect } from '../components/Periode/PeriodeSelect';
 import { betaalmethodeRekeningGroepSoorten, blaatRekeningGroepSoorten, BudgetType, inkomstenRekeningGroepSoorten, RekeningGroepSoort, uitgavenRekeningGroepSoorten } from '../model/RekeningGroep';
 // import { AflossingSamenvattingDTO } from '../model/Aflossing';
@@ -18,7 +18,7 @@ import dayjs from 'dayjs';
 const Profiel: React.FC = () => {
   const { state, getIDToken } = useAuthContext();
 
-  const { gebruiker, actieveHulpvrager, rekeningGroepen, betalingsSoorten2RekeningGroepen: betalingsSoorten2Rekeningen } = useCustomContext();
+  const { gebruiker, actieveHulpvrager, rekeningGroepen, rekeningGroepPerBetalingsSoort } = useCustomContext();
 
   const [ongeldigeBetalingen, setOngeldigeBetalingen] = React.useState<Betaling[]>([]);
 
@@ -121,8 +121,12 @@ const Profiel: React.FC = () => {
       case 'INKOMSTEN':
         return <InkomstenIcon />
       case 'UITGAVEN':
+      case 'AFLOSSEN':
         return <UitgavenIcon />;
-      case 'INTERN':
+      case 'OPNEMEN_SPAARREKENING':
+      case 'STORTEN_SPAARREKENING':
+      case 'OPNEMEN_CONTANT':
+      case 'STORTEN_CONTANT':
         return <InternIcon />;
       default: return <></>;
     }
@@ -192,7 +196,7 @@ const Profiel: React.FC = () => {
           </Accordion>
 
           {/* de kolommen van het kasboek en potjes*/}
-          {rekeningGroepen && rekeningGroepen.length >= 0 &&
+          {rekeningGroepPerBetalingsSoort && rekeningGroepPerBetalingsSoort.length >= 0 &&
             <Accordion>
               <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
                 <Typography ><strong>Potjes</strong> en bijbehorende <strong>Budgetten</strong>.
@@ -200,63 +204,53 @@ const Profiel: React.FC = () => {
               </AccordionSummary>
               <AccordionDetails>
                 <Typography >{creeerBudgetTekst()}</Typography>
-                {rekeningGroepen.length > 0 &&
+                {rekeningGroepPerBetalingsSoort.length > 0 &&
                   <>
                     <PeriodeSelect />
                     <TableContainer component={Paper} sx={{ maxWidth: "xl", m: 'auto', mt: '10px' }}>
                       <Table sx={{ width: "100%" }} aria-label="simple table">
                         <TableHead>
                           <TableRow>
-                            <TableCell>Potje (= kolomkop)</TableCell>
-                            <TableCell>Gekoppelde budgetten</TableCell>
+                            <TableCell>Soort potjes</TableCell>
+                            <TableCell>Kolomkop</TableCell>
+                            <TableCell>Potjes (gekoppelde budgetten)</TableCell>
                             <TableCell>Betaalmethoden</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
                           <>
-                            {Array.from(rekeningGroepen.filter(rekeningGroep => blaatRekeningGroepSoorten.includes(rekeningGroep.rekeningGroepSoort)).map((rekeningGroep) => (
-                              <Fragment key={rekeningGroep.naam}>
-                                <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }} aria-haspopup="true" >
-                                  <TableCell align="left" size='small' sx={{ p: "6px" }}>{rekeningGroep.naam}</TableCell>
-                                  <TableCell align="left" size='small' sx={{ p: "6px" }}>
-                                    {rekeningGroep.rekeningen.length > 0 &&
-                                      <span dangerouslySetInnerHTML={{
-                                        __html: rekeningGroep.rekeningen.map(r =>
-                                          `${r.naam} (${currencyFormatter.format(Number(r.budgetBedrag))}/${r.budgetPeriodiciteit.toLowerCase()}
+                            {rekeningGroepPerBetalingsSoort
+                              .flatMap(rgpb => rgpb.rekeningGroepen)
+                              .filter(rg => blaatRekeningGroepSoorten.includes(rg.rekeningGroepSoort))
+                              .filter((value, index, self) => self.indexOf(value) === index).map((rekeningGroep) => (
+                                <Fragment key={rekeningGroep.naam}>
+                                  <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }} aria-haspopup="true" >
+                                    <TableCell align="left" size='small' sx={{ p: "6px" }}>{rekeningGroep.rekeningGroepSoort.toLowerCase()}</TableCell>
+                                    <TableCell align="left" size='small' sx={{ p: "6px" }}>{rekeningGroep.naam}</TableCell>
+                                    <TableCell align="left" size='small' sx={{ p: "6px" }}>
+                                      {rekeningGroep.rekeningen.length > 0 &&
+                                        <span dangerouslySetInnerHTML={{
+                                          __html: rekeningGroep.rekeningen.map(r =>
+                                            `${r.naam} (${currencyFormatter.format(Number(r.budgetBedrag))}/${r.budgetPeriodiciteit.toLowerCase()}
                                  ${r.budgetPeriodiciteit.toLowerCase() === 'week' ? `= ${currencyFormatter.format(r.budgetMaandBedrag ?? 0)}/maand` : ''}
                                  ${rekeningGroep.budgetType === BudgetType.continu ? 'doorlopend' : 'op de ' + r.budgetBetaalDag + 'e'})`)
-                                          .join('<br />') +
-                                          (rekeningGroep.rekeningen.length > 1 ? `<br />Totaal: ${currencyFormatter.format(rekeningGroep.rekeningen.reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0))}/maand` : '')
-                                      }} />}
-                                  </TableCell>
-                                  <TableCell align="left" size='small' sx={{ p: "6px" }}>
-                                    {rekeningGroep.rekeningen.length > 0 &&
-                                      <span dangerouslySetInnerHTML={{
-                                        __html: rekeningGroep.rekeningen.map(r =>
-                                          r.betaalMethoden && r.betaalMethoden?.length > 0 ?
-                                          `${r.betaalMethoden.map(m => m.naam).join(', ')}` :
-                                          `geen betaalmethoden`)
-                                          .join('<br />') + '<br />&nbsp;'
-                                      }} />}
-                                  </TableCell>
-                                </TableRow>
-                              </Fragment>
-                            )))}
-                            {/* {Array.from(rekeningGroepen.filter(rekeningGroep => rekeningGroep.rekeningGroepSoort === RekeningGroepSoort.aflossing)).length > 0 && (
-                            <Fragment key={'aflossing'}>
-                              <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }} aria-haspopup="true" >
-                                <TableCell align="left" size='small' sx={{ p: "6px" }}>Aflossing</TableCell>
-                                <TableCell align="left" size='small' sx={{ p: "6px" }}>
-                                  <span dangerouslySetInnerHTML={{
-                                    __html: Array.from(rekeningGroepen.filter(rekeningGroep => rekeningGroep.rekeningGroepSoort === RekeningGroepSoort.aflossing)).map(RekeningGroep =>
-                                      `${aflossingSamenvattingBijRekening(RekeningGroep)?.aflossingNaam} (${currencyFormatter.format(Number(aflossingSamenvattingBijRekening(RekeningGroep)?.aflossingsBedrag))}/maand op de ${aflossingSamenvattingBijRekening(RekeningGroep)?.betaalDag}e)`)
-                                      .join('<br />') +
-                                      `<br/>Totaal per periode: ${currencyFormatter.format(actieveHulpvrager?.aflossingen?.reduce((acc, aflossing) => acc + Number(aflossing.aflossingsBedrag), 0) ?? 0)}`
-                                  }} />
-                                </TableCell>
-                              </TableRow>
-                            </Fragment>
-                          )} */}
+                                            .join('<br />') +
+                                            (rekeningGroep.rekeningen.length > 1 ? `<br />Totaal: ${currencyFormatter.format(rekeningGroep.rekeningen.reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0))}/maand` : '')
+                                        }} />}
+                                    </TableCell>
+                                    <TableCell align="left" size='small' sx={{ p: "6px" }}>
+                                      {rekeningGroep.rekeningen.length > 0 &&
+                                        <span dangerouslySetInnerHTML={{
+                                          __html: rekeningGroep.rekeningen.map(r =>
+                                            r.betaalMethoden && r.betaalMethoden?.length > 0 ?
+                                              `${r.betaalMethoden.map(m => m.naam).join(', ')}` :
+                                              `geen betaalmethoden`)
+                                            .join('<br />') + '<br />&nbsp;'
+                                        }} />}
+                                    </TableCell>
+                                  </TableRow>
+                                </Fragment>
+                              ))}
                           </>
                         </TableBody>
                       </Table>
@@ -311,67 +305,53 @@ const Profiel: React.FC = () => {
             </Accordion>
           }
 
-          {/* aflossen 
-            <Accordion expanded={false}>
-              <AccordionSummary sx={{ mb: 0 }} expandIcon={<></>}>
-                <Grid container display="flex" alignItems="center" alignContent='center' justifyContent={{ xs: "flex-start", sm: "space-between" }} flexDirection={{ xs: 'column', sm: 'row' }} width={'100%'}>
-                  <Grid sx={{ maxWidth: { xs: '100%', sm: `calc(100% - 200px)` }, mr: 'auto', mb: { xs: '10px', sm: 0 } }}>
-                    <Typography >
-                      <strong>Schulden/Aflossingen</strong> zijn voor {actieveHulpvrager?.bijnaam}
-                      {actieveHulpvrager?.aflossingen && actieveHulpvrager?.aflossingen?.length > 0 ? " ingericht. Bij het kasboek kun je ze zien." : " niet ingericht."}
-                    </Typography>
-                  </Grid>
-                  <Grid sx={{ minWidth: '170px', display: 'flex', justifyContent: 'flex-end' }}>
-                    <NieuweAflossingDialoog
-                      onAflossingBewaardChange={() => { }} />
-                  </Grid> 
-                </Grid>
+          {/* voor de boekhouders onder ons: betalingsSoorten2Rekeningen */}
+          {rekeningGroepPerBetalingsSoort &&
+            <Accordion>
+              <AccordionSummary sx={{ mb: 0 }} expandIcon={<ArrowDropDownIcon />}>
+                <Typography >
+                  Voor de <strong>boekhouders</strong> onder ons.
+                </Typography>
               </AccordionSummary>
-            </Accordion> */}
-
-            {/* voor de boekhouders onder ons: betalingsSoorten2Rekeningen */}
-            {betalingsSoorten2Rekeningen && (Array.from(betalingsSoorten2Rekeningen.entries())).length > 0 &&
-              <Accordion>
-                <AccordionSummary sx={{ mb: 0 }} expandIcon={<ArrowDropDownIcon />}>
-                  <Typography >
-                    Voor de <strong>boekhouders</strong> onder ons.
-                  </Typography>
-                </AccordionSummary>
-                <AccordionDetails sx={{ mt: 0 }}>
-                  <Typography>
-                    PlusMin is een boekhoudpakket, gebaseerd op dubbel boekhouden. Bij een betaling moet dus worden bepaald <strong>op welke rekeningen de betaling moet worden geboekt</strong>.
-                    We delen betalingen in eerste instantie in in drie categorieën: <InkomstenIcon height={16} />&nbsp;Inkomsten, <UitgavenIcon height={16} />&nbsp;Uitgaven en <InternIcon height={16} />&nbsp;Intern.
-                    Vervolgens vragen we, indien er meerdere mogelijkheden zijn, de rekeningen uit die bij de betaling horen.
-                    Hieronder staat de inrichting van de betalingen voor {actieveHulpvrager?.bijnaam}:
-                  </Typography>
-                  <TableContainer component={Paper} sx={{ maxWidth: "xl", m: 'auto', mt: '10px' }}>
-                    <Table sx={{ width: "100%" }} aria-label="simple table">
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>Betaling categorie</TableCell>
-                          <TableCell>Soort betaling</TableCell>
-                          <TableCell>Bron (debet)</TableCell>
-                          <TableCell>Bestemming (credit)</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {Array.from(betalingsSoorten2Rekeningen.entries()).map((entry) => (
-                          <Fragment key={entry[0]}>
-                            <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }} aria-haspopup="true" >
-                              <TableCell align="left" size='small' sx={{ p: "6px", pl: '16px' }}>{berekenCategorieIcon(betalingsSoort2Categorie(entry[0]) ?? '')}</TableCell>
-                              <TableCell align="left" size='small' sx={{ p: "6px" }}>{betalingsSoortFormatter(entry[0])}</TableCell>
-                              <TableCell align="left" size='small' sx={{ p: "6px" }}>{entry[1].bron.map(c => c.naam).join(', ')}</TableCell>
-                              <TableCell align="left" size='small' sx={{ p: "6px" }}>{entry[1].bestemming.map(c => c.naam).join(', ')}</TableCell>
+              <AccordionDetails sx={{ mt: 0 }}>
+                <Typography>
+                  PlusMin is een boekhoudpakket, gebaseerd op dubbel boekhouden. Bij een betaling moet dus worden bepaald <strong>op welke rekeningen de betaling moet worden geboekt</strong>.
+                  We delen betalingen in eerste instantie in in drie categorieën: <InkomstenIcon height={16} />&nbsp;Inkomsten, <UitgavenIcon height={16} />&nbsp;Uitgaven en <InternIcon height={16} />&nbsp;Intern.
+                  Vervolgens vragen we, indien er meerdere mogelijkheden zijn, de rekeningen uit die bij de betaling horen.
+                  Hieronder staat de inrichting van de betalingen voor {actieveHulpvrager?.bijnaam}:
+                </Typography>
+                <TableContainer component={Paper} sx={{ maxWidth: "xl", m: 'auto', mt: '10px' }}>
+                  <Table sx={{ width: "100%" }} aria-label="simple table">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Betaling categorie</TableCell>
+                        <TableCell>Soort betaling</TableCell>
+                        <TableCell>Kolomkop</TableCell>
+                        <TableCell>Bron (debet)</TableCell>
+                        <TableCell>Bestemming (credit)</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {rekeningGroepPerBetalingsSoort.map((rgpb) =>
+                        rgpb.rekeningGroepen && rgpb.rekeningGroepen.map((rekeningGroep) =>
+                          rekeningGroep && rekeningGroep.rekeningen.map(rekening =>
+                            <TableRow key={rekening.id} >
+                              <TableCell align="left" size='small' sx={{ p: "6px", pl: '16px' }}>{berekenCategorieIcon(rgpb.betalingsSoort)}</TableCell>
+                              <TableCell align="left" size='small' sx={{ p: "6px", pl: '16px' }}>{rgpb.betalingsSoort}</TableCell>
+                              <TableCell align="left" size='small' sx={{ p: "6px", pl: '16px' }}>{rekeningGroep.naam}</TableCell>
+                              <TableCell align="left" size='small' sx={{ p: "6px", pl: '16px' }}>{bestemmingBetalingsSoorten.includes(rgpb.betalingsSoort) ? rekening.naam : rekening.betaalMethoden?.map(rekening => rekening.naam).join(', ')}</TableCell>
+                              <TableCell align="left" size='small' sx={{ p: "6px", pl: '16px' }}>{!bestemmingBetalingsSoorten.includes(rgpb.betalingsSoort) ? rekening.naam : rekening.betaalMethoden?.map(rekening => rekening.naam).join(', ')}</TableCell>
                             </TableRow>
-                          </Fragment>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </AccordionDetails>
-              </Accordion>}
-          </>
+                          ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </AccordionDetails>
+            </Accordion>}
+        </>
       </>
+      {/* {JSON.stringify(rekeningGroepPerBetalingsSoort)} */}
     </>
   );
 };
