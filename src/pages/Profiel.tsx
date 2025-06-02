@@ -123,6 +123,7 @@ const Profiel: React.FC = () => {
       case 'UITGAVEN':
       case 'AFLOSSEN':
         return <UitgavenIcon />;
+      case 'INCASSO_CREDITCARD':
       case 'OPNEMEN_SPAARREKENING':
       case 'STORTEN_SPAARREKENING':
       case 'OPNEMEN_CONTANT':
