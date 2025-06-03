@@ -74,20 +74,6 @@ export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps)
   const [isOntvangst, setIsOntvangst] = useState(false);
   const { getIDToken } = useAuthContext();
 
-  // const rekeningPaar = betalingsSoorten2Rekeningen.get(BetalingsSoort.uitgaven)
-  // useEffect(() => {
-  //   if (!props.editMode) {
-  //     setBetalingDTO({
-  //       ...initialBetalingDTO,
-  //       boekingsdatum: gekozenPeriode?.periodeEindDatum && dayjs().toISOString().slice(0, 10) > gekozenPeriode?.periodeEindDatum ? dayjs(gekozenPeriode?.periodeEindDatum) : dayjs(),
-  //     });
-  //   } else if (props.editMode && !!props.betaling?.bedrag && props.betaling.bedrag < 0) {
-  //     setIsOntvangst(true)
-  //     setBetalingDTO({ ...betalingDTO, bedrag: -props.betaling.bedrag })
-  //   }
-  // }, [initialBetalingDTO, props.editMode, props.betaling, gekozenPeriode]);
-  // }, [props.editMode, props.betaling?.bedrag, betalingDTO]);
-
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -295,9 +281,6 @@ export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps)
         >
           <AddIcon />
         </Fab>
-        // <Button variant="contained" color="success" onClick={handleClickOpen} sx={{ mt: '10px', ml: '10px' }}>
-        //   Nieuwe betaling
-        // </Button>
       }
       <BootstrapDialog
         onClose={handleClose}
@@ -324,12 +307,11 @@ export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps)
           <Stack spacing={2} onKeyDown={handleKeyPress}>
             <BetalingsSoortSelect
               betalingsSoort={betalingDTO.betalingsSoort}
-              bron={betalingDTO.bron}
-              bestemming={betalingDTO.bestemming}
-              budget={betalingDTO.budgetNaam}
+              rekeningGroep={betalingDTO.bron}
+              rekening={betalingDTO.bestemming}
               onBetalingsSoortChange={(betalingsSoort, bron, bestemming, budgetNaam) => {
                 handleInputChange('betalingsSoort', betalingsSoort)
-                setBetalingDTO({ ...betalingDTO, betalingsSoort, bron, bestemming, budgetNaam })
+                setBetalingDTO({ ...betalingDTO, betalingsSoort, bron, bestemming })
               }}
             />
             {errors.betalingsSoort && (

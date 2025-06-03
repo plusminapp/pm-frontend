@@ -42,7 +42,6 @@ export enum BetalingsCategorie {
 export enum BetalingsSoort {
   // Inkomsten
   inkomsten = 'INKOMSTEN',
-  rente = 'RENTE',
   // Uitgaven
   uitgaven = 'UITGAVEN',
   besteden_reservering = 'BESTEDEN_RESERVERING',
@@ -100,7 +99,7 @@ export const betalingsSoorten2RekeningGroepSoorten = new Map<BetalingsSoort, Rek
 ]
 );
 
-export const inkomstenBetalingsSoorten = [BetalingsSoort.inkomsten, BetalingsSoort.rente]
+export const inkomstenBetalingsSoorten = [BetalingsSoort.inkomsten]
 export const uitgavenBetalingsSoorten = [BetalingsSoort.uitgaven, BetalingsSoort.aflossen, BetalingsSoort.besteden_reservering]
 export const internBetalingsSoorten = [BetalingsSoort.incasso_creditcard, BetalingsSoort.opnemen_spaarrekening, BetalingsSoort.storten_spaarrekening, BetalingsSoort.opnemen_contant, BetalingsSoort.storten_contant]
 

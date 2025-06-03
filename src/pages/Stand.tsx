@@ -9,14 +9,15 @@ import type { Stand } from "../model/Stand";
 import dayjs from "dayjs";
 import { PeriodeSelect } from "../components/Periode/PeriodeSelect";
 import { ArrowDropDownIcon } from "@mui/x-date-pickers";
-import { betaalmethodeRekeningGroepSoorten } from "../model/RekeningGroep";
 import AflossingGrafiek from "../components/Stand/AflossingGrafiek";
 import SamenvattingGrafiek from "../components/Stand/SamenvattingGrafiek";
+import BudgetGrafiek from "../components/Stand/BudgetGrafiek";
+import { blaatRekeningGroepSoorten } from "../model/RekeningGroep";
 
 export default function Stand() {
 
   const { getIDToken } = useAuthContext();
-  const { actieveHulpvrager, gekozenPeriode, rekeningGroepen: rekeningen } = useCustomContext();
+  const { actieveHulpvrager, gekozenPeriode, rekeningGroepPerBetalingsSoort } = useCustomContext();
 
   const [stand, setStand] = useState<Stand | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(false);
@@ -100,7 +101,7 @@ export default function Stand() {
             <Grid size={2} sx={{ boxShadow: { sm: 0, md: 3 }, p: { sm: 0, md: 2 } }}>
               <Typography variant='h6'>Samenvatting {berekenPeriodeNaam()}</Typography>
               <Typography variant='body2'>
-                {stand.datumLaatsteBetaling ? `Laatste betaling geregistreerd op ${dayjs(stand.datumLaatsteBetaling).format('D MMMM')}` : 'Er is nog geen betaling geregistreerd.'}. 
+                {stand.datumLaatsteBetaling ? `Laatste betaling geregistreerd op ${dayjs(stand.datumLaatsteBetaling).format('D MMMM')}` : 'Er is nog geen betaling geregistreerd.'}.
                 {dayjs(gekozenPeriode?.periodeEindDatum).isAfter(dayjs()) && ` Er zijn nog ${dayjs(gekozenPeriode?.periodeEindDatum).diff(dayjs(), 'day') + 1} dagen tot het einde van de periode.`}
                 {dayjs(gekozenPeriode?.periodeEindDatum).isBefore(dayjs()) && ' De periode is afgelopen.'}
               </Typography>
@@ -126,34 +127,38 @@ export default function Stand() {
               <Grid container columns={{ sm: 1, lg: 2 }} onClick={toggleToonBudgetDetails} height={'100%'}>
                 {gekozenPeriode &&
                   <Grid size={1}>
-                    <SamenvattingGrafiek
+                    SamenvattingGrafiek
+                    {/* <SamenvattingGrafiek
                       peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                       periode={gekozenPeriode}
                       budgetSamenvatting={stand.budgetSamenvatting}
-                      detailsVisible={detailsVisible} />
+                      detailsVisible={detailsVisible} /> */}
                   </Grid>}
 
                 {gekozenPeriode &&
-                  rekeningen
+                  rekeningGroepPerBetalingsSoort
+                    .flatMap((rgpb) => (rgpb.rekeningGroepen))
+                    .filter(rekeningGroep => blaatRekeningGroepSoorten.includes(rekeningGroep.rekeningGroepSoort))
                     .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1)
-                    .filter(RekeningGroep => RekeningGroep.rekeningen.length >= 1)
-                    .map(RekeningGroep => (
+                    // .filter(rekeningGroep => rekeningGroep.rekeningen.length >= 1)
+                    .map(rekeningGroep => (
                       <Grid size={1}
-                        key={RekeningGroep.id}
+                        key={rekeningGroep.id}
                         sx={{ cursor: 'pointer' }}
                       >
-                        {/* <BudgetGrafiek
+                        BudgetGrafiek {rekeningGroep.naam}
+                        <BudgetGrafiek
                           peilDatum={dayjs(stand.peilDatum).isAfter(dayjs()) ? dayjs() : dayjs(stand.peilDatum)}
                           periode={gekozenPeriode}
-                          RekeningGroep={RekeningGroep}
-                          budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === RekeningGroep.naam)}
-                          geaggregeerdBudget={stand.geaggregeerdeBudgettenOpDatum.find(b => b.rekeningNaam === RekeningGroep.naam)}
-                          detailsVisible={detailsVisible} /> */}
+                          RekeningGroep={rekeningGroep}
+                          budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekeningGroep.naam)}
+                          geaggregeerdBudget={stand.geaggregeerdeBudgettenOpDatum.find(b => b.rekeningNaam === rekeningGroep.naam)}
+                          detailsVisible={detailsVisible} />
                       </Grid>
                     ))}
 
                 {gekozenPeriode && stand.aflossingenOpDatum.length > 0 &&
-                  <Grid size={1} sx={{ cursor: 'pointer' }} 
+                  <Grid size={1} sx={{ cursor: 'pointer' }}
                   >
                     <AflossingGrafiek
                       peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
@@ -184,16 +189,16 @@ export default function Stand() {
             </Grid>
             <Grid size={1} flexDirection={'column'} alignItems="start">
               <PeriodeSelect />
-              <Resultaat
+              {/* <Resultaat
                 title={'Stand van de geldrekeningen'}
                 datum={stand.peilDatum}
                 saldi={stand.balansOpDatum!.filter(saldo =>
-                  rekeningen.filter(r => betaalmethodeRekeningGroepSoorten.includes(r.rekeningGroepSoort))
-                    .map(r => r.naam).includes(saldo.rekeningNaam))} />
+                  rekeningGroepPerBetalingsSoort.filter(r => betaalmethodeRekeningGroepSoorten.includes(r.rekeningGroepSoort))
+                    .map(r => r.naam).includes(saldo.rekeningNaam))} /> */}
             </Grid>
           </Grid>
 
-          <Accordion>
+          {/* <Accordion>
             <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
               <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                 Saldo's op {dayjs(stand.peilDatum).format('D MMMM')}
@@ -231,8 +236,9 @@ export default function Stand() {
                   </Grid>
                 </Grid>
               </Grid>
+          {JSON.stringify(stand.balansOpDatum)}
             </AccordionDetails>
-          </Accordion>
+          </Accordion> */}
         </>
       }
     </>

@@ -6,6 +6,7 @@ import { BetalingDTO, BetalingsSoort, betalingsSoortFormatter, internBetalingsSo
 import dayjs from 'dayjs';
 import { useCustomContext } from '../../context/CustomContext';
 import { interneRekeningGroepSoorten, RekeningGroepSoort } from '../../model/RekeningGroep';
+import { BudgetDTO } from '../../model/Budget';
 import { ExternalLinkIcon } from '../../icons/ExternalLink';
 import EditIcon from '@mui/icons-material/Edit';
 import { isPeriodeOpen } from '../../model/Periode';
@@ -19,6 +20,7 @@ import BudgetInkomstenGrafiek from '../Stand/BudgetInkomstenGrafiek';
 type BetalingTabelProps = {
   peilDatum: string | undefined;
   betalingen: BetalingDTO[];
+  budgetten: BudgetDTO[];
   aflossingen: AflossingDTO[];
   onBetalingBewaardChange: (betalingDTO: BetalingDTO) => void;
   onBetalingVerwijderdChange: (betalingDTO: BetalingDTO) => void;
@@ -30,7 +32,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
     currency: 'EUR',
   });
 
-  const { gekozenPeriode, setSnackbarMessage } = useCustomContext();
+  const { rekeningGroepen: rekeningen, gekozenPeriode, setSnackbarMessage } = useCustomContext();
 
   const [selectedBetaling, setSelectedBetaling] = useState<BetalingDTO | undefined>(undefined);
   const [toonIntern, setToonIntern] = useState<boolean>(localStorage.getItem('toonIntern') === 'true');
@@ -45,6 +47,47 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
       : -betaling.bedrag;
     return formatter.format(bedrag);
   };
+
+  const bestemmingen = rekeningen.filter(r => r.rekeningGroepSoort === RekeningGroepSoort.uitgaven).map(r => r.naam);
+
+  const totalen = {
+    inkomsten: 0,
+    aflossing: 0,
+    bestemmingen: rekeningen.reduce((acc, RekeningGroep) => {
+      acc[RekeningGroep.naam] = 0;
+      return acc;
+    }, {} as Record<string, number>)
+  };
+
+  props.betalingen.forEach(betaling => {
+    const bedrag = betaling.betalingsSoort === BetalingsSoort.inkomsten || betaling.betalingsSoort === BetalingsSoort.rente
+      ? betaling.bedrag
+      : -betaling.bedrag;
+
+    if (betaling.betalingsSoort === BetalingsSoort.inkomsten || betaling.betalingsSoort === BetalingsSoort.rente) {
+      totalen.inkomsten += Number(bedrag);
+    } else if (betaling.betalingsSoort === BetalingsSoort.uitgaven && betaling.bestemming) {
+      totalen.bestemmingen[betaling.bestemming] += Number(bedrag);
+    } else if (betaling.betalingsSoort === BetalingsSoort.aflossen) {
+      totalen.aflossing += bedrag;
+    }
+  });
+
+  const maandAflossingsBedrag = props.aflossingen.reduce((acc, aflossing) => acc + (Number(aflossing.aflossingsBedrag)), 0);
+  const aflossingOpPeildatum = props.aflossingen.reduce((acc, aflossing) => acc + (Number(aflossing.aflossingOpPeilDatum)), 0);
+  const heeftAflossing = maandAflossingsBedrag > 0;
+
+  const maandBudget = (rekeningNaam: string) => props.budgetten
+    .filter(b => rekeningNaam === b.rekeningNaam)
+    .reduce((acc, budget) => acc + (budget.budgetMaandBedrag ?? 0), 0)
+
+  const budgetOpPeilDatum = (rekeningNaam: string) => props.budgetten
+    .filter(b => rekeningNaam === b.rekeningNaam)
+    .reduce((acc, budget) => acc + (budget.budgetOpPeilDatum ?? 0), 0)
+
+  const heeftBudgetten = props.budgetten.length > 0;
+
+  const heeftIntern = rekeningen.some(RekeningGroep => RekeningGroep.rekeningGroepSoort && interneRekeningGroepSoorten.includes(RekeningGroep.rekeningGroepSoort));
 
   const isInkomsten = (betaling: BetalingDTO) => betaling.betalingsSoort === BetalingsSoort.inkomsten || betaling.betalingsSoort === BetalingsSoort.rente;
   const isUitgaven = (betaling: BetalingDTO) => betaling.betalingsSoort === BetalingsSoort.uitgaven;
@@ -72,7 +115,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
 
   return (
     <>
-      {/* {heeftIntern &&
+      {heeftIntern &&
         <>
           <Grid display="flex" flexDirection="row" alignItems={'center'} >
             <FormGroup >
@@ -96,7 +139,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
             </Box>
           </Grid>
         </>
-      } */}
+      }
       <TableContainer sx={{ maxHeight: '80vh', overflow: 'auto' }}>
         <Table stickyHeader>
           <TableHead sx={{ position: 'sticky', top: 0, zIndex: 1 }}>

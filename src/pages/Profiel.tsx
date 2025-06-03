@@ -7,8 +7,7 @@ import { useAuthContext } from "@asgardeo/auth-react";
 import { useCustomContext } from '../context/CustomContext';
 import { bestemmingBetalingsSoorten, Betaling, currencyFormatter } from '../model/Betaling';
 import { PeriodeSelect } from '../components/Periode/PeriodeSelect';
-import { betaalmethodeRekeningGroepSoorten, blaatRekeningGroepSoorten, BudgetType, inkomstenRekeningGroepSoorten, RekeningGroepSoort, uitgavenRekeningGroepSoorten } from '../model/RekeningGroep';
-// import { AflossingSamenvattingDTO } from '../model/Aflossing';
+import { blaatRekeningGroepSoorten, BudgetType } from '../model/RekeningGroep';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers';
 import { InkomstenIcon } from '../icons/Inkomsten';
 import { UitgavenIcon } from '../icons/Uitgaven';
@@ -18,7 +17,7 @@ import dayjs from 'dayjs';
 const Profiel: React.FC = () => {
   const { state, getIDToken } = useAuthContext();
 
-  const { gebruiker, actieveHulpvrager, rekeningGroepen, rekeningGroepPerBetalingsSoort } = useCustomContext();
+  const { gebruiker, actieveHulpvrager, rekeningGroepPerBetalingsSoort } = useCustomContext();
 
   const [ongeldigeBetalingen, setOngeldigeBetalingen] = React.useState<Betaling[]>([]);
 
@@ -33,7 +32,7 @@ const Profiel: React.FC = () => {
       console.error("Error getting ID token:", error);
     }
 
-    const responseOngeldigeBetalingen = await fetch(`/api/v1/betalingen/hulpvrager/${actieveHulpvrager.id}/valideer-budgetten`, {
+    const responseOngeldigeBetalingen = await fetch(`/api/v1/betalingen/hulpvrager/${actieveHulpvrager.id}/valideer-betalingen`, {
       headers: {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -49,37 +48,8 @@ const Profiel: React.FC = () => {
     }
   }, [actieveHulpvrager, fetchfetchOngeldigeBetalingen]);
 
-
-  const gebudgeteerdPerPeriode = (rekeningSoorten: RekeningGroepSoort[]) => {
-    const bedrag = rekeningGroepen
-      .filter(rekeningGroep => rekeningSoorten.includes(rekeningGroep.rekeningGroepSoort))
-      .reduce((acc, rekeningGroep) => {
-        const rekeningGroepBedrag = rekeningGroep.rekeningen.reduce((acc, rekening) => {
-          return acc + Number(rekening.budgetMaandBedrag);
-        }, 0);
-        return acc + rekeningGroepBedrag;
-      }
-        , 0);
-    return bedrag;
-  };
-
-  const heeftInkomstenRekeningen = () => {
-    return rekeningGroepen?.some(RekeningGroep => RekeningGroep.rekeningen.length > 0 && RekeningGroep.rekeningGroepSoort === RekeningGroepSoort.inkomsten);
-  }
-
-  const heeftUitgaveRekeningen = () => {
-    return rekeningGroepen?.some(RekeningGroep => RekeningGroep.rekeningen.length > 0 && RekeningGroep.rekeningGroepSoort === RekeningGroepSoort.uitgaven);
-  }
-
   const creeerBudgetTekst = (): string => {
-    const budgetTekst =
-      (heeftInkomstenRekeningen() ? `De verwachte inkomsten zijn: ${currencyFormatter.format(gebudgeteerdPerPeriode(inkomstenRekeningGroepSoorten))}. ` :
-        heeftUitgaveRekeningen() ? "Er zijn geen Inkomsten potjes, die moeten nog geconfigureerd worden. " : "Er zijn geen Inkomsten of Uitgave potjes, die moeten nog geconfigureerd worden.") +
-
-      (heeftUitgaveRekeningen() ? `De verwachte uitgaven zijn: ${currencyFormatter.format(gebudgeteerdPerPeriode(uitgavenRekeningGroepSoorten))}. ` :
-        heeftInkomstenRekeningen() ? "Er zijn geen Uitgave potjes, die moeten nog geconfigureerd worden. " : "") +
-      (heeftInkomstenRekeningen() && heeftUitgaveRekeningen() ?
-        `Verwacht over aan t einde van de maand: ${currencyFormatter.format(gebudgeteerdPerPeriode(inkomstenRekeningGroepSoorten) - gebudgeteerdPerPeriode(uitgavenRekeningGroepSoorten))}.` : "");
+    const budgetTekst = 'Moet nog worden ingevuld';
     return budgetTekst
   }
 
@@ -279,32 +249,6 @@ const Profiel: React.FC = () => {
                 </Table>
               </AccordionDetails>}
           </Accordion>
-
-          {/* betaalMethoden */}
-          {rekeningGroepen.filter(RekeningGroep => betaalmethodeRekeningGroepSoorten.includes(RekeningGroep.rekeningGroepSoort)).length > 0 &&
-            <Accordion>
-              <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
-                <Typography ><strong>Betaalmethoden.</strong></Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Table sx={{ width: "100%" }} aria-label="simple table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Betaalmethode</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {rekeningGroepen.filter(rekeningGroep => betaalmethodeRekeningGroepSoorten.includes(rekeningGroep.rekeningGroepSoort)).map(rekeningGroep =>
-                      rekeningGroep.rekeningen.map(rekening =>
-                        <TableRow key={rekening.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }} aria-haspopup="true" >
-                          <TableCell align="left" size='small' sx={{ p: "6px" }}>{rekening.naam} {rekening.bankNaam ? `(${rekening.bankNaam})` : ''}</TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              </AccordionDetails>
-            </Accordion>
-          }
 
           {/* voor de boekhouders onder ons: betalingsSoorten2Rekeningen */}
           {rekeningGroepPerBetalingsSoort &&

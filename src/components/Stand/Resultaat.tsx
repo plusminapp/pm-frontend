@@ -25,7 +25,7 @@ export default function Resultaat(props: PeriodeProps) {
 
   const calculateResult = (): number => {
     const saldoLijst: Saldo[] = props.saldi
-    return saldoLijst.reduce((acc, saldo) => (acc + saldo.bedrag), 0)
+    return saldoLijst.reduce((acc, saldo) => (acc + saldo.saldo), 0)
   }
 
   return (
@@ -46,7 +46,7 @@ export default function Resultaat(props: PeriodeProps) {
             {props.saldi.map((saldo, index) => (
               <TableRow key={saldo.rekeningNaam+index}>
                 <TableCell align="left" size='small' sx={{ p: "6px" }}>{saldo.rekeningNaam}</TableCell>
-                <TableCell align="right" size='small' sx={{ p: "6px" }}>{currencyFormatter.format(saldo.bedrag)}</TableCell>
+                <TableCell align="right" size='small' sx={{ p: "6px" }}>{currencyFormatter.format(saldo.saldo)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
