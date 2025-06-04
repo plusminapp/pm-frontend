@@ -147,13 +147,13 @@ export default function Stand() {
                         sx={{ cursor: 'pointer' }}
                       >
                         BudgetGrafiek {rekeningGroep.naam}
-                        <BudgetGrafiek
+                        {/* <BudgetGrafiek
                           peilDatum={dayjs(stand.peilDatum).isAfter(dayjs()) ? dayjs() : dayjs(stand.peilDatum)}
                           periode={gekozenPeriode}
                           RekeningGroep={rekeningGroep}
                           budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === rekeningGroep.naam)}
                           geaggregeerdBudget={stand.geaggregeerdeBudgettenOpDatum.find(b => b.rekeningNaam === rekeningGroep.naam)}
-                          detailsVisible={detailsVisible} />
+                          detailsVisible={detailsVisible} /> */}
                       </Grid>
                     ))}
 
