@@ -10,17 +10,17 @@ import StandGeneriekGrafiek from './StandGeneriekGrafiek';
 type BudgetGrafiekProps = {
   peilDatum: dayjs.Dayjs;
   periode: Periode;
-  RekeningGroep: RekeningGroepDTO
+  rekeningGroep: RekeningGroepDTO
   budgetten: BudgetDTO[];
   geaggregeerdBudget: BudgetDTO | undefined;
   detailsVisible: boolean;
 };
 
-export const BudgetGrafiek = ({ peilDatum, periode, RekeningGroep, geaggregeerdBudget, budgetten, detailsVisible }: BudgetGrafiekProps) => {
+export const BudgetGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdBudget, budgetten, detailsVisible }: BudgetGrafiekProps) => {
 
-  const grafiekType = RekeningGroep.rekeningGroepSoort === RekeningGroepSoort.inkomsten ? 'inkomsten' :
-    RekeningGroep.budgetType === BudgetType.continu ? 'continu' :
-      RekeningGroep.budgetType === BudgetType.vast ? 'vast' : 'onbekend';
+  const grafiekType = rekeningGroep.rekeningGroepSoort === RekeningGroepSoort.inkomsten ? 'inkomsten' :
+    rekeningGroep.budgetType === BudgetType.continu ? 'continu' :
+      rekeningGroep.budgetType === BudgetType.vast ? 'vast' : 'onbekend';
 
   const formatAmount = (amount: string): string => {
     return parseFloat(amount).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
@@ -70,10 +70,10 @@ export const BudgetGrafiek = ({ peilDatum, periode, RekeningGroep, geaggregeerdB
             <StandGeneriekGrafiek
               status={berekenBudgetStand(geaggregeerdBudget)}
               percentageFill={percentagePeriodeVoorbij}
-              headerText={RekeningGroep.naam}
+              headerText={rekeningGroep.naam}
               bodyText={"Deze tekst moet nog wijzigen, maar dat kan ik nu nog niet"}
               cfoText={"En deze ook ..."}
-              rekeningIconNaam={RekeningGroep.rekeningGroepIcoonNaam} />}
+              rekeningIconNaam={rekeningGroep.rekeningGroepIcoonNaam} />}
         </Box>
 
         <TableContainer >
