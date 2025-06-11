@@ -1,4 +1,4 @@
-import { BetalingsSoort } from "./Betaling";
+import { BetalingDTO, BetalingsSoort } from "./Betaling";
 import { RekeningDTO } from "./Rekening";
 
 export type RekeningGroepDTO = {
@@ -54,7 +54,7 @@ export const resultaatRekeningGroepSoorten = [
   RekeningGroepSoort.inkomsten,
   RekeningGroepSoort.uitgaven];
 
-export const blaatRekeningGroepSoorten = [
+export const betaalTabelRekeningGroepSoorten = [
   RekeningGroepSoort.inkomsten,
   RekeningGroepSoort.uitgaven,
   RekeningGroepSoort.aflossing];
@@ -103,10 +103,10 @@ export const cashflowRekeningGroepSoorten = [
   RekeningGroepSoort.creditcard,
 ]
 
-// export const berekenBedragVoorRekenining = (betaling: BetalingDTO, RekeningGroep: RekeningGroep | undefined) => {
-//     if (RekeningGroep === undefined) return betaling.bedrag // filter = 'all'
-//     const factor = resultaatrekeningGroepSoorten.includes(RekeningGroep.rekeningGroepSoort) ? -1 : 1
-//     if (betaling.bron === RekeningGroep.naam) return Number(-betaling.bedrag) * factor
-//     if (betaling.bestemming === RekeningGroep.naam) return Number(betaling.bedrag) * factor
-//     return 0
-//   }
+export const berekenBedragVoorRekenining = (betaling: BetalingDTO, rekeningGroep: RekeningGroepDTO | undefined) => {
+    if (rekeningGroep === undefined) return betaling.bedrag // filter = 'all'
+    const factor = resultaatRekeningGroepSoorten.includes(rekeningGroep.rekeningGroepSoort) ? -1 : 1
+    if (rekeningGroep.rekeningen.some(r => r.naam === betaling.bron)) return Number(-betaling.bedrag) * factor
+    if (rekeningGroep.rekeningen.some(r => r.naam === betaling.bestemming)) return Number(betaling.bedrag) * factor
+    return 0
+  }

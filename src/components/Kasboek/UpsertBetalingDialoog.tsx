@@ -43,7 +43,7 @@ type UpsertBetalingDialoogProps = {
 };
 
 export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps) {
-  const { actieveHulpvrager, gebruiker, periodes, gekozenPeriode, setSnackbarMessage } = useCustomContext();
+  const { actieveHulpvrager, gebruiker, periodes, gekozenPeriode, setSnackbarMessage,  } = useCustomContext();
 
   const boekingsDatum = gekozenPeriode?.periodeEindDatum && dayjs().toISOString().slice(0, 10) > gekozenPeriode?.periodeEindDatum ? dayjs(gekozenPeriode?.periodeEindDatum) : dayjs()
 
@@ -57,8 +57,7 @@ export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps)
     sortOrder: '',
     bestaatAl: false,
     bron: undefined,
-    bestemming: undefined,
-    budgetNaam: undefined
+    bestemming: undefined
   }), [boekingsDatum]);
 
   type BetalingDtoErrors = { betalingsSoort?: string, omschrijving?: string; bedrag?: string; boekingsdatum?: string }
@@ -306,10 +305,8 @@ export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps)
         <DialogContent dividers>
           <Stack spacing={2} onKeyDown={handleKeyPress}>
             <BetalingsSoortSelect
-              betalingsSoort={betalingDTO.betalingsSoort}
-              rekeningGroep={betalingDTO.bron}
-              rekening={betalingDTO.bestemming}
-              onBetalingsSoortChange={(betalingsSoort, bron, bestemming, budgetNaam) => {
+              betaling={betalingDTO}
+              onBetalingsChange={(betalingsSoort, bron, bestemming) => {
                 handleInputChange('betalingsSoort', betalingsSoort)
                 setBetalingDTO({ ...betalingDTO, betalingsSoort, bron, bestemming })
               }}
@@ -335,7 +332,7 @@ export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps)
                   )}
                 </FormControl>
               </Grid>
-              {betalingDTO.betalingsSoort === BetalingsSoort.uitgaven &&
+              {betalingDTO.betalingsSoort === BetalingsSoort.uitgaven && 
                 <Grid size={{ xs: 12, sm: 7 }} marginBottom={{ xs: 0, sm: 1 }} display="flex" alignItems="center">
                   <FormControl>
                     <FormControlLabel

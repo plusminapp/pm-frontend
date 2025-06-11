@@ -1,22 +1,24 @@
 import { Box, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import dayjs from 'dayjs';
-import { dagInPeriode, Periode } from '../../model/Periode';
+import { Periode } from '../../model/Periode';
 import { BudgetType, RekeningGroepDTO, RekeningGroepSoort } from '../../model/RekeningGroep';
 import { PlusIcon } from '../../icons/Plus';
 import { MinIcon } from '../../icons/Min';
 import StandGeneriekGrafiek from './StandGeneriekGrafiek';
+import { SaldoDTO } from '../../model/Saldo';
+import { berekenBudgetStand } from '../../model/Budget';
 
 type BudgetGrafiekProps = {
   peilDatum: dayjs.Dayjs;
   periode: Periode;
   rekeningGroep: RekeningGroepDTO
-  budgetten: BudgetDTO[];
-  geaggregeerdBudget: BudgetDTO | undefined;
+  resultaatOpDatum: SaldoDTO[];
+  geaggregeerdResultaatOpDatum: SaldoDTO | undefined;
   detailsVisible: boolean;
 };
 
-export const BudgetGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdBudget, budgetten, detailsVisible }: BudgetGrafiekProps) => {
+export const BudgetGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdResultaatOpDatum, resultaatOpDatum, detailsVisible }: BudgetGrafiekProps) => {
 
   const grafiekType = rekeningGroep.rekeningGroepSoort === RekeningGroepSoort.inkomsten ? 'inkomsten' :
     rekeningGroep.budgetType === BudgetType.continu ? 'continu' :
@@ -26,12 +28,12 @@ export const BudgetGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdB
     return parseFloat(amount).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
   };
 
-  const betaaldBinnenBudget = geaggregeerdBudget?.betaaldBinnenBudget ?? 0;
-  const maandBudget = geaggregeerdBudget?.budgetMaandBedrag ?? 0;
-  const restMaandBudget = geaggregeerdBudget?.restMaandBudget ?? 0;
-  const meerDanBudget = geaggregeerdBudget?.meerDanBudget ?? 0;
-  const minderDanBudget = geaggregeerdBudget?.minderDanBudget ?? 0;
-  const meerDanMaandBudget = geaggregeerdBudget?.meerDanMaandBudget ?? 0;
+  const betaaldBinnenBudget = geaggregeerdResultaatOpDatum?.betaaldBinnenBudget ?? 0;
+  const maandBudget = geaggregeerdResultaatOpDatum?.budgetMaandBedrag ?? 0;
+  const restMaandBudget = geaggregeerdResultaatOpDatum?.restMaandBudget ?? 0;
+  const meerDanBudget = geaggregeerdResultaatOpDatum?.meerDanBudget ?? 0;
+  const minderDanBudget = geaggregeerdResultaatOpDatum?.minderDanBudget ?? 0;
+  const meerDanMaandBudget = geaggregeerdResultaatOpDatum?.meerDanMaandBudget ?? 0;
 
   const tabelBreedte = maandBudget + meerDanMaandBudget + 5;
 
@@ -39,7 +41,7 @@ export const BudgetGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdB
   const periodeVoorbij = dayjs(peilDatum).diff(dayjs(periode.periodeStartDatum), 'day') + 1;
   const percentagePeriodeVoorbij = periodeVoorbij / periodeLengte * 100;
 
-  const berekenBudgetIcoon = (budget: BudgetDTO): JSX.Element => {
+  const berekenBudgetIcoon = (budget: SaldoDTO): JSX.Element => {
     if ((budget.meerDanBudget ?? 0) === 0 && (budget.minderDanBudget ?? 0) === 0 && (budget.meerDanMaandBudget ?? 0) === 0) {
       if ((budget.betaaldBinnenBudget ?? 0) === 0)
         return <PlusIcon color="#1977d3" height={18} />
@@ -66,9 +68,9 @@ export const BudgetGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdB
     <>
       <Box sx={{ maxWidth: '500px' }}>
         <Box sx={{ cursor: 'pointer' }}>
-          {geaggregeerdBudget &&
+          {geaggregeerdResultaatOpDatum &&
             <StandGeneriekGrafiek
-              status={berekenBudgetStand(geaggregeerdBudget)}
+              status={berekenBudgetStand(geaggregeerdResultaatOpDatum)}
               percentageFill={percentagePeriodeVoorbij}
               headerText={rekeningGroep.naam}
               bodyText={"Deze tekst moet nog wijzigen, maar dat kan ik nu nog niet"}
@@ -148,17 +150,17 @@ export const BudgetGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdB
         </TableContainer >
         {detailsVisible && 
           <Grid size={2} alignItems={'flex-start'}>
-            {budgetten.map((budget, index) => (
+            {resultaatOpDatum.map((saldo, index) => (
               <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                {berekenBudgetIcoon(budget)}
+                {berekenBudgetIcoon(saldo)}
                 <Typography variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
-                  {budget.budgetNaam}: {formatAmount((budget.budgetMaandBedrag ?? 0).toString())}<br />
-                  Betaaldag {budget.betaalDag && dagInPeriode(budget.betaalDag, periode).format('D MMMM')}<br />
-                  Betaald {formatAmount(budget.budgetBetaling?.toString() ?? "nvt")}<br />
-                  Dit is {(budget.meerDanBudget ?? 0) === 0 && (budget.minderDanBudget ?? 0) === 0 && (budget.meerDanMaandBudget ?? 0) === 0 && ' zoals verwacht'}
-                  {[(budget.meerDanBudget ?? 0) > 0 && ' eerder dan verwacht',
-                  (budget.minderDanBudget ?? 0) > 0 && ` ${formatAmount((budget.minderDanBudget ?? 0).toString())} minder dan verwacht`,
-                  (budget.meerDanMaandBudget ?? 0) > 0 && ` ${formatAmount((budget.meerDanMaandBudget ?? 0).toString())} meer dan verwacht`
+                  {saldo.rekeningNaam}: {formatAmount((saldo.budgetMaandBedrag ?? 0).toString())}<br />
+                  {/* Betaaldag {saldo.bud && dagInPeriode(saldo.betaalDag, periode).format('D MMMM')}<br /> */}
+                  Betaald {formatAmount(saldo.budgetBetaling?.toString() ?? "nvt")}<br />
+                  Dit is {(saldo.meerDanBudget ?? 0) === 0 && (saldo.minderDanBudget ?? 0) === 0 && (saldo.meerDanMaandBudget ?? 0) === 0 && ' zoals verwacht'}
+                  {[(saldo.meerDanBudget ?? 0) > 0 && ' eerder dan verwacht',
+                  (saldo.minderDanBudget ?? 0) > 0 && ` ${formatAmount((saldo.minderDanBudget ?? 0).toString())} minder dan verwacht`,
+                  (saldo.meerDanMaandBudget ?? 0) > 0 && ` ${formatAmount((saldo.meerDanMaandBudget ?? 0).toString())} meer dan verwacht`
                   ].filter(Boolean).join(' en ')}.
                 </Typography>
               </Box>

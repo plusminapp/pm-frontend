@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Button, Typography, Box } from '@mui/material';
 import Grid from '@mui/material/Grid2'; // Import Grid2
-import { BetalingsSoort, betalingsSoort2Categorie, betalingsSoortFormatter, internBetalingsSoorten, uitgavenBetalingsSoorten } from '../../model/Betaling';
+import { bestemmingBetalingsSoorten, BetalingDTO, BetalingsSoort, betalingsSoort2Categorie, betalingsSoortFormatter, internBetalingsSoorten, uitgavenBetalingsSoorten } from '../../model/Betaling';
 import { useCustomContext } from '../../context/CustomContext';
 import { InternIcon } from '../../icons/Intern';
 import { InkomstenIcon } from '../../icons/Inkomsten';
@@ -10,28 +10,36 @@ import { RekeningGroepDTO } from '../../model/RekeningGroep';
 import { RekeningDTO } from '../../model/Rekening';
 
 type BetalingsSoortSelectProps = {
-  betalingsSoort: BetalingsSoort | undefined;
-  rekeningGroep: RekeningGroepDTO | undefined;
-  rekening: RekeningDTO | undefined;
-  betaalMethode: RekeningDTO | undefined;
-  onBetalingsSoortChange: (betalingsSoort: BetalingsSoort | undefined, rekeningGroep: RekeningGroepDTO | undefined, rekening: RekeningDTO | undefined, betaalMethode: RekeningDTO | undefined) => void;
+  betaling: BetalingDTO | undefined;
+  onBetalingsChange: (betalingsSoort: BetalingsSoort | undefined, bron: string | undefined, bestemming: string | undefined) => void;
 };
 
 const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
   const { rekeningGroepPerBetalingsSoort } = useCustomContext();
 
-  const [selectedCategorie, setSelectedCategorie] = useState<string | undefined>(betalingsSoort2Categorie(props.betalingsSoort));
-  const [selectedBetalingsSoort, setSelectedBetalingsSoort] = useState<BetalingsSoort | undefined>(props.betalingsSoort);
-  const [selectedRekeningGroep, setSelectedRekeningGroep] = useState<RekeningGroepDTO | undefined>(props.rekeningGroep);
-  const [selectedRekening, setSelectedRekening] = useState<RekeningDTO | undefined>(props.rekening);
-  const [selectedBetaalMethode, setSelectedBetaalMethode] = useState<RekeningDTO | undefined>(props.betaalMethode);
+  const [selectedCategorie, setSelectedCategorie] = useState<string | undefined>(betalingsSoort2Categorie(props.betaling?.betalingsSoort));
+  const [selectedBetalingsSoort, setSelectedBetalingsSoort] = useState<BetalingsSoort | undefined>(props.betaling?.betalingsSoort);
+  const [selectedRekeningGroep, setSelectedRekeningGroep] = useState<RekeningGroepDTO | undefined>(undefined);
+  const [selectedRekening, setSelectedRekening] = useState<RekeningDTO | undefined>(undefined);
+  const [selectedBetaalMethode, setSelectedBetaalMethode] = useState<RekeningDTO | undefined>(undefined);
 
   useEffect(() => {
-    setSelectedCategorie(betalingsSoort2Categorie(props.betalingsSoort));
-    setSelectedBetalingsSoort(props.betalingsSoort);
-    setSelectedRekeningGroep(props.rekeningGroep);
-    setSelectedRekening(props.rekening);
-  }, [props.betalingsSoort, props.rekeningGroep, props.rekening, props.betaalMethode]);
+    if (props.betaling) {
+      const rekeningGroepen = rekeningGroepPerBetalingsSoort.find(rgpb => rgpb.betalingsSoort === props.betaling?.betalingsSoort)?.rekeningGroepen;
+      const rekening = props.betaling?.betalingsSoort && bestemmingBetalingsSoorten.includes(props.betaling.betalingsSoort) ?
+        rekeningGroepen?.find(rg => rg.rekeningen.some(r => r.naam === props.betaling?.bron))?.rekeningen.find(r => r.naam === props.betaling?.bron) :
+        rekeningGroepen?.find(rg => rg.rekeningen.some(r => r.naam === props.betaling?.bestemming))?.rekeningen.find(r => r.naam === props.betaling?.bestemming)
+      const betaalMethode = props.betaling?.betalingsSoort && bestemmingBetalingsSoorten.includes(props.betaling.betalingsSoort) ?
+        rekening?.betaalMethoden?.find(bm => bm.naam === props.betaling?.bestemming) :
+        rekening?.betaalMethoden?.find(bm => bm.naam === props.betaling?.bron)
+      const rekeningGroep = rekeningGroepen?.find(rg => rekening?.rekeningGroepNaam === rg.naam);
+      setSelectedBetalingsSoort(props.betaling.betalingsSoort);
+      setSelectedCategorie(betalingsSoort2Categorie(props.betaling.betalingsSoort));
+      setSelectedRekeningGroep(rekeningGroep);
+      setSelectedRekening(rekening);
+      setSelectedBetaalMethode(betaalMethode);
+    }
+  }, [props.betaling, rekeningGroepPerBetalingsSoort]);
 
   const categorie2DefaultBetalingsSoort = (categorie: string): BetalingsSoort | undefined => {
     if (categorie === 'INKOMSTEN') return BetalingsSoort.inkomsten;
@@ -58,39 +66,47 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
   };
 
   const handleBetalingsSoortClick = (betalingsSoort: BetalingsSoort | undefined) => {
-    console.log('handleBetalingsSoortChange', betalingsSoort);
     if (betalingsSoort === undefined || selectedBetalingsSoort?.toString() === betalingsSoort.toString()) {
       setSelectedCategorie(undefined);
       setSelectedBetalingsSoort(undefined);
       setSelectedRekeningGroep(undefined);
       setSelectedRekening(undefined);
-      props.onBetalingsSoortChange(undefined, undefined, undefined, undefined);
+      props.onBetalingsChange(undefined, undefined, undefined);
     } else {
       const newBetalingsSoort = betalingsSoort;
       const newRekeningGroep = rekeningGroepPerBetalingsSoort.filter(rgpb => rgpb.betalingsSoort === newBetalingsSoort)[0].rekeningGroepen[0];
       const newRekening = newRekeningGroep.rekeningen[0];
       const newBetaalMethode = newRekening.betaalMethoden ? newRekening.betaalMethoden[0] : undefined
 
+      const newBron = bestemmingBetalingsSoorten.includes(newBetalingsSoort) ? newRekening.naam : newBetaalMethode?.naam;
+      const newBestemming = bestemmingBetalingsSoorten.includes(newBetalingsSoort) ? newBetaalMethode?.naam : newRekening.naam;
+
       setSelectedCategorie(betalingsSoort2Categorie(newBetalingsSoort));
       setSelectedBetalingsSoort(newBetalingsSoort);
       setSelectedRekeningGroep(newRekeningGroep);
       setSelectedRekening(newRekening);
       setSelectedBetaalMethode(newBetaalMethode);
-      props.onBetalingsSoortChange(newBetalingsSoort, newRekeningGroep, newRekening, newBetaalMethode);
+      props.onBetalingsChange(newBetalingsSoort, newBron, newBestemming);
     }
   };
 
   const handleRekeningGroepClick = (rekeningGroepNaam: string) => {
+    const newBetalingsSoort = rekeningGroepPerBetalingsSoort
+      .find(rgpb => rgpb.rekeningGroepen.some(rg => rg.naam === rekeningGroepNaam))?.betalingsSoort;
     const newRekeningGroep = rekeningGroepPerBetalingsSoort
-      .find(rgpb => rgpb.betalingsSoort === selectedBetalingsSoort)?.rekeningGroepen.find(rg => rg.naam === rekeningGroepNaam);
+      .find(rgpb => rgpb.betalingsSoort === newBetalingsSoort)?.rekeningGroepen.find(rg => rg.naam === rekeningGroepNaam);
     const newRekening = newRekeningGroep?.rekeningen[0];
     const newBetaalMethode = newRekening?.betaalMethoden ? newRekening.betaalMethoden[0] : undefined
 
+    const newBron = selectedBetalingsSoort && bestemmingBetalingsSoorten.includes(selectedBetalingsSoort) ? newRekening?.naam : newBetaalMethode?.naam;
+    const newBestemming = selectedBetalingsSoort && bestemmingBetalingsSoorten.includes(selectedBetalingsSoort) ? newBetaalMethode?.naam : newRekening?.naam;
+
+    setSelectedBetalingsSoort(newBetalingsSoort);
     setSelectedRekeningGroep(newRekeningGroep);
     setSelectedRekening(newRekening);
     setSelectedBetaalMethode(newBetaalMethode);
 
-    props.onBetalingsSoortChange(selectedBetalingsSoort, newRekeningGroep, newRekening, newBetaalMethode);
+    props.onBetalingsChange(newBetalingsSoort, newBron, newBestemming);
   };
 
   const handleRekeningClick = (rekeningNaam: string) => {
@@ -98,16 +114,24 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
       .find(r => r.naam === rekeningNaam);
     const newBetaalMethode = newRekening?.betaalMethoden ? newRekening.betaalMethoden[0] : undefined
 
+    const newBron = selectedBetalingsSoort && bestemmingBetalingsSoorten.includes(selectedBetalingsSoort) ? newRekening?.naam : newBetaalMethode?.naam;
+    const newBestemming = selectedBetalingsSoort && bestemmingBetalingsSoorten.includes(selectedBetalingsSoort) ? newBetaalMethode?.naam : newRekening?.naam;
+
     setSelectedRekening(newRekening);
     setSelectedBetaalMethode(newBetaalMethode);
-    props.onBetalingsSoortChange(selectedBetalingsSoort, selectedRekeningGroep, newRekening, selectedBetaalMethode);
+
+    props.onBetalingsChange(selectedBetalingsSoort, newBron, newBestemming);
   };
 
   const handleBetaalMethodeClick = (betaalMethodeNaam: string) => {
     const newBetaalMethode = selectedRekening?.betaalMethoden?.find(bm => bm.naam === betaalMethodeNaam);
 
+    const newBron = selectedBetalingsSoort && bestemmingBetalingsSoorten.includes(selectedBetalingsSoort) ? selectedRekening?.naam : newBetaalMethode?.naam;
+    const newBestemming = selectedBetalingsSoort && bestemmingBetalingsSoorten.includes(selectedBetalingsSoort) ? newBetaalMethode?.naam : selectedRekening?.naam;
+
     setSelectedBetaalMethode(newBetaalMethode);
-    props.onBetalingsSoortChange(selectedBetalingsSoort, selectedRekeningGroep, selectedRekening, newBetaalMethode);
+
+    props.onBetalingsChange(selectedBetalingsSoort, newBron, newBestemming);
   };
 
   const creeerBronBestemmingTekst = (): string => {
@@ -125,6 +149,93 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
     };
     return `van ${bron} naar ${bestemming}`;
   };
+
+  function renderBetaalSelectBlok({
+    filterFn,
+  }: {
+    filterFn: (rgpb: any) => boolean,
+  }) {
+    return (
+      <Box mt={2}>
+        <Grid container spacing={2} justifyContent={"center"}>
+          {rekeningGroepPerBetalingsSoort
+            .filter(filterFn)
+            .flatMap((rgpb) =>
+              rgpb.rekeningGroepen.length >= 1 
+                ? rgpb.rekeningGroepen
+                  .sort((a, b) => a.sortOrder - b.sortOrder)
+                  .map((rekeningGroep, index) => (
+                    <Button
+                      key={rekeningGroep.naam + '-' + index}
+                      color='success'
+                      style={{ textTransform: 'none' }}
+                      sx={{ mb: '13px' }}
+                      variant={selectedRekeningGroep?.naam === rekeningGroep.naam ? 'contained' : 'outlined'}
+                      onClick={() => handleRekeningGroepClick(rekeningGroep.naam)}
+                    >
+                      {rekeningGroep.naam}
+                    </Button>
+                  ))
+                : []
+            )
+          }
+        </Grid>
+
+        {rekeningGroepPerBetalingsSoort
+          .filter(filterFn)
+          .map((rgpb, rgpbIndex) =>
+            <Fragment key={rgpb.betalingsSoort + '-' + rgpbIndex}>
+              <Grid key={'rekening-' + rgpb.betalingsSoort + '-' + rgpbIndex} container spacing={2} display={'flex'} justifyContent={"center"}>
+                {rgpb.rekeningGroepen
+                  .filter(rg => rg.naam === selectedRekeningGroep?.naam)
+                  .sort((a, b) => a.sortOrder - b.sortOrder)
+                  .map(rg => 
+                    rg.rekeningen.length > 1 &&
+                    rg.rekeningen.map(rekening =>
+                    <Button
+                      key={rekening.naam}
+                      color='success'
+                      style={{ textTransform: 'none' }}
+                      sx={{ p: '3px', fontSize: 11 }}
+                      variant={selectedRekening?.naam === rekening.naam ? 'contained' : 'outlined'}
+                      onClick={() => handleRekeningClick(rekening.naam)}
+                    >
+                      {rekening.naam}
+                    </Button>
+                  ))}
+              </Grid>
+              {rgpb.rekeningGroepen
+                .filter(rg => rg.naam === selectedRekeningGroep?.naam)
+                .map(rg => rg.rekeningen
+                  .filter(r => r.naam === selectedRekening?.naam)
+                  .map(rekening =>
+                  (rekening.betaalMethoden && rekening.betaalMethoden.length > 1 &&
+                    <Fragment key={rekening.naam + '-betaalmethoden'}>
+                      <Typography key={rekening.naam + '-text'} textAlign={"center"} fontSize={"12px"} color='grey' marginTop={"12px"}>
+                        Betaalmethode
+                      </Typography>
+                      <Grid key={rekening.naam + '-grid'} container spacing={2} justifyContent={"center"}>
+                        {rekening.betaalMethoden.map((betaalMethode) =>
+                          <Button
+                            key={rekening.naam + '-' + betaalMethode.naam}
+                            color='success'
+                            style={{ textTransform: 'none' }}
+                            sx={{ mt: '3px', p: '3px', fontSize: 11 }}
+                            variant={selectedBetaalMethode?.naam === betaalMethode.naam ? 'contained' : 'outlined'}
+                            onClick={() => handleBetaalMethodeClick(betaalMethode.naam)}
+                          >
+                            {betaalMethode.naam}
+                          </Button>
+                        )}
+                      </Grid>
+                    </Fragment>
+                  )))}
+            </Fragment>
+          )
+        }
+      </Box>
+    );
+  }
 
   return (
     <div>
@@ -169,147 +280,17 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
         </Box>
       </Grid>
 
-      {selectedCategorie === 'INKOMSTEN' && (
-        <>
-          <Box mt={2}>
-            {rekeningGroepPerBetalingsSoort
-              .filter(rgpb => rgpb.betalingsSoort.toString().toLowerCase() === 'inkomsten')
-              .map((rgpb) =>
-                <>
-                  <Grid container spacing={2} justifyContent={"center"}>
-                    {rgpb && rgpb.rekeningGroepen.length > 1 && (
-                      <>
-                        {rgpb && rgpb.rekeningGroepen.map((rekeningGroep, index) => (
-                          <Button
-                            key={rekeningGroep.id + index}
-                            color='success'
-                            style={{ textTransform: 'none' }}
-                            sx={{ mb: '13px' }}
-                            variant={selectedRekeningGroep?.naam === rekeningGroep.naam ? 'contained' : 'outlined'}
-                            onClick={() => handleRekeningGroepClick(rekeningGroep.naam)}
-                          >
-                            {rekeningGroep.naam}
-                          </Button>
-                        ))}
-                      </>
-                    )}
-                  </Grid>
-                  <Grid container spacing={2} display={'flex'} justifyContent={"center"}>
-                    {rgpb.rekeningGroepen
-                      .filter(rg => rg.naam === selectedRekeningGroep?.naam)
-                      .map(rg => rg.rekeningen.map(rekening =>
-                        <Button
-                          color='success'
-                          style={{ textTransform: 'none' }}
-                          sx={{ p: '3px', fontSize: rgpb.rekeningGroepen.length > 1 ? 11 : undefined }}
-                          variant={selectedRekening?.naam === rekening.naam ? 'contained' : 'outlined'}
-                          onClick={() => handleRekeningClick(rekening.naam)}
-                        >
-                          {rekening.naam}
-                        </Button>
-                      ))}
-                  </Grid>
-                  {rgpb.rekeningGroepen
-                    .filter(rg => rg.naam === selectedRekeningGroep?.naam)
-                    .map(rg => rg.rekeningen
-                      .filter(r => r.naam === selectedRekening?.naam)
-                      .map(rekening =>
-                      (rekening.betaalMethoden && rekening.betaalMethoden.length > 1 &&
-                        <>
-                          <Typography textAlign={"center"} fontSize={"12px"} color='grey' marginTop={"12px"}>
-                            Betaalmethode</Typography>
-                          <Grid container spacing={2} justifyContent={"center"}>
-                            {rekening.betaalMethoden.map((betaalMethode) =>
-                              <Button
-                                color='success'
-                                style={{ textTransform: 'none' }}
-                                sx={{ mt: '3px', p: '3px', fontSize: 11 }}
-                                variant={selectedBetaalMethode?.naam === betaalMethode.naam ? 'contained' : 'outlined'}
-                                onClick={() => handleBetaalMethodeClick(betaalMethode.naam)}
-                              >
-                                {betaalMethode.naam}
-                              </Button>
-                            )}
-                          </Grid>
-                        </>
-                      )))}
-                </>
-              )
-            }
-          </Box>
-        </>
-      )}
+      {selectedCategorie === 'INKOMSTEN' &&
+        renderBetaalSelectBlok({
+          filterFn: rgpb => rgpb.betalingsSoort.toString().toLowerCase() === 'inkomsten',
+        })
+      }
 
-      {selectedCategorie === 'UITGAVEN' && (
-        <>
-          <Box mt={2}>
-            {rekeningGroepPerBetalingsSoort
-              .filter(rgpb => uitgavenBetalingsSoorten.includes(rgpb.betalingsSoort))
-              .map((rgpb) =>
-                <>
-                  <Grid container spacing={2} justifyContent={"center"}>
-                    {rgpb && rgpb.rekeningGroepen.length > 1 && (
-                      <>
-                        {rgpb && rgpb.rekeningGroepen.map((rekeningGroep, index) => (
-                          <Button
-                            key={rekeningGroep.id + index}
-                            color='success'
-                            style={{ textTransform: 'none' }}
-                            sx={{ mb: '13px' }}
-                            variant={selectedRekeningGroep?.naam === rekeningGroep.naam ? 'contained' : 'outlined'}
-                            onClick={() => handleRekeningGroepClick(rekeningGroep.naam)}
-                          >
-                            {rekeningGroep.naam}
-                          </Button>
-                        ))}
-                      </>
-                    )}
-                  </Grid>
-                  <Grid container spacing={2} display={'flex'} justifyContent={"center"}>
-                    {rgpb.rekeningGroepen
-                      .filter(rg => rg.naam === selectedRekeningGroep?.naam)
-                      .map(rg => rg.rekeningen.map(rekening =>
-                        <Button
-                          color='success'
-                          style={{ textTransform: 'none' }}
-                          sx={{ p: '3px', fontSize: 11 }}
-                          variant={selectedRekening?.naam === rekening.naam ? 'contained' : 'outlined'}
-                          onClick={() => handleRekeningClick(rekening.naam)}
-                        >
-                          {rekening.naam}
-                        </Button>
-                      ))}
-                  </Grid>
-                  {rgpb.rekeningGroepen
-                    .filter(rg => rg.naam === selectedRekeningGroep?.naam)
-                    .map(rg => rg.rekeningen
-                      .filter(r => r.naam === selectedRekening?.naam)
-                      .map(rekening =>
-                      (rekening.betaalMethoden && rekening.betaalMethoden.length > 1 &&
-                        <>
-                          <Typography textAlign={"center"} fontSize={"12px"} color='grey' marginTop={"12px"}>
-                            Betaalmethode</Typography>
-                          <Grid container spacing={2} justifyContent={"center"}>
-                            {rekening.betaalMethoden.map((betaalMethode) =>
-                              <Button
-                                color='success'
-                                style={{ textTransform: 'none' }}
-                                sx={{ mt: '3px', p: '3px', fontSize: 11 }}
-                                variant={selectedBetaalMethode?.naam === betaalMethode.naam ? 'contained' : 'outlined'}
-                                onClick={() => handleBetaalMethodeClick(betaalMethode.naam)}
-                              >
-                                {betaalMethode.naam}
-                              </Button>
-                            )}
-                          </Grid>
-                        </>
-                      )))}
-                </>
-              )
-            }
-          </Box>
-        </>
-      )}
+      {selectedCategorie === 'UITGAVEN' &&
+        renderBetaalSelectBlok({
+          filterFn: rgpb => uitgavenBetalingsSoorten.includes(rgpb.betalingsSoort),
+        })
+      }
       {selectedCategorie === 'INTERN' && (
         <>
           <Box mt={2}>

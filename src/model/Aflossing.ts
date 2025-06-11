@@ -1,9 +1,7 @@
 import dayjs from "dayjs"
-import { RekeningGroepDTO } from "./RekeningGroep"
 import { isDagNaVandaagInPeriode, Periode } from "./Periode"
 
 export type AflossingDTO = {
-    RekeningGroep: RekeningGroepDTO,
     startDatum: dayjs.Dayjs,
     eindDatum: dayjs.Dayjs | undefined,
     eindBedrag: number,
@@ -11,18 +9,6 @@ export type AflossingDTO = {
     betaalDag: number,
     dossierNummer: string,
     notities: string,
-    aflossingPeilDatum?: string | undefined,
-    aflossingOpPeilDatum?: number | undefined,
-    aflossingBetaling?: number | undefined,
-    deltaStartPeriode?: number | undefined,
-    saldoStartPeriode?: number | undefined,
-    aflossingMoetBetaaldZijn: boolean;
-    actueleStand: number;
-    actueleAchterstand: number;
-    betaaldBinnenAflossing: number
-    meerDanVerwacht: number;
-    minderDanVerwacht: number;
-    meerDanMaandAflossing: number;
 }
 
 export type AflossingSamenvattingDTO = {

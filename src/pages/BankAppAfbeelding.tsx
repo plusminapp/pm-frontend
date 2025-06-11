@@ -7,15 +7,14 @@ import 'dayjs/locale/nl'; // Import the Dutch locale
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 import { BetalingDTO, BetalingvalidatieWrapper } from '../model/Betaling';
-import { updateAfbeelding } from '../components/Kasboek/Ocr/UpdateAfbeelding'; 
+import { updateAfbeelding } from '../components/Kasboek/Ocr/UpdateAfbeelding';
 import { parseText } from '../components/Kasboek/Ocr/ParseTekst';
 import { RekeningSelect } from '../components/Rekening/RekeningSelect';
 import { useAuthContext } from '@asgardeo/auth-react';
 import { useCustomContext } from '../context/CustomContext';
 import { useNavigate } from 'react-router-dom';
-import { Saldo } from '../model/Saldo';
-// import { RekeningGroepDTO } from '../model/RekeningGroep';
-// import InkomstenUitgavenTabel from '../components/Kasboek/InkomstenUitgavenTabel';
+import { SaldoDTO } from '../model/Saldo';
+import InkomstenUitgavenTabel from '../components/Kasboek/InkomstenUitgavenTabel';
 import UpsertBetalingDialoog from '../components/Kasboek/UpsertBetalingDialoog';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { RekeningDTO } from '../model/Rekening';
@@ -23,20 +22,20 @@ import { RekeningDTO } from '../model/Rekening';
 dayjs.extend(customParseFormat); // Extend dayjs with the customParseFormat plugin
 dayjs.locale('nl'); // Set the locale to Dutch
 
-const BanlAppAfbeelding: React.FC = () => {
+const BankAppAfbeelding: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [ocrData, setOcdData] = useState<string>('');
   const [parsedData, setParsedData] = useState<BetalingDTO[]>([]);
   const [validatedData, setValidatedData] = useState<BetalingvalidatieWrapper>({ betalingen: [] });
-  // const [groupedData, setGroupedData] = useState<{ [key: string]: BetalingDTO[] }>({});
+  const [groupedData, setGroupedData] = useState<{ [key: string]: BetalingDTO[] }>({});
   const [confidence, setConfidence] = useState<number | null>(null); // Add state for confidence
   const [imageSrc, setImageSrc] = useState<string | null>(null); // Add state for image source
   const [toonAfbeelding, setToonUpdatedAfbeelding] = useState<boolean>(localStorage.getItem('toonUpdatedAfbeelding') === 'true'); // Add state for image source
-  // const [updatedImageSrc, setUpdatedImageSrc] = useState<string | null>(null);
+  const [updatedImageSrc, setUpdatedImageSrc] = useState<string | null>(null);
   const [ocrBankRekening, setOcrBankRekening] = useState<RekeningDTO | undefined>(undefined);
-  // const [aantalVerwerkteBetalingen, setAantalVerwerkteBetalingen] = useState<number>(0);
+  const [aantalVerwerkteBetalingen, setAantalVerwerkteBetalingen] = useState<number>(0);
 
-  // const aantalBetalingen = validatedData.betalingen.length;
+  const aantalBetalingen = validatedData.betalingen.length;
 
   const { getIDToken } = useAuthContext();
   const { actieveHulpvrager, setSnackbarMessage } = useCustomContext();
@@ -63,7 +62,7 @@ const BanlAppAfbeelding: React.FC = () => {
 
       try {
         const updatedFile = await updateAfbeelding(file, ocrBankRekening?.bankNaam);
-        // setUpdatedImageSrc(URL.createObjectURL(updatedFile));
+        setUpdatedImageSrc(URL.createObjectURL(updatedFile));
         handleFileUpload(updatedFile);
       } catch (error) {
         console.error('Error updating image:', error);
@@ -100,6 +99,7 @@ const BanlAppAfbeelding: React.FC = () => {
   useEffect(() => {
     // TODO? - Implement the valideerBetalingen function zonder useEffect?
     const valideerBetalingen = async () => {
+      console.log('valideerBetalingen', ocrBankRekening, parsedData, actieveHulpvrager);
       let token = '';
       try { token = await getIDToken() }
       catch (error) {
@@ -115,11 +115,13 @@ const BanlAppAfbeelding: React.FC = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            'saldoOpLaatsteBetalingDatum': { 'id': 0, 'rekeningNaam': ocrBankRekening?.naam, 'bedrag': 0 } as Saldo,
-            'betalingen': parsedData.map(betaling => ({
-              ...betaling,
-              boekingsdatum: dayjs(betaling.boekingsdatum).format('YYYY-MM-DD')
-            }))
+            'saldoOpLaatsteBetalingDatum': { 'id': 0, 'rekeningNaam': ocrBankRekening?.naam, 'bedrag': 0 } as unknown as SaldoDTO,
+            'betalingen': parsedData
+            .filter(betaling => betaling.bedrag !== null)
+              .map(betaling => ({
+                ...betaling,
+                boekingsdatum: dayjs(betaling.boekingsdatum).format('YYYY-MM-DD')
+              }))
           })
         });
         setIsLoading(false);
@@ -150,12 +152,12 @@ const BanlAppAfbeelding: React.FC = () => {
     setOcrBankRekening(bankRekening);
   };
 
-  // const onBetalingChange = (_sortOrder: string) => {
-  //   const newValidatedBetalingen = validatedData.betalingen.filter(item => item.sortOrder !== sortOrder)
-  //   console.log('onBetalingChange', newValidatedBetalingen, ', ', sortOrder);
-  //   setAantalVerwerkteBetalingen(aantalVerwerkteBetalingen + 1);
-  //   setValidatedData({ ...validatedData, betalingen: newValidatedBetalingen });
-  // };
+  const onBetalingChange = (sortOrder: string) => {
+    const newValidatedBetalingen = validatedData.betalingen.filter(item => item.sortOrder !== sortOrder)
+    console.log('onBetalingChange', newValidatedBetalingen, ', ', sortOrder);
+    setAantalVerwerkteBetalingen(aantalVerwerkteBetalingen + 1);
+    setValidatedData({ ...validatedData, betalingen: newValidatedBetalingen });
+  };
 
   const onBetalingBewaardChange = (sortOrder: string) => {
     console.log('onBetalingBewaardChange', sortOrder);
@@ -165,15 +167,15 @@ const BanlAppAfbeelding: React.FC = () => {
     console.log('onBetalingVerwijderdChange', sortOrder);
   }
 
-  // useEffect(() => {
-  //   setGroupedData(validatedData.betalingen.reduce((acc, item) => {
-  //     if (!acc[item.boekingsdatum.format('YYYY-MM-DD')]) {
-  //       acc[item.boekingsdatum.format('YYYY-MM-DD')] = [];
-  //     }
-  //     acc[item.boekingsdatum.format('YYYY-MM-DD')].push(item);
-  //     return acc;
-  //   }, {} as { [key: string]: BetalingDTO[] }))
-  // }, [validatedData]);
+  useEffect(() => {
+    setGroupedData(validatedData.betalingen.reduce((acc, item) => {
+      if (!acc[item.boekingsdatum.format('YYYY-MM-DD')]) {
+        acc[item.boekingsdatum.format('YYYY-MM-DD')] = [];
+      }
+      acc[item.boekingsdatum.format('YYYY-MM-DD')].push(item);
+      return acc;
+    }, {} as { [key: string]: BetalingDTO[] }))
+  }, [validatedData]);
 
   return (
     <Box>
@@ -214,22 +216,22 @@ const BanlAppAfbeelding: React.FC = () => {
               checked={toonAfbeelding}
               onChange={handleToonUpdatedAfbeelding}
               slotProps={{ input: { 'aria-label': 'controlled' } }}
-              />}
-            label={<VisibilityOutlinedIcon sx={{mt: '4px', color: toonAfbeelding ? 'green' : 'lightgrey'}}/>} />
+            />}
+            label={<VisibilityOutlinedIcon sx={{ mt: '4px', color: toonAfbeelding ? 'green' : 'lightgrey' }} />} />
         </FormGroup>
       </Grid>
       <Grid container spacing={2} sx={{ mt: 2 }}>
         <Grid size={{ xs: 12, md: toonAfbeelding ? 6 : 12 }}>
-          {/* <Typography variant="caption">
+          <Typography variant="caption">
             aantal: {aantalBetalingen}, verwerkt: {aantalVerwerkteBetalingen}, te gaan: {aantalBetalingen - aantalVerwerkteBetalingen}
-          </Typography> */}
+          </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center', height: { xs: '67vh', md: '80vh' }, overflow: 'auto', alignItems: 'flex-start', border: '1px solid grey', borderRadius: '5px' }}>
             {validatedData.betalingen.length === 0 && (
               <Typography variant={isXs ? "h5" : isSm ? "h4" : isMdUp ? "h3" : "body1"} width={'50%'} textAlign={'center'} margin='auto' fontWeight={'bold'} color='lightgrey'>
                 Hier komen de voorgestelde betalingen zodra de afbeelding is verwerkt
               </Typography>
             )}
-            {/* {Object.keys(groupedData).length > 0 && (
+            {Object.keys(groupedData).length > 0 && (
               <>
                 <InkomstenUitgavenTabel
                   actueleRekening={undefined}
@@ -238,7 +240,7 @@ const BanlAppAfbeelding: React.FC = () => {
                   onBetalingBewaardChange={(betalingDTO) => onBetalingChange(betalingDTO.sortOrder)}
                   onBetalingVerwijderdChange={(betalingDTO) => onBetalingChange(betalingDTO.sortOrder)} />
               </>
-            )} */}
+            )}
           </Box>
         </Grid>
         {toonAfbeelding &&
@@ -252,7 +254,7 @@ const BanlAppAfbeelding: React.FC = () => {
             </Box>
           </Grid>}
 
-        {/* {toonUpdatedAfbeelding &&
+        {toonAfbeelding &&
           <Grid size={{ xs: 12, md: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'center', height: { xs: '33vh', md: '67vh' }, overflow: 'auto', alignItems: 'flex-start', border: '1px solid grey', borderRadius: '5px' }}>
               {updatedImageSrc ?
@@ -261,7 +263,7 @@ const BanlAppAfbeelding: React.FC = () => {
                   Hier komt de aangepaste afbeelding zodra is verwerkt
                 </Typography>}
             </Box>
-          </Grid>} */}
+          </Grid>}
 
       </Grid>
       {/* {ocrData &&
@@ -290,9 +292,11 @@ const BanlAppAfbeelding: React.FC = () => {
         </Accordion>} */}
       <Typography variant="body2" sx={{ mt: 1 }}>
         {confidence && toonAfbeelding ? `OCR vertrouwen: ${confidence.toFixed(2)}%` : ''}
+        GroupedData: {JSON.stringify(groupedData)}
+        ParsedDate: {JSON.stringify(parsedData)}
       </Typography>
     </Box>
   );
 };
 
-export default BanlAppAfbeelding;
+export default BankAppAfbeelding;

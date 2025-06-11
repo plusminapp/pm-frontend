@@ -6,21 +6,28 @@ import Box from '@mui/material/Box';
 import { useCallback, useEffect, useState } from "react";
 import { useCustomContext } from "../context/CustomContext";
 
-import { AflossingDTO } from '../model/Aflossing'
 import { ArrowDropDownIcon } from "@mui/x-date-pickers";
 import AflossingTabel from "../components/Aflossing/AflossingTabel";
-import { MinIcon } from "../icons/Min";
-import { PlusIcon } from "../icons/Plus";
 import dayjs from "dayjs";
 import { AflossingenAfbouwGrafiek } from "../components/Aflossing/Graph/AflossingenAfbouwGrafiek";
 import { PeriodeSelect } from "../components/Periode/PeriodeSelect";
+import { BetalingsSoort } from "../model/Betaling";
+import { SaldoDTO } from "../model/Saldo";
+import { RekeningGroepSoort } from "../model/RekeningGroep";
+import { RekeningDTO } from "../model/Rekening";
+import { getData, getSeries } from "../components/Aflossing/Graph/AflossingGrafiekData";
 
 export default function Aflossingen() {
 
   const { getIDToken } = useAuthContext();
-  const { actieveHulpvrager, gekozenPeriode, setSnackbarMessage } = useCustomContext();
+  const { actieveHulpvrager, gekozenPeriode, setSnackbarMessage, rekeningGroepPerBetalingsSoort } = useCustomContext();
 
-  const [aflossingen, setAflossingen] = useState<AflossingDTO[]>([])
+  const aflossing = rekeningGroepPerBetalingsSoort
+  .filter(r => r.betalingsSoort === BetalingsSoort.aflossen)
+  .flatMap(r => r.rekeningGroepen)
+  .flatMap(r => r.rekeningen)
+
+  const [aflossingSaldi, setAflossingSaldi] = useState<SaldoDTO[]>([])
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchAflossingen = useCallback(async () => {
@@ -35,7 +42,7 @@ export default function Aflossingen() {
       setIsLoading(true);
       const id = actieveHulpvrager.id
       const formDatum = dayjs().isAfter(dayjs(gekozenPeriode.periodeEindDatum)) ? dayjs(gekozenPeriode.periodeEindDatum) : dayjs();
-      const response = await fetch(`/api/v1/aflossing/hulpvrager/${id}/datum/${formDatum.toISOString().slice(0, 10)}`, {
+      const response = await fetch(`/api/v1/saldo/hulpvrager/${id}/stand/${formDatum.toISOString().slice(0, 10)}`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -45,7 +52,8 @@ export default function Aflossingen() {
       setIsLoading(false);
       if (response.ok) {
         const result = await response.json();
-        setAflossingen(result);
+        setAflossingSaldi(result.resultaatOpDatum.
+          filter((r: SaldoDTO) => r.rekeningGroepSoort === RekeningGroepSoort.aflossing));
       } else {
         console.error("Failed to fetch data", response.status);
         setSnackbarMessage({
@@ -66,24 +74,24 @@ export default function Aflossingen() {
     return <Typography sx={{ mb: '25px' }}>De aflossingen worden opgehaald.</Typography>
   }
 
-  const berekenToestandAflossingIcoon = (aflossing: AflossingDTO): JSX.Element => {
-    if (aflossing.meerDanVerwacht === 0 && aflossing.minderDanVerwacht === 0 && aflossing.meerDanMaandAflossing === 0) {
-      if (!aflossing.aflossingMoetBetaaldZijn)
-        return <PlusIcon color="#1977d3" height={18} />
-      else return <PlusIcon color="#green" height={18} />
-    }
-    if (aflossing.minderDanVerwacht > 0) return <MinIcon color="red" height={18} />
-    if (aflossing.meerDanMaandAflossing > 0) return <PlusIcon color="orange" height={18} />
-    if (aflossing.meerDanVerwacht > 0) return <PlusIcon color="lightgreen" height={18} />
-    return <PlusIcon color="black" />
-  }
+  // const berekenToestandAflossingIcoon = (aflossing: AflossingDTO): JSX.Element => {
+  //   if (aflossing.meerDanVerwacht === 0 && aflossing.minderDanVerwacht === 0 && aflossing.meerDanMaandAflossing === 0) {
+  //     if (!aflossing.aflossingMoetBetaaldZijn)
+  //       return <PlusIcon color="#1977d3" height={18} />
+  //     else return <PlusIcon color="#green" height={18} />
+  //   }
+  //   if (aflossing.minderDanVerwacht > 0) return <MinIcon color="red" height={18} />
+  //   if (aflossing.meerDanMaandAflossing > 0) return <PlusIcon color="orange" height={18} />
+  //   if (aflossing.meerDanVerwacht > 0) return <PlusIcon color="lightgreen" height={18} />
+  //   return <PlusIcon color="black" />
+  // }
 
   return (
     <>
-      {aflossingen.length === 0 &&
+      {aflossingSaldi.length === 0 &&
         <Typography variant='h4'>{actieveHulpvrager?.bijnaam} heeft geen schulden/aflossingen ingericht.</Typography>
       }
-      {aflossingen.length > 0 &&
+      {aflossingSaldi.length > 0 &&
         <>
           <Typography variant='h4'>Schulden/aflossingen pagina</Typography>
           <Grid container spacing={2} columns={{ xs: 1, md: 3 }} justifyContent="space-between">
@@ -105,35 +113,44 @@ export default function Aflossingen() {
             </AccordionSummary>
             <AccordionDetails sx={{ p: 0 }} >
               <AflossingenAfbouwGrafiek
-                aflossingen={aflossingen} />
+              aflossingen={aflossing} aflossingSaldi={aflossingSaldi} />
             </AccordionDetails>
           </Accordion>
         </>
       }
-      {aflossingen.map(aflossing =>
+      {aflossingSaldi.map(saldoDTO =>
         <Accordion
-        key={aflossing.RekeningGroep.id}
+        key={saldoDTO.id}
           elevation={2}>
           <AccordionSummary
             expandIcon={<ArrowDropDownIcon />}
-            aria-controls={aflossing.RekeningGroep.naam}
-            id={aflossing.RekeningGroep.naam}>
+            aria-controls={saldoDTO.rekeningNaam}
+            id={saldoDTO.rekeningNaam}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              {berekenToestandAflossingIcoon(aflossing)}
+              berekenToestandAflossingIcoon(aflossing)
               <Typography
                 sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
                 component="span"
                 align="left">
-                {aflossing.RekeningGroep.naam}
+                {saldoDTO.rekeningNaam}
               </Typography>
             </Box>
           </AccordionSummary>
           <AccordionDetails sx={{ p: 0 }} >
             <AflossingTabel
-              aflossing={aflossing} />
+              aflossingSaldo={saldoDTO}
+              aflossing={aflossing.filter(r => r.naam === saldoDTO.rekeningNaam)[0] as RekeningDTO}
+              />
           </AccordionDetails>
         </Accordion>
       )}
+      Aflossing: {JSON.stringify(aflossing)}
+      <hr />
+      aflossingSaldi: {JSON.stringify(aflossingSaldi)}
+      <hr />
+      data: {JSON.stringify(getData(aflossing))}
+      <hr />
+      series: {JSON.stringify(getSeries(aflossingSaldi))}
     </>
   )
 }

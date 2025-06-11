@@ -38,7 +38,15 @@ function Header() {
     actieveHulpvrager, setActieveHulpvrager,
     snackbarMessage, setSnackbarMessage,
     gekozenPeriode, setGekozenPeriode,
-    setRekeningGroepPerBetalingsSoort, setPeriodes } = useCustomContext();
+    rekeningGroepPerBetalingsSoort, setRekeningGroepPerBetalingsSoort,
+    setPeriodes } = useCustomContext();
+
+  const rekeningGroepen = Array.from(
+    new Map(
+      rekeningGroepPerBetalingsSoort
+        .flatMap(bs => bs.rekeningGroepen)
+        .map(r => [r.id, r])
+    ).values())
 
   const formatRoute = (page: string): string => { return page.toLowerCase().replace('/', '-') }
 
@@ -177,9 +185,9 @@ function Header() {
   };
 
   // const maandAflossingsBedrag = berekenMaandAflossingenBedrag(actieveHulpvrager?.aflossingen ?? [])
-  // const heeftAflossing = rekeningGroepen.some((rekeningGroep) => rekeningGroep.rekeningGroepSoort === 'AFLOSSING');
-  // const pages = heeftAflossing ? ['Stand', 'Kasboek', 'Schuld/Aflossingen'] : ['Stand', 'Kasboek'];
-  const pages = ['Stand', 'Kasboek'];
+  const heeftAflossing = rekeningGroepen.some((rekeningGroep) => rekeningGroep.rekeningGroepSoort === 'AFLOSSING');
+  const pages = heeftAflossing ? ['Stand', 'Kasboek', 'Schuld/Aflossingen'] : ['Stand', 'Kasboek'];
+  // const pages = ['Stand', 'Kasboek'];
 
   return (
     <>

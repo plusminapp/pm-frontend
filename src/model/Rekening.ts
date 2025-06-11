@@ -1,10 +1,13 @@
+import { AflossingDTO } from "./Aflossing";
 import { Periode } from "./Periode";
 
 export type RekeningDTO = {
   id: number;
   naam: string;
+  rekeningGroepNaam: string | undefined;
   nummer: string | undefined;
   sortOrder: number;
+  saldo: number;
   bankNaam: string | undefined;
   budgetPeriodiciteit: string;
   vanPeriode: Periode | undefined;
@@ -21,4 +24,5 @@ export type RekeningDTO = {
   minderDanBudget: number | undefined;
   meerDanMaandBudget: number | undefined;
   restMaandBudget: number | undefined;
+  aflossing: AflossingDTO | undefined;
 }  

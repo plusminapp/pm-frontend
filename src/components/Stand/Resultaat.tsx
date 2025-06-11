@@ -6,14 +6,14 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
-import { Saldo } from '../../model/Saldo';
+import { SaldoDTO } from '../../model/Saldo';
 import { currencyFormatter } from '../../model/Betaling'
 import dayjs from 'dayjs';
 
 interface PeriodeProps {
   title: string;
   datum: string;
-  saldi: Saldo[];
+  saldi: SaldoDTO[];
 }
 
 export default function Resultaat(props: PeriodeProps) {
@@ -24,7 +24,7 @@ export default function Resultaat(props: PeriodeProps) {
   }
 
   const calculateResult = (): number => {
-    const saldoLijst: Saldo[] = props.saldi
+    const saldoLijst: SaldoDTO[] = props.saldi
     return saldoLijst.reduce((acc, saldo) => (acc + saldo.saldo), 0)
   }
 
@@ -43,9 +43,11 @@ export default function Resultaat(props: PeriodeProps) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {props.saldi.map((saldo, index) => (
-              <TableRow key={saldo.rekeningNaam+index}>
-                <TableCell align="left" size='small' sx={{ p: "6px" }}>{saldo.rekeningNaam}</TableCell>
+            {props.saldi
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+            .map((saldo, index) => (
+              <TableRow key={saldo.rekeningGroepNaam+index}>
+                <TableCell align="left" size='small' sx={{ p: "6px" }}>{saldo.rekeningGroepNaam}</TableCell>
                 <TableCell align="right" size='small' sx={{ p: "6px" }}>{currencyFormatter.format(saldo.saldo)}</TableCell>
               </TableRow>
             ))}

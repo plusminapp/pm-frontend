@@ -2,11 +2,13 @@ import { AgCharts } from "ag-charts-react";
 import { AgAreaSeriesOptions, AgChartOptions } from "ag-charts-community";
 import { getData, getSeries } from "./AflossingGrafiekData";
 import { useCustomContext } from "../../../context/CustomContext";
-import { AflossingDTO } from "../../../model/Aflossing";
 import dayjs from "dayjs";
+import { SaldoDTO } from "../../../model/Saldo";
+import { RekeningDTO } from "../../../model/Rekening";
 
 type AflossingenAfbouwGrafiekProps = {
-  aflossingen: AflossingDTO[];
+  aflossingen: RekeningDTO[];
+  aflossingSaldi: SaldoDTO[];
 };
 
 export const AflossingenAfbouwGrafiek = (props: AflossingenAfbouwGrafiekProps) => {
@@ -16,7 +18,7 @@ export const AflossingenAfbouwGrafiek = (props: AflossingenAfbouwGrafiekProps) =
 
   const chartOptions: AgChartOptions = {
     data: Object.values(getData(props.aflossingen)),
-    series: getSeries(props.aflossingen) as AgAreaSeriesOptions[],
+    series: getSeries(props.aflossingSaldi) as AgAreaSeriesOptions[],
     axes: [
       {
         type: "category",

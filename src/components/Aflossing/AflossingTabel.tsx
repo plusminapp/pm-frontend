@@ -5,18 +5,25 @@ import TableContainer from '@mui/material/TableContainer';
 import TableRow from '@mui/material/TableRow';
 // import Paper from '@mui/material/Paper';
 
-import { AflossingDTO } from '../../model/Aflossing';
 import { currencyFormatter } from '../../model/Betaling'
-import dayjs from 'dayjs';
+import { SaldoDTO } from '../../model/Saldo';
+import { RekeningDTO } from '../../model/Rekening';
 
 
 interface AflossingProps {
-  aflossing: AflossingDTO;
+  aflossingSaldo: SaldoDTO;
+  aflossing: RekeningDTO;
 }
 
 export default function AflossingTabel(props: AflossingProps) {
-  const berekenMaandenTeGaan = (eindDatum: dayjs.Dayjs) => {
-    return eindDatum.diff(dayjs(), 'month');;
+  const berekenMaandenTeGaan = () => {
+    if (props.aflossingSaldo.saldo > 0) { 
+      return 0 
+    } else {
+      return Math.ceil(
+        -(props.aflossingSaldo.saldo ?? 0) / (props.aflossing.budgetMaandBedrag ?? 1)
+      );  
+    }
   }
 
   return (
@@ -29,7 +36,7 @@ export default function AflossingTabel(props: AflossingProps) {
                   Dossiernummer
                 </TableCell>
                 <TableCell align="right" size='small' >
-                  {props.aflossing.dossierNummer}
+                  {props.aflossing.aflossing?.dossierNummer}
                 </TableCell>
               </TableRow>
               <TableRow>
@@ -37,7 +44,7 @@ export default function AflossingTabel(props: AflossingProps) {
                   Actuele stand
                 </TableCell>
                 <TableCell align="right" size='small' >
-                  {currencyFormatter.format(props.aflossing.actueleStand ?? 0)}
+                  {currencyFormatter.format(props.aflossingSaldo.saldo ?? 0)}
                 </TableCell>
               </TableRow>
               <TableRow>
@@ -45,7 +52,7 @@ export default function AflossingTabel(props: AflossingProps) {
                   Maandbedrag
                 </TableCell>
                 <TableCell align="right" size='small' >
-                  {currencyFormatter.format(props.aflossing.aflossingsBedrag ?? 0)}
+                  {currencyFormatter.format(props.aflossing.budgetMaandBedrag ?? 0)}
                 </TableCell>
               </TableRow>
               <TableRow>
@@ -53,7 +60,7 @@ export default function AflossingTabel(props: AflossingProps) {
                   Achterstand begin periode
                 </TableCell>
                 <TableCell align="right" size='small' >
-                  {currencyFormatter.format(-(props.aflossing.deltaStartPeriode ?? 0))}
+                  {currencyFormatter.format(props.aflossingSaldo.achterstand ?? 0)}
                 </TableCell>
               </TableRow>
               <TableRow>
@@ -61,7 +68,7 @@ export default function AflossingTabel(props: AflossingProps) {
                   Betaling deze periode
                 </TableCell>
                 <TableCell align="right" size='small' >
-                  {currencyFormatter.format(props.aflossing.aflossingBetaling ?? 0)}
+                  {currencyFormatter.format(-(props.aflossingSaldo.budgetBetaling ?? 0))}
                 </TableCell>
               </TableRow>
               <TableRow>
@@ -69,7 +76,7 @@ export default function AflossingTabel(props: AflossingProps) {
                   Achterstand nu
                 </TableCell>
                 <TableCell align="right" size='small' >
-                  {currencyFormatter.format(props.aflossing.actueleAchterstand ?? 0)}
+                  {currencyFormatter.format(props.aflossingSaldo.achterstandNu ?? 0)}
                 </TableCell>
               </TableRow>
               <TableRow>
@@ -77,7 +84,7 @@ export default function AflossingTabel(props: AflossingProps) {
                   Betaaldag
                 </TableCell>
                 <TableCell align="right" size='small' >
-                  {props.aflossing.betaalDag}e
+                  {props.aflossing.budgetBetaalDag}e
                 </TableCell>
               </TableRow>
               <TableRow>
@@ -85,7 +92,7 @@ export default function AflossingTabel(props: AflossingProps) {
                   Eindbedrag
                 </TableCell>
                 <TableCell align="right" size='small' >
-                  {currencyFormatter.format(props.aflossing.eindBedrag ?? 0)}
+                  {currencyFormatter.format(props.aflossing.aflossing?.eindBedrag ?? 0)}
                 </TableCell>
               </TableRow>
               <TableRow>
@@ -93,7 +100,7 @@ export default function AflossingTabel(props: AflossingProps) {
                   Maanden te gaan
                 </TableCell>
                 <TableCell align="right" size='small' >
-                  {berekenMaandenTeGaan(dayjs(props.aflossing.eindDatum) ?? dayjs())}
+                  {berekenMaandenTeGaan()}
                 </TableCell>
               </TableRow>
             </TableBody>

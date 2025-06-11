@@ -1,7 +1,7 @@
 // import { Gebruiker } from "./Gebruiker";
 import dayjs from "dayjs";
 import { RekeningGroepSoort, RekeningGroepSoortPaar } from "./RekeningGroep";
-import { Saldo } from "./Saldo";
+import { SaldoDTO } from "./Saldo";
 import { RekeningDTO } from "./Rekening";
 
 export type Betaling = {
@@ -29,7 +29,7 @@ export type BetalingDTO = {
 
 export type BetalingvalidatieWrapper = {
   laatsteBetalingDatum?: string,
-  saldoOpLaatsteBetalingDatum?: Saldo,
+  saldoOpLaatsteBetalingDatum?: SaldoDTO,
   betalingen: BetalingDTO[],
 }
 

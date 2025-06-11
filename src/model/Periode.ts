@@ -1,12 +1,12 @@
 import dayjs from "dayjs";
-import { Saldo } from "./Saldo";
+import { SaldoDTO } from "./Saldo";
 
 export type Periode = {
     id: number;
     periodeStartDatum: string;
     periodeEindDatum: string;
     periodeStatus: string;
-    saldoLijst: Saldo[];
+    saldoLijst: SaldoDTO[];
 }
 
 export const dagInPeriode = (dag: number, gekozenPeriode: Periode) => {

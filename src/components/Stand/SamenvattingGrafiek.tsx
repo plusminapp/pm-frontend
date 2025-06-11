@@ -2,18 +2,18 @@ import { Box, Table, TableBody, TableCell, TableContainer, TableRow, Typography 
 import dayjs from 'dayjs';
 import { Periode } from '../../model/Periode';
 import StandGeneriekGrafiek from '../../components/Stand/StandGeneriekGrafiek';
-import { BudgetSamenvatting } from '../../model/Budget';
+import { ResultaatSamenvattingOpDatumDTO } from '../../model/Saldo';
 
 type SamenvattingGrafiekProps = {
   peilDatum: dayjs.Dayjs;
   periode: Periode;
-  budgetSamenvatting: BudgetSamenvatting;
+  resultaatSamenvattingOpDatum: ResultaatSamenvattingOpDatumDTO;
   detailsVisible: boolean;
 };
 
 export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
 
-  const { percentagePeriodeVoorbij, budgetMaandInkomstenBedrag, besteedTotPeilDatum, nogNodigNaPeilDatum, actueleBuffer } = props.budgetSamenvatting;
+  const { percentagePeriodeVoorbij, budgetMaandInkomstenBedrag, besteedTotPeilDatum, nogNodigNaPeilDatum, actueleBuffer } = props.resultaatSamenvattingOpDatum;
   const detailsVisible = props.detailsVisible;
   const formatAmount = (amount: string): string => {
     return parseFloat(amount).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });

@@ -7,7 +7,7 @@ import { useAuthContext } from "@asgardeo/auth-react";
 import { useCustomContext } from '../context/CustomContext';
 import { bestemmingBetalingsSoorten, Betaling, currencyFormatter } from '../model/Betaling';
 import { PeriodeSelect } from '../components/Periode/PeriodeSelect';
-import { blaatRekeningGroepSoorten, BudgetType } from '../model/RekeningGroep';
+import { betaalTabelRekeningGroepSoorten, BudgetType } from '../model/RekeningGroep';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers';
 import { InkomstenIcon } from '../icons/Inkomsten';
 import { UitgavenIcon } from '../icons/Uitgaven';
@@ -182,7 +182,7 @@ const Profiel: React.FC = () => {
                       <Table sx={{ width: "100%" }} aria-label="simple table">
                         <TableHead>
                           <TableRow>
-                            <TableCell>Soort potjes</TableCell>
+                            <TableCell>Soort</TableCell>
                             <TableCell>Kolomkop</TableCell>
                             <TableCell>Potjes (gekoppelde budgetten)</TableCell>
                             <TableCell>Betaalmethoden</TableCell>
@@ -192,7 +192,7 @@ const Profiel: React.FC = () => {
                           <>
                             {rekeningGroepPerBetalingsSoort
                               .flatMap(rgpb => rgpb.rekeningGroepen)
-                              .filter(rg => blaatRekeningGroepSoorten.includes(rg.rekeningGroepSoort))
+                              .filter(rg => betaalTabelRekeningGroepSoorten.includes(rg.rekeningGroepSoort))
                               .filter((value, index, self) => self.indexOf(value) === index).map((rekeningGroep) => (
                                 <Fragment key={rekeningGroep.naam}>
                                   <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }} aria-haspopup="true" >
@@ -206,7 +206,7 @@ const Profiel: React.FC = () => {
                                  ${r.budgetPeriodiciteit.toLowerCase() === 'week' ? `= ${currencyFormatter.format(r.budgetMaandBedrag ?? 0)}/maand` : ''}
                                  ${rekeningGroep.budgetType === BudgetType.continu ? 'doorlopend' : 'op de ' + r.budgetBetaalDag + 'e'})`)
                                             .join('<br />') +
-                                            (rekeningGroep.rekeningen.length > 1 ? `<br />Totaal: ${currencyFormatter.format(rekeningGroep.rekeningen.reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0))}/maand` : '')
+                                            (rekeningGroep.rekeningen.length > 0 ? `<br />Totaal: ${currencyFormatter.format(rekeningGroep.rekeningen.reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0))}/maand` : '')
                                         }} />}
                                     </TableCell>
                                     <TableCell align="left" size='small' sx={{ p: "6px" }}>

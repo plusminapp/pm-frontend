@@ -1,6 +1,8 @@
 // import { RekeningGroepDTO } from "./RekeningGroep";
 // import { Periode } from "./Periode";
 
+import { SaldoDTO } from "./Saldo";
+
 // export type Budget = {
 //   RekeningGroep: RekeningGroepDTO | undefined;
 //   budgetNaam: string;
@@ -60,30 +62,30 @@
 // //     return acc;
 // //   }, {} as Record<string, number>);
 
-// // export const berekenBudgetStand = (budget: BudgetDTO): string => {
-// //   let result;
-// //   switch (budget.rekeningGroepSoort.toLowerCase()) {
-// //     case 'inkomsten':
-// //     case 'rente':
-// //       (budget.meerDanMaandBudget ?? 0) > 0 || (budget.meerDanBudget ?? 0) > 0 ? result = 'green' :
-// //         (budget.minderDanBudget ?? 0) > 0 ? result = 'red' : result = 'green';
-// //       break;
-// //     case 'uitgaven':
-// //       switch (budget.budgetType.toLowerCase()) {
-// //         case 'vast':
-// //           (budget.meerDanMaandBudget ?? 0) > 0 || (budget.meerDanBudget ?? 0) > 0 ? result = 'orange' :
-// //           (budget.minderDanBudget ?? 0) > 0 ? result = 'red' : result = 'green';
-// //           break;
-// //         case 'continu':
-// //           (budget.meerDanMaandBudget ?? 0) > 0 ? result = '#cc0000' :
-// //             (budget.meerDanBudget ?? 0) > 0 ? result = 'red' : result = 'green';
-// //           break;
-// //         default:
-// //           result = 'grey';
-// //       }
-// //       break;
-// //     default:
-// //       result = 'grey';
-// //   }
-// //   return result;
-// // }
+export const berekenBudgetStand = (saldo: SaldoDTO): string => {
+  let result;
+  switch (saldo.rekeningGroepSoort.toLowerCase()) {
+    case 'inkomsten':
+    case 'rente':
+      (saldo.meerDanMaandBudget ?? 0) > 0 || (saldo.meerDanBudget ?? 0) > 0 ? result = 'green' :
+        (saldo.minderDanBudget ?? 0) > 0 ? result = 'red' : result = 'green';
+      break;
+    case 'uitgaven':
+      switch (saldo.budgetType.toLowerCase()) {
+        case 'vast':
+          (saldo.meerDanMaandBudget ?? 0) > 0 || (saldo.meerDanBudget ?? 0) > 0 ? result = 'orange' :
+          (saldo.minderDanBudget ?? 0) > 0 ? result = 'red' : result = 'green';
+          break;
+        case 'continu':
+          (saldo.meerDanMaandBudget ?? 0) > 0 ? result = '#cc0000' :
+            (saldo.meerDanBudget ?? 0) > 0 ? result = 'red' : result = 'green';
+          break;
+        default:
+          result = 'grey';
+      }
+      break;
+    default:
+      result = 'grey';
+  }
+  return result;
+}

@@ -31,7 +31,6 @@ export const parseText = (text: string): BetalingDTO[] => {
         betalingsSoort: undefined,
         bron: undefined,
         bestemming: undefined,
-        budgetNaam: undefined
       });
       sortOrderBase -= 10; // Decrease sortOrderBase for the next entry
     } else if (dateMatch) {
