@@ -1,19 +1,14 @@
-import { Accordion, AccordionSummary, Typography, AccordionDetails, Link, Box } from "@mui/material";
+import { Accordion, AccordionSummary, Typography, AccordionDetails, Box } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { ArrowDropDownIcon } from "@mui/x-date-pickers";
-import { AflossingStatusIcon } from "../../icons/AflossingStatus";
 import { BudgetStatusIcon } from "../../icons/BudgetStatus";
-import { ExternalLinkIcon } from "../../icons/ExternalLink";
 import { InkomstenIcon } from "../../icons/Inkomsten";
 import { InternIcon } from "../../icons/Intern";
 import { UitgavenIcon } from "../../icons/Uitgaven";
-import { AflossingDTO } from "../../model/Aflossing";
-import { currencyFormatter, inkomstenBetalingsSoorten, BetalingsSoort, aflossenBetalingsSoorten, reserverenBetalingsSoorten, betalingsSoortFormatter, internBetalingsSoorten, BetalingDTO, uitgavenBetalingsSoorten } from "../../model/Betaling";
+import { currencyFormatter, inkomstenBetalingsSoorten, BetalingsSoort, betalingsSoortFormatter, internBetalingsSoorten, BetalingDTO, uitgavenBetalingsSoorten } from "../../model/Betaling";
 import { berekenBedragVoorRekenining, inkomstenRekeningGroepSoorten, interneRekeningGroepSoorten, RekeningGroepDTO, RekeningGroepSoort, uitgavenRekeningGroepSoorten } from "../../model/RekeningGroep";
-import AflossingReserveringTabel from "./AflossingReserveringTabel";
 import InkomstenUitgavenTabel from "./InkomstenUitgavenTabel";
 import { useCustomContext } from "../../context/CustomContext";
-import { Link as RouterLink } from 'react-router-dom';
 
 
 interface KolommenTabelProps {
@@ -40,16 +35,6 @@ export default function KolommenTabel(props: KolommenTabelProps) {
   const berekenRekeningTotaal = (RekeningGroep: RekeningGroepDTO) => {
     return props.betalingen.reduce((acc, betaling) => (acc + berekenBedragVoorRekenining(betaling, RekeningGroep)), 0)
   }
-  const berekenAflossingTotaal = () => {
-    return props.betalingen
-      .filter((betaling) => betaling.betalingsSoort && aflossenBetalingsSoorten.includes(betaling.betalingsSoort))
-      .reduce((acc, betaling) => (acc - betaling.bedrag), 0)
-  }
-  const berekenReserveringTotaal = () => {
-    return props.betalingen
-      .filter((betaling) => betaling.betalingsSoort && reserverenBetalingsSoorten.includes(betaling.betalingsSoort))
-      .reduce((acc, betaling) => (acc + Number((betaling.betalingsSoort === BetalingsSoort.toevoegen_reservering ? betaling.bedrag : -betaling.bedrag))), 0)
-  }
   const berekenInkomstenTotaal = (): number => {
     return props.betalingen
       .filter((betaling) => betaling.betalingsSoort === BetalingsSoort.inkomsten)
@@ -63,11 +48,6 @@ export default function KolommenTabel(props: KolommenTabelProps) {
       ))
       .reduce((acc, betaling) => (acc - betaling.bedrag), 0)
   }
-  const heeftReserverenBetalingen = () => {
-    return props.betalingen.find((betaling) => betaling.betalingsSoort && reserverenBetalingsSoorten.includes(betaling.betalingsSoort))
-  }
-  // const aflossingsBedrag = props.aflossingen.reduce((acc, aflossing) => acc + Number(aflossing.aflossingsBedrag), 0)
-  // const betaalAchterstand = props.aflossingen.reduce((acc, aflossing) => acc + (Number(aflossing.deltaStartPeriode) ?? 0), 0)
 
   return (
     <Grid container spacing={{ xs: 1, md: 3 }} columns={{ xs: 1, lg: 12 }}>

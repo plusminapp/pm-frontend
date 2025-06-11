@@ -13,7 +13,7 @@ import LoginPagina from './pages/Login';
 
 import Container from '@mui/material/Container';
 import NotFound from './pages/NotFound';
-import Periode from './pages/Periode';
+// import Periode from './pages/Periode';
 import BankAppAfbeelding from './pages/BankAppAfbeelding';
 import Visualisatie from './pages/Visualisatie';
 
@@ -40,7 +40,7 @@ const App: React.FC = () => {
             <Route path="/schuld-aflossingen" element={<ProtectedRoute element={<Aflossing />} />} />
             <Route path="/budget" element={<ProtectedRoute element={<Budget />} />} />
             <Route path="/profiel" element={<ProtectedRoute element={<Profiel />} />} />
-            <Route path="/periode" element={<ProtectedRoute element={<Periode />} />} />
+            {/* <Route path="/periode" element={<ProtectedRoute element={<Periode />} />} /> */}
 
             <Route path="*" element={<NotFound />} />
           </Routes>

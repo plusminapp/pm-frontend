@@ -13,7 +13,7 @@ import { Box, IconButton, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import Resultaat from '../Stand/Resultaat';
 
-import { Stand } from '../../model/Stand';
+import { Stand } from '../../model/Saldo';
 import { useAuthContext } from '@asgardeo/auth-react';
 import { useCustomContext } from '../../context/CustomContext';
 import dayjs from 'dayjs';
