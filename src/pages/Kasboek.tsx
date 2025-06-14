@@ -145,7 +145,7 @@ export default function Kasboek() {
         <BetalingTabel
           peilDatum={dayjs(gekozenPeriode.periodeEindDatum) > dayjs() ? dayjs().format('YYYY-MM-DD') : gekozenPeriode.periodeEindDatum}
           betalingen={betalingen}
-          geaggregeerdResultaatOpDatum={stand?.geaggregeerdResultaatOpDatum}
+          geaggregeerdResultaatOpDatum={stand?.geaggregeerdResultaatOpDatum.sort((a,b) => a.sortOrder - b.sortOrder)}
           onBetalingBewaardChange={(betalingDTO) => onBetalingBewaardChange(betalingDTO)}
           onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO.sortOrder)}
         />
@@ -189,6 +189,7 @@ export default function Kasboek() {
           </Accordion>
         </Grid>
       </Grid>
+      {/* {JSON.stringify(stand?.geaggregeerdResultaatOpDatum)} */}
     </>
   );
 }

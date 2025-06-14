@@ -155,7 +155,9 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
             <TableRow sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey' }}>
               <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px' }}>Datum</TableCell>
               <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px', maxWidth: '300px' }}>Omschrijving</TableCell>
-              {betaalTabelRekeningGroepen.map(rekeningGroep => (
+              {betaalTabelRekeningGroepen
+              .sort((a, b) => a.sortOrder - b.sortOrder)
+              .map(rekeningGroep => (
                 <TableCell key={rekeningGroep.naam} sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px' }} align="right">{rekeningGroep.naam}</TableCell>
               ))}
               {heeftIntern && toonIntern &&

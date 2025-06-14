@@ -45,9 +45,7 @@ export function PeriodeSelect({ isProfiel = false }: PeriodeSelectProps) {
           throw new Error(`Fetch failed with status: ${response.status}`);
         }
         const dataRekening = await response.json();
-    setRekeningGroepPerBetalingsSoort(dataRekening as RekeningGroepPerBetalingsSoort[]);
-        // setBetalingsSoorten(transformRekeningGroepen2BetalingsSoorten(dataRekening as RekeningGroepDTO[]));
-        // setBetalingsSoorten2Rekeningen(transformRekeningGroepenToBetalingsSoorten(dataRekening as RekeningGroepDTO[]));
+        setRekeningGroepPerBetalingsSoort(dataRekening as RekeningGroepPerBetalingsSoort[]);
 
       } catch (error) {
         console.error('Error fetching periode details:', error);
