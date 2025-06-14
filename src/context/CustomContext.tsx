@@ -1,11 +1,8 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Gebruiker } from '../model/Gebruiker';
 import { RekeningGroepPerBetalingsSoort } from '../model/RekeningGroep';
-import { BetalingsSoort } from '../model/Betaling';
 import { Periode } from '../model/Periode';
 import { SnackbarMessage } from '../components/StyledSnackbar';
-import { saveToLocalStorage } from '../components/Header/HeaderExports';
-import { RekeningGroepPaar } from '../model/RekeningGroep';
 
 interface CustomContextType {
   gebruiker: Gebruiker | undefined;
@@ -20,10 +17,6 @@ interface CustomContextType {
   setGekozenPeriode: (gekozenPeriode: Periode | undefined) => void;
   rekeningGroepPerBetalingsSoort: Array<RekeningGroepPerBetalingsSoort>;
   setRekeningGroepPerBetalingsSoort: (rekeningGroepPerBetalingsSoort: Array<RekeningGroepPerBetalingsSoort>) => void;
-  // betalingsSoorten: Array<BetalingsSoort>;
-  // setBetalingsSoorten: (betalingsSoorten: Array<BetalingsSoort>) => void;
-  betalingsSoorten2RekeningGroepen: Map<BetalingsSoort, RekeningGroepPaar>;
-  setBetalingsSoorten2RekeningGroepen: (betalingsSoorten2RekeningGroepen: Map<BetalingsSoort, RekeningGroepPaar>) => void;
   snackbarMessage: SnackbarMessage;
   setSnackbarMessage: (snackbarMessage: SnackbarMessage) => void;
 }
@@ -50,16 +43,13 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
   const [periodes, setPeriodes] = useState<Array<Periode>>([]);
   const [gekozenPeriode, setGekozenPeriode] = useState<Periode | undefined>(undefined);
   const [rekeningGroepPerBetalingsSoort, setRekeningGroepPerBetalingsSoort] = useState<Array<RekeningGroepPerBetalingsSoort>>([]);
-  // const [betalingsSoorten, setBetalingsSoorten] = useState<Array<BetalingsSoort>>([]);
-  const [betalingsSoorten2Rekeningen, setBetalingsSoorten2Rekeningen] = useState<Map<BetalingsSoort, RekeningGroepPaar>>(new Map())
   const [snackbarMessage, setSnackbarMessage] = useState<SnackbarMessage>({ message: undefined, type: undefined });
 
   useEffect(() => {
-    // TODO? set rekeningGroepen?
     if (!actieveHulpvrager) return;
     setActieveHulpvrager(actieveHulpvrager);
     setPeriodes(actieveHulpvrager.periodes)
-    saveToLocalStorage('actieveHulpvrager', actieveHulpvrager.id + '');
+    localStorage.setItem('actieveHulpvrager', actieveHulpvrager.id + '');
   }, [actieveHulpvrager]);
 
   return (
@@ -70,8 +60,6 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
       periodes, setPeriodes,
       gekozenPeriode, setGekozenPeriode,
       rekeningGroepPerBetalingsSoort, setRekeningGroepPerBetalingsSoort,
-      // betalingsSoorten, setBetalingsSoorten,
-      betalingsSoorten2RekeningGroepen: betalingsSoorten2Rekeningen, setBetalingsSoorten2RekeningGroepen: setBetalingsSoorten2Rekeningen,
       snackbarMessage, setSnackbarMessage
     }}>
       {children}

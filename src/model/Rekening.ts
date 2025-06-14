@@ -13,6 +13,8 @@ export type RekeningDTO = {
   vanPeriode: Periode | undefined;
   totEnMetPeriode: Periode | undefined;
   budgetBedrag: number;
+  budgetVariabiliteit: number | undefined;
+  maanden: number[] | undefined;
   budgetBetaalDag: number | undefined;
   betaalMethoden: RekeningDTO[] | undefined
   budgetMaandBedrag: number | undefined;

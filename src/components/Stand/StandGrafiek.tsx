@@ -7,7 +7,6 @@ import { PlusIcon } from '../../icons/Plus';
 import { MinIcon } from '../../icons/Min';
 import StandGeneriekGrafiek from './StandGeneriekGrafiek';
 import { SaldoDTO } from '../../model/Saldo';
-import { berekenBudgetStand } from '../../model/Budget';
 
 type BudgetGrafiekProps = {
   peilDatum: dayjs.Dayjs;
@@ -18,7 +17,7 @@ type BudgetGrafiekProps = {
   detailsVisible: boolean;
 };
 
-export const BudgetGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdResultaatOpDatum, resultaatOpDatum, detailsVisible }: BudgetGrafiekProps) => {
+export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdResultaatOpDatum, resultaatOpDatum, detailsVisible }: BudgetGrafiekProps) => {
 
   const grafiekType = rekeningGroep.rekeningGroepSoort === RekeningGroepSoort.inkomsten ? 'inkomsten' :
     rekeningGroep.budgetType === BudgetType.continu ? 'continu' :
@@ -70,7 +69,8 @@ export const BudgetGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdR
         <Box sx={{ cursor: 'pointer' }}>
           {geaggregeerdResultaatOpDatum &&
             <StandGeneriekGrafiek
-              status={berekenBudgetStand(geaggregeerdResultaatOpDatum)}
+            // TODO hier nog de juiste props doorgeven
+              status={'green'}
               percentageFill={percentagePeriodeVoorbij}
               headerText={rekeningGroep.naam}
               bodyText={"Deze tekst moet nog wijzigen, maar dat kan ik nu nog niet"}
@@ -172,4 +172,4 @@ export const BudgetGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdR
   );
 };
 
-export default BudgetGrafiek;
+export default StandGrafiek;

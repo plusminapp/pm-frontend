@@ -20,7 +20,6 @@ import { Periode } from '../../model/Periode';
 import { Gebruiker } from '../../model/Gebruiker';
 import { RekeningGroepPerBetalingsSoort } from '../../model/RekeningGroep';
 import StyledSnackbar from './../StyledSnackbar';
-import { saveToLocalStorage } from './HeaderExports';
 
 function Header() {
   const navigate = useNavigate();
@@ -72,7 +71,7 @@ function Header() {
     if (!gekozenPeriode || !ahv!.periodes.includes(gekozenPeriode)) {
       nieuweGekozenPeriode = ahv!.periodes.find(periode => periode.periodeStatus === 'HUIDIG');
       setGekozenPeriode(nieuweGekozenPeriode);
-      saveToLocalStorage('gekozenPeriode', nieuweGekozenPeriode?.id + '');
+      localStorage.setItem('gekozenPeriode', nieuweGekozenPeriode?.id + '');
     }
     await fetchRekeningen(ahv!, nieuweGekozenPeriode!);
     setAnchorElGebruiker(null);
@@ -146,7 +145,7 @@ function Header() {
 
     setActieveHulpvrager(nieuweActieveHulpvrager);
     setGekozenPeriode(nieuweGekozenPeriode);
-    saveToLocalStorage('gekozenPeriode', nieuweGekozenPeriode.id + '');
+    localStorage.setItem('gekozenPeriode', nieuweGekozenPeriode.id + '');
 
     await fetchRekeningen(nieuweActieveHulpvrager, nieuweGekozenPeriode);
   }, [getIDToken, setActieveHulpvrager, setGebruiker, setHulpvragers, setGekozenPeriode, fetchRekeningen]);

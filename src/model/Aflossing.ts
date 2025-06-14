@@ -1,5 +1,4 @@
 import dayjs from "dayjs"
-import { isDagNaVandaagInPeriode, Periode } from "./Periode"
 
 export type AflossingDTO = {
     startDatum: dayjs.Dayjs,
@@ -15,27 +14,4 @@ export type AflossingSamenvattingDTO = {
     aflossingNaam: string,
     aflossingsBedrag: number,
     betaalDag: number,
-}
-
-export const berekenAflossingTotaal = (aflossingen: AflossingDTO[]): number => {
-    return aflossingen.reduce((acc, aflossing) => acc + aflossing.aflossingsBedrag, 0)
-}
-
-export const berekenAflossingsBedrag = (aflossing: AflossingSamenvattingDTO, gekozenPeriode: Periode): number => {
-    if (isDagNaVandaagInPeriode(aflossing.betaalDag, gekozenPeriode)) {
-        return 0;
-    } else {
-        return aflossing.aflossingsBedrag;
-    }
-};
-
-export const berekenMaandAflossingenBedrag = (aflossingen: AflossingSamenvattingDTO[]) => 
-    aflossingen.reduce((acc: number, aflossing: AflossingSamenvattingDTO) => acc + aflossing.aflossingsBedrag, 0) ?? 0;
-
-export const berekenAflossingenBedrag = (aflossingen: AflossingSamenvattingDTO[], gekozenPeriode: Periode | undefined) => {
-    if (gekozenPeriode === undefined) {
-        return 0;
-    } else {
-        return aflossingen.reduce((acc: number, aflossing: AflossingSamenvattingDTO) => acc + berekenAflossingsBedrag(aflossing, gekozenPeriode), 0) ?? 0;
-    }
 }

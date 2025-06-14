@@ -1,6 +1,5 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import { useCustomContext } from "../../context/CustomContext";
-import { saveToLocalStorage } from "../Header/HeaderExports.ts";
 
 import { useEffect, useState } from "react";
 import { RekeningDTO } from "../../model/Rekening.ts";
@@ -44,7 +43,7 @@ export function RekeningSelect(props: RekeningSelectProps) {
     if (bankRekening) {
       setGekozenRekening(bankRekening);
       props.wijzigOcrBankNaam(bankRekening);
-      saveToLocalStorage('gekozenRekening', bankRekening?.id + '');
+      localStorage.setItem('gekozenRekening', bankRekening?.id + '');
     }
   };
 

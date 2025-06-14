@@ -8,7 +8,5 @@ export type Gebruiker = {
     roles: string[];
     vrijwilligerEmail: string | undefined;
     vrijwilligerBijnaam: string | undefined;
-    // rekeningen: RekeningGroep[];
     periodes: Periode[];
-    // aflossingen: AflossingSamenvattingDTO[];
 }

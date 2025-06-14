@@ -13,11 +13,13 @@ import { InkomstenIcon } from '../icons/Inkomsten';
 import { UitgavenIcon } from '../icons/Uitgaven';
 import { InternIcon } from '../icons/Intern';
 import dayjs from 'dayjs';
+import { RekeningDTO } from '../model/Rekening';
+import { dagInPeriode } from '../model/Periode';
 
 const Profiel: React.FC = () => {
   const { state, getIDToken } = useAuthContext();
 
-  const { gebruiker, actieveHulpvrager, rekeningGroepPerBetalingsSoort } = useCustomContext();
+  const { gebruiker, actieveHulpvrager, rekeningGroepPerBetalingsSoort, gekozenPeriode } = useCustomContext();
 
   const [ongeldigeBetalingen, setOngeldigeBetalingen] = React.useState<Betaling[]>([]);
 
@@ -103,6 +105,12 @@ const Profiel: React.FC = () => {
     }
   }
 
+  const berekenVariabiliteit = (rekening: RekeningDTO): string => {
+    const betalingWordtVerwacht = ! rekening.maanden || rekening.maanden?.includes(dagInPeriode(rekening.budgetBetaalDag ?? 0, gekozenPeriode!!).month()+1) ? '' : ' X'
+    const variabiliteit = rekening.budgetVariabiliteit ? ` ±${rekening.budgetVariabiliteit}%` : '';
+    return `${variabiliteit}${betalingWordtVerwacht}`
+  }
+
   return (
     <>
       {!state.isAuthenticated &&
@@ -182,7 +190,6 @@ const Profiel: React.FC = () => {
                       <Table sx={{ width: "100%" }} aria-label="simple table">
                         <TableHead>
                           <TableRow>
-                            <TableCell>Soort</TableCell>
                             <TableCell>Kolomkop</TableCell>
                             <TableCell>Potjes (gekoppelde budgetten)</TableCell>
                             <TableCell>Betaalmethoden</TableCell>
@@ -196,15 +203,14 @@ const Profiel: React.FC = () => {
                               .filter((value, index, self) => self.indexOf(value) === index).map((rekeningGroep) => (
                                 <Fragment key={rekeningGroep.naam}>
                                   <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }} aria-haspopup="true" >
-                                    <TableCell align="left" size='small' sx={{ p: "6px" }}>{rekeningGroep.rekeningGroepSoort.toLowerCase()}</TableCell>
-                                    <TableCell align="left" size='small' sx={{ p: "6px" }}>{rekeningGroep.naam}</TableCell>
+                                    <TableCell align="left" size='small' sx={{ p: "6px" }}>{rekeningGroep.naam} ({rekeningGroep.rekeningGroepSoort.toLowerCase()})</TableCell>
                                     <TableCell align="left" size='small' sx={{ p: "6px" }}>
                                       {rekeningGroep.rekeningen.length > 0 &&
                                         <span dangerouslySetInnerHTML={{
                                           __html: rekeningGroep.rekeningen.map(r =>
                                             `${r.naam} (${currencyFormatter.format(Number(r.budgetBedrag))}/${r.budgetPeriodiciteit.toLowerCase()}
                                  ${r.budgetPeriodiciteit.toLowerCase() === 'week' ? `= ${currencyFormatter.format(r.budgetMaandBedrag ?? 0)}/maand` : ''}
-                                 ${rekeningGroep.budgetType === BudgetType.continu ? 'doorlopend' : 'op de ' + r.budgetBetaalDag + 'e'})`)
+                                 ${rekeningGroep.budgetType === BudgetType.continu ? 'doorlopend' : 'op de ' + r.budgetBetaalDag + 'e'}${berekenVariabiliteit(r)})`)
                                             .join('<br />') +
                                             (rekeningGroep.rekeningen.length > 0 ? `<br />Totaal: ${currencyFormatter.format(rekeningGroep.rekeningen.reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0))}/maand` : '')
                                         }} />}

@@ -8,14 +8,11 @@ import Home from './pages/Home';
 import Kasboek from './pages/Kasboek';
 import Aflossing from './pages/Aflossing';
 import Header from './components/Header/Header';
-import Budget from './pages/Budget';
 import LoginPagina from './pages/Login';
 
 import Container from '@mui/material/Container';
 import NotFound from './pages/NotFound';
-// import Periode from './pages/Periode';
 import BankAppAfbeelding from './pages/BankAppAfbeelding';
-import Visualisatie from './pages/Visualisatie';
 
 const ProtectedRoute: React.FC<{ element: JSX.Element }> = ({ element }) => {
   const { state } = useAuthContext();
@@ -32,15 +29,12 @@ const App: React.FC = () => {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<LoginPagina />} />
             <Route path="/ocr" element={<BankAppAfbeelding />} />
-            <Route path="/visualisatie" element={<Visualisatie />} />
 
             {/* Beschermde routes */}
             <Route path="/stand" element={<ProtectedRoute element={<Stand />} />} />
             <Route path="/kasboek" element={<ProtectedRoute element={<Kasboek />} />} />
             <Route path="/schuld-aflossingen" element={<ProtectedRoute element={<Aflossing />} />} />
-            <Route path="/budget" element={<ProtectedRoute element={<Budget />} />} />
             <Route path="/profiel" element={<ProtectedRoute element={<Profiel />} />} />
-            {/* <Route path="/periode" element={<ProtectedRoute element={<Periode />} />} /> */}
 
             <Route path="*" element={<NotFound />} />
           </Routes>

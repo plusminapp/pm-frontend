@@ -10,7 +10,7 @@ import dayjs from "dayjs";
 import { PeriodeSelect } from "../components/Periode/PeriodeSelect";
 import { ArrowDropDownIcon } from "@mui/x-date-pickers";
 import SamenvattingGrafiek from "../components/Stand/SamenvattingGrafiek";
-import BudgetGrafiek from "../components/Stand/BudgetGrafiek";
+import StandGrafiek from "../components/Stand/StandGrafiek";
 import { betaalmethodeRekeningGroepSoorten, betaalTabelRekeningGroepSoorten, RekeningGroepSoort } from "../model/RekeningGroep";
 
 export default function Stand() {
@@ -144,7 +144,7 @@ export default function Stand() {
                         key={rekeningGroep.id}
                         sx={{ cursor: 'pointer' }}
                       >
-                        <BudgetGrafiek
+                        <StandGrafiek
                           peilDatum={dayjs(stand.peilDatum).isAfter(dayjs()) ? dayjs() : dayjs(stand.peilDatum)}
                           periode={gekozenPeriode}
                           rekeningGroep={rekeningGroep}
