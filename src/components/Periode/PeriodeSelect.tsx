@@ -54,7 +54,9 @@ export function PeriodeSelect({ isProfiel = false }: PeriodeSelectProps) {
   };
   const navigate = useNavigate();
 
-  const openPeriodes = periodes.filter(periode => periode.periodeStatus === 'OPEN' || periode.periodeStatus === 'HUIDIG')
+  const openPeriodes = periodes
+  .filter(periode => periode.periodeStatus !== 'OPGERUIMD')
+  .sort((a, b) => dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum)));
 
   return (
     <>
