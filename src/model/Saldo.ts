@@ -19,7 +19,7 @@ export type SaldoDTO = {
     budgetType: string;
     rekeningNaam: string;
     sortOrder: number;
-    saldo: number;
+    openingsSaldo: number;
     achterstand: number;
     achterstandNu: number;
     budgetMaandBedrag: number;
