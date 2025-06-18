@@ -12,8 +12,8 @@ export default defineConfig({
     allowedHosts: ['localhost', 'mini'],
     proxy: {
       '/api/v1': {
-        target: 'http://localhost:3045',
-        // target: 'http://host.docker.internal:3045',
+        // target: 'http://localhost:3045',
+        target: 'http://host.docker.internal:3045',
         changeOrigin: false,
         secure: false,
         rewrite: (path) => path.replace(/^\/api\/v1/, '/api/v1'),
