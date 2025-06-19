@@ -196,6 +196,41 @@ function Header() {
             <PlusMinLogo />
           </IconButton>
 
+            {/* Show token expiry if authenticated */}
+            {state.isAuthenticated && (() => {
+              const [expiry, setExpiry] = React.useState<Date | null>(null);
+
+              useEffect(() => {
+              const fetchTokenExpiry = async () => {
+                try {
+                const token = await getIDToken();
+                if (!token) {
+                  setExpiry(null);
+                  return;
+                }
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const exp = payload.exp;
+                if (!exp) {
+                  setExpiry(null);
+                  return;
+                }
+                setExpiry(new Date(exp * 1000));
+                } catch {
+                setExpiry(null);
+                }
+              };
+              fetchTokenExpiry();
+              }, [getIDToken]);
+
+              if (!expiry) return null;
+              const hours = expiry.getHours().toString().padStart(2, '0');
+              const minutes = expiry.getMinutes().toString().padStart(2, '0');
+              return (
+              <Typography sx={{ ml: 2, color: 'gray', fontSize: 12 }}>
+                Sessie tot {hours}:{minutes}
+              </Typography>
+              );
+            })()}
 
           {state.isAuthenticated &&
             <>

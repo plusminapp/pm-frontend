@@ -42,7 +42,7 @@ export default function Aflossingen() {
       setIsLoading(true);
       const id = actieveHulpvrager.id
       const formDatum = dayjs().isAfter(dayjs(gekozenPeriode.periodeEindDatum)) ? dayjs(gekozenPeriode.periodeEindDatum) : dayjs();
-      const response = await fetch(`/api/v1/saldo/hulpvrager/${id}/stand/${formDatum.toISOString().slice(0, 10)}`, {
+      const response = await fetch(`/api/v1/stand/hulpvrager/${id}/datum/${formDatum.toISOString().slice(0, 10)}`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,

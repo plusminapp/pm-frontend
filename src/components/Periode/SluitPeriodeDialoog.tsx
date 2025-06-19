@@ -1,103 +1,262 @@
-import { Fragment, useEffect, useState } from 'react';
-
+import React, { useMemo, useState } from 'react';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import CloseIcon from '@mui/icons-material/Close';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { formateerNlDatum, Periode } from '../../model/Periode';
-import { Box, IconButton, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import Resultaat from '../Stand/Resultaat';
+import Box from '@mui/material/Box';
+import { styled } from '@mui/material/styles';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import { Fab, FormControl, FormControlLabel, Input, InputAdornment, InputLabel, Stack, Switch, Typography } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { BetalingDTO, BetalingsSoort, uitgavenBetalingsSoorten } from '../../model/Betaling';
 
-import { Stand } from '../../model/Saldo';
-import { useAuthContext } from '@asgardeo/auth-react';
-import { useCustomContext } from '../../context/CustomContext';
+import { LocalizationProvider } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import { useNavigate } from 'react-router-dom';
+import 'dayjs/locale/nl';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { useCustomContext } from '../../context/CustomContext';
+import { useAuthContext } from '@asgardeo/auth-react';
+import BetalingsSoortSelect from '../Kasboek/BetalingsSoortSelect';
+import { Periode } from '../../model/Periode';
 
-type SluitPeriodeDialoogProps = {
-  periode: Periode
-}
+const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+  '& .MuiDialogContent-root': {
+    padding: theme.spacing(2),
+  },
+  '& .MuiDialogActions-root': {
+    padding: theme.spacing(1),
+  },
+}));
 
-export default function SluitPeriodeDialoog(props: SluitPeriodeDialoogProps) {
-  const [open, setOpen] = useState(false);
+type UpsertBetalingDialoogProps = {
+  onBetalingBewaardChange: (periode: Periode) => void;
+  onBetalingVerwijderdChange: (periode: Periode) => void;
+  onUpsertBetalingClose: () => void;
+  editMode?: boolean;
+  periode?: Periode;
+};
 
-  const [stand, setStand] = useState<Stand | undefined>(undefined)
-  const [isLoading, setIsLoading] = useState(false);
+export default function WijzigPeriodeDialoog(props: UpsertBetalingDialoogProps) {
+  const { actieveHulpvrager, gebruiker, periodes, gekozenPeriode, setSnackbarMessage,  } = useCustomContext();
 
+  const initialPeriode = useMemo(() => ({
+    id: 0,
+    periodeStartDatum: "",
+    periodeEindDatum: "",
+    periodeStatus: "",
+    saldoLijst: [],
+  }), []);
+
+  // type BetalingDtoErrors = { betalingsSoort?: string, omschrijving?: string; bedrag?: string; boekingsdatum?: string }
+  type BetalingDtoWarnings = { boekingsdatum?: string }
+
+  const initialBetalingDtoErrors = { betalingsSoort: undefined, omschrijving: undefined, bedrag: undefined, boekingsdatum: undefined }
+  const initialBetalingDtoWarnings = { boekingsdatum: undefined }
+
+  const [open, setOpen] = useState(props.editMode);
+  const [periode, setPeriode] = useState<Periode>(props.periode ? { ...props.periode} : initialPeriode);
+  // const [errors, setErrors] = useState<BetalingDtoErrors>(initialBetalingDtoErrors);
+  const [warnings, setWarnings] = useState<BetalingDtoWarnings>(initialBetalingDtoWarnings);
+  const [isOntvangst, setIsOntvangst] = useState(false);
   const { getIDToken } = useAuthContext();
-  const { actieveHulpvrager, setSnackbarMessage } = useCustomContext();
-
-  const navigate = useNavigate();
-  useEffect(() => {
-    const fetchSaldi = async () => {
-      let token = '';
-      try { token = await getIDToken() }
-      catch (error) {
-        navigate('/login');
-      }
-      if (actieveHulpvrager && props.periode && token) {
-        setIsLoading(true);
-        const vandaag = dayjs().format('YYYY-MM-DD');
-        const datum = props.periode.periodeEindDatum > vandaag ? vandaag : props.periode.periodeEindDatum;
-        const id = actieveHulpvrager.id
-        const response = await fetch(`/api/v1/saldo/hulpvrager/${id}/stand/${datum}`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        setIsLoading(false);
-        if (response.ok) {
-          const result = await response.json();
-          setStand(result)
-        } else {
-          console.error("Failed to fetch data", response.status);
-          setSnackbarMessage({
-            message: `De configuratie voor ${actieveHulpvrager.bijnaam} is niet correct.`,
-            type: "warning",
-          })
-        }
-      }
-    };
-    fetchSaldi();
-
-  }, [actieveHulpvrager, props.periode, getIDToken]);
-
-
-  if (isLoading) {
-    return <Typography sx={{ mb: '25px' }}>De saldi worden opgehaald.</Typography>
-  };
-
-
 
   const handleClickOpen = () => {
     setOpen(true);
   };
-
   const handleClose = () => {
-    setOpen(false);
+    setPeriode(initialPeriode);
+    // setErrors(initialBetalingDtoErrors);
+    setWarnings(initialBetalingDtoWarnings);
+    if (props.editMode) {
+      props.onUpsertBetalingClose();
+    } else {
+      setOpen(false);
+    }
+  };
+
+  const eersteOpenPeriode = periodes
+    .filter(p => p.periodeStatus.toLowerCase() === 'open' || p.periodeStatus.toLowerCase() === 'huidig')
+    .sort((a, b) => a.periodeStartDatum.localeCompare(b.periodeStartDatum))[0];
+  const laatstePeriode = periodes
+    .sort((a, b) => a.periodeStartDatum.localeCompare(b.periodeStartDatum))[periodes.length - 1];
+
+  const validateKeyValue = <K extends keyof BetalingDTO>(key: K, value: BetalingDTO[K]): string | undefined => {
+    if (key === 'betalingsSoort' && !value) {
+      return 'Kies een betalingscategorie.';
+    }
+    if (key === 'bedrag' && (isNaN(value as number) || value as number == 0)) {
+      return 'Bedrag moet een positief getal zijn.';
+    }
+    if (key === 'boekingsdatum') {
+      const startDatum = eersteOpenPeriode?.periodeStartDatum;
+      const eindDatum = laatstePeriode.periodeEindDatum;
+      if (dayjs(value as dayjs.Dayjs).isBefore(startDatum) || dayjs(value as dayjs.Dayjs).isAfter(eindDatum)) {
+        return `De boekingsdatum moet in een open periode, tussen ${startDatum} en ${eindDatum}, liggen.`;
+      }
+    }
+    return undefined;
+  };
+
+  const validateKeyValueWarning = <K extends keyof BetalingDTO>(key: K, value: BetalingDTO[K]): string | undefined => {
+    if (key === 'boekingsdatum' && (dayjs(value as dayjs.Dayjs).isBefore(gekozenPeriode?.periodeStartDatum) || dayjs(value as dayjs.Dayjs).isAfter(gekozenPeriode?.periodeEindDatum))) {
+      return `De boekingsdatum valt buiten de gekozen periode (van ${gekozenPeriode?.periodeStartDatum} t/m ${gekozenPeriode?.periodeEindDatum}) en wordt dus niet meteen getoond.`;
+    }
+    return undefined;
+  };
+
+  // const normalizeDecimal = (value: string): string => {
+  //   return value.replace(/[^0-9,\-.]/g, '').replace(',', '.');
+  // };
+
+  const handleInputChange = <K extends keyof BetalingDTO>(key: K, value: BetalingDTO[K]) => {
+    let newBetalingsDTO = periode;
+    setPeriode(newBetalingsDTO);
+
+    const error = validateKeyValue(key, value);
+    const warning = validateKeyValueWarning(key, value);
+    // setErrors({ ...errors, [key]: error });
+    setWarnings({ ...warnings, [key]: warning });
+  };
+  // const validateBetalingDTO = () => {
+  //   const newErrors: BetalingDtoErrors = initialBetalingDtoErrors;
+  //   (Object.keys(initialBetalingDtoErrors) as (keyof BetalingDtoErrors)[]).forEach((key) => {
+  //     const error = validateKeyValue(key, periode[key]);
+  //     if (error) {
+  //       newErrors[key as keyof BetalingDtoErrors] = error;
+  //     }
+  //   });
+  //   setErrors(newErrors);
+  //   return newErrors;
+  // };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // const errorMessages = Object.values(validateBetalingDTO()).filter(error => error !== undefined).join(' ');
+    // if (errorMessages.length == 0) {
+      try {
+        const token = await getIDToken();
+        const id = actieveHulpvrager ? actieveHulpvrager.id : gebruiker?.id
+        const url = periode.id ? `/api/v1/betalingen/${periode.id}` : `/api/v1/betalingen/hulpvrager/${id}`
+        const body = {
+          ...periode,
+          omschrijving: (props.isOcr ? periode.ocrOmschrijving : periode.omschrijving)?.trim(),
+          boekingsdatum: periode.boekingsdatum.format('YYYY-MM-DD'),
+          bedrag: isOntvangst && periode.betalingsSoort && uitgavenBetalingsSoorten.includes(periode.betalingsSoort) ? -periode.bedrag : periode.bedrag,
+        }
+        const response = await fetch(url, {
+          method: periode.id ? "PUT" : "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        })
+        if (!response.ok) {
+          setSnackbarMessage({
+            message: `Betaling is niet opgeslagen: HTTP fout met status: ${response.status}`,
+            type: "error"
+          })
+          throw new Error(`HTTP fout met status: ${response.status}`);
+        }
+        setSnackbarMessage({
+          message: "Betaling is opgeslagen.",
+          type: "success"
+        })
+        const responseJson = await response.json()
+        if (props.isOcr) {
+          props.onBetalingBewaardChange(periode);
+        } else {
+          props.onBetalingBewaardChange(responseJson); // sortOrder kan gewijzigd zijn ...
+        }
+        if (props.editMode) {
+          handleClose()
+        } else {
+          setPeriode(initialPeriode)
+          setErrors(initialBetalingDtoErrors)
+          setWarnings(initialBetalingDtoWarnings)
+        }
+      } catch (error) {
+        console.error('Fout bij opslaan betaling:', error);
+      }
+    } else {
+      setSnackbarMessage({
+        message: `Betaling is niet geldig, herstel de fouten en probeer het opnieuw. ${errorMessages}`,
+        type: "error"
+      })
+    }
+  }
+
+  const handleDelete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const token = await getIDToken();
+      const url = `/api/v1/betalingen/${periode.id}`
+      const response = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP fout met status: ${response.status}`);
+      }
+      props.onBetalingVerwijderdChange(periode)
+      setSnackbarMessage({
+        message: 'Betaling is verwijderd.',
+        type: "success"
+      })
+      setPeriode(initialPeriode)
+      handleClose()
+
+    } catch (error) {
+      setSnackbarMessage({
+        message: `Betaling is NIET verwijderd. Fout: ${(error as Error).message}`,
+        type: "error"
+      })
+      console.error('Fout bij verwijderen betaling:', error);
+    }
+  }
+  const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => {
+    event.target.select();
+  };
+
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === "NumpadEnter") {
+      handleSubmit(event as unknown as React.FormEvent);
+    }
+  };
+
+  const handleIsOntvangstChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsOntvangst(event.target.checked);
   };
 
   return (
-    <Fragment>
-      <Button onClick={() => handleClickOpen()} sx={{ minWidth: '24px', color: 'grey', p: "5px" }}>
-        <LockOutlinedIcon fontSize="small" />
-      </Button>
-      <Dialog
-        open={open}
+    <React.Fragment>
+      {!props.editMode &&
+        <Fab
+          color="success"
+          aria-label="Nieuwe betaling"
+          sx={{ position: 'fixed', bottom: 16, right: 16 }}
+          onClick={handleClickOpen}
+        >
+          <AddIcon />
+        </Fab>
+      }
+      <BootstrapDialog
         onClose={handleClose}
+        aria-labelledby="customized-dialog-title"
+        open={open}
+        fullWidth
       >
-        <DialogTitle>
-        Sluit periode 
-        <Typography fontSize={'0.875rem'}>
-          van {formateerNlDatum(props.periode.periodeStartDatum)} t/m {formateerNlDatum(props.periode.periodeEindDatum)}
-          </Typography>
+        <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
+          {props.editMode ? "Bewerk betaling" : "Nieuwe betaling"}
         </DialogTitle>
         <IconButton
           aria-label="close"
@@ -111,27 +270,93 @@ export default function SluitPeriodeDialoog(props: SluitPeriodeDialoogProps) {
         >
           <CloseIcon />
         </IconButton>
-
-        <DialogContent>
-          <DialogContentText>
-            { stand &&
-              <Box sx={{ flexGrow: 1 }}>
-                <Grid container spacing={2} columns={1}>
-                  <Grid size={2}>
-                    <Resultaat title={'Inkomsten en uitgaven'} datum={stand.peilDatum} saldi={stand.resultaatOpDatum} />
-                  </Grid>
-                  <Grid size={2}>
-                    <Resultaat title={'Stand'} datum={stand.peilDatum} saldi={stand.balansOpDatum!} />
-                  </Grid>
-                </Grid>
-              </Box>
-            }
-          </DialogContentText>
+        <DialogContent dividers>
+          <Stack spacing={2} onKeyDown={handleKeyPress}>
+            <BetalingsSoortSelect
+              betaling={periode}
+              onBetalingsChange={(betalingsSoort, bron, bestemming) => {
+                handleInputChange('betalingsSoort', betalingsSoort)
+                setPeriode({ ...periode, betalingsSoort, bron, bestemming })
+              }}
+            />
+            {errors.betalingsSoort && (
+              <Typography style={{ marginTop: '0px', color: 'red', fontSize: '0.75rem', textAlign: 'center' }}>{errors.betalingsSoort}</Typography>
+            )}
+            <Grid container columns={12} spacing={2} direction={{ xs: 'column', sm: 'row' }} display="flex" alignItems="baseline">
+              <Grid size={{ xs: 12, sm: 5 }} marginTop={{ xs: 0, sm: 1 }}>
+                <FormControl>
+                  <InputLabel htmlFor="betaling-bedrag">Bedrag</InputLabel>
+                  <Input
+                    id="betaling-bedrag"
+                    error={!!errors.bedrag}
+                    startAdornment={<InputAdornment position="start">€</InputAdornment>}
+                    value={periode.bedrag}
+                    type="text"
+                    onChange={(e) => handleInputChange('bedrag', e.target.value as unknown as BetalingDTO['bedrag'])}
+                    onFocus={handleFocus}
+                  />
+                  {errors.bedrag && (
+                    <Typography style={{ color: 'red', fontSize: '0.75rem' }}>{errors.bedrag}</Typography>
+                  )}
+                </FormControl>
+              </Grid>
+              {periode.betalingsSoort === BetalingsSoort.uitgaven && 
+                <Grid size={{ xs: 12, sm: 7 }} marginBottom={{ xs: 0, sm: 1 }} display="flex" alignItems="center">
+                  <FormControl>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          color='success'
+                          sx={{ transform: 'scale(0.6)' }}
+                          checked={isOntvangst}
+                          onChange={handleIsOntvangstChange}
+                          slotProps={{ input: { 'aria-label': 'controlled' } }}
+                        />}
+                      label={<Typography variant='caption' fontWeight={isOntvangst ? '800' : '500'} color={isOntvangst ? 'success' : 'lightgrey'}>
+                        Ik heb dit teruggekregen ipv betaald.
+                      </Typography>}
+                    />
+                  </FormControl>
+                </Grid>}
+            </Grid>
+            <FormControl fullWidth sx={{ m: 1 }} variant="standard">
+              <InputLabel htmlFor="betaling-omschrijving">Geef een korte omschrijving *</InputLabel>
+              <Input
+                id="betaling-omschrijving"
+                error={!!errors.omschrijving}
+                value={props.isOcr ? periode.ocrOmschrijving : periode.omschrijving}
+                type="text"
+                onChange={(e) => handleInputChange('omschrijving', e.target.value)}
+              />
+              {errors.omschrijving && (
+                <Typography style={{ color: 'red', fontSize: '0.75rem' }}>{errors.omschrijving}</Typography>
+              )}
+            </FormControl>
+            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={"nl"}>
+              <DatePicker
+                sx={{ color: 'success.main' }}
+                minDate={dayjs(eersteOpenPeriode?.periodeStartDatum)}
+                maxDate={dayjs(laatstePeriode?.periodeEindDatum)}
+                slotProps={{ textField: { variant: "standard" } }}
+                label="Wanneer was de betaling?"
+                value={periode.boekingsdatum}
+                onChange={(newvalue) => handleInputChange('boekingsdatum', newvalue ? newvalue : dayjs())}
+              />
+              {errors.boekingsdatum && (
+                <Typography style={{ marginTop: '0px', color: 'red', fontSize: '0.75rem' }}>{errors.boekingsdatum}</Typography>
+              )}
+              {!errors.boekingsdatum && warnings.boekingsdatum && (
+                <Typography style={{ marginTop: '0px', color: '#FF8C00', fontSize: '0.75rem' }}>{warnings.boekingsdatum}</Typography>
+              )}
+            </LocalizationProvider>
+          </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button autoFocus onClick={handleClose} startIcon={<LockOutlinedIcon sx={{ fontSize: '35px' }} />} >Sluit periode</Button>
+        <DialogActions sx={{ justifyContent: 'space-between' }}>
+          {props.editMode ?
+            <Button autoFocus onClick={handleDelete} startIcon={<DeleteIcon sx={{ fontSize: '35px', color: 'grey' }} />} ></Button> : <Box />}
+          <Button autoFocus onClick={handleSubmit} sx={{ color: 'success.main' }} startIcon={<SaveOutlinedIcon sx={{ fontSize: '35px', color: 'success.main' }} />} >BEWAAR</Button>
         </DialogActions>
-      </Dialog>
-    </Fragment>
+      </BootstrapDialog>
+    </React.Fragment>
   );
 }

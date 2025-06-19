@@ -9,13 +9,19 @@ import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "@asgardeo/auth-react";
 import { RekeningGroepPerBetalingsSoort } from "../../model/RekeningGroep.ts";
 import dayjs from "dayjs";
+import { useState } from "react";
 
 interface PeriodeSelectProps {
   isProfiel?: boolean;
+  isKasboek?: boolean;
 }
 
-export function PeriodeSelect({ isProfiel = false }: PeriodeSelectProps) {
+export function PeriodeSelect({ isProfiel = false, isKasboek = false }: PeriodeSelectProps) {
 
+  const [selectedPeriode, setSelectedPeriode] = useState<Periode | undefined>(undefined);
+  const handleEditClick = (periode: Periode) => {
+      setSelectedPeriode(periode);
+    };
   const { getIDToken } = useAuthContext();
   const { periodes, actieveHulpvrager, gekozenPeriode, setGekozenPeriode, setRekeningGroepPerBetalingsSoort } = useCustomContext();
 
@@ -54,20 +60,24 @@ export function PeriodeSelect({ isProfiel = false }: PeriodeSelectProps) {
   };
   const navigate = useNavigate();
 
-  const openPeriodes = periodes
-  .filter(periode => periode.periodeStatus !== 'OPGERUIMD')
-  .sort((a, b) => dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum)));
+  const selecteerbarePeriodes = isKasboek ?
+    periodes
+      .filter(periode => periode.periodeStatus !== 'OPGERUIMD')
+      .sort((a, b) => dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum))) :
+    periodes
+      .filter(periode => periode.periodeStartDatum !== periode.periodeEindDatum) // eerste 'pseudo' periode
+      .sort((a, b) => dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum)));
 
   return (
     <>
-      {!isProfiel && openPeriodes.length === 1 && gekozenPeriode &&
+      {!isProfiel && selecteerbarePeriodes.length === 1 && gekozenPeriode &&
         <Box sx={{ mt: '37px', maxWidth: '340px' }}>
           <Typography >
             Periode: {dayjs(gekozenPeriode.periodeStartDatum).format('D MMMM')} - {dayjs(gekozenPeriode.periodeEindDatum).format('D MMMM')} ({gekozenPeriode.periodeStatus.toLocaleLowerCase()})
           </Typography>
         </Box>}
 
-      {!isProfiel && openPeriodes.length > 1 && gekozenPeriode &&
+      {!isProfiel && selecteerbarePeriodes.length > 1 && gekozenPeriode &&
         <Box sx={{ my: 2, maxWidth: '340px' }}>
           <FormControl variant="standard" fullWidth >
             <InputLabel id="demo-simple-select-label">Kies de periode</InputLabel>
@@ -78,7 +88,7 @@ export function PeriodeSelect({ isProfiel = false }: PeriodeSelectProps) {
               value={periodes.some(periode => periode.periodeStartDatum === gekozenPeriode?.periodeStartDatum) ? gekozenPeriode?.periodeStartDatum : ''}
               label="Periode"
               onChange={handlegekozenPeriodeChange}>
-              {openPeriodes
+              {selecteerbarePeriodes
                 .map((periode: Periode) => (
                   <MenuItem key={periode.periodeStartDatum.toString()} value={periode.periodeStartDatum.toString()} sx={{ fontSize: '0.875rem' }}>
                     {`van ${dayjs(periode.periodeStartDatum).format('D MMMM')} tot ${dayjs(periode.periodeEindDatum).format('D MMMM')}`} ({periode.periodeStatus.toLocaleLowerCase()})
@@ -103,7 +113,7 @@ export function PeriodeSelect({ isProfiel = false }: PeriodeSelectProps) {
                   </Typography>}
                 <Box alignItems={'center'} display={'flex'} sx={{ cursor: 'pointer', mr: 0, pr: 0 }}>
                   {periode === laatsteGeslotenPeriode(periodes) &&
-                    <Button onClick={() => navigate('/periode?actie=wijzigen')} sx={{ minWidth: '24px', color: 'grey', p: "5px" }}>
+                    <Button onClick={() => handleEditClick(periode)} sx={{ minWidth: '24px', color: 'grey', p: "5px" }}>
                       <EditIcon fontSize="small" />
                     </Button>}
                   {periode === eersteOpenPeriode(periodes) &&
