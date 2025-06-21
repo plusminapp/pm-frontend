@@ -71,6 +71,7 @@ export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps)
   const [errors, setErrors] = useState<BetalingDtoErrors>(initialBetalingDtoErrors);
   const [warnings, setWarnings] = useState<BetalingDtoWarnings>(initialBetalingDtoWarnings);
   const [isOntvangst, setIsOntvangst] = useState(false);
+  
   const { getIDToken } = useAuthContext();
 
   const handleClickOpen = () => {

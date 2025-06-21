@@ -32,7 +32,7 @@ export const eersteOpenPeriode = (periodes: Periode[]): Periode | undefined => {
 
 export const laatsteGeslotenPeriode = (periodes: Periode[]): Periode | undefined => {
     const geslotenPeriodes = periodes
-        .filter(p => p.periodeStatus === 'GESLOTEN')
+        .filter(p => p.periodeStatus === 'GESLOTEN'|| p.periodeStatus === 'OPGERUIMD')
         .sort((a, b) => dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum)));
 
     return geslotenPeriodes.length > 0 ? geslotenPeriodes[0] : undefined;

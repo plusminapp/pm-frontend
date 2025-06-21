@@ -209,8 +209,8 @@ const Profiel: React.FC = () => {
                                         <span dangerouslySetInnerHTML={{
                                           __html: rekeningGroep.rekeningen.map(r =>
                                             gekozenPeriode && isPeriodeOpen(gekozenPeriode) ?
-                                              `${r.naam} (${currencyFormatter.format(Number(r.budgetBedrag))}/${r.budgetPeriodiciteit.toLowerCase()}
-                                 ${r.budgetPeriodiciteit.toLowerCase() === 'week' ? `= ${currencyFormatter.format(r.budgetMaandBedrag ?? 0)}/maand` : ''}
+                                              `${r.naam} (${currencyFormatter.format(Number(r.budgetBedrag))}/${r.budgetPeriodiciteit?.toLowerCase()}
+                                 ${r.budgetPeriodiciteit?.toLowerCase() === 'week' ? `= ${currencyFormatter.format(r.budgetMaandBedrag ?? 0)}/maand` : ''}
                                  ${rekeningGroep.budgetType === BudgetType.continu ? 'doorlopend' : 'op de ' + r.budgetBetaalDag + 'e'}${berekenVariabiliteit(r)})` : 
                                  `${r.naam} (${currencyFormatter.format(r.budgetMaandBedrag ?? 0)}/maand)`)
                                             .join('<br />') +

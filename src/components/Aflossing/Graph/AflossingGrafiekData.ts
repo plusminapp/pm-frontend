@@ -45,7 +45,7 @@ const genereerAflossingSaldi = (aflossingSaldo: RekeningDTO): AflossingGrafiekDa
   }
 
   huidigeMaand = dayjs().startOf("month");
-  huidigeBedrag = 1500  //aflossingSaldi.aflossing?. ?? 0;
+  huidigeBedrag = aflossingSaldo.saldo;
 
   while (huidigeBedrag > 0) {
     aflossingGrafiekDataLijst.push({
