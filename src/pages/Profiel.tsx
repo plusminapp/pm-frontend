@@ -14,7 +14,7 @@ import { UitgavenIcon } from '../icons/Uitgaven';
 import { InternIcon } from '../icons/Intern';
 import dayjs from 'dayjs';
 import { RekeningDTO } from '../model/Rekening';
-import { dagInPeriode } from '../model/Periode';
+import { dagInPeriode, isPeriodeOpen } from '../model/Periode';
 
 const Profiel: React.FC = () => {
   const { state, getIDToken } = useAuthContext();
@@ -106,7 +106,7 @@ const Profiel: React.FC = () => {
   }
 
   const berekenVariabiliteit = (rekening: RekeningDTO): string => {
-    const betalingWordtVerwacht = ! rekening.maanden || rekening.maanden?.includes(dagInPeriode(rekening.budgetBetaalDag ?? 0, gekozenPeriode!!).month()+1) ? '' : ' X'
+    const betalingWordtVerwacht = !rekening.maanden || rekening.maanden?.includes(dagInPeriode(rekening.budgetBetaalDag ?? 0, gekozenPeriode!!).month() + 1) ? '' : ' X'
     const variabiliteit = rekening.budgetVariabiliteit ? ` ±${rekening.budgetVariabiliteit}%` : '';
     return `${variabiliteit}${betalingWordtVerwacht}`
   }
@@ -170,7 +170,7 @@ const Profiel: React.FC = () => {
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <PeriodeSelect isProfiel={true} />
+              <PeriodeSelect isProfiel />
             </AccordionDetails>
           </Accordion>
 
@@ -208,15 +208,17 @@ const Profiel: React.FC = () => {
                                       {rekeningGroep.rekeningen.length > 0 &&
                                         <span dangerouslySetInnerHTML={{
                                           __html: rekeningGroep.rekeningen.map(r =>
-                                            `${r.naam} (${currencyFormatter.format(Number(r.budgetBedrag))}/${r.budgetPeriodiciteit.toLowerCase()}
-                                 ${r.budgetPeriodiciteit.toLowerCase() === 'week' ? `= ${currencyFormatter.format(r.budgetMaandBedrag ?? 0)}/maand` : ''}
-                                 ${rekeningGroep.budgetType === BudgetType.continu ? 'doorlopend' : 'op de ' + r.budgetBetaalDag + 'e'}${berekenVariabiliteit(r)})`)
+                                            gekozenPeriode && isPeriodeOpen(gekozenPeriode) ?
+                                              `${r.naam} (${currencyFormatter.format(Number(r.budgetBedrag))}/${r.budgetPeriodiciteit?.toLowerCase()}
+                                 ${r.budgetPeriodiciteit?.toLowerCase() === 'week' ? `= ${currencyFormatter.format(r.budgetMaandBedrag ?? 0)}/maand` : ''}
+                                 ${rekeningGroep.budgetType === BudgetType.continu ? 'doorlopend' : 'op de ' + r.budgetBetaalDag + 'e'}${berekenVariabiliteit(r)})` : 
+                                 `${r.naam} (${currencyFormatter.format(r.budgetMaandBedrag ?? 0)}/maand)`)
                                             .join('<br />') +
                                             (rekeningGroep.rekeningen.length > 0 ? `<br />Totaal: ${currencyFormatter.format(rekeningGroep.rekeningen.reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0))}/maand` : '')
                                         }} />}
                                     </TableCell>
                                     <TableCell align="left" size='small' sx={{ p: "6px" }}>
-                                      {rekeningGroep.rekeningen.length > 0 &&
+                                      {rekeningGroep.rekeningen.length > 0 && gekozenPeriode && isPeriodeOpen(gekozenPeriode) &&
                                         <span dangerouslySetInnerHTML={{
                                           __html: rekeningGroep.rekeningen.map(r =>
                                             r.betaalMethoden && r.betaalMethoden?.length > 0 ?

@@ -78,7 +78,7 @@ export default function Kasboek() {
     if (actieveHulpvrager && token && gekozenPeriode) {
       setIsLoading(true);
       const id = actieveHulpvrager!.id
-      const response = await fetch(`/api/v1/saldo/hulpvrager/${id}/stand/${dayjs(gekozenPeriode.periodeEindDatum) > dayjs() ? dayjs().format('YYYY-MM-DD') : gekozenPeriode.periodeEindDatum}`, {
+      const response = await fetch(`/api/v1/stand/hulpvrager/${id}/datum/${dayjs(gekozenPeriode.periodeEindDatum) > dayjs() ? dayjs().format('YYYY-MM-DD') : gekozenPeriode.periodeEindDatum}`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -121,7 +121,8 @@ export default function Kasboek() {
       <Typography variant='h4'>Kasboek</Typography>
       <Grid container spacing={{ xs: 1, md: 3 }} columns={{ xs: 2, md: 6 }}>
         <Grid size={2}>
-          <PeriodeSelect />
+          <PeriodeSelect 
+          isKasboek/>
         </Grid>
         <Grid size={{ xs: 2, md: 3 }}>
           <Typography sx={{ mt: { xs: '0px', md: '35px' } }}>

@@ -17,11 +17,11 @@ interface AflossingProps {
 
 export default function AflossingTabel(props: AflossingProps) {
   const berekenMaandenTeGaan = () => {
-    if (props.aflossingSaldo.saldo > 0) { 
+    if (props.aflossingSaldo.openingsSaldo > 0) { 
       return 0 
     } else {
       return Math.ceil(
-        -(props.aflossingSaldo.saldo ?? 0) / (props.aflossing.budgetMaandBedrag ?? 1)
+        -(props.aflossingSaldo.openingsSaldo ?? 0) / (props.aflossing.budgetMaandBedrag ?? 1)
       );  
     }
   }
@@ -44,7 +44,7 @@ export default function AflossingTabel(props: AflossingProps) {
                   Actuele stand
                 </TableCell>
                 <TableCell align="right" size='small' >
-                  {currencyFormatter.format(props.aflossingSaldo.saldo ?? 0)}
+                  {currencyFormatter.format(props.aflossingSaldo.openingsSaldo ?? 0)}
                 </TableCell>
               </TableRow>
               <TableRow>

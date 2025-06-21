@@ -20,6 +20,7 @@ import { Periode } from '../../model/Periode';
 import { Gebruiker } from '../../model/Gebruiker';
 import { RekeningGroepPerBetalingsSoort } from '../../model/RekeningGroep';
 import StyledSnackbar from './../StyledSnackbar';
+import dayjs from 'dayjs';
 
 function Header() {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ function Header() {
 
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElGebruiker, setAnchorElGebruiker] = React.useState<null | HTMLElement>(null);
+  const [expiry, setExpiry] = React.useState<Date | null>(null);
 
   const { gebruiker, setGebruiker,
     hulpvragers, setHulpvragers,
@@ -66,7 +68,7 @@ function Header() {
     let ahv = hulpvragers.find(hv => hv.id === id)
     ahv = ahv ? ahv : gebruiker
     setActieveHulpvrager(ahv);
-    setPeriodes(ahv!.periodes);
+    setPeriodes(ahv!.periodes.sort((a, b) => dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum))));
     let nieuweGekozenPeriode = gekozenPeriode;
     if (!gekozenPeriode || !ahv!.periodes.includes(gekozenPeriode)) {
       nieuweGekozenPeriode = ahv!.periodes.find(periode => periode.periodeStatus === 'HUIDIG');
@@ -101,6 +103,17 @@ function Header() {
     let token
     try {
       token = await getIDToken();
+      if (!token) {
+        setExpiry(null);
+        return;
+      }
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const exp = payload.exp;
+      if (!exp) {
+        setExpiry(null);
+        return;
+      }
+      setExpiry(new Date(exp * 1000));
     } catch (error) {
       console.error("Error getting ID token:", error);
     }
@@ -111,6 +124,9 @@ function Header() {
         "Content-Type": "application/json",
       }
     })
+
+
+
     const dataGebruiker = await responseGebruiker.json();
     setGebruiker(dataGebruiker.gebruiker as Gebruiker);
     setHulpvragers(dataGebruiker.hulpvragers as Gebruiker[]);
@@ -156,12 +172,6 @@ function Header() {
     }
   }, [state.isAuthenticated, fetchGebruikerMetHulpvragers]);
 
-  // useEffect(() => {
-  //     if (!state.isLoading && !state.isAuthenticated) {
-  //         navigate('/login');
-  //     }
-  // }, [state.isAuthenticated, state.isLoading, navigate]);
-
   const handleLogout = async () => {
     try {
       await signOut();
@@ -196,7 +206,6 @@ function Header() {
             <PlusMinLogo />
           </IconButton>
 
-
           {state.isAuthenticated &&
             <>
               {/* menuitems bij md+ */}
@@ -211,6 +220,11 @@ function Header() {
                   </Button>
                 ))}
               </Box>
+
+          {expiry &&
+            <Typography sx={{ ml: 2, color: 'gray', fontSize: 12 }}>
+              Sessie tot {expiry.getHours().toString().padStart(2, '0')}:{expiry.getMinutes().toString().padStart(2, '0')}
+            </Typography>}
 
               {/* profiel & settings */}
               <Box sx={{ ml: 'auto', display: 'flex' }}>

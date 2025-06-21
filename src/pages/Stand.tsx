@@ -11,7 +11,7 @@ import { PeriodeSelect } from "../components/Periode/PeriodeSelect";
 import { ArrowDropDownIcon } from "@mui/x-date-pickers";
 import SamenvattingGrafiek from "../components/Stand/SamenvattingGrafiek";
 import StandGrafiek from "../components/Stand/StandGrafiek";
-import { betaalmethodeRekeningGroepSoorten, betaalTabelRekeningGroepSoorten, RekeningGroepSoort } from "../model/RekeningGroep";
+import { balansRekeningGroepSoorten, betaalmethodeRekeningGroepSoorten, betaalTabelRekeningGroepSoorten, RekeningGroepSoort } from "../model/RekeningGroep";
 
 export default function Stand() {
 
@@ -41,7 +41,7 @@ export default function Stand() {
         const vandaag = dayjs().format('YYYY-MM-DD');
         const datum = gekozenPeriode.periodeEindDatum > vandaag ? vandaag : gekozenPeriode.periodeEindDatum;
         const id = actieveHulpvrager.id
-        const response = await fetch(`/api/v1/saldo/hulpvrager/${id}/stand/${datum}`, {
+        const response = await fetch(`/api/v1/stand/hulpvrager/${id}/datum/${datum}`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -51,7 +51,7 @@ export default function Stand() {
         setIsLoading(false);
         if (response.ok) {
           const result = await response.json();
-          setStand(result)
+          setStand(result);
         } else {
           console.error("Failed to fetch data", response.status);
         }
@@ -129,7 +129,7 @@ export default function Stand() {
                     <SamenvattingGrafiek
                       peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
                       periode={gekozenPeriode}
-                      resultaatSamenvattingOpDatum={stand.resultaatSamenvattingOpDatumDTO}
+                      resultaatSamenvattingOpDatum={stand.resultaatSamenvattingOpDatum}
                       detailsVisible={detailsVisible} />
                   </Grid>}
 
@@ -153,23 +153,6 @@ export default function Stand() {
                           detailsVisible={detailsVisible} />
                       </Grid>
                     ))}
-
-                {/* {gekozenPeriode &&
-                  rekeningGroepPerBetalingsSoort
-                    .flatMap((rgpb) => (rgpb.rekeningGroepen))
-                    .filter(rg => rg.rekeningen.length >= 1)
-                    .map((RekeningGroep) => (
-                      <BudgetGrafiek
-                        key={RekeningGroep.id}
-                        RekeningGroep={RekeningGroep}
-                        peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
-                        periode={gekozenPeriode}
-                        budgetten={stand.budgettenOpDatum.filter(b => b.rekeningNaam === RekeningGroep.naam)}
-                        geaggregeerdBudget={stand.geaggregeerdeBudgettenOpDatum.find(b => b.rekeningNaam === RekeningGroep.naam)}
-                        detailsVisible={detailsVisible}
-                      />)
-                    )} */}
-
               </Grid>
             </Grid>
             <Grid size={1} flexDirection={'column'} alignItems="start">
@@ -177,7 +160,11 @@ export default function Stand() {
               <Resultaat
                 title={'Stand van de geldrekeningen'}
                 datum={stand.peilDatum}
-                saldi={stand.balansOpDatum!.filter(saldo => betaalmethodeRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))} />
+                saldi={stand.geaggregeerdResultaatOpDatum
+                  .filter(saldo => betaalmethodeRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
+                  .sort((a, b) => a.sortOrder - b.sortOrder)
+                  .map(saldo => ({ ...saldo, bedrag: saldo.openingsSaldo + saldo.budgetBetaling }))}
+              />
             </Grid>
           </Grid>
 
@@ -205,17 +192,45 @@ export default function Stand() {
               <Grid sx={{ flexGrow: 1 }}>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 1, sm: 2, md: 4 }}>
                   <Grid size={1}>
-                    <Resultaat title={'Opening'} datum={stand.periodeStartDatum} saldi={stand.openingsBalans!} />
+                    <Resultaat
+                      title={'Opening'}
+                      datum={stand.periodeStartDatum}
+                      saldi={stand.geaggregeerdResultaatOpDatum
+                        .filter(saldo => balansRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map(saldo => ({ ...saldo, bedrag: saldo.openingsSaldo }))}
+                    />
                   </Grid>
                   <Grid size={1}>
-                    <Resultaat title={'Inkomsten en uitgaven'} datum={stand.peilDatum}
-                      saldi={stand.geaggregeerdResultaatOpDatum} />
+                    <Resultaat
+                      title={'Inkomsten en uitgaven'}
+                      datum={stand.peilDatum}
+                      saldi={stand.geaggregeerdResultaatOpDatum
+                        .filter(saldo => betaalTabelRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map(saldo => ({ ...saldo, bedrag: saldo.budgetBetaling }))}
+                    />
                   </Grid>
                   <Grid size={1}>
-                    <Resultaat title={'Mutaties per'} datum={stand.peilDatum} saldi={stand.mutatiesOpDatum!} />
+                    <Resultaat
+                      title={'Mutaties per'}
+                      datum={stand.peilDatum}
+                      saldi={stand.geaggregeerdResultaatOpDatum
+                        .filter(saldo => balansRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map(saldo => ({ ...saldo, bedrag: saldo.budgetBetaling }))}
+                    />
+
                   </Grid>
                   <Grid size={1}>
-                    <Resultaat title={'Stand'} datum={stand.peilDatum} saldi={stand.balansOpDatum!} />
+                    <Resultaat
+                      title={'Stand'}
+                      datum={stand.peilDatum}
+                      saldi={stand.geaggregeerdResultaatOpDatum
+                        .filter(saldo => balansRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map(saldo => ({ ...saldo, bedrag: saldo.openingsSaldo + saldo.budgetBetaling }))}
+                    />
                   </Grid>
                 </Grid>
               </Grid>

@@ -102,6 +102,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
               <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px' }}></TableCell>
               <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px', fontWeight: 'bold', maxWidth: '300px' }}>Totalen</TableCell>
               {props.geaggregeerdResultaatOpDatum
+                .filter(saldo => saldo.rekeningGroepSoort && betaalTabelRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                 .sort((a, b) => a.sortOrder - b.sortOrder)
                 .map(saldo => (
                   <TableCell key={saldo.rekeningGroepNaam} sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px', fontWeight: 'bold' }} align="right">
@@ -120,6 +121,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
               <TableCell sx={{ padding: '5px' }}></TableCell>
               <TableCell sx={{ padding: '5px', maxWidth: '300px' }}>Verwacht</TableCell>
               {props.geaggregeerdResultaatOpDatum
+                .filter(saldo => saldo.rekeningGroepSoort && betaalTabelRekeningGroepSoorten.map(rs => rs.toString()).includes(saldo.rekeningGroepSoort))
                 .sort((a, b) => a.sortOrder - b.sortOrder)
                 .map(saldo => (
                   <TableCell key={saldo.rekeningGroepNaam} sx={{ padding: '5px' }} align="right">
@@ -138,6 +140,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
               <TableCell sx={{ padding: '5px' }}></TableCell>
               <TableCell sx={{ padding: '5px', maxWidth: '300px' }}>Overschot/tekort</TableCell>
               {props.geaggregeerdResultaatOpDatum
+                .filter(saldo => saldo.rekeningGroepSoort && betaalTabelRekeningGroepSoorten.map(rs => rs.toString()).includes(saldo.rekeningGroepSoort))
                 .sort((a, b) => a.sortOrder - b.sortOrder)
                 .map(saldo => (
                   <TableCell key={saldo.rekeningGroepNaam} sx={{ padding: '5px' }} align="right">
@@ -156,10 +159,10 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
               <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px' }}>Datum</TableCell>
               <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px', maxWidth: '300px' }}>Omschrijving</TableCell>
               {betaalTabelRekeningGroepen
-              .sort((a, b) => a.sortOrder - b.sortOrder)
-              .map(rekeningGroep => (
-                <TableCell key={rekeningGroep.naam} sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px' }} align="right">{rekeningGroep.naam}</TableCell>
-              ))}
+                .sort((a, b) => a.sortOrder - b.sortOrder)
+                .map(rekeningGroep => (
+                  <TableCell key={rekeningGroep.naam} sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px' }} align="right">{rekeningGroep.naam}</TableCell>
+                ))}
               {heeftIntern && toonIntern &&
                 <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px' }} align="right">
                   <Grid display="flex" flexDirection="row" alignItems={'center'} justifyContent="flex-end" >

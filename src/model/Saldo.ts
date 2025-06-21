@@ -4,12 +4,9 @@ export type Stand = {
     periodeStartDatum: string,
     peilDatum: string,
     datumLaatsteBetaling: string | undefined,
-    openingsBalans: SaldoDTO[],
-    mutatiesOpDatum: SaldoDTO[],
-    balansOpDatum: SaldoDTO[],
     resultaatOpDatum: SaldoDTO[],
     geaggregeerdResultaatOpDatum: SaldoDTO[],
-    resultaatSamenvattingOpDatumDTO: ResultaatSamenvattingOpDatumDTO
+    resultaatSamenvattingOpDatum: ResultaatSamenvattingOpDatumDTO
 }
 
 export type SaldoDTO = {
@@ -19,11 +16,12 @@ export type SaldoDTO = {
     budgetType: string;
     rekeningNaam: string;
     sortOrder: number;
-    saldo: number;
+    openingsSaldo: number;
     achterstand: number;
     achterstandNu: number;
     budgetMaandBedrag: number;
     budgetBetaling: number;
+    oorspronkelijkeBudgetBetaling: number;
     periode: Periode;
     budgetPeildDatum: string;
     budgetOpPeilDatum: number;
@@ -32,6 +30,7 @@ export type SaldoDTO = {
     meerDanBudget: number;
     meerDanMaandBudget: number;
     restMaandBudget: number;
+    bedrag: number;
 }
 
 export type ResultaatSamenvattingOpDatumDTO = {
