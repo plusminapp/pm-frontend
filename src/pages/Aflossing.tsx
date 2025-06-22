@@ -14,8 +14,6 @@ import { PeriodeSelect } from "../components/Periode/PeriodeSelect";
 import { BetalingsSoort } from "../model/Betaling";
 import { SaldoDTO } from "../model/Saldo";
 import { RekeningGroepSoort } from "../model/RekeningGroep";
-import { RekeningDTO } from "../model/Rekening";
-import { getData, getSeries } from "../components/Aflossing/Graph/AflossingGrafiekData";
 
 export default function Aflossingen() {
 
@@ -53,7 +51,8 @@ export default function Aflossingen() {
       if (response.ok) {
         const result = await response.json();
         setAflossingSaldi(result.resultaatOpDatum.
-          filter((r: SaldoDTO) => r.rekeningGroepSoort === RekeningGroepSoort.aflossing));
+          filter((r: SaldoDTO) => r.rekeningGroepSoort === RekeningGroepSoort.aflossing)
+        );
       } else {
         console.error("Failed to fetch data", response.status);
         setSnackbarMessage({
@@ -89,7 +88,12 @@ export default function Aflossingen() {
   return (
     <>
       {aflossingSaldi.length === 0 &&
-        <Typography variant='h4'>{actieveHulpvrager?.bijnaam} heeft geen schulden/aflossingen ingericht.</Typography>
+      <>
+        <Typography variant='h4'>Schulden/aflossingen pagina</Typography>
+        <Typography variant='body2'>{actieveHulpvrager?.bijnaam} heeft op {gekozenPeriode?.periodeStartDatum} geen aflossingen ingericht.</Typography>
+      <PeriodeSelect/>
+      </>
+
       }
       {aflossingSaldi.length > 0 &&
         <>
@@ -120,7 +124,7 @@ export default function Aflossingen() {
       }
       {aflossingSaldi.map(saldoDTO =>
         <Accordion
-        key={saldoDTO.id}
+        key={saldoDTO.rekeningNaam}
           elevation={2}>
           <AccordionSummary
             expandIcon={<ArrowDropDownIcon />}
@@ -139,18 +143,15 @@ export default function Aflossingen() {
           <AccordionDetails sx={{ p: 0 }} >
             <AflossingTabel
               aflossingSaldo={saldoDTO}
-              aflossing={aflossing.filter(r => r.naam === saldoDTO.rekeningNaam)[0] as RekeningDTO}
               />
           </AccordionDetails>
         </Accordion>
       )}
-      Aflossing: {JSON.stringify(aflossing)}
-      <hr />
-      aflossingSaldi: {JSON.stringify(aflossingSaldi)}
-      <hr />
-      data: {JSON.stringify(getData(aflossing))}
+      {/* aflossingSaldi: {JSON.stringify(aflossingSaldi)}
       <hr />
       series: {JSON.stringify(getSeries(aflossingSaldi))}
+      <hr />
+      data: {JSON.stringify(getData(aflossingSaldi))} */}
     </>
   )
 }

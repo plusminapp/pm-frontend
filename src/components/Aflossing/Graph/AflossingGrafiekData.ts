@@ -1,6 +1,5 @@
 import dayjs from "dayjs";
 import { SaldoDTO } from "../../../model/Saldo";
-import { RekeningDTO } from "../../../model/Rekening";
 
 type AflossingGrafiekData = {
   maand: string;
@@ -10,8 +9,8 @@ type AflossingGrafiekData = {
 
 type AflossingGrafiekDataMap = Record<string, Record<string, number>>;
 
-export function getData(aflossing: RekeningDTO[]): Record<string, any>[] {
-  const aflossingGrafiekDataLijst = aflossing.flatMap(genereerAflossingSaldi);
+export function getData(aflossingSaldi: SaldoDTO[]): Record<string, any>[] {
+  const aflossingGrafiekDataLijst = aflossingSaldi.flatMap(genereerAflossingSaldi);
   const aflossingGrafiekDataMap: AflossingGrafiekDataMap = aflossingGrafiekDataLijst.reduce((acc, item) => {
     if (!acc[item.maand]) {
       acc[item.maand] = {};
@@ -28,32 +27,32 @@ export function getData(aflossing: RekeningDTO[]): Record<string, any>[] {
   return result;
 }
 
-const genereerAflossingSaldi = (aflossingSaldo: RekeningDTO): AflossingGrafiekData[] => {
+const genereerAflossingSaldi = (aflossingSaldoDTO: SaldoDTO): AflossingGrafiekData[] => {
   const formatter = "YYYY-MM";
   const aflossingGrafiekDataLijst: AflossingGrafiekData[] = [];
-  let huidigeMaand = dayjs(aflossingSaldo.aflossing?.startDatum).startOf("month");
-  let huidigeBedrag = aflossingSaldo.aflossing?.eindBedrag ?? 0;
+  let huidigeMaand = dayjs(aflossingSaldoDTO.aflossing?.startDatum).startOf("month");
+  let huidigeBedrag = aflossingSaldoDTO.aflossing?.eindBedrag ?? 0;
 
   while (huidigeBedrag > 0 && huidigeMaand.isBefore(dayjs())) {
     aflossingGrafiekDataLijst.push({
       maand: huidigeMaand.format(formatter),
-      rekeningNaam: aflossingSaldo.naam,
+      rekeningNaam: aflossingSaldoDTO.rekeningNaam,
       bedrag: huidigeBedrag,
     });
-    huidigeBedrag -= aflossingSaldo.budgetMaandBedrag ?? 0;
+    huidigeBedrag -= aflossingSaldoDTO.budgetMaandBedrag ?? 0;
     huidigeMaand = huidigeMaand.add(1, "month");
   }
 
   huidigeMaand = dayjs().startOf("month");
-  huidigeBedrag = aflossingSaldo.saldo;
+  huidigeBedrag = -aflossingSaldoDTO.openingsSaldo;
 
   while (huidigeBedrag > 0) {
     aflossingGrafiekDataLijst.push({
       maand: huidigeMaand.format(formatter),
-      rekeningNaam: aflossingSaldo.naam,
+      rekeningNaam: aflossingSaldoDTO.rekeningNaam,
       bedrag: huidigeBedrag,
     });
-    huidigeBedrag -= aflossingSaldo.budgetMaandBedrag ?? 0;
+    huidigeBedrag -= aflossingSaldoDTO.budgetMaandBedrag ?? 0;
     huidigeMaand = huidigeMaand.add(1, "month");
   }
   return aflossingGrafiekDataLijst;

@@ -17,7 +17,7 @@ export const AflossingenAfbouwGrafiek = (props: AflossingenAfbouwGrafiekProps) =
   const getoondePeriode = dayjs(gekozenPeriode?.periodeEindDatum).format("YYYY-MM");
 
   const chartOptions: AgChartOptions = {
-    data: Object.values(getData(props.aflossingen)),
+    data: Object.values(getData(props.aflossingSaldi)),
     series: getSeries(props.aflossingSaldi) as AgAreaSeriesOptions[],
     axes: [
       {

@@ -17,7 +17,7 @@ import { useCustomContext } from '../../context/CustomContext';
 import { SaldoDTO } from '../../model/Saldo';
 import { useAuthContext } from '@asgardeo/auth-react';
 import { currencyFormatter } from '../../model/Betaling';
-import { betaalmethodeRekeningGroepSoorten, RekeningGroepSoort } from '../../model/RekeningGroep';
+import { balansRekeningGroepSoorten, RekeningGroepSoort } from '../../model/RekeningGroep';
 import dayjs from 'dayjs';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
@@ -79,7 +79,7 @@ export default function WijzigPeriodeDialoog(props: WijzigPeriodeDialoogProps) {
       if (response.ok) {
         const result = await response.json();
         setFormSaldi((result.resultaatOpDatum as SaldoDTO[])
-          .filter((saldo: SaldoDTO) => betaalmethodeRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
+          .filter((saldo: SaldoDTO) => balansRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
           .map((saldo: SaldoDTO) => ({
             naam: saldo.rekeningNaam,
             bedrag: (Number(saldo.openingsSaldo) + Number(saldo.budgetBetaling)).toFixed(2),
