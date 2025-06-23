@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import { Periode } from '../../model/Periode';
 import StandGeneriekGrafiek from '../../components/Stand/StandGeneriekGrafiek';
 import { ResultaatSamenvattingOpDatumDTO } from '../../model/Saldo';
+import { berekenRekeningGroepIcoonOpKleur } from './BerekenStandKleurEnTekst';
 
 type SamenvattingGrafiekProps = {
   peilDatum: dayjs.Dayjs;
@@ -20,17 +21,22 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
   };
   const gevarenZone = 0.02
   const periodeAfgelopen = props.peilDatum.startOf('day').isSame(dayjs(props.periode.periodeEindDatum).startOf('day'));
-  const inGevarenZone = actueleBuffer < gevarenZone * budgetMaandInkomstenBedrag && ! periodeAfgelopen;
+  const inGevarenZone = actueleBuffer < gevarenZone * budgetMaandInkomstenBedrag && !periodeAfgelopen;
 
   const berekenStandGeneriekGrafiek = (): JSX.Element => {
-    const bufferTekst = periodeAfgelopen ? 'Over einde periode' : 'Buffer';
-    const status = actueleBuffer < 0 ? 'red' : inGevarenZone ? 'orange' : 'green';
+    const bedrag = actueleBuffer.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })
+    const bufferTekst =
+      periodeAfgelopen ? `Over einde periode: ${bedrag}`: 
+      actueleBuffer < 0 ?`Pas op. Je houdt deze maand geen geld over! Je dreigt ${bedrag} tekort te komen.` :
+      inGevarenZone ? `Beetje rustig aan. De buffer wordt klein: ${bedrag}, dat is minder dan ${gevarenZone * 100}% van je budget.` : 
+      'Ga zo door. Je houdt deze maand ruim over, namelijk ' + bedrag;
+    const color = actueleBuffer < 0 ? 'red' : inGevarenZone ? 'orange' : 'green';
     return <StandGeneriekGrafiek
-      status={status}
+      statusIcon={berekenRekeningGroepIcoonOpKleur(36, color)}
       percentageFill={percentagePeriodeVoorbij}
       headerText={'Samenvatting'}
       rekeningIconNaam='samenvatting'
-      bodyText={`${bufferTekst}: ${actueleBuffer.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })}`}
+      bodyText={bufferTekst}
       cfoText={''} />
   }
 
@@ -78,8 +84,8 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
                     backgroundColor: inGevarenZone ? 'orange' : 'green',
                     color: 'white',
                     textAlign: 'center',
-                    borderBottom: detailsVisible && inGevarenZone ? '4px solid orange' : 
-                    detailsVisible && !inGevarenZone ? '4px solid green' : '0px',
+                    borderBottom: detailsVisible && inGevarenZone ? '4px solid orange' :
+                      detailsVisible && !inGevarenZone ? '4px solid green' : '0px',
                     fontSize: '0.7rem',
                   }}
                 >
@@ -105,11 +111,12 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
         </Table>
       </TableContainer>
 
-      {detailsVisible && false && // TODO: remove false when ready
+      {detailsVisible && // TODO: remove false when ready
         <Box maxWidth={'500px'}>
           <Typography variant='body2' sx={{ fontSize: '0.8rem', p: 1 }}>
-            Het maandinkomen is {budgetMaandInkomstenBedrag.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })} waarvan {besteedTotPeilDatum.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })} is besteed 
-            en {nogNodigNaPeilDatum.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })} nog nodig is. 
+            Het maandinkomen is {budgetMaandInkomstenBedrag.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })} waarvan
+            {besteedTotPeilDatum.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })} is besteed
+            en {nogNodigNaPeilDatum.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })} nog nodig is.
             De buffer is dus {actueleBuffer.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })}.
           </Typography>
         </Box>}

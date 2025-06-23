@@ -3,11 +3,9 @@ import Grid from '@mui/material/Grid2';
 import dayjs from 'dayjs';
 import { Periode } from '../../model/Periode';
 import { RekeningGroepDTO } from '../../model/RekeningGroep';
-import { PlusIcon } from '../../icons/Plus';
-import { MinIcon } from '../../icons/Min';
 import StandGeneriekGrafiek from './StandGeneriekGrafiek';
 import { SaldoDTO } from '../../model/Saldo';
-import { berekenRekeningGroepIcoonKleur } from './BerekenStandKleurEnTekst';
+import { berekenRekeningGroepIcoon } from './BerekenStandKleurEnTekst';
 
 type BudgetGrafiekProps = {
   peilDatum: dayjs.Dayjs;
@@ -39,25 +37,13 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
   const periodeVoorbij = dayjs(peilDatum).diff(dayjs(periode.periodeStartDatum), 'day') + 1;
   const percentagePeriodeVoorbij = periodeVoorbij / periodeLengte * 100;
 
-  const berekenBudgetIcoon = (budget: SaldoDTO): JSX.Element => {
-    if ((budget.meerDanBudget ?? 0) === 0 && (budget.minderDanBudget ?? 0) === 0 && (budget.meerDanMaandBudget ?? 0) === 0) {
-      if ((budget.betaaldBinnenBudget ?? 0) === 0)
-        return <PlusIcon color="#1977d3" height={18} />
-      else return <PlusIcon color="#green" height={18} />
-    }
-    if ((budget.minderDanBudget ?? 0) > 0) return <MinIcon color="red" height={18} />
-    if ((budget.meerDanBudget ?? 0) > 0) return <PlusIcon color="lightgreen" height={18} />
-    if ((budget.meerDanMaandBudget ?? 0) > 0) return <PlusIcon color="green" height={18} />
-    return <PlusIcon color="black" />
-  }
-
   return (
     <>
       <Box sx={{ maxWidth: '500px' }}>
         <Box sx={{ cursor: 'pointer' }}>
           {geaggregeerdResultaatOpDatum &&
             <StandGeneriekGrafiek
-              status={berekenRekeningGroepIcoonKleur(geaggregeerdResultaatOpDatum)}
+              statusIcon={berekenRekeningGroepIcoon(36, geaggregeerdResultaatOpDatum)}
               percentageFill={percentagePeriodeVoorbij}
               headerText={rekeningGroep.naam}
               bodyText={"Deze tekst moet nog wijzigen, maar dat kan ik nu nog niet"}
@@ -82,7 +68,7 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                     }}>
                     {detailsVisible && formatAmount(betaaldBinnenBudget.toString())}
                   </TableCell>}
-                {meerDanBudget > 0 && budgetType !== 'continu' &&
+                {meerDanBudget > 0 && budgetType !== 'CONTINU' &&
                   <TableCell
                     width={`${(meerDanBudget / tabelBreedte) * 90}%`}
                     sx={{
@@ -94,11 +80,11 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                     }}>
                     {detailsVisible && formatAmount(meerDanBudget.toString())}
                   </TableCell>}
-                {meerDanMaandBudget > 0 && budgetType !== 'continu' &&
+                {meerDanMaandBudget > 0 && budgetType !== 'CONTINU' &&
                   <TableCell
                     width={`${(meerDanMaandBudget / tabelBreedte) * 90}%`}
                     sx={{
-                      backgroundColor: budgetType === 'inkomsten' ? 'green' : budgetType === 'vast' ? 'orange' : '#c00',
+                      backgroundColor: budgetType === 'inkomsten' ? 'green' : budgetType === 'VAST' ? 'orange' : '#c00',
                       borderBottom: detailsVisible ? '4px solid #333' : '0px',
                       color: 'white',
                       textAlign: 'center',
@@ -106,7 +92,7 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                     }}>
                     {detailsVisible && formatAmount(meerDanMaandBudget.toString())}
                   </TableCell>}
-                {(meerDanBudget > 0 || meerDanMaandBudget > 0) && budgetType === 'continu' &&
+                {(meerDanBudget > 0 || meerDanMaandBudget > 0) && budgetType === 'CONTINU' &&
                   <TableCell
                     width={`${(meerDanMaandBudget / tabelBreedte) * 90}%`}
                     sx={{
@@ -122,8 +108,8 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                   <TableCell
                     width={`${(minderDanBudget / tabelBreedte) * 90}%`}
                     sx={{
-                      backgroundColor: budgetType === 'continu' ? 'green' : 'red',
-                      borderBottom: !detailsVisible ? '0px' : budgetType === 'continu' ? '4px solid green' : '4px solid red',
+                      backgroundColor: budgetType === 'CONTINU' ? 'green' : 'red',
+                      borderBottom: !detailsVisible ? '0px' : budgetType === 'CONTINU' ? '4px solid green' : '4px solid red',
                       color: 'white',
                       textAlign: 'center',
                       fontSize: '0.7rem'
@@ -151,7 +137,7 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
           <Grid size={2} alignItems={'flex-start'}>
             {resultaatOpDatum.map((saldo, index) => (
               <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                {berekenBudgetIcoon(saldo)}
+                {berekenRekeningGroepIcoon(15, saldo)}
                 <Typography variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
                   {saldo.rekeningNaam}: {formatAmount((saldo.budgetMaandBedrag ?? 0).toString())}, nu: {formatAmount((saldo.budgetOpPeilDatum ?? 0).toString())}<br />
                   {/* Betaaldag {saldo.bud && dagInPeriode(saldo.betaalDag, periode).format('D MMMM')}<br /> */}

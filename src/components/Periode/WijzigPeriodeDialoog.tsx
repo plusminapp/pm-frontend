@@ -47,11 +47,6 @@ export default function WijzigPeriodeDialoog(props: WijzigPeriodeDialoogProps) {
   const [isLoading, setIsLoading] = useState(false);
   // const [periodeSaldi, setPeriodeSaldi] = useState<SaldoDTO[]>([]);
 
-  useEffect(() => {
-    setOpen(props.periodes !== undefined);
-    fetchStand()
-  }, [props.periodes, props.index]);
-
   const fetchStand = useCallback(async () => {
     if (!props.periodes || props.periodes.length < 2) {
       console.warn("No periode provided to fetchAflossingen");
@@ -93,7 +88,13 @@ export default function WijzigPeriodeDialoog(props: WijzigPeriodeDialoogProps) {
         })
       }
     }
-  }, [actieveHulpvrager, getIDToken, setSnackbarMessage]);
+  }, [actieveHulpvrager, getIDToken, props.index, props.periodes, setSnackbarMessage]);
+
+    useEffect(() => {
+    setOpen(props.periodes !== undefined);
+    fetchStand()
+  }, [props.periodes, props.index, fetchStand]);
+
 
   const saveWijzigingen = async () => {
     let token

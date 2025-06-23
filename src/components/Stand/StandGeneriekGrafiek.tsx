@@ -1,9 +1,6 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import { PlusIcon } from "../../icons/Plus";
-import { UitroeptekenIcon } from "../../icons/Uitroepteken";
-import { MinIcon } from "../../icons/Min";
 import PaymentsIcon from '@mui/icons-material/Payments';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
@@ -14,7 +11,7 @@ import SavingsOutlinedIcon from '@mui/icons-material/SavingsOutlined';
 import QuestionMarkOutlinedIcon from '@mui/icons-material/QuestionMarkOutlined';
 
 interface StandGeneriekIconProps {
-  status: string;
+  statusIcon: JSX.Element;
   percentageFill: number;
   rekeningIconNaam: string | undefined;
   headerText: string;
@@ -23,7 +20,7 @@ interface StandGeneriekIconProps {
 }
 
 const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
-  status,
+  statusIcon,
   percentageFill,
   rekeningIconNaam,
   headerText,
@@ -31,21 +28,6 @@ const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
   cfoText,
 }) => {
 
-  let statusIcon;
-  switch (status) {
-    case 'green':
-      statusIcon = <PlusIcon color={status} height={36} />;
-      break;
-    case 'red':
-    case '#c00':
-      statusIcon = <MinIcon color={status} height={36} />;
-      break;
-    case 'orange':
-      statusIcon = <UitroeptekenIcon color={status} height={36} />;
-      break;
-    default:
-      statusIcon = <QuestionMarkOutlinedIcon color={'disabled'} height={36} />;
-  }
   let rekeningIcon;
   switch (rekeningIconNaam) {
     case 'inkomsten':
@@ -99,7 +81,7 @@ const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
           </Typography>
           <Typography
             variant="body2"
-            sx={{ color: '#666', zIndex: 10, position: 'relative', }}>
+            sx={{ pb: '5px', color: '#666', zIndex: 10, position: 'relative', }}>
             {bodyText}
           </Typography>
           <Typography

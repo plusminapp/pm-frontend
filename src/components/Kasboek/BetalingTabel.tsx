@@ -38,7 +38,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
       .filter(saldo => saldo.rekeningGroepSoort && betaalTabelRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
       .filter(saldo => !props.rekeningGroep || props.rekeningGroep.naam === saldo.rekeningGroepNaam)
       .sort((a, b) => a.sortOrder - b.sortOrder))
-  }, [props.geaggregeerdResultaatOpDatum]);
+  }, [props.geaggregeerdResultaatOpDatum, props.rekeningGroep]);
 
   const handleEditClick = (betaling: BetalingDTO) => {
     setSelectedBetaling(betaling);
@@ -202,8 +202,8 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
                     {betaalTabelRekeningGroepen
                       .map(rekeningGroep => (
                         <TableCell key={rekeningGroep.id} sx={{ padding: '5px' }} align="right">
-                          {(rekeningGroep.rekeningen.map(r => r.naam).includes(betaling.bestemming!!) ||
-                            rekeningGroep.rekeningen.map(r => r.naam).includes(betaling.bron!!))
+                          {(rekeningGroep.rekeningen.map(r => r.naam).includes(betaling.bestemming ?? '') ||
+                            rekeningGroep.rekeningen.map(r => r.naam).includes(betaling.bron ?? ''))
                             && getFormattedBedrag(betaling)}
                         </TableCell>
                       ))}

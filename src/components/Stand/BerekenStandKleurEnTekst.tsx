@@ -5,6 +5,9 @@ import {UitroeptekenIcon} from '../../icons/Uitroepteken';
 import QuestionMarkOutlinedIcon from '@mui/icons-material/QuestionMarkOutlined';
 
 export const berekenRekeningGroepIcoonKleur = (saldo: SaldoDTO): string => {
+  if (saldo.budgetOpPeilDatum === 0 && saldo.budgetBetaling === 0) {
+    return '#1977d3';
+  }
   switch (saldo.budgetType.toLowerCase()) {
     case 'inkomsten':
       return saldo.minderDanBudget > 0 ? 'red' : 'green';
@@ -17,11 +20,10 @@ export const berekenRekeningGroepIcoonKleur = (saldo: SaldoDTO): string => {
   }
 }
 
-export const berekenRekeningGroepIcoon = (heigth: number, saldo: SaldoDTO): JSX.Element => {
-  const color = berekenRekeningGroepIcoonKleur(saldo);
-  console.log('berekenRekeningGroepIcoon kleur:', color, saldo);
+export const berekenRekeningGroepIcoonOpKleur = (heigth: number, color: string): JSX.Element => {
   switch (color) {
     case 'green':
+    case '#1977d3':
       return <PlusIcon color={ color } height = { heigth} />;
     case 'red':
     case '#c00':
@@ -31,4 +33,8 @@ export const berekenRekeningGroepIcoon = (heigth: number, saldo: SaldoDTO): JSX.
     default:
       return <QuestionMarkOutlinedIcon color={ 'disabled' } height = { heigth} />;
   }
+}
+
+export const berekenRekeningGroepIcoon = (heigth: number, saldo: SaldoDTO): JSX.Element => {
+  return berekenRekeningGroepIcoonOpKleur(heigth, berekenRekeningGroepIcoonKleur(saldo));
 }
