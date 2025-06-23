@@ -1,6 +1,6 @@
 import { Accordion, AccordionDetails, AccordionSummary, Box, FormControlLabel, FormGroup, Switch, Typography } from "@mui/material";
 import Grid from '@mui/material/Grid2';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useCustomContext } from "../context/CustomContext";
 import { useAuthContext } from "@asgardeo/auth-react";
@@ -12,21 +12,61 @@ import { ArrowDropDownIcon } from "@mui/x-date-pickers";
 import SamenvattingGrafiek from "../components/Stand/SamenvattingGrafiek";
 import StandGrafiek from "../components/Stand/StandGrafiek";
 import { balansRekeningGroepSoorten, betaalmethodeRekeningGroepSoorten, betaalTabelRekeningGroepSoorten, RekeningGroepSoort } from "../model/RekeningGroep";
+import { BetalingDTO } from "../model/Betaling";
 
 export default function Stand() {
 
   const { getIDToken } = useAuthContext();
   const { actieveHulpvrager, gekozenPeriode, rekeningGroepPerBetalingsSoort } = useCustomContext();
 
+  const [betalingen, setBetalingen] = useState<BetalingDTO[]>([])
   const [stand, setStand] = useState<Stand | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(false);
-  // const [toonMutaties, setToonMutaties] = useState(localStorage.getItem('toonMutaties') === 'true');
 
-  const [detailsVisible, setDetailsVisible] = useState<boolean>(localStorage.getItem('toonBudgetDetails') === 'true');
-  const toggleToonBudgetDetails = () => {
-    localStorage.setItem('toonBudgetDetails', (!detailsVisible).toString());
-    setDetailsVisible(!detailsVisible);
+  const [toonDebug, setToonDebug] = useState(localStorage.getItem('toonDebug') === 'true');
+  const toggleToonDebug = () => {
+    localStorage.setItem('toonDebug', (!toonDebug).toString());
+    setToonDebug(!toonDebug);
   };
+
+  const [detailsVisible, setDetailsVisible] = useState<string | null>(localStorage.getItem('toonBudgetDetails'));
+  const toggleToonBudgetDetails = (naam: string) => {
+    if (detailsVisible === naam) { naam = '' }
+    localStorage.setItem('toonBudgetDetails', naam)
+    setDetailsVisible(naam);
+  };
+
+  const fetchBetalingen = useCallback(async () => {
+    let token
+    try {
+      token = await getIDToken();
+    } catch (error) {
+      console.error("Error fetching token", error);
+      setIsLoading(false);
+    }
+    if (actieveHulpvrager && token && gekozenPeriode) {
+      setIsLoading(true);
+      const id = actieveHulpvrager.id
+      const response = await fetch(`/api/v1/betalingen/hulpvrager/${id}?fromDate=${gekozenPeriode.periodeStartDatum}&toDate=${gekozenPeriode.periodeEindDatum}&size=-1`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      setIsLoading(false);
+      if (response.ok) {
+        const result = await response.json() as { data: { content: BetalingDTO[] } };
+        setBetalingen(result.data.content);
+      } else {
+        console.error("Failed to fetch betalingen", response.status);
+      }
+    }
+  }, [getIDToken, actieveHulpvrager, gekozenPeriode]);
+
+  useEffect(() => {
+    fetchBetalingen();
+  }, [fetchBetalingen]);
 
   useEffect(() => {
     const fetchSaldi = async () => {
@@ -105,54 +145,70 @@ export default function Stand() {
                 {dayjs(gekozenPeriode?.periodeEindDatum).isBefore(dayjs()) && ' De periode is afgelopen.'}
               </Typography>
 
+
               <Grid display={'flex'} flexDirection={'row'} alignItems={'center'}>
                 <FormGroup>
                   <FormControlLabel control={
                     <Switch
                       sx={{ transform: 'scale(0.6)' }}
-                      checked={detailsVisible}
-                      onChange={toggleToonBudgetDetails}
+                      checked={toonDebug}
+                      onChange={toggleToonDebug}
                       slotProps={{ input: { 'aria-label': 'controlled' } }}
                     />}
                     sx={{ mr: 0 }}
                     label={
                       <Box display="flex" fontSize={'0.875rem'}>
-                        Toon budget toelichting
+                        Toon debug info
                       </Box>
                     } />
                 </FormGroup>
               </Grid>
 
-              <Grid container columns={{ sm: 1 }} onClick={toggleToonBudgetDetails} >
-                {gekozenPeriode &&
-                  <Grid size={1}>
-                    <SamenvattingGrafiek
-                      peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
-                      periode={gekozenPeriode}
-                      resultaatSamenvattingOpDatum={stand.resultaatSamenvattingOpDatum}
-                      detailsVisible={detailsVisible} />
-                  </Grid>}
+              <Grid container flexDirection={'row'} columns={{ sm: 1, md: 2 }} sx={{ mb: 2 }}>
+                <Grid size={1} >
+                  {gekozenPeriode &&
+                    <Box onClick={() => toggleToonBudgetDetails('samenvatting')}>
+                      <SamenvattingGrafiek
+                        peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
+                        periode={gekozenPeriode}
+                        resultaatSamenvattingOpDatum={stand.resultaatSamenvattingOpDatum}
+                        detailsVisible={detailsVisible === 'samenvatting'} />
+                    </Box>}
 
-                {gekozenPeriode &&
-                  rekeningGroepPerBetalingsSoort
-                    .flatMap((rgpb) => (rgpb.rekeningGroepen))
-                    .filter(rekeningGroep => betaalTabelRekeningGroepSoorten.includes(rekeningGroep.rekeningGroepSoort))
-                    .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1)
-                    // .filter(rekeningGroep => rekeningGroep.rekeningen.length >= 1)
-                    .map(rekeningGroep => (
-                      <Grid size={1}
-                        key={rekeningGroep.id}
-                        sx={{ cursor: 'pointer' }}
-                      >
-                        <StandGrafiek
-                          peilDatum={dayjs(stand.peilDatum).isAfter(dayjs()) ? dayjs() : dayjs(stand.peilDatum)}
-                          periode={gekozenPeriode}
-                          rekeningGroep={rekeningGroep}
-                          resultaatOpDatum={stand.resultaatOpDatum.filter(b => b.rekeningGroepNaam === rekeningGroep.naam)}
-                          geaggregeerdResultaatOpDatum={stand.geaggregeerdResultaatOpDatum.find(b => b.rekeningGroepNaam === rekeningGroep.naam)}
-                          detailsVisible={detailsVisible} />
-                      </Grid>
-                    ))}
+                  {gekozenPeriode &&
+                    rekeningGroepPerBetalingsSoort
+                      .flatMap((rgpb) => (rgpb.rekeningGroepen))
+                      .filter(rekeningGroep => betaalTabelRekeningGroepSoorten.includes(rekeningGroep.rekeningGroepSoort))
+                      .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1)
+                      // .filter(rekeningGroep => rekeningGroep.rekeningen.length >= 1)
+                      .map(rekeningGroep => (
+                        <Box
+                          key={rekeningGroep.id}
+                          onClick={() => toggleToonBudgetDetails(rekeningGroep.naam)}
+                          sx={{ cursor: 'pointer' }}
+                        >
+                          <StandGrafiek
+                            peilDatum={dayjs(stand.peilDatum).isAfter(dayjs()) ? dayjs() : dayjs(stand.peilDatum)}
+                            periode={gekozenPeriode}
+                            rekeningGroep={rekeningGroep}
+                            resultaatOpDatum={stand.resultaatOpDatum.filter(b => b.rekeningGroepNaam === rekeningGroep.naam)}
+                            geaggregeerdResultaatOpDatum={stand.geaggregeerdResultaatOpDatum.find(b => b.rekeningGroepNaam === rekeningGroep.naam)}
+                            toonDebug={toonDebug && detailsVisible === rekeningGroep.naam}
+                            detailsVisible={detailsVisible === rekeningGroep.naam} />
+                        </Box>
+                      ))}
+                </Grid>
+                {/* <Grid size={1} sx={{ maxHeight: '400px', overflowY: 'auto' }}>
+                  <Box sx={{ pl: {sm: 0, md: '20px'}}}>
+                    <InkomstenUitgavenTabel
+                      isFilterSelectable={true}
+                      isReadOnly={true}
+                      actueleRekeningGroep={undefined}
+                      onBetalingBewaardChange={() => { }}
+                      onBetalingVerwijderdChange={() => { }}
+                      betalingen={betalingen} />
+                  </Box>
+                </Grid> */}
               </Grid>
             </Grid>
             <Grid size={1} flexDirection={'column'} alignItems="start">

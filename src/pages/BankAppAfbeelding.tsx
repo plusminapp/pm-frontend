@@ -234,7 +234,7 @@ const BankAppAfbeelding: React.FC = () => {
             {Object.keys(groupedData).length > 0 && (
               <>
                 <InkomstenUitgavenTabel
-                  actueleRekening={undefined}
+                  actueleRekeningGroep={undefined}
                   isOcr={true}
                   betalingen={validatedData.betalingen}
                   onBetalingBewaardChange={(betalingDTO) => onBetalingChange(betalingDTO.sortOrder)}

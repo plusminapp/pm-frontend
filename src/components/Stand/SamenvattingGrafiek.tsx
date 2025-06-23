@@ -24,7 +24,7 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
 
   const berekenStandGeneriekGrafiek = (): JSX.Element => {
     const bufferTekst = periodeAfgelopen ? 'Over einde periode' : 'Buffer';
-    const status = actueleBuffer == 0 ? 'red' : inGevarenZone ? 'orange' : 'green';
+    const status = actueleBuffer < 0 ? 'red' : inGevarenZone ? 'orange' : 'green';
     return <StandGeneriekGrafiek
       status={status}
       percentageFill={percentagePeriodeVoorbij}
@@ -80,6 +80,20 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
                     textAlign: 'center',
                     borderBottom: detailsVisible && inGevarenZone ? '4px solid orange' : 
                     detailsVisible && !inGevarenZone ? '4px solid green' : '0px',
+                    fontSize: '0.7rem',
+                  }}
+                >
+                  {detailsVisible && formatAmount(actueleBuffer.toString())}
+                </TableCell>
+              )}
+              {actueleBuffer < 0 && (
+                <TableCell
+                  width={`${(actueleBuffer / budgetMaandInkomstenBedrag) * 90}%`}
+                  sx={{
+                    backgroundColor: 'red',
+                    color: 'white',
+                    textAlign: 'center',
+                    borderBottom: detailsVisible ? '4px solid red' : undefined,
                     fontSize: '0.7rem',
                   }}
                 >

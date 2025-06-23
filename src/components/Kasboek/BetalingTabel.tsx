@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Box, Button, FormGroup, FormControlLabel, Switch } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { BetalingDTO, BetalingsSoort, betalingsSoortFormatter, internBetalingsSoorten } from '../../model/Betaling';
+import { RekeningGroepDTO } from '../../model/RekeningGroep';
 import dayjs from 'dayjs';
 import { useCustomContext } from '../../context/CustomContext';
 import { betaalTabelRekeningGroepSoorten, interneRekeningGroepSoorten, RekeningGroepSoort } from '../../model/RekeningGroep';
@@ -10,10 +11,11 @@ import { isPeriodeOpen } from '../../model/Periode';
 import UpsertBetalingDialoog from './UpsertBetalingDialoog';
 import { InfoIcon } from '../../icons/Info';
 import { SaldoDTO } from '../../model/Saldo';
+import { berekenRekeningGroepIcoon } from '../Stand/BerekenStandKleurEnTekst';
 
 type BetalingTabelProps = {
-  peilDatum: string | undefined;
   betalingen: BetalingDTO[];
+  rekeningGroep: RekeningGroepDTO | undefined;
   geaggregeerdResultaatOpDatum: SaldoDTO[];
   onBetalingBewaardChange: (betalingDTO: BetalingDTO) => void;
   onBetalingVerwijderdChange: (betalingDTO: BetalingDTO) => void;
@@ -28,7 +30,15 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
   const { gekozenPeriode, setSnackbarMessage, rekeningGroepPerBetalingsSoort } = useCustomContext();
 
   const [selectedBetaling, setSelectedBetaling] = useState<BetalingDTO | undefined>(undefined);
+  const [betaalTabelSaldi, setBetaalTabelSaldi] = useState<SaldoDTO[]>([]);
   const [toonIntern, setToonIntern] = useState<boolean>(localStorage.getItem('toonIntern') === 'true');
+
+  useEffect(() => {
+    setBetaalTabelSaldi(props.geaggregeerdResultaatOpDatum
+      .filter(saldo => saldo.rekeningGroepSoort && betaalTabelRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
+      .filter(saldo => !props.rekeningGroep || props.rekeningGroep.naam === saldo.rekeningGroepNaam)
+      .sort((a, b) => a.sortOrder - b.sortOrder))
+  }, [props.geaggregeerdResultaatOpDatum]);
 
   const handleEditClick = (betaling: BetalingDTO) => {
     setSelectedBetaling(betaling);
@@ -47,7 +57,8 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
   const betaalTabelRekeningGroepen = rekeningGroepPerBetalingsSoort
     .flatMap(r => r.rekeningGroepen)
     .sort((a, b) => a.sortOrder - b.sortOrder)
-    .filter(r => betaalTabelRekeningGroepSoorten.includes(r.rekeningGroepSoort));
+    .filter(rg => betaalTabelRekeningGroepSoorten.includes(rg.rekeningGroepSoort))
+    .filter(rg => !props.rekeningGroep || props.rekeningGroep.naam === rg.naam)
 
   const handleToonInternChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     localStorage.setItem('toonIntern', event.target.checked.toString());
@@ -69,7 +80,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
 
   return (
     <>
-      {heeftIntern &&
+      {heeftIntern && !props.rekeningGroep &&
         <>
           <Grid display="flex" flexDirection="row" alignItems={'center'} >
             <FormGroup >
@@ -101,7 +112,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
             <TableRow sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey' }}>
               <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px' }}></TableCell>
               <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px', fontWeight: 'bold', maxWidth: '300px' }}>Totalen</TableCell>
-              {props.geaggregeerdResultaatOpDatum
+              {betaalTabelSaldi
                 .filter(saldo => saldo.rekeningGroepSoort && betaalTabelRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                 .sort((a, b) => a.sortOrder - b.sortOrder)
                 .map(saldo => (
@@ -120,8 +131,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
             <TableRow >
               <TableCell sx={{ padding: '5px' }}></TableCell>
               <TableCell sx={{ padding: '5px', maxWidth: '300px' }}>Verwacht</TableCell>
-              {props.geaggregeerdResultaatOpDatum
-                .filter(saldo => saldo.rekeningGroepSoort && betaalTabelRekeningGroepSoorten.map(rs => rs.toString()).includes(saldo.rekeningGroepSoort))
+              {betaalTabelSaldi
                 .sort((a, b) => a.sortOrder - b.sortOrder)
                 .map(saldo => (
                   <TableCell key={saldo.rekeningGroepNaam} sx={{ padding: '5px' }} align="right">
@@ -139,12 +149,11 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
             <TableRow >
               <TableCell sx={{ padding: '5px' }}></TableCell>
               <TableCell sx={{ padding: '5px', maxWidth: '300px' }}>Overschot/tekort</TableCell>
-              {props.geaggregeerdResultaatOpDatum
-                .filter(saldo => saldo.rekeningGroepSoort && betaalTabelRekeningGroepSoorten.map(rs => rs.toString()).includes(saldo.rekeningGroepSoort))
+              {betaalTabelSaldi
                 .sort((a, b) => a.sortOrder - b.sortOrder)
                 .map(saldo => (
                   <TableCell key={saldo.rekeningGroepNaam} sx={{ padding: '5px' }} align="right">
-                    {formatter.format(saldo.budgetBetaling - saldo.budgetOpPeilDatum)}
+                    {berekenRekeningGroepIcoon(12, saldo)} {formatter.format(saldo.budgetBetaling + (saldo.budgetType === 'INKOMSTEN' ? - saldo.budgetOpPeilDatum : saldo.budgetOpPeilDatum))}
                   </TableCell>
                 ))}
               {gekozenPeriode && isPeriodeOpen(gekozenPeriode) &&
@@ -185,7 +194,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
                 .sort((a, b) => a.sortOrder > b.sortOrder ? -1 : 1)
                 .map((betaling) =>
                   <TableRow key={betaling.id}>
-                    <TableCell sx={{ padding: '5px' }}>{dayjs(betaling.boekingsdatum).format('YYYY-MM-DD')}</TableCell>
+                    <TableCell sx={{ padding: '5px' }}>{dayjs(betaling.boekingsdatum).format('D MMMM')}</TableCell>
                     <TableCell sx={{ padding: '5px', maxWidth: '300px' }}>
                       {isIntern(betaling) ? betaling.betalingsSoort && betalingsSoortFormatter(betaling.betalingsSoort) + ': ' : ''}
                       {betaling.omschrijving}
@@ -223,7 +232,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
           betaling={{ ...selectedBetaling, bron: selectedBetaling.bron, bestemming: selectedBetaling.bestemming }}
         />
       }
-      {/* {JSON.stringify(props.geaggregeerdResultaatOpDatum)} */}
+      {JSON.stringify(props.rekeningGroep?.naam)}
     </>
   );
 };

@@ -15,7 +15,6 @@ import PhotoCameraOutlinedIcon from '@mui/icons-material/PhotoCameraOutlined';
 import dayjs from 'dayjs';
 import { Stand } from '../model/Saldo';
 import BetalingTabel from '../components/Kasboek/BetalingTabel';
-import InkomstenUitgavenTabel from '../components/Kasboek/InkomstenUitgavenTabel';
 import KolommenTabel from '../components/Kasboek/KolommenTabel';
 
 export default function Kasboek() {
@@ -121,8 +120,8 @@ export default function Kasboek() {
       <Typography variant='h4'>Kasboek</Typography>
       <Grid container spacing={{ xs: 1, md: 3 }} columns={{ xs: 2, md: 6 }}>
         <Grid size={2}>
-          <PeriodeSelect 
-          isKasboek/>
+          <PeriodeSelect
+            isKasboek />
         </Grid>
         <Grid size={{ xs: 2, md: 3 }}>
           <Typography sx={{ mt: { xs: '0px', md: '35px' } }}>
@@ -144,9 +143,9 @@ export default function Kasboek() {
       </Grid>
       {isMdOrLarger && gekozenPeriode && stand &&
         <BetalingTabel
-          peilDatum={dayjs(gekozenPeriode.periodeEindDatum) > dayjs() ? dayjs().format('YYYY-MM-DD') : gekozenPeriode.periodeEindDatum}
+          rekeningGroep={undefined}
           betalingen={betalingen}
-          geaggregeerdResultaatOpDatum={stand?.geaggregeerdResultaatOpDatum.sort((a,b) => a.sortOrder - b.sortOrder)}
+          geaggregeerdResultaatOpDatum={stand?.geaggregeerdResultaatOpDatum.sort((a, b) => a.sortOrder - b.sortOrder)}
           onBetalingBewaardChange={(betalingDTO) => onBetalingBewaardChange(betalingDTO)}
           onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO.sortOrder)}
         />
@@ -162,6 +161,7 @@ export default function Kasboek() {
           <AccordionDetails sx={{ p: 0 }}>
             <KolommenTabel
               betalingen={betalingen}
+              geaggregeerdResultaatOpDatum={stand?.geaggregeerdResultaatOpDatum ?? []}
               onBetalingBewaardChange={(betalingDTO) => onBetalingBewaardChange(betalingDTO)}
               onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO.sortOrder)}
             />
@@ -169,7 +169,7 @@ export default function Kasboek() {
           </AccordionDetails>
         </Accordion>
       </Grid>
-      <Grid container spacing={{ xs: 1, md: 3 }} columns={{ xs: 1, lg: 12 }}>
+      {/* <Grid container spacing={{ xs: 1, md: 3 }} columns={{ xs: 1, lg: 12 }}>
         <Grid size={{ xs: 1, lg: 4 }}>
           <Accordion expanded={expanded === 'RekeningGroep'} onChange={handleChange('RekeningGroep')}>
             <AccordionSummary
@@ -180,16 +180,16 @@ export default function Kasboek() {
               </Typography>
             </AccordionSummary>
             <AccordionDetails sx={{ p: 0 }}>
-              <InkomstenUitgavenTabel
-                isFilterSelectable={true}
-                actueleRekening={undefined}
+              <BetalingTabel
+                // isFilterSelectable={true}
+                // actueleRekeningGroep={undefined}
                 onBetalingBewaardChange={(betalingDTO) => onBetalingBewaardChange(betalingDTO)}
                 onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO.sortOrder)}
-                betalingen={betalingen} />
+                betalingen={betalingen} geaggregeerdResultaatOpDatum={[]} />
             </AccordionDetails>
           </Accordion>
         </Grid>
-      </Grid>
+      </Grid> */}
       {/* {JSON.stringify(stand?.geaggregeerdResultaatOpDatum)} */}
     </>
   );

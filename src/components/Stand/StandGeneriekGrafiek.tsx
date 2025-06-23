@@ -9,7 +9,7 @@ import LocalMallIcon from '@mui/icons-material/LocalMall';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 import CallMissedOutgoingIcon from '@mui/icons-material/CallMissedOutgoing';
 import Redeem from '@mui/icons-material/Redeem';
-import FunctionsIcon from '@mui/icons-material/Functions';
+import SummarizeOutlinedIcon from '@mui/icons-material/SummarizeOutlined';
 import SavingsOutlinedIcon from '@mui/icons-material/SavingsOutlined';
 import QuestionMarkOutlinedIcon from '@mui/icons-material/QuestionMarkOutlined';
 
@@ -37,7 +37,7 @@ const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
       statusIcon = <PlusIcon color={status} height={36} />;
       break;
     case 'red':
-    case '#cc0000':
+    case '#c00':
       statusIcon = <MinIcon color={status} height={36} />;
       break;
     case 'orange':
@@ -67,7 +67,7 @@ const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
       rekeningIcon = <SavingsOutlinedIcon color="disabled" fontSize="large" />;
       break;
     case 'samenvatting':
-      rekeningIcon = <FunctionsIcon color="disabled" fontSize="large" />;
+      rekeningIcon = <SummarizeOutlinedIcon color="disabled" fontSize="large" />;
       break;
     default:
       rekeningIcon = <QuestionMarkOutlinedIcon color={'disabled'} height={36} />;
