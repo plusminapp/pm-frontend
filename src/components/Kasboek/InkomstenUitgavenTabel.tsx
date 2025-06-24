@@ -17,15 +17,12 @@ import UpsertBetalingDialoog from './UpsertBetalingDialoog';
 import dayjs from 'dayjs';
 import React from 'react';
 import { InfoIcon } from '../../icons/Info';
-import { SaldoDTO } from '../../model/Saldo';
 
 interface InUitTabelProps {
+  actueleRekening: RekeningGroepDTO | undefined;
   isFilterSelectable?: boolean;
-  isReadOnly?: boolean;
   isOcr?: boolean;
   betalingen: BetalingDTO[];
-  // actueleRekeningGroep: RekeningGroepDTO | undefined;
-  geaggregeerdResultaatOpDatum: SaldoDTO[];
   onBetalingBewaardChange: (betalingDTO: BetalingDTO) => void;
   onBetalingVerwijderdChange: (betalingDTO: BetalingDTO) => void;
 }
@@ -34,7 +31,7 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
 
   const { actieveHulpvrager, gebruiker, gekozenPeriode, setSnackbarMessage, rekeningGroepPerBetalingsSoort } = useCustomContext();
   const betalingen = props.betalingen
-  // const [actueleRekening, setActueleRekening] = useState<RekeningGroepDTO | undefined>(props.actueleRekeningGroep)
+  const [actueleRekening, setActueleRekening] = useState<RekeningGroepDTO | undefined>(props.actueleRekening)
   const [filteredBetalingen, setFilteredBetalingen] = useState<{ [key: string]: BetalingDTO[] }>({})
   const [selectedBetaling, setSelectedBetaling] = useState<BetalingDTO | undefined>(undefined);
   const [verwerkteBetalingen, setVerwerkteBetalingen] = useState<string[]>([]);
@@ -54,24 +51,24 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
         .map(r => [r.id, r])
     ).values())
 
-  // useEffect(() => {
-  //   if (betalingen.length > 0) {
-  //     const filterBetalingenOpBronBestemming = betalingen
-  //       .filter((betaling) => actueleRekening?.rekeningen.some(r => r.naam === betaling.bron || r.naam === betaling.bestemming) || actueleRekening === undefined)
-  //       .reduce((acc, item) => {
-  //         if (!acc[item.boekingsdatum.toString()]) {
-  //           acc[item.boekingsdatum.toString()] = [];
-  //         }
-  //         acc[item.boekingsdatum.toString()].push(item);
-  //         return acc;
-  //       }, {} as { [key: string]: BetalingDTO[] });
-  //     setFilteredBetalingen(filterBetalingenOpBronBestemming)
-  //   }
-  // }, [actueleRekening, betalingen, setFilteredBetalingen]);
+  useEffect(() => {
+    if (betalingen.length > 0) {
+      const filterBetalingenOpBronBestemming = betalingen
+        .filter((betaling) => actueleRekening?.rekeningen.some(r => r.naam === betaling.bron || r.naam === betaling.bestemming) || actueleRekening === undefined)
+        .reduce((acc, item) => {
+          if (!acc[item.boekingsdatum.toString()]) {
+            acc[item.boekingsdatum.toString()] = [];
+          }
+          acc[item.boekingsdatum.toString()].push(item);
+          return acc;
+        }, {} as { [key: string]: BetalingDTO[] });
+      setFilteredBetalingen(filterBetalingenOpBronBestemming)
+    }
+  }, [actueleRekening, betalingen, setFilteredBetalingen]);
 
-  // const handleWeergaveChange = (event: SelectChangeEvent) => {
-  //   setActueleRekening(rekeningGroepen.find(r => r.naam === event.target.value))
-  // };
+  const handleWeergaveChange = (event: SelectChangeEvent) => {
+    setActueleRekening(rekeningGroepen.find(r => r.naam === event.target.value))
+  };
 
   const onUpsertBetalingClose = () => {
     setSelectedBetaling(undefined);
@@ -100,7 +97,7 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
 
   return (
     <>
-      {/* {props.isFilterSelectable &&
+      {props.isFilterSelectable &&
         <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
           <InputLabel id="demo-simple-select-standard-label">Weergave kiezen</InputLabel>
           <Select
@@ -115,10 +112,10 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
             ))}
           </Select>
         </FormControl>
-      } */}
+      }
       {Object.keys(filteredBetalingen).length === 0 &&
         <Typography sx={{ mx: '25px', fontSize: '12px' }}>
-          {/* {actieveHulpvrager?.id !== gebruiker?.id ? `${actieveHulpvrager!.bijnaam} heeft` : "Je hebt"} nog geen betalingen geregistreerd{actueleRekening ? ` voor ${actueleRekening.naam}` : ''}. */}
+          {actieveHulpvrager?.id !== gebruiker?.id ? `${actieveHulpvrager!.bijnaam} heeft` : "Je hebt"} nog geen betalingen geregistreerd{actueleRekening ? ` voor ${actueleRekening.naam}` : ''}.
         </Typography>
       }
       {Object.keys(filteredBetalingen).length > 0 &&
@@ -149,14 +146,13 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
                               <Typography variant="caption" color="error">Bestaat al met omschrijving {item.omschrijving}</Typography>
                             </>}
                         </TableCell>
-                        <TableCell sx={{ textAlign: 'right', padding: '5px', color: verwerkteBetalingen.includes(item.sortOrder) ? 'lightgrey' : 'inherit' }}
+                        <TableCell sx={{ padding: '5px', color: verwerkteBetalingen.includes(item.sortOrder) ? 'lightgrey' : 'inherit' }}
                           onClick={() => handleEditClick(item.sortOrder)}>
-                          blaat 
-                          {/* // {formatAmount(berekenBedragVoorRekenining(item, actueleRekening).toString())} */}
+                          {formatAmount(berekenBedragVoorRekenining(item, actueleRekening).toString())}
                         </TableCell>
-                        {/* <TableCell sx={{ padding: '5px' }}>{item.sortOrder}</TableCell> */}
+                        <TableCell sx={{ padding: '5px' }}>{item.sortOrder}</TableCell>
                         <TableCell sx={{ padding: '5px' }}>
-                          {isPeriodeOpen && !verwerkteBetalingen.includes(item.sortOrder) && !props.isReadOnly &&
+                          {isPeriodeOpen && !verwerkteBetalingen.includes(item.sortOrder) &&
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                               <IconButton onClick={() => handleEditClick(item.sortOrder)}>
                                 <EditIcon />
