@@ -84,7 +84,7 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                   <TableCell
                     width={`${(meerDanMaandBudget / tabelBreedte) * 90}%`}
                     sx={{
-                      backgroundColor: budgetType === 'inkomsten' ? 'green' : budgetType === 'VAST' ? 'orange' : '#c00',
+                      backgroundColor: budgetType === 'INKOMSTEN' ? 'green' : budgetType === 'VAST' ? 'orange' : '#c00',
                       borderBottom: detailsVisible ? '4px solid #333' : '0px',
                       color: 'white',
                       textAlign: 'center',

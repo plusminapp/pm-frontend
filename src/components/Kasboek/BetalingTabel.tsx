@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Box, Button, FormGroup, FormControlLabel, Switch } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { BetalingDTO, BetalingsSoort, betalingsSoortFormatter, internBetalingsSoorten } from '../../model/Betaling';
+import { bestemmingBetalingsSoorten as bronBetalingsSoorten, BetalingDTO, BetalingsSoort, internBetalingsSoorten } from '../../model/Betaling';
 import { RekeningGroepDTO } from '../../model/RekeningGroep';
 import dayjs from 'dayjs';
 import { useCustomContext } from '../../context/CustomContext';
@@ -172,7 +172,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
                 .map(rekeningGroep => (
                   <TableCell key={rekeningGroep.naam} sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px' }} align="right">{rekeningGroep.naam}</TableCell>
                 ))}
-              {heeftIntern && toonIntern &&
+              {!props.rekeningGroep && heeftIntern && toonIntern &&
                 <TableCell sx={{ borderTop: '2px solid grey', borderBottom: '2px solid grey', padding: '5px' }} align="right">
                   <Grid display="flex" flexDirection="row" alignItems={'center'} justifyContent="flex-end" >
                     Intern
@@ -191,13 +191,18 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
           <TableBody>
             <>
               {props.betalingen
-                .sort((a, b) => a.sortOrder > b.sortOrder ? -1 : 1)
+                .filter((betaling) =>
+                  !props.rekeningGroep ||
+                  props.rekeningGroep?.rekeningen.map(r => r.naam).includes(betaling.bestemming ?? '') ||
+                  props.rekeningGroep?.rekeningen.map(r => r.naam).includes(betaling.bron ?? '')
+                ).sort((a, b) => a.sortOrder > b.sortOrder ? -1 : 1)
                 .map((betaling) =>
+                  (!isIntern(betaling) || toonIntern) &&
                   <TableRow key={betaling.id}>
                     <TableCell sx={{ padding: '5px' }}>{dayjs(betaling.boekingsdatum).format('D MMMM')}</TableCell>
                     <TableCell sx={{ padding: '5px', maxWidth: '300px' }}>
-                      {isIntern(betaling) ? betaling.betalingsSoort && betalingsSoortFormatter(betaling.betalingsSoort) + ': ' : ''}
-                      {betaling.omschrijving}
+                      {/* {isIntern(betaling) ? betaling.betalingsSoort && betalingsSoortFormatter(betaling.betalingsSoort) + ': ' : ''} */}
+                      {toonIntern && (betaling.betalingsSoort && bronBetalingsSoorten.includes(betaling.betalingsSoort) ? `(${betaling.bron})` : `(${betaling.bestemming})`)} {betaling.omschrijving}
                     </TableCell>
                     {betaalTabelRekeningGroepen
                       .map(rekeningGroep => (
@@ -218,7 +223,6 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
                     }
                   </TableRow>
                 )}
-
             </>
           </TableBody>
         </Table>
@@ -232,7 +236,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
           betaling={{ ...selectedBetaling, bron: selectedBetaling.bron, bestemming: selectedBetaling.bestemming }}
         />
       }
-      {JSON.stringify(props.rekeningGroep?.naam)}
+      {/* {JSON.stringify(filteredBetalingen)} */}
     </>
   );
 };

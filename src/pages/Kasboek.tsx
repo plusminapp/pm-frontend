@@ -156,7 +156,7 @@ export default function Kasboek() {
             expandIcon={<ArrowDropDownIcon />}
             aria-controls={'BetalingTabel'}
             id={'BetalingTabel'}>
-            <Typography component="span">Weergave als kolommen</Typography>
+            <Typography component="span">Weergave per kolom</Typography>
           </AccordionSummary>
           <AccordionDetails sx={{ p: 0 }}>
             <KolommenTabel
