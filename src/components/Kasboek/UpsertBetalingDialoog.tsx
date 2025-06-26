@@ -43,7 +43,7 @@ type UpsertBetalingDialoogProps = {
 };
 
 export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps) {
-  const { actieveHulpvrager, gebruiker, periodes, gekozenPeriode, setSnackbarMessage,  } = useCustomContext();
+  const { actieveHulpvrager, gebruiker, periodes, gekozenPeriode, setSnackbarMessage, } = useCustomContext();
 
   const boekingsDatum = gekozenPeriode?.periodeEindDatum && dayjs().toISOString().slice(0, 10) > gekozenPeriode?.periodeEindDatum ? dayjs(gekozenPeriode?.periodeEindDatum) : dayjs()
 
@@ -67,11 +67,15 @@ export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps)
   const initialBetalingDtoWarnings = { boekingsdatum: undefined }
 
   const [open, setOpen] = useState(props.editMode);
-  const [betalingDTO, setBetalingDTO] = useState<BetalingDTO>(props.betaling ? { ...props.betaling, boekingsdatum: dayjs(props.betaling.boekingsdatum) } : initialBetalingDTO);
+  const [betalingDTO, setBetalingDTO] = useState<BetalingDTO>(props.betaling ?
+    { ...props.betaling, 
+      bedrag: props.betaling.bedrag < 0 ? -props.betaling.bedrag : props.betaling.bedrag,
+      boekingsdatum: dayjs(props.betaling.boekingsdatum) } : 
+    initialBetalingDTO);
   const [errors, setErrors] = useState<BetalingDtoErrors>(initialBetalingDtoErrors);
   const [warnings, setWarnings] = useState<BetalingDtoWarnings>(initialBetalingDtoWarnings);
-  const [isOntvangst, setIsOntvangst] = useState(false);
-  
+  const [isOntvangst, setIsOntvangst] = useState(props.betaling && props.betaling.bedrag < 0);
+
   const { getIDToken } = useAuthContext();
 
   const handleClickOpen = () => {
@@ -333,7 +337,7 @@ export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps)
                   )}
                 </FormControl>
               </Grid>
-              {betalingDTO.betalingsSoort === BetalingsSoort.uitgaven && 
+              {betalingDTO.betalingsSoort === BetalingsSoort.uitgaven &&
                 <Grid size={{ xs: 12, sm: 7 }} marginBottom={{ xs: 0, sm: 1 }} display="flex" alignItems="center">
                   <FormControl>
                     <FormControlLabel

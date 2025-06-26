@@ -233,7 +233,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
           onBetalingVerwijderdChange={(betalingDTO) => props.onBetalingVerwijderdChange(betalingDTO)}
           onUpsertBetalingClose={onUpsertBetalingClose}
           editMode={true}
-          betaling={{ ...selectedBetaling, bron: selectedBetaling.bron, bestemming: selectedBetaling.bestemming }}
+          betaling={{ ...selectedBetaling }}
         />
       }
       {/* {JSON.stringify(filteredBetalingen)} */}

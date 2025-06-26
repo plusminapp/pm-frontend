@@ -24,7 +24,7 @@ export const isPeriodeOpen = (gekozenPeriode: Periode) => gekozenPeriode?.period
 
 export const eersteOpenPeriode = (periodes: Periode[]): Periode | undefined => {
     const openPeriodes = periodes
-        .filter(p => p.periodeStatus === 'OPEN')
+        .filter(p => p.periodeStatus === 'OPEN' || p.periodeStatus === 'HUIDIG')
         .sort((a, b) => dayjs(a.periodeStartDatum).diff(dayjs(b.periodeStartDatum)));
 
     return openPeriodes.length > 0 ? openPeriodes[0] : undefined;

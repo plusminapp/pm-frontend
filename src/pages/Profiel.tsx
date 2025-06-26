@@ -51,7 +51,17 @@ const Profiel: React.FC = () => {
   }, [actieveHulpvrager, fetchfetchOngeldigeBetalingen]);
 
   const creeerBudgetTekst = (): string => {
-    const budgetTekst = 'Moet nog worden ingevuld';
+    const inkomsten = rekeningGroepPerBetalingsSoort
+    .filter(rgpb => rgpb.betalingsSoort === 'INKOMSTEN')
+    .flatMap(rgpb => rgpb.rekeningGroepen)
+    .flatMap(rg => rg.rekeningen)
+    .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
+    const uitgaven = rekeningGroepPerBetalingsSoort
+    .filter(rgpb => rgpb.betalingsSoort === 'UITGAVEN')
+    .flatMap(rgpb => rgpb.rekeningGroepen)
+    .flatMap(rg => rg.rekeningen)
+    .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
+    const budgetTekst = `In: ${currencyFormatter.format(inkomsten)}, Uit: ${currencyFormatter.format(uitgaven)}, Over: ${currencyFormatter.format(inkomsten - uitgaven)} per maand. `;
     return budgetTekst
   }
 
