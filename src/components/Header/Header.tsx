@@ -195,7 +195,7 @@ function Header() {
 
   // const maandAflossingsBedrag = berekenMaandAflossingenBedrag(actieveHulpvrager?.aflossingen ?? [])
   const heeftAflossing = rekeningGroepen.some((rekeningGroep) => rekeningGroep.rekeningGroepSoort === 'AFLOSSING');
-  const pages = heeftAflossing ? ['Stand', 'Kasboek', 'Schuld/Aflossingen'] : ['Stand', 'Kasboek'];
+  const pages = heeftAflossing ? ['Stand', 'Kasboek', 'Aflossing'] : ['Stand', 'Kasboek'];
   // const pages = ['Stand', 'Kasboek'];
 
   return (

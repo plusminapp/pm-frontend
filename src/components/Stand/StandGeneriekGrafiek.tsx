@@ -16,7 +16,7 @@ interface StandGeneriekIconProps {
   rekeningIconNaam: string | undefined;
   headerText: string;
   bodyText: string;
-  cfoText: string;
+  cfaText: string;
 }
 
 const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
@@ -25,7 +25,7 @@ const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
   rekeningIconNaam,
   headerText,
   bodyText,
-  cfoText,
+  cfaText: cfoText,
 }) => {
 
   let rekeningIcon;

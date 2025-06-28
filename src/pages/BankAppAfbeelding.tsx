@@ -28,8 +28,8 @@ const BankAppAfbeelding: React.FC = () => {
   const [parsedData, setParsedData] = useState<BetalingDTO[]>([]);
   const [validatedData, setValidatedData] = useState<BetalingvalidatieWrapper>({ betalingen: [] });
   const [groupedData, setGroupedData] = useState<{ [key: string]: BetalingDTO[] }>({});
-  const [confidence, setConfidence] = useState<number | null>(null); // Add state for confidence
-  const [imageSrc, setImageSrc] = useState<string | null>(null); // Add state for image source
+  const [confidence, setConfidence] = useState<number | null>(null); 
+  const [imageSrc, setImageSrc] = useState<string | null>(null); 
   const [toonAfbeelding, setToonUpdatedAfbeelding] = useState<boolean>(localStorage.getItem('toonUpdatedAfbeelding') === 'true'); // Add state for image source
   const [updatedImageSrc, setUpdatedImageSrc] = useState<string | null>(null);
   const [ocrBankRekening, setOcrBankRekening] = useState<RekeningDTO | undefined>(undefined);
@@ -152,18 +152,13 @@ const BankAppAfbeelding: React.FC = () => {
     setOcrBankRekening(bankRekening);
   };
 
-  const onBetalingChange = (sortOrder: string) => {
-    const newValidatedBetalingen = validatedData.betalingen.filter(item => item.sortOrder !== sortOrder)
-    console.log('onBetalingChange', newValidatedBetalingen, ', ', sortOrder);
-    setAantalVerwerkteBetalingen(aantalVerwerkteBetalingen + 1);
-    setValidatedData({ ...validatedData, betalingen: newValidatedBetalingen });
-  };
-
   const onBetalingBewaardChange = (sortOrder: string) => {
+    setAantalVerwerkteBetalingen(aantalVerwerkteBetalingen + 1);
     console.log('onBetalingBewaardChange', sortOrder);
   }
-
+  
   const onBetalingVerwijderdChange = (sortOrder: string) => {
+    setAantalVerwerkteBetalingen(aantalVerwerkteBetalingen + 1);
     console.log('onBetalingVerwijderdChange', sortOrder);
   }
 
@@ -237,8 +232,8 @@ const BankAppAfbeelding: React.FC = () => {
                   actueleRekeningGroep={undefined}
                   isOcr={true}
                   betalingen={validatedData.betalingen}
-                  onBetalingBewaardChange={(betalingDTO) => onBetalingChange(betalingDTO.sortOrder)}
-                  onBetalingVerwijderdChange={(betalingDTO) => onBetalingChange(betalingDTO.sortOrder)} />
+                  onBetalingBewaardChange={(betalingDTO) => onBetalingBewaardChange(betalingDTO.sortOrder)}
+                  onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO.sortOrder)} />
               </>
             )}
           </Box>
@@ -292,8 +287,8 @@ const BankAppAfbeelding: React.FC = () => {
         </Accordion>} */}
       <Typography variant="body2" sx={{ mt: 1 }}>
         {confidence && toonAfbeelding ? `OCR vertrouwen: ${confidence.toFixed(2)}%` : ''}
-        GroupedData: {JSON.stringify(groupedData)}
-        ParsedDate: {JSON.stringify(parsedData)}
+        {/* GroupedData: {JSON.stringify(groupedData)} */}
+        {/* ParsedDate: {JSON.stringify(parsedData)} */}
       </Typography>
     </Box>
   );

@@ -29,18 +29,18 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   },
 }));
 
-type WijzigPeriodeDialoogProps = {
-  periodes: Periode[];
-  index: number;
-  editMode?: boolean;
-  onWijzigPeriodeClose: () => void;
-};
 type FormSaldo = {
   naam: string;
   bedrag: string;
   delta: number;
 }
 
+type WijzigPeriodeDialoogProps = {
+  periodes: Periode[];
+  index: number;
+  editMode?: boolean;
+  onWijzigPeriodeClose: () => void;
+};
 export default function WijzigPeriodeDialoog(props: WijzigPeriodeDialoogProps) {
   const { getIDToken } = useAuthContext();
   const { actieveHulpvrager, setSnackbarMessage } = useCustomContext();

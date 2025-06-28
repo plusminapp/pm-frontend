@@ -1,6 +1,6 @@
 import { Accordion, AccordionDetails, AccordionSummary, Box, FormControlLabel, FormGroup, Switch, Typography } from "@mui/material";
 import Grid from '@mui/material/Grid2';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useCustomContext } from "../context/CustomContext";
 import { useAuthContext } from "@asgardeo/auth-react";
@@ -12,14 +12,13 @@ import { ArrowDropDownIcon } from "@mui/x-date-pickers";
 import SamenvattingGrafiek from "../components/Stand/SamenvattingGrafiek";
 import StandGrafiek from "../components/Stand/StandGrafiek";
 import { balansRekeningGroepSoorten, betaalmethodeRekeningGroepSoorten, betaalTabelRekeningGroepSoorten, RekeningGroepSoort } from "../model/RekeningGroep";
-import { BetalingDTO } from "../model/Betaling";
 
 export default function Stand() {
 
   const { getIDToken } = useAuthContext();
   const { actieveHulpvrager, gekozenPeriode, rekeningGroepPerBetalingsSoort } = useCustomContext();
 
-  const [betalingen, setBetalingen] = useState<BetalingDTO[]>([])
+  // const [betalingen, setBetalingen] = useState<BetalingDTO[]>([])
   const [stand, setStand] = useState<Stand | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(false);
 
@@ -36,37 +35,37 @@ export default function Stand() {
     setDetailsVisible(naam);
   };
 
-  const fetchBetalingen = useCallback(async () => {
-    let token
-    try {
-      token = await getIDToken();
-    } catch (error) {
-      console.error("Error fetching token", error);
-      setIsLoading(false);
-    }
-    if (actieveHulpvrager && token && gekozenPeriode) {
-      setIsLoading(true);
-      const id = actieveHulpvrager.id
-      const response = await fetch(`/api/v1/betalingen/hulpvrager/${id}?fromDate=${gekozenPeriode.periodeStartDatum}&toDate=${gekozenPeriode.periodeEindDatum}&size=-1`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      setIsLoading(false);
-      if (response.ok) {
-        const result = await response.json() as { data: { content: BetalingDTO[] } };
-        setBetalingen(result.data.content);
-      } else {
-        console.error("Failed to fetch betalingen", response.status);
-      }
-    }
-  }, [getIDToken, actieveHulpvrager, gekozenPeriode]);
+  // const fetchBetalingen = useCallback(async () => {
+  //   let token
+  //   try {
+  //     token = await getIDToken();
+  //   } catch (error) {
+  //     console.error("Error fetching token", error);
+  //     setIsLoading(false);
+  //   }
+  //   if (actieveHulpvrager && token && gekozenPeriode) {
+  //     setIsLoading(true);
+  //     const id = actieveHulpvrager.id
+  //     const response = await fetch(`/api/v1/betalingen/hulpvrager/${id}?fromDate=${gekozenPeriode.periodeStartDatum}&toDate=${gekozenPeriode.periodeEindDatum}&size=-1`, {
+  //       method: "GET",
+  //       headers: {
+  //         "Authorization": `Bearer ${token}`,
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
+  //     setIsLoading(false);
+  //     if (response.ok) {
+  //       const result = await response.json() as { data: { content: BetalingDTO[] } };
+  //       setBetalingen(result.data.content);
+  //     } else {
+  //       console.error("Failed to fetch betalingen", response.status);
+  //     }
+  //   }
+  // }, [getIDToken, actieveHulpvrager, gekozenPeriode]);
 
-  useEffect(() => {
-    fetchBetalingen();
-  }, [fetchBetalingen]);
+  // useEffect(() => {
+  //   fetchBetalingen();
+  // }, [fetchBetalingen]);
 
   useEffect(() => {
     const fetchSaldi = async () => {
@@ -165,7 +164,7 @@ export default function Stand() {
               </Grid>
 
               <Grid container flexDirection={'row'} columns={{ sm: 1, md: 2 }} sx={{ mb: 2 }}>
-                <Grid size={1} >
+                <Grid  >
                   {gekozenPeriode &&
                     <Box onClick={() => toggleToonBudgetDetails('samenvatting')}>
                       <SamenvattingGrafiek

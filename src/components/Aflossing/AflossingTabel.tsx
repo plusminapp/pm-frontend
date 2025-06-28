@@ -8,6 +8,7 @@ import TableRow from '@mui/material/TableRow';
 import { currencyFormatter } from '../../model/Betaling'
 import { SaldoDTO } from '../../model/Saldo';
 import dayjs from 'dayjs';
+import { Typography } from '@mui/material';
 
 
 interface AflossingProps {
@@ -17,10 +18,8 @@ interface AflossingProps {
 export default function AflossingTabel(props: AflossingProps) {
 
   const actueleStand = (props.aflossingSaldo?.openingsSaldo ?? 0) - (props.aflossingSaldo?.budgetBetaling ?? 0);
-  const maandenTeGaan = ((props.aflossingSaldo?.openingsSaldo ?? 0) === 0)  ? 
-       0 : Math.ceil(-(actueleStand / (props.aflossingSaldo?.budgetMaandBedrag ?? 1)));
-    
-  
+  const maandenTeGaan = ((props.aflossingSaldo?.openingsSaldo ?? 0) === 0) ?
+    0 : Math.ceil(-(actueleStand / (props.aflossingSaldo?.budgetMaandBedrag ?? 1)));
 
   return (
     <>
@@ -72,7 +71,7 @@ export default function AflossingTabel(props: AflossingProps) {
                 Achterstand nu
               </TableCell>
               <TableCell align="right" size='small' >
-                {currencyFormatter.format(props.aflossingSaldo?.achterstandNu ?? 0)}
+                {currencyFormatter.format((props.aflossingSaldo?.achterstandNu ?? 0) - (props.aflossingSaldo?.minderDanBudget ?? 0))}
               </TableCell>
             </TableRow>
             <TableRow>
@@ -107,7 +106,17 @@ export default function AflossingTabel(props: AflossingProps) {
                 {dayjs()
                   .add(props.aflossingSaldo ? maandenTeGaan : 0, 'month')
                   .set('date', props.aflossingSaldo?.budgetBetaalDag ?? 1)
-                  .format('DD MMMM YYYY')}
+                  .format('D-M-YYYY')}
+              </TableCell>
+            </TableRow>
+            <TableRow >
+              <TableCell colSpan={2} align="left" size='small' >
+                <Typography sx={{ fontSize: '0.85rem', fontWeight: '500' }}>
+                  Notitie
+                </Typography>
+                <Typography sx={{ fontSize: '0.85rem' }}>
+                  {props.aflossingSaldo?.aflossing?.notities}
+                </Typography>
               </TableCell>
             </TableRow>
           </TableBody>

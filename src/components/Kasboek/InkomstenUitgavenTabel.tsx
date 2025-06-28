@@ -19,7 +19,7 @@ import React from 'react';
 import { InfoIcon } from '../../icons/Info';
 
 interface InUitTabelProps {
-  actueleRekening: RekeningGroepDTO | undefined;
+  actueleRekeningGroep: RekeningGroepDTO | undefined;
   isFilterSelectable?: boolean;
   isOcr?: boolean;
   betalingen: BetalingDTO[];
@@ -31,7 +31,7 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
 
   const { actieveHulpvrager, gebruiker, gekozenPeriode, setSnackbarMessage, rekeningGroepPerBetalingsSoort } = useCustomContext();
   const betalingen = props.betalingen
-  const [actueleRekening, setActueleRekening] = useState<RekeningGroepDTO | undefined>(props.actueleRekening)
+  const [actueleRekeningGroep, setActueleRekeningGroep] = useState<RekeningGroepDTO | undefined>(props.actueleRekeningGroep)
   const [filteredBetalingen, setFilteredBetalingen] = useState<{ [key: string]: BetalingDTO[] }>({})
   const [selectedBetaling, setSelectedBetaling] = useState<BetalingDTO | undefined>(undefined);
   const [verwerkteBetalingen, setVerwerkteBetalingen] = useState<string[]>([]);
@@ -54,7 +54,7 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
   useEffect(() => {
     if (betalingen.length > 0) {
       const filterBetalingenOpBronBestemming = betalingen
-        .filter((betaling) => actueleRekening?.rekeningen.some(r => r.naam === betaling.bron || r.naam === betaling.bestemming) || actueleRekening === undefined)
+        .filter((betaling) => actueleRekeningGroep?.rekeningen.some(r => r.naam === betaling.bron || r.naam === betaling.bestemming) || actueleRekeningGroep === undefined)
         .reduce((acc, item) => {
           if (!acc[item.boekingsdatum.toString()]) {
             acc[item.boekingsdatum.toString()] = [];
@@ -64,10 +64,10 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
         }, {} as { [key: string]: BetalingDTO[] });
       setFilteredBetalingen(filterBetalingenOpBronBestemming)
     }
-  }, [actueleRekening, betalingen, setFilteredBetalingen]);
+  }, [actueleRekeningGroep, betalingen, setFilteredBetalingen]);
 
   const handleWeergaveChange = (event: SelectChangeEvent) => {
-    setActueleRekening(rekeningGroepen.find(r => r.naam === event.target.value))
+    setActueleRekeningGroep(rekeningGroepen.find(r => r.naam === event.target.value))
   };
 
   const onUpsertBetalingClose = () => {
@@ -103,7 +103,7 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
           <Select
             labelId="demo-simple-select-standard-label"
             id="demo-simple-select-standard"
-            value={actueleRekening ? actueleRekening.naam : 'alles'}
+            value={actueleRekeningGroep ? actueleRekeningGroep.naam : 'alles'}
             onChange={handleWeergaveChange}
             label="Weergave kiezen">
             <MenuItem value='alles'>Alle betalingen</MenuItem>
@@ -115,7 +115,7 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
       }
       {Object.keys(filteredBetalingen).length === 0 &&
         <Typography sx={{ mx: '25px', fontSize: '12px' }}>
-          {actieveHulpvrager?.id !== gebruiker?.id ? `${actieveHulpvrager!.bijnaam} heeft` : "Je hebt"} nog geen betalingen geregistreerd{actueleRekening ? ` voor ${actueleRekening.naam}` : ''}.
+          {actieveHulpvrager?.id !== gebruiker?.id ? `${actieveHulpvrager!.bijnaam} heeft` : "Je hebt"} nog geen betalingen geregistreerd{actueleRekeningGroep ? ` voor ${actueleRekeningGroep.naam}` : ''}.
         </Typography>
       }
       {Object.keys(filteredBetalingen).length > 0 &&
@@ -148,9 +148,9 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
                         </TableCell>
                         <TableCell sx={{ padding: '5px', color: verwerkteBetalingen.includes(item.sortOrder) ? 'lightgrey' : 'inherit' }}
                           onClick={() => handleEditClick(item.sortOrder)}>
-                          {formatAmount(berekenBedragVoorRekenining(item, actueleRekening).toString())}
+                          {formatAmount(berekenBedragVoorRekenining(item, actueleRekeningGroep).toString())}
                         </TableCell>
-                        <TableCell sx={{ padding: '5px' }}>{item.sortOrder}</TableCell>
+                        {/* <TableCell sx={{ padding: '5px' }}>{item.sortOrder}</TableCell> */}
                         <TableCell sx={{ padding: '5px' }}>
                           {isPeriodeOpen && !verwerkteBetalingen.includes(item.sortOrder) &&
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>

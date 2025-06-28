@@ -389,7 +389,7 @@ export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps)
           </Stack>
         </DialogContent>
         <DialogActions sx={{ justifyContent: 'space-between' }}>
-          {props.editMode ?
+          {props.editMode && !props.isOcr?
             <Button autoFocus onClick={handleDelete} startIcon={<DeleteIcon sx={{ fontSize: '35px', color: 'grey' }} />} ></Button> : <Box />}
           <Button autoFocus onClick={handleSubmit} sx={{ color: 'success.main' }} startIcon={<SaveOutlinedIcon sx={{ fontSize: '35px', color: 'success.main' }} />} >BEWAAR</Button>
         </DialogActions>

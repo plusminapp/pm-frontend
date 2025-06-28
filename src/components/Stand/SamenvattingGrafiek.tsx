@@ -37,7 +37,7 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
       headerText={'Samenvatting'}
       rekeningIconNaam='samenvatting'
       bodyText={bufferTekst}
-      cfoText={''} />
+      cfaText={''} />
   }
 
   return (

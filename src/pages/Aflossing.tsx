@@ -14,6 +14,7 @@ import { PeriodeSelect } from "../components/Periode/PeriodeSelect";
 import { BetalingsSoort } from "../model/Betaling";
 import { SaldoDTO } from "../model/Saldo";
 import { RekeningGroepSoort } from "../model/RekeningGroep";
+import { berekenRekeningGroepIcoon } from "../components/Stand/BerekenStandKleurEnTekst";
 
 export default function Aflossingen() {
 
@@ -131,7 +132,7 @@ export default function Aflossingen() {
             aria-controls={saldoDTO.rekeningNaam}
             id={saldoDTO.rekeningNaam}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              berekenToestandAflossingIcoon(aflossing)
+              {berekenRekeningGroepIcoon(22, saldoDTO)}
               <Typography
                 sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
                 component="span"
