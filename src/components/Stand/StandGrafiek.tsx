@@ -41,7 +41,7 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
 
   return (
     <>
-      <Box sx={{ maxWidth: '500px' }}>
+      <Box sx={{ width: '100%', maxWidth: '500px' }}>
         <Box sx={{ cursor: 'pointer' }}>
           {geaggregeerdResultaatOpDatum &&
             <StandGeneriekGrafiek

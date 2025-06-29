@@ -164,7 +164,7 @@ export default function Stand() {
               </Grid>
 
               <Grid container flexDirection={'row'} columns={{ sm: 1, md: 2 }} sx={{ mb: 2 }}>
-                <Grid  >
+                <Grid  sx={{width: '100%'}}>
                   {gekozenPeriode &&
                     <Box onClick={() => toggleToonBudgetDetails('samenvatting')}>
                       <SamenvattingGrafiek

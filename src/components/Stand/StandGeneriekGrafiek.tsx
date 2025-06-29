@@ -69,11 +69,11 @@ const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
       }}
     >
       <Grid container width='100%' columns={12} zIndex={10} display={'flex'} alignItems='center' flexDirection={'row'} >
-        <Grid size={2} padding={2}>
+        <Grid size={3} padding={2}>
           {rekeningIcon}
         </Grid>
 
-        <Grid size={8} display={'flex'} flexDirection={'column'} alignItems='flex-start' justifyContent='center'>
+        <Grid size={7} display={'flex'} flexDirection={'column'} alignItems='flex-start' justifyContent='center'>
           <Typography
             variant="h6"
             sx={{ color: '#333', zIndex: 10, position: 'relative', }}>
