@@ -11,7 +11,7 @@ import { PeriodeSelect } from "../components/Periode/PeriodeSelect";
 import { ArrowDropDownIcon } from "@mui/x-date-pickers";
 import SamenvattingGrafiek from "../components/Stand/SamenvattingGrafiek";
 import StandGrafiek from "../components/Stand/StandGrafiek";
-import { balansRekeningGroepSoorten, betaalmethodeRekeningGroepSoorten, betaalTabelRekeningGroepSoorten, RekeningGroepSoort } from "../model/RekeningGroep";
+import { balansRekeningGroepSoorten, betaalmethodeRekeningGroepSoorten, betaalTabelRekeningGroepSoorten, RekeningGroepSoort, resultaatRekeningGroepSoorten } from "../model/RekeningGroep";
 
 export default function Stand() {
 
@@ -261,10 +261,10 @@ export default function Stand() {
                       title={'Inkomsten en uitgaven'}
                       datum={stand.peilDatum}
                       saldi={stand.geaggregeerdResultaatOpDatum
-                        .filter(saldo => betaalTabelRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
+                        .filter(saldo => resultaatRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                         .sort((a, b) => a.sortOrder - b.sortOrder)
-                        .map(saldo => ({ ...saldo, bedrag: saldo.budgetBetaling }))}
-                    />
+                        .map(saldo => ({ ...saldo, bedrag: saldo.rekeningGroepSoort === RekeningGroepSoort.aflossing ? -saldo.budgetBetaling : saldo.budgetBetaling }))}
+                        />
                   </Grid>
                   <Grid size={1}>
                     <Resultaat
@@ -273,7 +273,7 @@ export default function Stand() {
                       saldi={stand.geaggregeerdResultaatOpDatum
                         .filter(saldo => balansRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                         .sort((a, b) => a.sortOrder - b.sortOrder)
-                        .map(saldo => ({ ...saldo, bedrag: saldo.budgetBetaling }))}
+                        .map(saldo => ({ ...saldo, bedrag: saldo.rekeningGroepSoort === RekeningGroepSoort.aflossing ? -saldo.budgetBetaling : saldo.budgetBetaling }))}
                     />
 
                   </Grid>
@@ -284,7 +284,7 @@ export default function Stand() {
                       saldi={stand.geaggregeerdResultaatOpDatum
                         .filter(saldo => balansRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                         .sort((a, b) => a.sortOrder - b.sortOrder)
-                        .map(saldo => ({ ...saldo, bedrag: saldo.openingsSaldo + saldo.budgetBetaling }))}
+                        .map(saldo => ({ ...saldo, bedrag: saldo.openingsSaldo + (saldo.rekeningGroepSoort === RekeningGroepSoort.aflossing ? -saldo.budgetBetaling : saldo.budgetBetaling) }))}
                     />
                   </Grid>
                 </Grid>
