@@ -116,7 +116,8 @@ const Profiel: React.FC = () => {
   }
 
   const berekenVariabiliteit = (rekening: RekeningDTO): string => {
-    const betalingWordtVerwacht = !rekening.maanden || (gekozenPeriode && rekening.maanden?.includes(dagInPeriode(rekening.budgetBetaalDag ?? 0, gekozenPeriode).month() + 1)) ? '' : ' X'
+    // const betalingWordtVerwacht = !rekening.maanden || (gekozenPeriode && rekening.maanden?.includes(dagInPeriode(rekening.budgetBetaalDag ?? 0, gekozenPeriode).month() + 1)) ? '' : ' X'
+    const betalingWordtVerwacht = rekening.maanden ? `; ${rekening.maanden.join(', ')}` : '';
     const variabiliteit = rekening.budgetVariabiliteit ? ` ±${rekening.budgetVariabiliteit}%` : '';
     return `${variabiliteit}${betalingWordtVerwacht}`
   }
