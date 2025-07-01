@@ -58,9 +58,7 @@ export default function WijzigPeriodeDialoog(props: WijzigPeriodeDialoogProps) {
       console.error("Error fetching ID token", error);
     }
     if (actieveHulpvrager && props.periodes && token) {
-      // LET OP: de openingsSaldi van een periode zijn de sluitSaldi van de vorige periode; 
-      // sortering is DESC, dus de periode[index + 1] ophalen
-      const response = await fetch(`/api/v1/stand/hulpvrager/${actieveHulpvrager.id}/periode/${props.periodes[props.index + 1].id}`, {
+      const response = await fetch(`/api/v1/stand/hulpvrager/${actieveHulpvrager.id}/periode/${props.periodes[props.index].id}`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -73,8 +71,8 @@ export default function WijzigPeriodeDialoog(props: WijzigPeriodeDialoogProps) {
           .filter((saldo: SaldoDTO) => balansRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
           .map((saldo: SaldoDTO) => ({
             naam: saldo.rekeningNaam,
-            bedrag: (Number(saldo.openingsSaldo) + Number(saldo.budgetBetaling)).toFixed(2),
-            delta: (Number(saldo.budgetBetaling) - Number(saldo.oorspronkelijkeBudgetBetaling)),
+            bedrag: Number(saldo.openingsSaldo).toFixed(2),
+            delta: Number(saldo.oorspronkelijkeBudgetBetaling),
           } as FormSaldo)));
           setHeeftAflossingen(result.geaggregeerdResultaatOpDatum.some((saldo: SaldoDTO) => saldo.rekeningGroepSoort === 'AFLOSSINGEN'));
       } else {

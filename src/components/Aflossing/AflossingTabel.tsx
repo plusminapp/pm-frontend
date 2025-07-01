@@ -9,15 +9,17 @@ import { currencyFormatter } from '../../model/Betaling'
 import { SaldoDTO } from '../../model/Saldo';
 import dayjs from 'dayjs';
 import { Typography } from '@mui/material';
-
+import { useCustomContext } from '../../context/CustomContext';
 
 interface AflossingProps {
-  aflossingSaldo?: SaldoDTO;
+  aflossingSaldo: SaldoDTO;
 }
 
 export default function AflossingTabel(props: AflossingProps) {
 
-  const actueleStand = (props.aflossingSaldo?.openingsSaldo ?? 0) - (props.aflossingSaldo?.budgetBetaling ?? 0);
+  const { gekozenPeriode } = useCustomContext();
+
+  const actueleStand = (props.aflossingSaldo?.openingsSaldo ?? 0) + (props.aflossingSaldo?.budgetBetaling ?? 0);
   const maandenTeGaan = ((props.aflossingSaldo?.openingsSaldo ?? 0) === 0) ?
     0 : Math.ceil(-(actueleStand / (props.aflossingSaldo?.budgetMaandBedrag ?? 1)));
 
@@ -103,8 +105,8 @@ export default function AflossingTabel(props: AflossingProps) {
                 Verwachte einddatum
               </TableCell>
               <TableCell align="right" size='small' >
-                {dayjs()
-                  .add(props.aflossingSaldo ? maandenTeGaan : 0, 'month')
+                {dayjs(gekozenPeriode?.periodeEindDatum)
+                  .add(props.aflossingSaldo ? maandenTeGaan - 1 : 0, 'month')
                   .set('date', props.aflossingSaldo?.budgetBetaalDag ?? 1)
                   .format('D-M-YYYY')}
               </TableCell>

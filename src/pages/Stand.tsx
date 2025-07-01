@@ -164,7 +164,7 @@ export default function Stand() {
               </Grid>
 
               <Grid container flexDirection={'row'} columns={{ sm: 1, md: 2 }} sx={{ mb: 2 }}>
-                <Grid  sx={{width: '100%'}}>
+                <Grid sx={{ width: '100%' }}>
                   {gekozenPeriode &&
                     <Box onClick={() => toggleToonBudgetDetails('samenvatting')}>
                       <SamenvattingGrafiek
@@ -263,8 +263,8 @@ export default function Stand() {
                       saldi={stand.geaggregeerdResultaatOpDatum
                         .filter(saldo => resultaatRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                         .sort((a, b) => a.sortOrder - b.sortOrder)
-                        .map(saldo => ({ ...saldo, bedrag: saldo.rekeningGroepSoort === RekeningGroepSoort.aflossing ? -saldo.budgetBetaling : saldo.budgetBetaling }))}
-                        />
+                        .map(saldo => ({ ...saldo, bedrag: saldo.budgetBetaling }))}
+                    />
                   </Grid>
                   <Grid size={1}>
                     <Resultaat
@@ -273,7 +273,7 @@ export default function Stand() {
                       saldi={stand.geaggregeerdResultaatOpDatum
                         .filter(saldo => balansRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                         .sort((a, b) => a.sortOrder - b.sortOrder)
-                        .map(saldo => ({ ...saldo, bedrag: saldo.rekeningGroepSoort === RekeningGroepSoort.aflossing ? -saldo.budgetBetaling : saldo.budgetBetaling }))}
+                        .map(saldo => ({ ...saldo, bedrag: saldo.budgetBetaling }))}
                     />
 
                   </Grid>
@@ -284,7 +284,7 @@ export default function Stand() {
                       saldi={stand.geaggregeerdResultaatOpDatum
                         .filter(saldo => balansRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                         .sort((a, b) => a.sortOrder - b.sortOrder)
-                        .map(saldo => ({ ...saldo, bedrag: saldo.openingsSaldo + (saldo.rekeningGroepSoort === RekeningGroepSoort.aflossing ? -saldo.budgetBetaling : saldo.budgetBetaling) }))}
+                        .map(saldo => ({ ...saldo, bedrag: saldo.openingsSaldo +  saldo.budgetBetaling }))}
                     />
                   </Grid>
                 </Grid>

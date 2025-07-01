@@ -26,7 +26,7 @@ export type SaldoDTO = {
     budgetBetaling: number;
     oorspronkelijkeBudgetBetaling: number;
     periode: Periode;
-    budgetPeildDatum: string;
+    budgetPeilDatum: string;
     budgetOpPeilDatum: number;
     betaaldBinnenBudget: number;
     eerderDanBudget: number;

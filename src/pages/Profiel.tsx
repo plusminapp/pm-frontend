@@ -14,7 +14,7 @@ import { UitgavenIcon } from '../icons/Uitgaven';
 import { InternIcon } from '../icons/Intern';
 import dayjs from 'dayjs';
 import { RekeningDTO } from '../model/Rekening';
-import { dagInPeriode, isPeriodeOpen } from '../model/Periode';
+import { isPeriodeOpen } from '../model/Periode';
 
 const Profiel: React.FC = () => {
   const { state, getIDToken } = useAuthContext();

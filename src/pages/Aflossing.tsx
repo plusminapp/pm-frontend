@@ -40,8 +40,8 @@ export default function Aflossingen() {
     if (actieveHulpvrager && gekozenPeriode && token) {
       setIsLoading(true);
       const id = actieveHulpvrager.id
-      const formDatum = dayjs().isAfter(dayjs(gekozenPeriode.periodeEindDatum)) ? dayjs(gekozenPeriode.periodeEindDatum) : dayjs();
-      const response = await fetch(`/api/v1/stand/hulpvrager/${id}/datum/${formDatum.toISOString().slice(0, 10)}`, {
+      const formDatum = dayjs().isAfter(dayjs(gekozenPeriode.periodeEindDatum)) ? gekozenPeriode.periodeEindDatum : dayjs().toISOString().slice(0, 10);
+      const response = await fetch(`/api/v1/stand/hulpvrager/${id}/datum/${formDatum}`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
