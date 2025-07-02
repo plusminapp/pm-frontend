@@ -73,7 +73,7 @@ export default function AflossingTabel(props: AflossingProps) {
                 Achterstand nu
               </TableCell>
               <TableCell align="right" size='small' >
-                {currencyFormatter.format((props.aflossingSaldo?.achterstandNu ?? 0) - (props.aflossingSaldo?.minderDanBudget ?? 0))}
+                {currencyFormatter.format((props.aflossingSaldo?.achterstandNu ?? 0))}
               </TableCell>
             </TableRow>
             <TableRow>

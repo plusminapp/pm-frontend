@@ -52,15 +52,15 @@ const Profiel: React.FC = () => {
 
   const creeerBudgetTekst = (): string => {
     const inkomsten = rekeningGroepPerBetalingsSoort
-    .filter(rgpb => rgpb.betalingsSoort === 'INKOMSTEN')
-    .flatMap(rgpb => rgpb.rekeningGroepen)
-    .flatMap(rg => rg.rekeningen)
-    .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
+      .filter(rgpb => rgpb.betalingsSoort === 'INKOMSTEN')
+      .flatMap(rgpb => rgpb.rekeningGroepen)
+      .flatMap(rg => rg.rekeningen)
+      .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
     const uitgaven = rekeningGroepPerBetalingsSoort
-    .filter(rgpb => rgpb.betalingsSoort === 'UITGAVEN')
-    .flatMap(rgpb => rgpb.rekeningGroepen)
-    .flatMap(rg => rg.rekeningen)
-    .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
+      .filter(rgpb => rgpb.betalingsSoort === 'UITGAVEN')
+      .flatMap(rgpb => rgpb.rekeningGroepen)
+      .flatMap(rg => rg.rekeningen)
+      .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
     const budgetTekst = `In: ${currencyFormatter.format(inkomsten)}, Uit: ${currencyFormatter.format(uitgaven)}, Over: ${currencyFormatter.format(inkomsten - uitgaven)} per maand. `;
     return budgetTekst
   }
@@ -175,6 +175,10 @@ const Profiel: React.FC = () => {
             </Typography>}
 
           {/* periodes */}
+          <Typography sx={{ mb: 1 }}>
+            De inrichting kan per periode verschillen (bijvoorbeeld andere potjes en budgetten), dus kies eerst de periode waar je de inrichting van wilt zien.
+          </Typography>
+          <PeriodeSelect />
           <Accordion>
             <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
               <Typography ><strong>Periodes</strong>. De periode wisseldag voor {actieveHulpvrager?.bijnaam} is de {actieveHulpvrager?.periodeDag}e.
@@ -195,57 +199,54 @@ const Profiel: React.FC = () => {
               <AccordionDetails>
                 <Typography >{creeerBudgetTekst()}</Typography>
                 {rekeningGroepPerBetalingsSoort.length > 0 &&
-                  <>
-                    <PeriodeSelect />
-                    <TableContainer component={Paper} sx={{ maxWidth: "xl", m: 'auto', mt: '10px' }}>
-                      <Table sx={{ width: "100%" }} aria-label="simple table">
-                        <TableHead>
-                          <TableRow>
-                            <TableCell>Kolomkop</TableCell>
-                            <TableCell>Potjes (gekoppelde budgetten)</TableCell>
-                            <TableCell>Betaalmethoden</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          <>
-                            {rekeningGroepPerBetalingsSoort
-                              .flatMap(rgpb => rgpb.rekeningGroepen)
-                              .filter(rg => betaalTabelRekeningGroepSoorten.includes(rg.rekeningGroepSoort))
-                              .filter((value, index, self) => self.indexOf(value) === index).map((rekeningGroep) => (
-                                <Fragment key={rekeningGroep.naam}>
-                                  <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }} aria-haspopup="true" >
-                                    <TableCell align="left" size='small' sx={{ p: "6px" }}>{rekeningGroep.naam} ({rekeningGroep.rekeningGroepSoort.toLowerCase()})</TableCell>
-                                    <TableCell align="left" size='small' sx={{ p: "6px" }}>
-                                      {rekeningGroep.rekeningen.length > 0 &&
-                                        <span dangerouslySetInnerHTML={{
-                                          __html: rekeningGroep.rekeningen.map(r =>
-                                            gekozenPeriode && isPeriodeOpen(gekozenPeriode) ?
-                                              `${r.naam} (${currencyFormatter.format(Number(r.budgetBedrag))}/${r.budgetPeriodiciteit?.toLowerCase()}
+                  <TableContainer component={Paper} sx={{ maxWidth: "xl", m: 'auto', mt: '10px' }}>
+                    <Table sx={{ width: "100%" }} aria-label="simple table">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Kolomkop</TableCell>
+                          <TableCell>Potjes (gekoppelde budgetten)</TableCell>
+                          <TableCell>Betaalmethoden</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        <>
+                          {rekeningGroepPerBetalingsSoort
+                            .flatMap(rgpb => rgpb.rekeningGroepen)
+                            .filter(rg => betaalTabelRekeningGroepSoorten.includes(rg.rekeningGroepSoort))
+                            .filter((value, index, self) => self.indexOf(value) === index).map((rekeningGroep) => (
+                              <Fragment key={rekeningGroep.naam}>
+                                <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }} aria-haspopup="true" >
+                                  <TableCell align="left" size='small' sx={{ p: "6px" }}>{rekeningGroep.naam} ({rekeningGroep.rekeningGroepSoort.toLowerCase()})</TableCell>
+                                  <TableCell align="left" size='small' sx={{ p: "6px" }}>
+                                    {rekeningGroep.rekeningen.length > 0 &&
+                                      <span dangerouslySetInnerHTML={{
+                                        __html: rekeningGroep.rekeningen.map(r =>
+                                          gekozenPeriode && isPeriodeOpen(gekozenPeriode) ?
+                                            `${r.naam} (${currencyFormatter.format(Number(r.budgetBedrag))}/${r.budgetPeriodiciteit?.toLowerCase()}
                                  ${r.budgetPeriodiciteit?.toLowerCase() === 'week' ? `= ${currencyFormatter.format(r.budgetMaandBedrag ?? 0)}/maand` : ''}
-                                 ${rekeningGroep.budgetType === BudgetType.continu ? 'doorlopend' : 'op de ' + r.budgetBetaalDag + 'e'}${berekenVariabiliteit(r)})` : 
-                                 `${r.naam} (${currencyFormatter.format(r.budgetMaandBedrag ?? 0)}/maand)`)
-                                            .join('<br />') +
-                                            (rekeningGroep.rekeningen.length > 0 ? `<br />Totaal: ${currencyFormatter.format(rekeningGroep.rekeningen.reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0))}/maand` : '')
-                                        }} />}
-                                    </TableCell>
-                                    <TableCell align="left" size='small' sx={{ p: "6px" }}>
-                                      {rekeningGroep.rekeningen.length > 0 && gekozenPeriode && isPeriodeOpen(gekozenPeriode) &&
-                                        <span dangerouslySetInnerHTML={{
-                                          __html: rekeningGroep.rekeningen.map(r =>
-                                            r.betaalMethoden && r.betaalMethoden?.length > 0 ?
-                                              `${r.betaalMethoden.map(m => m.naam).join(', ')}` :
-                                              `geen betaalmethoden`)
-                                            .join('<br />') + '<br />&nbsp;'
-                                        }} />}
-                                    </TableCell>
-                                  </TableRow>
-                                </Fragment>
-                              ))}
-                          </>
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  </>}
+                                 ${rekeningGroep.budgetType === BudgetType.continu ? 'doorlopend' : 'op de ' + r.budgetBetaalDag + 'e'}${berekenVariabiliteit(r)})` :
+                                            `${r.naam} (${currencyFormatter.format(r.budgetMaandBedrag ?? 0)}/maand)`)
+                                          .join('<br />') +
+                                          (rekeningGroep.rekeningen.length > 0 ? `<br />Totaal: ${currencyFormatter.format(rekeningGroep.rekeningen.reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0))}/maand` : '')
+                                      }} />}
+                                  </TableCell>
+                                  <TableCell align="left" size='small' sx={{ p: "6px" }}>
+                                    {rekeningGroep.rekeningen.length > 0 && gekozenPeriode && isPeriodeOpen(gekozenPeriode) &&
+                                      <span dangerouslySetInnerHTML={{
+                                        __html: rekeningGroep.rekeningen.map(r =>
+                                          r.betaalMethoden && r.betaalMethoden?.length > 0 ?
+                                            `${r.betaalMethoden.map(m => m.naam).join(', ')}` :
+                                            `geen betaalmethoden`)
+                                          .join('<br />') + '<br />&nbsp;'
+                                      }} />}
+                                  </TableCell>
+                                </TableRow>
+                              </Fragment>
+                            ))}
+                        </>
+                      </TableBody>
+                    </Table>
+                  </TableContainer>}
               </AccordionDetails>
             </Accordion>
           }

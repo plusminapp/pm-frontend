@@ -52,5 +52,8 @@ export const AflossingenAfbouwGrafiek = (props: AflossingenAfbouwGrafiekProps) =
     height: 400,
   };
 
-  return <AgCharts options={chartOptions} />;
+  return <>
+    <AgCharts options={chartOptions} />
+    {JSON.stringify(getData(props.aflossingSaldi))}
+  </>
 };

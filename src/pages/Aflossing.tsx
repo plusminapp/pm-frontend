@@ -22,9 +22,9 @@ export default function Aflossingen() {
   const { actieveHulpvrager, gekozenPeriode, setSnackbarMessage, rekeningGroepPerBetalingsSoort } = useCustomContext();
 
   const aflossing = rekeningGroepPerBetalingsSoort
-  .filter(r => r.betalingsSoort === BetalingsSoort.aflossen)
-  .flatMap(r => r.rekeningGroepen)
-  .flatMap(r => r.rekeningen)
+    .filter(r => r.betalingsSoort === BetalingsSoort.aflossen)
+    .flatMap(r => r.rekeningGroepen)
+    .flatMap(r => r.rekeningen)
 
   const [aflossingSaldi, setAflossingSaldi] = useState<SaldoDTO[]>([])
   const [isLoading, setIsLoading] = useState(false);
@@ -68,32 +68,18 @@ export default function Aflossingen() {
     fetchAflossingen();
   }, [fetchAflossingen]);
 
-
-
   if (isLoading) {
     return <Typography sx={{ mb: '25px' }}>De aflossingen worden opgehaald.</Typography>
   }
 
-  // const berekenToestandAflossingIcoon = (aflossing: AflossingDTO): JSX.Element => {
-  //   if (aflossing.meerDanVerwacht === 0 && aflossing.minderDanVerwacht === 0 && aflossing.meerDanMaandAflossing === 0) {
-  //     if (!aflossing.aflossingMoetBetaaldZijn)
-  //       return <PlusIcon color="#1977d3" height={18} />
-  //     else return <PlusIcon color="#green" height={18} />
-  //   }
-  //   if (aflossing.minderDanVerwacht > 0) return <MinIcon color="red" height={18} />
-  //   if (aflossing.meerDanMaandAflossing > 0) return <PlusIcon color="orange" height={18} />
-  //   if (aflossing.meerDanVerwacht > 0) return <PlusIcon color="lightgreen" height={18} />
-  //   return <PlusIcon color="black" />
-  // }
-
   return (
     <>
       {aflossingSaldi.length === 0 &&
-      <>
-        <Typography variant='h4'>Schulden/aflossingen pagina</Typography>
-        <Typography variant='body2'>{actieveHulpvrager?.bijnaam} heeft op {gekozenPeriode?.periodeStartDatum} geen aflossingen ingericht.</Typography>
-      <PeriodeSelect/>
-      </>
+        <>
+          <Typography variant='h4'>Schulden/aflossingen pagina</Typography>
+          <Typography variant='body2'>{actieveHulpvrager?.bijnaam} heeft op {gekozenPeriode?.periodeStartDatum} geen aflossingen ingericht.</Typography>
+          <PeriodeSelect isAflossing />
+        </>
 
       }
       {aflossingSaldi.length > 0 &&
@@ -101,7 +87,7 @@ export default function Aflossingen() {
           <Typography variant='h4'>Schulden/aflossingen pagina</Typography>
           <Grid container spacing={2} columns={{ xs: 1, md: 3 }} justifyContent="space-between">
             <Grid size={1} alignItems="start">
-              <PeriodeSelect />
+              <PeriodeSelect isAflossing />
             </Grid>
           </Grid>
           <Accordion
@@ -118,14 +104,14 @@ export default function Aflossingen() {
             </AccordionSummary>
             <AccordionDetails sx={{ p: 0 }} >
               <AflossingenAfbouwGrafiek
-              aflossingen={aflossing} aflossingSaldi={aflossingSaldi} />
+                aflossingen={aflossing} aflossingSaldi={aflossingSaldi} />
             </AccordionDetails>
           </Accordion>
         </>
       }
       {aflossingSaldi.map(saldoDTO =>
         <Accordion
-        key={saldoDTO.rekeningNaam}
+          key={saldoDTO.rekeningNaam}
           elevation={2}>
           <AccordionSummary
             expandIcon={<ArrowDropDownIcon />}
@@ -144,7 +130,7 @@ export default function Aflossingen() {
           <AccordionDetails sx={{ p: 0 }} >
             <AflossingTabel
               aflossingSaldo={saldoDTO}
-              />
+            />
           </AccordionDetails>
         </Accordion>
       )}

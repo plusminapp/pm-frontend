@@ -31,9 +31,9 @@ const genereerAflossingSaldi = (aflossingSaldoDTO: SaldoDTO): AflossingGrafiekDa
   const formatter = "YYYY-MM";
   const aflossingGrafiekDataLijst: AflossingGrafiekData[] = [];
   let huidigeMaand = dayjs(aflossingSaldoDTO.aflossing?.startDatum).startOf("month");
-  let huidigeBedrag = aflossingSaldoDTO.aflossing?.eindBedrag ?? 0;
+  let huidigeBedrag = Number(aflossingSaldoDTO.aflossing?.eindBedrag ?? 0);
 
-  while (huidigeBedrag > 0 && huidigeMaand.isBefore(dayjs())) {
+  while (huidigeBedrag > 0 && huidigeMaand.isBefore(dayjs().startOf("month"))) {
     aflossingGrafiekDataLijst.push({
       maand: huidigeMaand.format(formatter),
       rekeningNaam: aflossingSaldoDTO.rekeningNaam,
@@ -45,6 +45,14 @@ const genereerAflossingSaldi = (aflossingSaldoDTO: SaldoDTO): AflossingGrafiekDa
 
   huidigeMaand = dayjs().startOf("month");
   huidigeBedrag = -aflossingSaldoDTO.openingsSaldo;
+  aflossingGrafiekDataLijst.push({
+    maand: huidigeMaand.format(formatter),
+    rekeningNaam: aflossingSaldoDTO.rekeningNaam,
+    bedrag: huidigeBedrag,
+  });
+
+  huidigeMaand = dayjs().startOf("month").add(1, "month");
+  huidigeBedrag = -(aflossingSaldoDTO.openingsSaldo + (aflossingSaldoDTO.budgetBetaling ?? 0));
 
   while (huidigeBedrag > 0) {
     aflossingGrafiekDataLijst.push({
@@ -62,11 +70,11 @@ const genereerAflossingSaldi = (aflossingSaldoDTO: SaldoDTO): AflossingGrafiekDa
 export function getSeries(aflossingSaldi: SaldoDTO[]) {
   return aflossingSaldi.map((aflossing) => {
     return {
-      type: "area",
+      type: "line",
       xKey: "month",
       yKey: aflossing.rekeningNaam.toLowerCase().replace(/\s/g, ''),
       yName: aflossing.rekeningNaam,
-      stacked: true,
+      stacked: false,
     };
   })
 }

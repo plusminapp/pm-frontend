@@ -12,16 +12,18 @@ import { RekeningGroepPerBetalingsSoort } from "../../model/RekeningGroep.ts";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import WijzigPeriodeDialoog from "./WijzigPeriodeDialoog.tsx";
+import { BetalingsSoort } from "../../model/Betaling.ts";
 
 interface PeriodeSelectProps {
   isProfiel?: boolean;
   isKasboek?: boolean;
+  isAflossing?: boolean;
 }
 
-export function PeriodeSelect({ isProfiel = false, isKasboek = false }: PeriodeSelectProps) {
+export function PeriodeSelect({ isAflossing = false, isProfiel = false, isKasboek = false }: PeriodeSelectProps) {
 
   const { getIDToken } = useAuthContext();
-  const { periodes, actieveHulpvrager, gekozenPeriode, setGekozenPeriode, setRekeningGroepPerBetalingsSoort, setSnackbarMessage } = useCustomContext();
+  const { periodes, setPeriodes, actieveHulpvrager, gekozenPeriode, setGekozenPeriode, rekeningGroepPerBetalingsSoort, setRekeningGroepPerBetalingsSoort, setSnackbarMessage } = useCustomContext();
 
   const [editMode, setEditMode] = useState<boolean>(false);
   const [formPeriodes, setFormPeriodes] = useState<Periode[]>(periodes);
@@ -63,13 +65,30 @@ export function PeriodeSelect({ isProfiel = false, isKasboek = false }: PeriodeS
     }
   };
 
-  const selecteerbarePeriodes = isKasboek ?
-    formPeriodes
-      .filter(periode => periode.periodeStatus !== 'OPGERUIMD')
-      .sort((a, b) => dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum))) :
-    formPeriodes
-      .filter(periode => periode.periodeStartDatum !== periode.periodeEindDatum) // eerste 'pseudo' periode
-      .sort((a, b) => dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum)));
+  const periodeHeeftAlossing = (periode: Periode) => {
+    return rekeningGroepPerBetalingsSoort
+      .filter(bs => bs.betalingsSoort === BetalingsSoort.aflossen)
+      .flatMap(bs => bs.rekeningGroepen)
+      .flatMap(rg => rg.rekeningen)
+      .some(r =>
+        (periode.periodeStartDatum != periode.periodeEindDatum) &&
+        (r.vanPeriode === undefined || r.vanPeriode?.periodeStartDatum <= periode.periodeStartDatum) &&
+        (r.totEnMetPeriode === undefined || r.totEnMetPeriode?.periodeEindDatum >= periode.periodeEindDatum)
+      )
+  }
+
+  const selecteerbarePeriodes =
+    isKasboek ?
+      formPeriodes
+        .filter(periode => periode.periodeStatus !== 'OPGERUIMD')
+        .sort((a, b) => dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum))) :
+      isAflossing ?
+        formPeriodes
+          .filter(periode => periodeHeeftAlossing(periode))
+          .sort((a, b) => dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum))) :
+        formPeriodes
+          .filter(periode => periode.periodeStartDatum !== periode.periodeEindDatum) // eerste 'pseudo' periode
+          .sort((a, b) => dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum)));
 
   const [teWijzigenOpeneingsSaldiPeriode, setTeWijzigenOpeningsSaldiPeriode] = useState<number | undefined>(undefined);
   const handleOpeningsSaldiClick = (index: number, editMode: boolean) => {
@@ -114,6 +133,11 @@ export function PeriodeSelect({ isProfiel = false, isKasboek = false }: PeriodeS
 
         });
         if (response.ok) {
+          setPeriodes(
+            periodes.map(p =>
+              p.id !== periode.id ? p : { ...p, periodeStatus: actie === 'heropenen' ? 'OPEN' : actie === 'sluiten' ? 'GESLOTEN' : 'OPGERUIMD' }
+            )
+          );
           setSnackbarMessage({
             message: `Het ${actie} van de periode is succesvol uitgevoerd.`,
             type: "success"
@@ -157,6 +181,7 @@ export function PeriodeSelect({ isProfiel = false, isKasboek = false }: PeriodeS
 
       {isProfiel &&
         <Box sx={{ maxWidth: '400px' }}>
+
           {formPeriodes
             .sort((a, b) => dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum)))
             .map((periode, index) => (
