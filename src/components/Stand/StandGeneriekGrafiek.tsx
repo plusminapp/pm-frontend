@@ -69,7 +69,7 @@ const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
       }}
     >
       <Grid container width='100%' columns={12} zIndex={10} display={'flex'} alignItems='center' flexDirection={'row'} >
-        <Grid size={3} padding={2}>
+        <Grid size={2} padding={2}>
           {rekeningIcon}
         </Grid>
 

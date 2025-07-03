@@ -200,7 +200,7 @@ function Header() {
 
   return (
     <>
-      <AppBar sx={{ position: 'sticky', top: 0, zIndex: 2, bgcolor: "white", color: '#333', boxShadow: 0 }}>
+      <AppBar sx={{ position: 'sticky', top: 0, zIndex: 25, bgcolor: "white", color: '#333', boxShadow: 0 }}>
         <Toolbar disableGutters>
           <IconButton onClick={() => handleNavigation("/visualisatie")}>
             <PlusMinLogo />

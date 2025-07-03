@@ -70,9 +70,9 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                     }}>
                     {detailsVisible && formatAmount((-achterstandNu).toString())}
                   </TableCell>}
-                {betaaldBinnenBudget > 0 &&
+                {(betaaldBinnenBudget > 0 || (eerderDanBudget > 0 && budgetType !== 'CONTINU')) &&
                   <TableCell
-                    width={`${(betaaldBinnenBudget / tabelBreedte) * 100}%`}
+                    width={`${((betaaldBinnenBudget + eerderDanBudget) / tabelBreedte) * 100}%`}
                     sx={{
                       backgroundColor: 'grey',
                       borderBottom: detailsVisible ? '4px solid #333' : '0px',
@@ -80,9 +80,9 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                       textAlign: 'center',
                       fontSize: '0.7rem'
                     }}>
-                    {detailsVisible && formatAmount(betaaldBinnenBudget.toString())}
+                    {detailsVisible && formatAmount((eerderDanBudget+betaaldBinnenBudget).toString())}
                   </TableCell>}
-                {eerderDanBudget > 0 && budgetType !== 'CONTINU' &&
+                {/* {eerderDanBudget > 0 && budgetType !== 'CONTINU' &&
                   <TableCell
                     width={`${(eerderDanBudget / tabelBreedte) * 100}%`}
                     sx={{
@@ -93,7 +93,7 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                       fontSize: '0.7rem'
                     }}>
                     {detailsVisible && formatAmount(eerderDanBudget.toString())}
-                  </TableCell>}
+                  </TableCell>} */}
                 {meerDanMaandBudget > 0 && budgetType !== 'CONTINU' &&
                   <TableCell
                     width={`${(meerDanMaandBudget / tabelBreedte) * 100}%`}
