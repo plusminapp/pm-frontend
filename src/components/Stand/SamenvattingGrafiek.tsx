@@ -1,4 +1,4 @@
-import { Box, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
+import { Box, Table, TableBody, TableCell, TableContainer, TableRow } from '@mui/material';
 import dayjs from 'dayjs';
 import { Periode } from '../../model/Periode';
 import StandGeneriekGrafiek from '../../components/Stand/StandGeneriekGrafiek';
@@ -20,17 +20,22 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
     return parseFloat(amount).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
   };
   const gevarenZone = 0.02
-  const periodeAfgelopen = props.peilDatum.startOf('day').isSame(dayjs(props.periode.periodeEindDatum).startOf('day'));
-  const inGevarenZone = actueleBuffer < gevarenZone * budgetMaandInkomstenBedrag && !periodeAfgelopen;
+  const isPeriodeAfgelopen = props.peilDatum.startOf('day').isSame(dayjs(props.periode.periodeEindDatum).startOf('day'));
+  const isInGevarenZone = actueleBuffer < gevarenZone * budgetMaandInkomstenBedrag && !isPeriodeAfgelopen;
 
   const berekenStandGeneriekGrafiek = (): JSX.Element => {
-    const bedrag = actueleBuffer.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })
+    const roundUp = (value: number) => Math.ceil(value * 100) / 100;
+    const bedragRounded = roundUp(Math.abs(actueleBuffer)).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const budgetRounded = roundUp(Number(budgetMaandInkomstenBedrag)).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const percentageBuffer = roundUp((actueleBuffer * 100) / (budgetMaandInkomstenBedrag));
     const bufferTekst =
-      periodeAfgelopen ? `Over einde periode: ${bedrag}`: 
-      actueleBuffer < 0 ?`Pas op. Je houdt deze maand geen geld over! Je dreigt ${bedrag} tekort te komen.` :
-      inGevarenZone ? `Beetje rustig aan. De buffer wordt klein: ${bedrag}, dat is minder dan ${gevarenZone * 100}% van je budget.` : 
-      'Ga zo door. Je houdt deze maand ruim over, namelijk ' + bedrag;
-    const color = actueleBuffer < 0 ? 'red' : inGevarenZone ? 'orange' : 'green';
+      isPeriodeAfgelopen && actueleBuffer > 0 ? `Het periodeinkomen was ${budgetRounded} waarvan ${bedragRounded} over was.` :
+        isPeriodeAfgelopen && actueleBuffer === 0 ? `Het periodeinkomen was ${budgetRounded} waarmee je precies uit kwam.` :
+          isPeriodeAfgelopen && actueleBuffer < 0 ? `Het periodeinkomen was ${budgetRounded} waarbij je ${bedragRounded} tekort kwam.` :
+            actueleBuffer < 0 ? `Het periodeinkomen is ${budgetRounded} waarbij je einde van de periode ${bedragRounded} tekort komt.` :
+              isInGevarenZone ? `Het periodeinkomen is ${budgetRounded} waarbij je einde van de periode ${bedragRounded} over houdt; dat is ${percentageBuffer}% van het budget.` :
+                `Het periodeinkomen is ${budgetRounded} waarvan ${bedragRounded} buffer.`;
+    const color = actueleBuffer < 0 ? 'red' : isInGevarenZone ? 'orange' : 'green';
     return <StandGeneriekGrafiek
       statusIcon={berekenRekeningGroepIcoonOpKleur(36, color)}
       percentageFill={percentagePeriodeVoorbij}
@@ -60,7 +65,12 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
                     fontSize: '0.7rem'
                   }}
                 >
-                  {detailsVisible && formatAmount(besteedTotPeilDatum.toString())}
+                  {detailsVisible && (
+                    <>
+                      {formatAmount(besteedTotPeilDatum.toString())}
+                      <br />besteed
+                    </>
+                  )}
                 </TableCell>
               )}
               {nogNodigNaPeilDatum > 0 && (
@@ -74,22 +84,33 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
                     fontSize: '0.7rem'
                   }}
                 >
-                  {detailsVisible && formatAmount(nogNodigNaPeilDatum.toString())}
+                  {detailsVisible && (
+                    <>
+                      {formatAmount(nogNodigNaPeilDatum.toString())}
+                      <br />nog nodig
+                    </>
+                  )}
                 </TableCell>
               )}
               {actueleBuffer > 0 && (
                 <TableCell
                   width={`${(actueleBuffer / budgetMaandInkomstenBedrag) * 90}%`}
                   sx={{
-                    backgroundColor: inGevarenZone ? 'orange' : 'green',
+                    backgroundColor: isInGevarenZone ? 'orange' : 'green',
                     color: 'white',
                     textAlign: 'center',
-                    borderBottom: detailsVisible && inGevarenZone ? '4px solid orange' :
-                      detailsVisible && !inGevarenZone ? '4px solid green' : '0px',
+                    borderBottom: detailsVisible && isInGevarenZone ? '4px solid orange' :
+                      detailsVisible && !isInGevarenZone ? '4px solid green' : '0px',
                     fontSize: '0.7rem',
                   }}
                 >
-                  {detailsVisible && formatAmount(actueleBuffer.toString())}
+                  {detailsVisible && (
+                    <>
+                      {formatAmount(actueleBuffer.toString())}
+                      <br />
+                      {isPeriodeAfgelopen ? 'over' : 'buffer'}
+                    </>
+                  )}
                 </TableCell>
               )}
               {actueleBuffer < 0 && (
@@ -103,24 +124,19 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
                     fontSize: '0.7rem',
                   }}
                 >
-                  {detailsVisible && formatAmount(actueleBuffer.toString())}
+                  {detailsVisible && (
+                    <>
+                      {formatAmount(Math.abs(actueleBuffer).toString())}
+                      <br />
+                      tekort
+                    </>
+                  )}
                 </TableCell>
               )}
             </TableRow>
           </TableBody>
         </Table>
       </TableContainer>
-
-      {detailsVisible && // TODO: remove false when ready
-        <Box maxWidth={'500px'}>
-          <Typography variant='body2' sx={{ fontSize: '0.8rem', p: 1 }}>
-            Het maandinkomen is {budgetMaandInkomstenBedrag.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })} waarvan
-            {besteedTotPeilDatum.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })} is besteed
-            en {nogNodigNaPeilDatum.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })} nog nodig is.
-            De buffer is dus {actueleBuffer.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })}.
-          </Typography>
-        </Box>}
-
     </Box>
   );
 };

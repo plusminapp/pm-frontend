@@ -58,7 +58,7 @@ const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
   return (
     <Grid
       sx={{
-        // height: '125px',
+        minHeight: '90px',
         width: '100%',
         maxWidth: '500px',
         display: 'flex',
@@ -69,11 +69,11 @@ const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
       }}
     >
       <Grid container width='100%' columns={12} zIndex={10} display={'flex'} alignItems='center' flexDirection={'row'} >
-        <Grid size={2} padding={2}>
+        <Grid size={2} display={'flex'} flexDirection={'column'} alignItems='center' justifyContent='center'>
           {rekeningIcon}
         </Grid>
 
-        <Grid size={7} display={'flex'} flexDirection={'column'} alignItems='flex-start' justifyContent='center'>
+        <Grid size={8} display={'flex'} flexDirection={'column'} alignItems='flex-start' justifyContent='center'>
           <Typography
             variant="h6"
             sx={{ color: '#333', zIndex: 10, position: 'relative', }}>
@@ -91,7 +91,7 @@ const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
           </Typography>
         </Grid>
 
-        <Grid size={2} padding={1}>
+        <Grid size={2} display={'flex'} flexDirection={'column'} alignItems='center' justifyContent='center'>
           {statusIcon}
         </Grid>
 
@@ -103,7 +103,7 @@ const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
           left: 0,
           height: '100%',
           width: `${percentageFill}%`,
-          backgroundColor: '#d0d0d0',
+          backgroundColor: '#e8e8e8',
           zIndex: 1,
         }}
       />
