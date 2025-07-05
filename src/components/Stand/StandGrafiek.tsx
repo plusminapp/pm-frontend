@@ -24,7 +24,7 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
   };
 
   const budgetType = geaggregeerdResultaatOpDatum?.budgetType;
-  const achterstandNu = geaggregeerdResultaatOpDatum?.achterstandNu ?? 0;
+  const achterstandOpPeilDatum = geaggregeerdResultaatOpDatum?.achterstandOpPeilDatum ?? 0;
   const betaaldBinnenBudget = geaggregeerdResultaatOpDatum?.betaaldBinnenBudget ?? 0;
   const maandBudget = geaggregeerdResultaatOpDatum?.budgetMaandBedrag ?? 0;
   const restMaandBudget = geaggregeerdResultaatOpDatum?.restMaandBudget ?? 0;
@@ -33,7 +33,7 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
   const minderDanBudget = geaggregeerdResultaatOpDatum?.minderDanBudget ?? 0;
   const meerDanMaandBudget = geaggregeerdResultaatOpDatum?.meerDanMaandBudget ?? 0;
 
-  const tabelBreedte = -achterstandNu + maandBudget + meerDanMaandBudget;
+  const tabelBreedte = -achterstandOpPeilDatum + maandBudget + meerDanMaandBudget;
 
   const periodeLengte = dayjs(periode.periodeEindDatum).diff(dayjs(periode.periodeStartDatum), 'day') + 1;
   const periodeVoorbij = dayjs(peilDatum).diff(dayjs(periode.periodeStartDatum), 'day') + 1;
@@ -48,7 +48,7 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
               statusIcon={berekenRekeningGroepIcoon(36, geaggregeerdResultaatOpDatum)}
               percentageFill={percentagePeriodeVoorbij}
               headerText={rekeningGroep.naam}
-              bodyText={berekenStandBodyTekst(geaggregeerdResultaatOpDatum, resultaatOpDatum)}
+              bodyText={detailsVisible && berekenRekeningGroepIcoonKleur(geaggregeerdResultaatOpDatum) !== 'green' ? berekenStandDetailsTekst(resultaatOpDatum).join(', ') : berekenStandBodyTekst(geaggregeerdResultaatOpDatum, resultaatOpDatum)}
               cfaText={''}
               rekeningIconNaam={rekeningGroep.rekeningGroepIcoonNaam} />}
         </Box>
@@ -58,9 +58,9 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
             <TableBody>
 
               <TableRow>
-                {achterstandNu < 0 &&
+                {achterstandOpPeilDatum < 0 &&
                   <TableCell
-                    width={`${(achterstandNu / tabelBreedte) * 100}%`}
+                    width={`${(achterstandOpPeilDatum / tabelBreedte) * 100}%`}
                     sx={{
                       backgroundColor: 'darkred',
                       borderBottom: detailsVisible ? '4px solid darkred' : '0px',
@@ -70,7 +70,7 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                     }}>
                     {detailsVisible &&
                       <>
-                        {formatAmount((-achterstandNu).toString())}
+                        {formatAmount((-achterstandOpPeilDatum).toString())}
                         <br />achter
                       </>
                     }
@@ -90,9 +90,9 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                         {formatAmount((eerderDanBudget + betaaldBinnenBudget).toString())}
                         <br />
                         {budgetType === 'INKOMSTEN' ? 'ontvangen' :
-                          (budgetType === 'CONTINU' && (meerDanBudget > 0 || meerDanMaandBudget > 0)) ? 'budget' : 
-                          budgetType === 'CONTINU'  ? 'besteed' : 
-                          'afgeschreven'}
+                          (budgetType === 'CONTINU' && (meerDanBudget > 0 || meerDanMaandBudget > 0)) ? 'budget' :
+                            budgetType === 'CONTINU' ? 'besteed' :
+                              'afgeschreven'}
                       </>
                     }
                   </TableCell>}
@@ -145,8 +145,8 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                       <>
                         {formatAmount(minderDanBudget.toString())}
                         <br />
-                        {budgetType === 'CONTINU' ? 'bespaard' : 
-                        budgetType === 'INKOMSTEN' ? 'niet ontv.' : 'niet afgeschr.'}
+                        {budgetType === 'CONTINU' ? 'bespaard' :
+                          budgetType === 'INKOMSTEN' ? 'niet ontv.' : 'niet afgeschr.'}
                       </>
                     }
                   </TableCell>}
@@ -186,7 +186,7 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                     }
                   </TableCell>}
               </TableRow>
-              {detailsVisible && geaggregeerdResultaatOpDatum && berekenRekeningGroepIcoonKleur(geaggregeerdResultaatOpDatum) === 'red' &&
+              {/* {detailsVisible && geaggregeerdResultaatOpDatum && berekenRekeningGroepIcoonKleur(geaggregeerdResultaatOpDatum) === 'red' &&
                 <TableRow>
                   <TableCell colSpan={7} >
                     {berekenStandDetailsTekst(resultaatOpDatum)
@@ -196,13 +196,12 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                         </Typography>))}
                   </TableCell>      
                 </TableRow>
-              }
+              } */}
 
             </TableBody>
           </Table>
         </TableContainer >
-        {/* {toonDebug && 
-
+        {toonDebug && 
           <Grid size={2} alignItems={'flex-start'}>
             <Typography variant='body2' sx={{ fontSize: '0.875rem', ml: 1, my: 2 }}>
               {resultaatOpDatum
@@ -225,7 +224,7 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                   meerDanBudget ${formatAmount(((geaggregeerdResultaatOpDatum.meerDanBudget ?? 0)).toString())},<br />
                   meerDanMaandBudget ${formatAmount(((geaggregeerdResultaatOpDatum.meerDanMaandBudget ?? 0)).toString())},<br />
                   restMaandBudget ${formatAmount(((geaggregeerdResultaatOpDatum.restMaandBudget ?? 0)).toString())},<br />
-                  achterstandNu ${formatAmount(((geaggregeerdResultaatOpDatum.achterstandNu ?? 0)).toString())},
+                  achterstandOpPeilDatum ${formatAmount(((geaggregeerdResultaatOpDatum.achterstandOpPeilDatum ?? 0)).toString())},
                 </Typography>
               </Box>)}
 
@@ -246,11 +245,11 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                   meerDanBudget ${formatAmount(((saldo.meerDanBudget ?? 0)).toString())},<br />
                   meerDanMaandBudget ${formatAmount(((saldo.meerDanMaandBudget ?? 0)).toString())},<br />
                   restMaandBudget ${formatAmount(((saldo.restMaandBudget ?? 0)).toString())},<br />
-                  achterstandNu ${formatAmount(((saldo.achterstandNu ?? 0)).toString())},
+                  achterstandOpPeilDatum ${formatAmount(((saldo.achterstandOpPeilDatum ?? 0)).toString())},
                 </Typography>
               </Box>
             ))}
-          </Grid>} */}
+          </Grid>}
 
       </Box>
     </>

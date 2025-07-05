@@ -28,6 +28,8 @@ export default function Stand() {
     setToonDebug(!toonDebug);
   };
 
+  const periodeIsVoorbij = gekozenPeriode && dayjs(gekozenPeriode.periodeEindDatum).isBefore(dayjs());
+
   const [detailsVisible, setDetailsVisible] = useState<string | null>(localStorage.getItem('toonBudgetDetails'));
   const toggleToonBudgetDetails = (naam: string) => {
     if (detailsVisible === naam) { naam = '' }
@@ -100,11 +102,6 @@ export default function Stand() {
 
   }, [actieveHulpvrager, gekozenPeriode, getIDToken]);
 
-  // const handleToonMutatiesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   localStorage.setItem('toonMutaties', event.target.checked.toString());
-  //   setToonMutaties(event.target.checked);
-  // };
-
   if (isLoading) {
     return <Typography sx={{ mb: '25px' }}>De saldi worden opgehaald.</Typography>
   };
@@ -139,9 +136,9 @@ export default function Stand() {
             <Grid size={2} sx={{ boxShadow: { sm: 0, md: 3 }, p: { sm: 0, md: 2 } }}>
               <Typography variant='h6'>Samenvatting {berekenPeriodeNaam()}</Typography>
               <Typography variant='body2'>
-                {stand.datumLaatsteBetaling ? `Laatste betaling geregistreerd op ${dayjs(stand.datumLaatsteBetaling).format('D MMMM')}` : 'Er is nog geen betaling geregistreerd.'}.
-                {dayjs(gekozenPeriode?.periodeEindDatum).isAfter(dayjs()) && ` Er zijn nog ${dayjs(gekozenPeriode?.periodeEindDatum).diff(dayjs(), 'day') + 1} dagen tot het einde van de periode.`}
-                {dayjs(gekozenPeriode?.periodeEindDatum).isBefore(dayjs()) && ' De periode is afgelopen.'}
+                {periodeIsVoorbij ? 'De periode is afgelopen.' :
+                  stand.datumLaatsteBetaling ? `Laatste betaling geregistreerd op ${dayjs(stand.datumLaatsteBetaling).format('D MMMM')}.` : 'Er is nog geen betaling geregistreerd.'}
+                {!periodeIsVoorbij && ` Er zijn nog ${dayjs(gekozenPeriode?.periodeEindDatum).diff(dayjs(), 'day') + 1} dagen tot het einde van de periode.`}
               </Typography>
 
 
@@ -284,7 +281,7 @@ export default function Stand() {
                       saldi={stand.geaggregeerdResultaatOpDatum
                         .filter(saldo => balansRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                         .sort((a, b) => a.sortOrder - b.sortOrder)
-                        .map(saldo => ({ ...saldo, bedrag: saldo.openingsSaldo +  saldo.budgetBetaling }))}
+                        .map(saldo => ({ ...saldo, bedrag: saldo.openingsSaldo + saldo.budgetBetaling }))}
                     />
                   </Grid>
                 </Grid>

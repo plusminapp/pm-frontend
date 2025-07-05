@@ -54,6 +54,8 @@ export const AflossingenAfbouwGrafiek = (props: AflossingenAfbouwGrafiekProps) =
 
   return <>
     <AgCharts options={chartOptions} />
-    {JSON.stringify(getData(props.aflossingSaldi))}
+    {/* {JSON.stringify(props.aflossingSaldi)}
+    <hr/>
+    {JSON.stringify(getData(props.aflossingSaldi))} */}
   </>
 };

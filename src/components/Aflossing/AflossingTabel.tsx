@@ -38,18 +38,10 @@ export default function AflossingTabel(props: AflossingProps) {
             </TableRow>
             <TableRow>
               <TableCell align="left" size='small' sx={{ fontWeight: '500' }}>
-                Actuele stand
+                Stand op {dayjs(props.aflossingSaldo?.budgetPeilDatum).format('D MMMM YYYY')}
               </TableCell>
               <TableCell align="right" size='small' >
                 {currencyFormatter.format(actueleStand)}
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell align="left" size='small' sx={{ fontWeight: '500' }}>
-                Maandbedrag
-              </TableCell>
-              <TableCell align="right" size='small' >
-                {currencyFormatter.format(props.aflossingSaldo?.budgetMaandBedrag ?? 0)}
               </TableCell>
             </TableRow>
             <TableRow>
@@ -58,6 +50,22 @@ export default function AflossingTabel(props: AflossingProps) {
               </TableCell>
               <TableCell align="right" size='small' >
                 {currencyFormatter.format(props.aflossingSaldo?.achterstand ?? 0)}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell align="left" size='small' sx={{ fontWeight: '500' }}>
+                Maandbedrag
+              </TableCell>
+              <TableCell align="right" size='small' >
+                {currencyFormatter.format((props.aflossingSaldo?.budgetMaandBedrag ?? 0) + (props.aflossingSaldo?.achterstand ?? 0))}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell align="left" size='small' sx={{ fontWeight: '500' }}>
+                Verwacht deze maand
+              </TableCell>
+              <TableCell align="right" size='small' >
+                {currencyFormatter.format(props.aflossingSaldo?.budgetMaandBedrag ?? 0)}
               </TableCell>
             </TableRow>
             <TableRow>
@@ -73,7 +81,7 @@ export default function AflossingTabel(props: AflossingProps) {
                 Achterstand nu
               </TableCell>
               <TableCell align="right" size='small' >
-                {currencyFormatter.format((props.aflossingSaldo?.achterstandNu ?? 0))}
+                {currencyFormatter.format((props.aflossingSaldo?.budgetBetaling ?? 0) - (props.aflossingSaldo?.budgetMaandBedrag ?? 0))}
               </TableCell>
             </TableRow>
             <TableRow>
@@ -86,7 +94,7 @@ export default function AflossingTabel(props: AflossingProps) {
             </TableRow>
             <TableRow>
               <TableCell align="left" size='small' sx={{ fontWeight: '500' }}>
-                Eindbedrag
+                Oorspronkelijke schuld
               </TableCell>
               <TableCell align="right" size='small' >
                 {currencyFormatter.format(props.aflossingSaldo?.aflossing?.eindBedrag ?? 0)}
@@ -94,7 +102,7 @@ export default function AflossingTabel(props: AflossingProps) {
             </TableRow>
             <TableRow>
               <TableCell align="left" size='small' sx={{ fontWeight: '500' }}>
-                Maanden te gaan
+                Maanden nog te gaan
               </TableCell>
               <TableCell align="right" size='small' >
                 {maandenTeGaan}

@@ -63,16 +63,18 @@ export const berekenStandDetailsTekst = (rekeningSaldi: SaldoDTO[]): string[] =>
     .filter(saldo => berekenRekeningGroepIcoonKleur(saldo) !== 'green' && berekenRekeningGroepIcoonKleur(saldo) !== '#1977d3')
 
   return fouteRekeningen.map((saldo) => {
+
     switch (saldo.budgetType.toLowerCase()) {
       case 'inkomsten':
-        return `${saldo.rekeningNaam}: ${formatAmount(saldo.minderDanBudget)} minder dan de verwachte ${formatAmount(saldo.budgetOpPeilDatum)}`; 
+        return `${saldo.rekeningNaam}: ${formatAmount(saldo.minderDanBudget)} minder dan de verwachte ${formatAmount(saldo.budgetOpPeilDatum)}`;
       case 'continu':
-        return `${saldo.rekeningNaam}: ${formatAmount(saldo.meerDanBudget)} meer besteed dan de verwachte ${formatAmount(saldo.budgetOpPeilDatum)}`;
+        return `${saldo.rekeningNaam}: ${formatAmount(saldo.meerDanBudget + saldo.meerDanMaandBudget)} meer besteed dan de verwachte ${formatAmount(saldo.budgetOpPeilDatum)}`;
       case 'vast':
         if (saldo.budgetBetaling === 0) {
           return `${saldo.rekeningNaam}: niet betaald (betaaldag ${saldo.budgetBetaalDag}e)`;
-        } else
-        return `${saldo.rekeningNaam}: ${formatAmount(saldo.minderDanBudget)} te weinig betaald.`;
+        } else if (saldo.meerDanMaandBudget > 0) {
+          return `${saldo.rekeningNaam}: ${formatAmount(saldo.meerDanMaandBudget)} meer betaald dan het maandbudget van ${formatAmount(saldo.budgetMaandBedrag)}.`;
+        } else return `${saldo.rekeningNaam}: ${formatAmount(saldo.minderDanBudget)} te weinig betaald.`;
       default:
         return 'black';
     }

@@ -20,7 +20,7 @@ export type SaldoDTO = {
     sortOrder: number;
     openingsSaldo: number;
     achterstand: number;
-    achterstandNu: number;
+    achterstandOpPeilDatum: number;
     budgetMaandBedrag: number;
     budgetBetaalDag: number;
     budgetBetaling: number;
