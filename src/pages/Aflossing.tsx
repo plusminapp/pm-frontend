@@ -102,10 +102,10 @@ export default function Aflossingen() {
                 Verwachte afbouw van de schulden/aflossingen
               </Typography>
             </AccordionSummary>
-            <AccordionDetails sx={{ p: 0 }} >
+            {/* <AccordionDetails sx={{ p: 0 }} >
               <AflossingenAfbouwGrafiek
                 aflossingen={aflossing} aflossingSaldi={aflossingSaldi} />
-            </AccordionDetails>
+            </AccordionDetails> */}
           </Accordion>
         </>
       }

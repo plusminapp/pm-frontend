@@ -28,7 +28,6 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
   const betaaldBinnenBudget = geaggregeerdResultaatOpDatum?.betaaldBinnenBudget ?? 0;
   const maandBudget = geaggregeerdResultaatOpDatum?.budgetMaandBedrag ?? 0;
   const restMaandBudget = geaggregeerdResultaatOpDatum?.restMaandBudget ?? 0;
-  const eerderDanBudget = geaggregeerdResultaatOpDatum?.eerderDanBudget ?? 0;
   const meerDanBudget = geaggregeerdResultaatOpDatum?.meerDanBudget ?? 0;
   const minderDanBudget = geaggregeerdResultaatOpDatum?.minderDanBudget ?? 0;
   const meerDanMaandBudget = geaggregeerdResultaatOpDatum?.meerDanMaandBudget ?? 0;
@@ -75,9 +74,9 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                       </>
                     }
                   </TableCell>}
-                {(betaaldBinnenBudget > 0 || (eerderDanBudget > 0 && budgetType !== 'CONTINU')) &&
+                {(betaaldBinnenBudget > 0) &&
                   <TableCell
-                    width={`${((betaaldBinnenBudget + eerderDanBudget) / tabelBreedte) * 100}%`}
+                    width={`${((betaaldBinnenBudget) / tabelBreedte) * 100}%`}
                     sx={{
                       backgroundColor: 'grey',
                       borderBottom: detailsVisible ? '4px solid #333' : '0px',
@@ -87,7 +86,7 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                     }}>
                     {detailsVisible &&
                       <>
-                        {formatAmount((eerderDanBudget + betaaldBinnenBudget).toString())}
+                        {formatAmount((betaaldBinnenBudget).toString())}
                         <br />
                         {budgetType === 'INKOMSTEN' ? 'ontvangen' :
                           (budgetType === 'CONTINU' && (meerDanBudget > 0 || meerDanMaandBudget > 0)) ? 'budget' :
@@ -146,7 +145,7 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                         {formatAmount(minderDanBudget.toString())}
                         <br />
                         {budgetType === 'CONTINU' ? 'bespaard' :
-                          budgetType === 'INKOMSTEN' ? 'niet ontv.' : 'niet afgeschr.'}
+                          budgetType === 'INKOMSTEN' ? 'niet ontv.' : 'niet betaald'}
                       </>
                     }
                   </TableCell>}
@@ -219,7 +218,6 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                   achterstand ${formatAmount(((geaggregeerdResultaatOpDatum.achterstand ?? 0)).toString())},<br />
                   betaald {formatAmount(geaggregeerdResultaatOpDatum.budgetBetaling?.toString() ?? "nvt")}, <br />
                   betaaldBinnenBudget {formatAmount(geaggregeerdResultaatOpDatum.betaaldBinnenBudget?.toString() ?? "nvt")}, <br />
-                  eerderDanBudget ${formatAmount(((geaggregeerdResultaatOpDatum.eerderDanBudget ?? 0)).toString())},<br />
                   minderDanBudget ${formatAmount(((geaggregeerdResultaatOpDatum.minderDanBudget ?? 0)).toString())},<br />
                   meerDanBudget ${formatAmount(((geaggregeerdResultaatOpDatum.meerDanBudget ?? 0)).toString())},<br />
                   meerDanMaandBudget ${formatAmount(((geaggregeerdResultaatOpDatum.meerDanMaandBudget ?? 0)).toString())},<br />
@@ -240,7 +238,6 @@ export const StandGrafiek = ({ peilDatum, periode, rekeningGroep, geaggregeerdRe
                   achterstand ${formatAmount(((saldo.achterstand ?? 0)).toString())},<br />
                   betaald {formatAmount(saldo.budgetBetaling?.toString() ?? "nvt")}, <br />
                   betaaldBinnenBudget {formatAmount(saldo.betaaldBinnenBudget?.toString() ?? "nvt")}, <br />
-                  eerderDanBudget ${formatAmount(((saldo.eerderDanBudget ?? 0)).toString())},<br />
                   minderDanBudget ${formatAmount(((saldo.minderDanBudget ?? 0)).toString())},<br />
                   meerDanBudget ${formatAmount(((saldo.meerDanBudget ?? 0)).toString())},<br />
                   meerDanMaandBudget ${formatAmount(((saldo.meerDanMaandBudget ?? 0)).toString())},<br />

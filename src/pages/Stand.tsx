@@ -260,7 +260,7 @@ export default function Stand() {
                       saldi={stand.geaggregeerdResultaatOpDatum
                         .filter(saldo => resultaatRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                         .sort((a, b) => a.sortOrder - b.sortOrder)
-                        .map(saldo => ({ ...saldo, bedrag: saldo.budgetBetaling }))}
+                        .map(saldo => ({ ...saldo, bedrag: -saldo.budgetBetaling }))}
                     />
                   </Grid>
                   <Grid size={1}>
