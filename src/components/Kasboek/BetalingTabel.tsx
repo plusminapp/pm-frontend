@@ -135,7 +135,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
                 .sort((a, b) => a.sortOrder - b.sortOrder)
                 .map(saldo => (
                   <TableCell key={saldo.rekeningGroepNaam} sx={{ padding: '5px' }} align="right">
-                    {formatter.format(saldo.budgetOpPeilDatum)}
+                    {formatter.format(saldo.budgetOpPeilDatum - (saldo.achterstand))}
                   </TableCell>
                 ))}
               {gekozenPeriode && isPeriodeOpen(gekozenPeriode) &&
@@ -153,7 +153,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
                 .sort((a, b) => a.sortOrder - b.sortOrder)
                 .map(saldo => (
                   <TableCell key={saldo.rekeningGroepNaam} sx={{ padding: '5px' }} align="right">
-                    {berekenRekeningGroepIcoon(12, saldo)} {formatter.format(saldo.budgetBetaling + (saldo.budgetType === 'INKOMSTEN' ? - saldo.budgetOpPeilDatum : saldo.budgetOpPeilDatum))}
+                    {berekenRekeningGroepIcoon(12, saldo)} {formatter.format(saldo.budgetBetaling + saldo.achterstand + (saldo.budgetType === 'INKOMSTEN' ? saldo.budgetOpPeilDatum : -saldo.budgetOpPeilDatum))}
                   </TableCell>
                 ))}
               {gekozenPeriode && isPeriodeOpen(gekozenPeriode) &&
