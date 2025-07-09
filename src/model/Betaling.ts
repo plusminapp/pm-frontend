@@ -89,7 +89,7 @@ export const betalingsSoorten2RekeningGroepSoorten = new Map<BetalingsSoort, Rek
   // Uitgaven
   [BetalingsSoort.uitgaven, { bron: RekeningGroepSoort.betaalmethode, bestemming: RekeningGroepSoort.uitgaven }],
   [BetalingsSoort.aflossen, { bron: RekeningGroepSoort.betaalmethode, bestemming: RekeningGroepSoort.aflossing }],
-  [BetalingsSoort.besteden_reservering, { bron: RekeningGroepSoort.betaalmethode, bestemming: RekeningGroepSoort.reservering }],
+  [BetalingsSoort.besteden_reservering, { bron: RekeningGroepSoort.betaalmethode, bestemming: RekeningGroepSoort.spaartegoed }],
   // Intern
   [BetalingsSoort.incasso_creditcard, { bron: RekeningGroepSoort.betaalrekening, bestemming: RekeningGroepSoort.creditcard }],
   [BetalingsSoort.opnemen_spaarrekening, { bron: RekeningGroepSoort.spaarrekening, bestemming: RekeningGroepSoort.betaalrekening }],

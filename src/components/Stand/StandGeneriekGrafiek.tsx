@@ -45,7 +45,7 @@ const StandGeneriekGrafiek: React.FC<StandGeneriekIconProps> = ({
     case 'aflossing':
       rekeningIcon = <CallMissedOutgoingIcon color="disabled" fontSize="large" />;
       break;
-    case 'reservering':
+    case 'spaartegoed':
       rekeningIcon = <SavingsOutlinedIcon color="disabled" fontSize="large" />;
       break;
     case 'samenvatting':

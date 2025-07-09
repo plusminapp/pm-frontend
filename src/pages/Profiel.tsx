@@ -57,7 +57,7 @@ const Profiel: React.FC = () => {
       .flatMap(rg => rg.rekeningen)
       .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
     const uitgaven = rekeningGroepPerBetalingsSoort
-      .filter(rgpb => rgpb.betalingsSoort === 'UITGAVEN')
+      .filter(rgpb => rgpb.betalingsSoort === 'UITGAVEN' || rgpb.betalingsSoort === 'AFLOSSEN')
       .flatMap(rgpb => rgpb.rekeningGroepen)
       .flatMap(rg => rg.rekeningen)
       .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
@@ -104,6 +104,7 @@ const Profiel: React.FC = () => {
         return <InkomstenIcon />
       case 'UITGAVEN':
       case 'AFLOSSEN':
+      case 'BESTEDEN_SPAARTEGOED':
         return <UitgavenIcon />;
       case 'INCASSO_CREDITCARD':
       case 'OPNEMEN_SPAARREKENING':
