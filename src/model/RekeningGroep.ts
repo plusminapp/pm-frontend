@@ -57,7 +57,12 @@ export const resultaatRekeningGroepSoorten = [
 export const betaalTabelRekeningGroepSoorten = [
   RekeningGroepSoort.inkomsten,
   RekeningGroepSoort.uitgaven,
-  RekeningGroepSoort.spaartegoed,
+  RekeningGroepSoort.aflossing];
+
+export const profielRekeningGroepSoorten = [
+  RekeningGroepSoort.inkomsten,
+  RekeningGroepSoort.uitgaven,
+  RekeningGroepSoort.spaarrekening,
   RekeningGroepSoort.aflossing];
 
 export const aflossenRekeningGroepSoorten = [

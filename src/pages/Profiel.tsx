@@ -5,9 +5,9 @@ import { Accordion, AccordionDetails, AccordionSummary, Paper, Table, TableBody,
 import { useAuthContext } from "@asgardeo/auth-react";
 
 import { useCustomContext } from '../context/CustomContext';
-import { bestemmingBetalingsSoorten, Betaling, currencyFormatter } from '../model/Betaling';
+import { bestemmingBetalingsSoorten, Betaling, currencyFormatter, ontdubbelBetalingsSoorten } from '../model/Betaling';
 import { PeriodeSelect } from '../components/Periode/PeriodeSelect';
-import { betaalTabelRekeningGroepSoorten, BudgetType } from '../model/RekeningGroep';
+import { BudgetType, profielRekeningGroepSoorten } from '../model/RekeningGroep';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers';
 import { InkomstenIcon } from '../icons/Inkomsten';
 import { UitgavenIcon } from '../icons/Uitgaven';
@@ -56,12 +56,22 @@ const Profiel: React.FC = () => {
       .flatMap(rgpb => rgpb.rekeningGroepen)
       .flatMap(rg => rg.rekeningen)
       .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
-    const uitgaven = rekeningGroepPerBetalingsSoort
-      .filter(rgpb => rgpb.betalingsSoort === 'UITGAVEN' || rgpb.betalingsSoort === 'AFLOSSEN')
-      .flatMap(rgpb => rgpb.rekeningGroepen)
-      .flatMap(rg => rg.rekeningen)
-      .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
-    const budgetTekst = `In: ${currencyFormatter.format(inkomsten)}, Uit: ${currencyFormatter.format(uitgaven)}, Over: ${currencyFormatter.format(inkomsten - uitgaven)} per maand. `;
+      const uitgaven = rekeningGroepPerBetalingsSoort
+        .filter(rgpb => rgpb.betalingsSoort === 'UITGAVEN')
+        .flatMap(rgpb => rgpb.rekeningGroepen)
+        .flatMap(rg => rg.rekeningen)
+        .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
+      const aflossen = rekeningGroepPerBetalingsSoort
+        .filter(rgpb => rgpb.betalingsSoort === 'AFLOSSEN')
+        .flatMap(rgpb => rgpb.rekeningGroepen)
+        .flatMap(rg => rg.rekeningen)
+        .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
+      const sparen = rekeningGroepPerBetalingsSoort
+        .filter(rgpb => rgpb.betalingsSoort === 'SPAREN')
+        .flatMap(rgpb => rgpb.rekeningGroepen)
+        .flatMap(rg => rg.rekeningen)
+        .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
+      const budgetTekst = `In: ${currencyFormatter.format(inkomsten)}, Uit: ${currencyFormatter.format(uitgaven)}, Aflossen: ${currencyFormatter.format(aflossen)}, Sparen: ${currencyFormatter.format(sparen)}, Over: ${currencyFormatter.format(inkomsten - uitgaven - aflossen - sparen)} per maand. `;
     return budgetTekst
   }
 
@@ -107,8 +117,8 @@ const Profiel: React.FC = () => {
       case 'BESTEDEN_SPAARTEGOED':
         return <UitgavenIcon />;
       case 'INCASSO_CREDITCARD':
-      case 'OPNEMEN_SPAARREKENING':
-      case 'STORTEN_SPAARREKENING':
+      case 'OPNEMEN':
+      case 'SPAREN':
       case 'OPNEMEN_CONTANT':
       case 'STORTEN_CONTANT':
         return <InternIcon />;
@@ -212,8 +222,9 @@ const Profiel: React.FC = () => {
                       <TableBody>
                         <>
                           {rekeningGroepPerBetalingsSoort
+                            .filter(rgpb => ontdubbelBetalingsSoorten.includes(rgpb.betalingsSoort))
                             .flatMap(rgpb => rgpb.rekeningGroepen)
-                            .filter(rg => betaalTabelRekeningGroepSoorten.includes(rg.rekeningGroepSoort))
+                            .filter(rg => profielRekeningGroepSoorten.includes(rg.rekeningGroepSoort))
                             .filter((value, index, self) => self.indexOf(value) === index).map((rekeningGroep) => (
                               <Fragment key={rekeningGroep.naam}>
                                 <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }} aria-haspopup="true" >

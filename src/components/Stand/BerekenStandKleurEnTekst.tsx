@@ -1,7 +1,6 @@
 import { SaldoDTO } from "../../model/Saldo";
 import { PlusIcon } from '../../icons/Plus';
 import { MinIcon } from '../../icons/Min';
-import { UitroeptekenIcon } from '../../icons/Uitroepteken';
 import QuestionMarkOutlinedIcon from '@mui/icons-material/QuestionMarkOutlined';
 
 const formatAmount = (amount: number): string => {
@@ -19,6 +18,8 @@ export const berekenRekeningGroepIcoonKleur = (saldo: SaldoDTO): string => {
       return (saldo.meerDanMaandBudget > 0 ? '#c00' : saldo.meerDanBudget > 0) ? 'red' : 'green';
     case 'vast':
       return saldo.minderDanBudget > 0 || saldo.achterstandOpPeilDatum < 0 ? 'red' : (saldo.meerDanMaandBudget > 0 || saldo.meerDanBudget > 0) ? 'orange' : 'green';
+    case 'sparen':
+      return 'orange';
     default:
       return 'black';
   }
@@ -32,8 +33,8 @@ export const berekenRekeningGroepIcoonOpKleur = (heigth: number, color: string):
     case 'red':
     case '#c00':
       return <MinIcon color={color} height={heigth} />;
-    case 'orange':
-      return <UitroeptekenIcon color={color} height={heigth} />;
+    // case 'orange':
+    //   return <UitroeptekenIcon color={color} height={heigth} />;
     default:
       return <QuestionMarkOutlinedIcon color={'disabled'} height={heigth} />;
   }

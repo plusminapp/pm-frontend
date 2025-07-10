@@ -13,16 +13,14 @@ import { useNavigate } from 'react-router-dom';
 import { PeriodeSelect } from '../components/Periode/PeriodeSelect';
 import PhotoCameraOutlinedIcon from '@mui/icons-material/PhotoCameraOutlined';
 import dayjs from 'dayjs';
-import { Stand } from '../model/Saldo';
 import BetalingTabel from '../components/Kasboek/BetalingTabel';
 import KolommenTabel from '../components/Kasboek/KolommenTabel';
 
 export default function Kasboek() {
   const { getIDToken } = useAuthContext();
-  const { actieveHulpvrager, gekozenPeriode } = useCustomContext();
+  const { actieveHulpvrager, gekozenPeriode, stand, setIsStandDirty } = useCustomContext();
 
   const [betalingen, setBetalingen] = useState<BetalingDTO[]>([])
-  const [stand, setStand] = useState<Stand | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
 
   const theme = useTheme();
@@ -66,38 +64,6 @@ export default function Kasboek() {
     fetchBetalingen();
   }, [fetchBetalingen]);
 
-  const fetchStand = useCallback(async () => {
-    let token
-    try {
-      token = await getIDToken();
-    } catch (error) {
-      console.error("Error fetching ID token", error);
-      setIsLoading(false);
-    }
-    if (actieveHulpvrager && token && gekozenPeriode) {
-      setIsLoading(true);
-      const id = actieveHulpvrager!.id
-      const response = await fetch(`/api/v1/stand/hulpvrager/${id}/datum/${dayjs(gekozenPeriode.periodeEindDatum) > dayjs() ? dayjs().format('YYYY-MM-DD') : gekozenPeriode.periodeEindDatum}`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      setIsLoading(false);
-      if (response.ok) {
-        const result = await response.json() as Stand;
-        setStand(result);
-      } else {
-        console.error("Failed to fetch data", response.status);
-      }
-    }
-  }, [actieveHulpvrager, gekozenPeriode, getIDToken]);
-
-  useEffect(() => {
-    fetchStand();
-  }, [fetchStand]);
-
   const onBetalingBewaardChange = (betaling: BetalingDTO): void => {
     const isBoekingInGekozenPeriode =
       dayjs(betaling?.boekingsdatum).isAfter(dayjs(gekozenPeriode?.periodeStartDatum).subtract(1, 'day')) &&
@@ -105,10 +71,11 @@ export default function Kasboek() {
     if (isBoekingInGekozenPeriode && betaling) {
       setBetalingen([...betalingen.filter(b => b.id !== betaling?.id), betaling]);
     }
-    fetchStand();
+    setIsStandDirty(true);
   }
   const onBetalingVerwijderdChange = (sortOrder: string): void => {
     setBetalingen(betalingen.filter(b => b.sortOrder !== sortOrder));
+    setIsStandDirty(true);
   }
   const isPeriodeOpen = gekozenPeriode?.periodeStatus === 'OPEN' || gekozenPeriode?.periodeStatus === 'HUIDIG';
 

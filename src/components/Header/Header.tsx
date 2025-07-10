@@ -39,6 +39,8 @@ function Header() {
     actieveHulpvrager, setActieveHulpvrager,
     snackbarMessage, setSnackbarMessage,
     gekozenPeriode, setGekozenPeriode,
+    setStand,
+    isStandDirty, setIsStandDirty,
     rekeningGroepPerBetalingsSoort, setRekeningGroepPerBetalingsSoort,
     setPeriodes } = useCustomContext();
 
@@ -125,8 +127,6 @@ function Header() {
       }
     })
 
-
-
     const dataGebruiker = await responseGebruiker.json();
     setGebruiker(dataGebruiker.gebruiker as Gebruiker);
     setHulpvragers(dataGebruiker.hulpvragers as Gebruiker[]);
@@ -172,6 +172,38 @@ function Header() {
     }
   }, [state.isAuthenticated, fetchGebruikerMetHulpvragers]);
 
+  useEffect(() => {
+    const fetchSaldi = async () => {
+      let token = '';
+      try { token = await getIDToken() }
+      catch (error) {
+        console.error("Failed to fetch data", error);
+      }
+      if (actieveHulpvrager && gekozenPeriode && token) {
+        const vandaag = dayjs().format('YYYY-MM-DD');
+        const datum = gekozenPeriode.periodeEindDatum > vandaag ? vandaag : gekozenPeriode.periodeEindDatum;
+        const id = actieveHulpvrager.id
+        const response = await fetch(`/api/v1/stand/hulpvrager/${id}/datum/${datum}`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        if (response.ok) {
+          const result = await response.json();
+          setStand(result);
+          setIsStandDirty(false);
+        } else {
+          console.error("Failed to fetch data", response.status);
+        }
+      }
+    };
+    fetchSaldi();
+
+  }, [actieveHulpvrager, gekozenPeriode, getIDToken, isStandDirty]);
+
+
   const handleLogout = async () => {
     try {
       await signOut();
@@ -193,10 +225,11 @@ function Header() {
     }
   };
 
-  // const maandAflossingsBedrag = berekenMaandAflossingenBedrag(actieveHulpvrager?.aflossingen ?? [])
+  let pages = ['Stand', 'Kasboek'];
   const heeftAflossing = rekeningGroepen.some((rekeningGroep) => rekeningGroep.rekeningGroepSoort === 'AFLOSSING');
-  const pages = heeftAflossing ? ['Stand', 'Kasboek', 'Aflossen'] : ['Stand', 'Kasboek'];
-  // const pages = ['Stand', 'Kasboek'];
+  if (heeftAflossing) pages.push('Aflossen')
+  const heeftSparen = rekeningGroepen.some((rekeningGroep) => rekeningGroep.rekeningGroepSoort === 'SPAARREKENING');
+  if (heeftSparen) pages.push('Sparen');
 
   return (
     <>

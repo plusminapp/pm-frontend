@@ -3,6 +3,7 @@ import { Gebruiker } from '../model/Gebruiker';
 import { RekeningGroepPerBetalingsSoort } from '../model/RekeningGroep';
 import { Periode } from '../model/Periode';
 import { SnackbarMessage } from '../components/StyledSnackbar';
+import { Stand } from '../model/Saldo';
 
 interface CustomContextType {
   gebruiker: Gebruiker | undefined;
@@ -15,6 +16,10 @@ interface CustomContextType {
   setPeriodes: (periodes: Array<Periode>) => void;
   gekozenPeriode: Periode | undefined;
   setGekozenPeriode: (gekozenPeriode: Periode | undefined) => void;
+  stand: Stand | undefined;
+  setStand: (stand: Stand | undefined) => void;
+  isStandDirty: boolean;
+  setIsStandDirty: (isStandDiry: boolean) => void;
   rekeningGroepPerBetalingsSoort: Array<RekeningGroepPerBetalingsSoort>;
   setRekeningGroepPerBetalingsSoort: (rekeningGroepPerBetalingsSoort: Array<RekeningGroepPerBetalingsSoort>) => void;
   snackbarMessage: SnackbarMessage;
@@ -42,6 +47,8 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
   const [hulpvragers, setHulpvragers] = useState<Array<Gebruiker>>([]);
   const [periodes, setPeriodes] = useState<Array<Periode>>([]);
   const [gekozenPeriode, setGekozenPeriode] = useState<Periode | undefined>(undefined);
+  const [stand, setStand] = useState<Stand | undefined>(undefined);
+  const [isStandDirty, setIsStandDirty] = useState<boolean>(true);
   const [rekeningGroepPerBetalingsSoort, setRekeningGroepPerBetalingsSoort] = useState<Array<RekeningGroepPerBetalingsSoort>>([]);
   const [snackbarMessage, setSnackbarMessage] = useState<SnackbarMessage>({ message: undefined, type: undefined });
 
@@ -59,6 +66,8 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
       hulpvragers, setHulpvragers,
       periodes, setPeriodes,
       gekozenPeriode, setGekozenPeriode,
+      stand, setStand,
+      isStandDirty, setIsStandDirty,
       rekeningGroepPerBetalingsSoort, setRekeningGroepPerBetalingsSoort,
       snackbarMessage, setSnackbarMessage
     }}>

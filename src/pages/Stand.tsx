@@ -1,9 +1,8 @@
 import { Accordion, AccordionDetails, AccordionSummary, Box, FormControlLabel, FormGroup, Switch, Typography } from "@mui/material";
 import Grid from '@mui/material/Grid2';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useCustomContext } from "../context/CustomContext";
-import { useAuthContext } from "@asgardeo/auth-react";
 import Resultaat from "../components/Stand/Resultaat";
 import type { Stand } from "../model/Saldo";
 import dayjs from "dayjs";
@@ -12,15 +11,14 @@ import { ArrowDropDownIcon } from "@mui/x-date-pickers";
 import SamenvattingGrafiek from "../components/Stand/SamenvattingGrafiek";
 import StandGrafiek from "../components/Stand/StandGrafiek";
 import { balansRekeningGroepSoorten, betaalmethodeRekeningGroepSoorten, betaalTabelRekeningGroepSoorten, RekeningGroepSoort, resultaatRekeningGroepSoorten } from "../model/RekeningGroep";
+import SpaarGrafiek from "../components/Stand/SpaarGrafiek";
+import { BetalingsSoort } from "../model/Betaling";
 
 export default function Stand() {
 
-  const { getIDToken } = useAuthContext();
-  const { actieveHulpvrager, gekozenPeriode, rekeningGroepPerBetalingsSoort } = useCustomContext();
+  const { actieveHulpvrager, gekozenPeriode, rekeningGroepPerBetalingsSoort, stand } = useCustomContext();
 
   // const [betalingen, setBetalingen] = useState<BetalingDTO[]>([])
-  const [stand, setStand] = useState<Stand | undefined>(undefined)
-  const [isLoading, setIsLoading] = useState(false);
 
   const [toonDebug, setToonDebug] = useState(localStorage.getItem('toonDebug') === 'true');
   const toggleToonDebug = () => {
@@ -69,42 +67,6 @@ export default function Stand() {
   //   fetchBetalingen();
   // }, [fetchBetalingen]);
 
-  useEffect(() => {
-    const fetchSaldi = async () => {
-      let token = '';
-      try { token = await getIDToken() }
-      catch (error) {
-        setIsLoading(false);
-        console.error("Failed to fetch data", error);
-      }
-      if (actieveHulpvrager && gekozenPeriode && token) {
-        setIsLoading(true);
-        const vandaag = dayjs().format('YYYY-MM-DD');
-        const datum = gekozenPeriode.periodeEindDatum > vandaag ? vandaag : gekozenPeriode.periodeEindDatum;
-        const id = actieveHulpvrager.id
-        const response = await fetch(`/api/v1/stand/hulpvrager/${id}/datum/${datum}`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        setIsLoading(false);
-        if (response.ok) {
-          const result = await response.json();
-          setStand(result);
-        } else {
-          console.error("Failed to fetch data", response.status);
-        }
-      }
-    };
-    fetchSaldi();
-
-  }, [actieveHulpvrager, gekozenPeriode, getIDToken]);
-
-  if (isLoading) {
-    return <Typography sx={{ mb: '25px' }}>De saldi worden opgehaald.</Typography>
-  };
 
   const berekenPeriodeNaam = () => {
     if (gekozenPeriode?.periodeStatus.toLowerCase() === 'huidig') {
@@ -193,6 +155,28 @@ export default function Stand() {
                             detailsVisible={detailsVisible === rekeningGroep.naam} />
                         </Box>
                       ))}
+
+                  {gekozenPeriode &&
+                    rekeningGroepPerBetalingsSoort
+                      .filter(rgpb => rgpb.betalingsSoort === BetalingsSoort.opnemen)
+                      .flatMap((rgpb) => (rgpb.rekeningGroepen))
+                      .filter(rekeningGroep => rekeningGroep.rekeningGroepSoort === RekeningGroepSoort.spaarrekening)
+                      .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1)
+                      // .filter(rekeningGroep => rekeningGroep.rekeningen.length >= 1)
+                      .map(rekeningGroep => (
+                        <Box
+                          key={rekeningGroep.id}
+                          onClick={() => toggleToonBudgetDetails(rekeningGroep.naam)}>
+                          <SpaarGrafiek
+                            peilDatum={dayjs(stand.peilDatum).isAfter(dayjs()) ? dayjs() : dayjs(stand.peilDatum)}
+                            periode={gekozenPeriode}
+                            rekeningGroep={rekeningGroep}
+                            resultaatOpDatum={stand.resultaatOpDatum.filter(b => b.rekeningGroepNaam === rekeningGroep.naam)}
+                            geaggregeerdResultaatOpDatum={stand.geaggregeerdResultaatOpDatum.find(b => b.rekeningGroepNaam === rekeningGroep.naam)}
+                            toonDebug={toonDebug && detailsVisible === rekeningGroep.naam}
+                            detailsVisible={detailsVisible === rekeningGroep.naam} />
+                        </Box>))}
+
                 </Grid>
                 {/* <Grid size={1} sx={{ maxHeight: '400px', overflowY: 'auto' }}>
                   <Box sx={{ pl: {sm: 0, md: '20px'}}}>

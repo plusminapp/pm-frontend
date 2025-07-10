@@ -7,7 +7,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import EditIcon from '@mui/icons-material/Edit';
 
-import { aflossenBetalingsSoorten, BetalingDTO, BetalingsSoort, reserverenBetalingsSoorten } from '../../model/Betaling';
+import { aflossenBetalingsSoorten, BetalingDTO, BetalingsSoort } from '../../model/Betaling';
 import { Fragment, useState } from 'react';
 
 import { useCustomContext } from '../../context/CustomContext';
@@ -25,7 +25,7 @@ interface AflossingReserveringTabelProps {
 export default function AflossingReserveringTabel(props: AflossingReserveringTabelProps) {
 
   const { actieveHulpvrager, gebruiker, gekozenPeriode } = useCustomContext();
-  const betalingsSoorten = props.isAflossing ? aflossenBetalingsSoorten : reserverenBetalingsSoorten
+  const betalingsSoorten = aflossenBetalingsSoorten
   const betalingen = props.betalingen.filter(betaling => betaling.betalingsSoort && betalingsSoorten.includes(betaling.betalingsSoort))
   const [selectedBetaling, setSelectedBetaling] = useState<BetalingDTO | undefined>(undefined);
 

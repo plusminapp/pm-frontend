@@ -1,5 +1,6 @@
 import { AflossingDTO } from "./Aflossing";
 import { Periode } from "./Periode";
+import { SpaartegoedDTO } from "./Spaartegoed";
 
 export type Stand = {
     periodeStartDatum: string,
@@ -17,6 +18,7 @@ export type SaldoDTO = {
     budgetType: string;
     rekeningNaam: string;
     aflossing: AflossingDTO | undefined;
+    spaartegoed: SpaartegoedDTO | undefined;
     sortOrder: number;
     openingsSaldo: number;
     achterstand: number;

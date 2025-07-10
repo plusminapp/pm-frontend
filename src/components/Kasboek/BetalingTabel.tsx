@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Box, Button, FormGroup, FormControlLabel, Switch } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { bestemmingBetalingsSoorten as bronBetalingsSoorten, BetalingDTO, BetalingsSoort, internBetalingsSoorten } from '../../model/Betaling';
+import { bestemmingBetalingsSoorten as bronBetalingsSoorten, BetalingDTO, internBetalingsSoorten } from '../../model/Betaling';
 import { RekeningGroepDTO } from '../../model/RekeningGroep';
 import dayjs from 'dayjs';
 import { useCustomContext } from '../../context/CustomContext';
@@ -45,7 +45,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
   };
 
   const getFormattedBedrag = (betaling: BetalingDTO) => {
-    const bedrag = betaling.betalingsSoort === BetalingsSoort.inkomsten
+    const bedrag = betaling.betalingsSoort && bronBetalingsSoorten.includes(betaling.betalingsSoort)
       ? betaling.bedrag
       : -betaling.bedrag;
     return formatter.format(bedrag);
@@ -201,8 +201,8 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (props: BetalingTabelProps) 
                   <TableRow key={betaling.id}>
                     <TableCell sx={{ padding: '5px' }}>{dayjs(betaling.boekingsdatum).format('D MMMM')}</TableCell>
                     <TableCell sx={{ padding: '5px', maxWidth: '300px' }}>
-                      {/* {isIntern(betaling) ? betaling.betalingsSoort && betalingsSoortFormatter(betaling.betalingsSoort) + ': ' : ''} */}
-                      {toonIntern && (betaling.betalingsSoort && bronBetalingsSoorten.includes(betaling.betalingsSoort) ? `(${betaling.bron})` : `(${betaling.bestemming})`)} {betaling.omschrijving}
+                      {toonIntern && (isIntern(betaling) ? betaling.betalingsSoort && `(${betaling.betalingsSoort.charAt(0).toUpperCase()}${betaling.betalingsSoort.slice(1).toLowerCase()}: ` : '(')}
+                      {toonIntern && (betaling.betalingsSoort && bronBetalingsSoorten.includes(betaling.betalingsSoort) ? `${betaling.bron})` : `${betaling.bestemming})`)} {betaling.omschrijving}
                     </TableCell>
                     {betaalTabelRekeningGroepen
                       .map(rekeningGroep => (
