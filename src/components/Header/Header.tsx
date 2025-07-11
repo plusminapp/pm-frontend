@@ -201,7 +201,7 @@ function Header() {
     };
     fetchSaldi();
 
-  }, [actieveHulpvrager, gekozenPeriode, getIDToken, isStandDirty]);
+  }, [actieveHulpvrager, gekozenPeriode, getIDToken, isStandDirty, setIsStandDirty, setStand]);
 
 
   const handleLogout = async () => {
@@ -225,7 +225,7 @@ function Header() {
     }
   };
 
-  let pages = ['Stand', 'Kasboek'];
+  const pages = ['Stand', 'Kasboek'];
   const heeftAflossing = rekeningGroepen.some((rekeningGroep) => rekeningGroep.rekeningGroepSoort === 'AFLOSSING');
   if (heeftAflossing) pages.push('Aflossen')
   const heeftSparen = rekeningGroepen.some((rekeningGroep) => rekeningGroep.rekeningGroepSoort === 'SPAARREKENING');
