@@ -114,7 +114,7 @@ const Profiel: React.FC = () => {
         return <InkomstenIcon />
       case 'UITGAVEN':
       case 'AFLOSSEN':
-      case 'BESTEDEN_SPAARTEGOED':
+      case 'BESTEDEN':
         return <UitgavenIcon />;
       case 'INCASSO_CREDITCARD':
       case 'OPNEMEN':
@@ -304,8 +304,8 @@ const Profiel: React.FC = () => {
                         <TableCell>Betaling categorie</TableCell>
                         <TableCell>Soort betaling</TableCell>
                         <TableCell>Kolomkop</TableCell>
-                        <TableCell>Bron (debet)</TableCell>
-                        <TableCell>Bestemming (credit)</TableCell>
+                        <TableCell>Bron (credit)</TableCell>
+                        <TableCell>Bestemming (debet)</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>

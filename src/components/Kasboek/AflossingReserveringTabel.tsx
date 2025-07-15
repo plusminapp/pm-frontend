@@ -71,7 +71,7 @@ export default function AflossingReserveringTabel(props: AflossingReserveringTab
                       >
                         <TableCell align="left" size='small' sx={{ p: "5px" }}>{dateFormatter(betaling["boekingsdatum"]?.toString())}</TableCell>
                         <TableCell align="right" size='small' sx={{ p: "5px" }}>
-                          {betaling.betalingsSoort === BetalingsSoort.toevoegen_reservering ? currencyFormatter.format(betaling.bedrag) : currencyFormatter.format(-betaling.bedrag)}
+                          {betaling.betalingsSoort === BetalingsSoort.sparen ? currencyFormatter.format(betaling.bedrag) : currencyFormatter.format(-betaling.bedrag)}
                         </TableCell>
                         <TableCell align="left" size='small' sx={{ p: "5px" }}>{betaling["omschrijving"]}</TableCell>
                         {isPeriodeOpen &&

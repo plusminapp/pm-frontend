@@ -185,7 +185,7 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                 variant={selectedRekeningGroep?.naam === rekeningGroep.naam ? 'contained' : 'outlined'}
                 onClick={() => handleRekeningGroepClick(rekeningGroep.naam)}
               >
-                rgn {rekeningGroep.naam} {index}
+                {rekeningGroep.naam}
               </Button>
             ))
           }
@@ -210,7 +210,8 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                         variant={selectedRekening?.naam === rekening.naam ? 'contained' : 'outlined'}
                         onClick={() => handleRekeningClick(rekening.naam)}
                       >
-                        {rekening.naam}
+                        {rekening.naam} {rgpb.betalingsSoort === BetalingsSoort.besteden ?
+                          (<><br />{sparenSaldi.filter(s => s.rekeningNaam === rekening.naam)?.map(s => s.openingsSaldo + s.budgetBetaling).reduce((a, b) => a + b, 0).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' }) || ''}</>) : null}
                       </Button>
                     ))}
               </Grid>

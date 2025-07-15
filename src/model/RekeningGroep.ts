@@ -32,16 +32,6 @@ export type RekeningGroepPerBetalingsSoort = {
   rekeningGroepen: RekeningGroepDTO[];
 }
 
-export type RekeningGroepSoortPaar = {
-  bron: RekeningGroepSoort;
-  bestemming: RekeningGroepSoort;
-}
-
-export type RekeningGroepPaar = {
-  bron: RekeningGroepDTO[];
-  bestemming: RekeningGroepDTO[];
-}
-
 export const balansRekeningGroepSoorten: RekeningGroepSoort[] = [
   RekeningGroepSoort.betaalrekening,
   RekeningGroepSoort.spaarrekening,
