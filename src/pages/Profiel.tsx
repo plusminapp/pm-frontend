@@ -15,6 +15,7 @@ import { InternIcon } from '../icons/Intern';
 import dayjs from 'dayjs';
 import { RekeningDTO } from '../model/Rekening';
 import { isPeriodeOpen } from '../model/Periode';
+import { CashFlowGrafiek } from '../components/CashFlow/Graph/CashFlowGrafiek';
 
 const Profiel: React.FC = () => {
   const { state, getIDToken } = useAuthContext();
@@ -56,22 +57,22 @@ const Profiel: React.FC = () => {
       .flatMap(rgpb => rgpb.rekeningGroepen)
       .flatMap(rg => rg.rekeningen)
       .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
-      const uitgaven = rekeningGroepPerBetalingsSoort
-        .filter(rgpb => rgpb.betalingsSoort === 'UITGAVEN')
-        .flatMap(rgpb => rgpb.rekeningGroepen)
-        .flatMap(rg => rg.rekeningen)
-        .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
-      const aflossen = rekeningGroepPerBetalingsSoort
-        .filter(rgpb => rgpb.betalingsSoort === 'AFLOSSEN')
-        .flatMap(rgpb => rgpb.rekeningGroepen)
-        .flatMap(rg => rg.rekeningen)
-        .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
-      const sparen = rekeningGroepPerBetalingsSoort
-        .filter(rgpb => rgpb.betalingsSoort === 'SPAREN')
-        .flatMap(rgpb => rgpb.rekeningGroepen)
-        .flatMap(rg => rg.rekeningen)
-        .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
-      const budgetTekst = `In: ${currencyFormatter.format(inkomsten)}, Uit: ${currencyFormatter.format(uitgaven)}, Aflossen: ${currencyFormatter.format(aflossen)}, Sparen: ${currencyFormatter.format(sparen)}, Over: ${currencyFormatter.format(inkomsten - uitgaven - aflossen - sparen)} per maand. `;
+    const uitgaven = rekeningGroepPerBetalingsSoort
+      .filter(rgpb => rgpb.betalingsSoort === 'UITGAVEN')
+      .flatMap(rgpb => rgpb.rekeningGroepen)
+      .flatMap(rg => rg.rekeningen)
+      .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
+    const aflossen = rekeningGroepPerBetalingsSoort
+      .filter(rgpb => rgpb.betalingsSoort === 'AFLOSSEN')
+      .flatMap(rgpb => rgpb.rekeningGroepen)
+      .flatMap(rg => rg.rekeningen)
+      .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
+    const sparen = rekeningGroepPerBetalingsSoort
+      .filter(rgpb => rgpb.betalingsSoort === 'SPAREN')
+      .flatMap(rgpb => rgpb.rekeningGroepen)
+      .flatMap(rg => rg.rekeningen)
+      .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
+    const budgetTekst = `In: ${currencyFormatter.format(inkomsten)}, Uit: ${currencyFormatter.format(uitgaven)}, Aflossen: ${currencyFormatter.format(aflossen)}, Sparen: ${currencyFormatter.format(sparen)}, Over: ${currencyFormatter.format(inkomsten - uitgaven - aflossen - sparen)} per maand. `;
     return budgetTekst
   }
 
@@ -185,6 +186,8 @@ const Profiel: React.FC = () => {
               Hieronder staat nu de inrichting voor jezelf (heb je zelf gedaan natuurlijk), dan kun je oefenen met de app zonder dat je de gegevens van een hulpvrager gebruikt. Eigenlijk ben je nu je eigen hulpvrager. Dus: experimenteer er op los!
             </Typography>}
 
+          <CashFlowGrafiek />
+          
           {/* periodes */}
           <Typography sx={{ mb: 1 }}>
             De inrichting kan per periode verschillen (bijvoorbeeld andere potjes en budgetten), dus kies eerst de periode waar je de inrichting van wilt zien.
