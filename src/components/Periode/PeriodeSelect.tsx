@@ -155,7 +155,7 @@ export function PeriodeSelect({ isAflossing = false, isProfiel = false, isKasboe
       {!isProfiel && selecteerbarePeriodes.length === 1 && gekozenPeriode &&
         <Box sx={{ mt: '37px', maxWidth: '340px' }}>
           <Typography >
-            Periode: {dayjs(gekozenPeriode.periodeStartDatum).format('D MMMM')} - {dayjs(gekozenPeriode.periodeEindDatum).format('D MMMM')} ({gekozenPeriode.periodeStatus.toLocaleLowerCase()})
+            Periode: {dayjs(gekozenPeriode.periodeStartDatum).format('MMMM')} - {dayjs(gekozenPeriode.periodeEindDatum).format('MMMM')} ({gekozenPeriode.periodeStatus.toLocaleLowerCase()})
           </Typography>
         </Box>}
 
@@ -173,7 +173,7 @@ export function PeriodeSelect({ isAflossing = false, isProfiel = false, isKasboe
               {selecteerbarePeriodes
                 .map((periode: Periode) => (
                   <MenuItem key={periode.periodeStartDatum.toString()} value={periode.periodeStartDatum.toString()} sx={{ fontSize: '0.875rem' }}>
-                    {`van ${dayjs(periode.periodeStartDatum).format('D MMMM')} tot ${dayjs(periode.periodeEindDatum).format('D MMMM')}`} ({periode.periodeStatus.toLocaleLowerCase()})
+                    {`${dayjs(periode.periodeStartDatum).format('MMMM')}/${dayjs(periode.periodeEindDatum).format('MMMM')}`} ({periode.periodeStatus.toLocaleLowerCase()})
                   </MenuItem>))}
             </Select>
           </FormControl>

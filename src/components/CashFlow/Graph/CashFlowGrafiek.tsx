@@ -1,20 +1,51 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { AgCharts } from "ag-charts-react";
 import { AgChartOptions } from "ag-charts-community";
-import { getData } from "./CashFlowData";
-
-// type AflossingenAfbouwGrafiekProps = {
-//   aflossingen: RekeningDTO[];
-//   aflossingSaldi: SaldoDTO[];
-// };
+import { useCustomContext } from "../../../context/CustomContext";
+import { useAuthContext } from "@asgardeo/auth-react";
+import { CashFlow } from "../../../model/CashFlow";
+import dayjs from "dayjs";
 
 
 export const CashFlowGrafiek = () => {
-  const [options] = useState<AgChartOptions>({
+  const { getIDToken } = useAuthContext();
+  const { actieveHulpvrager, gekozenPeriode } = useCustomContext();
+
+  const [cashFlow, setCashFlow] = useState<CashFlow[]>([]);
+
+  const fetchCashFlow = useCallback(async () => {
+    if (!actieveHulpvrager || !gekozenPeriode) {
+      return;
+    }
+    let token
+    try {
+      token = await getIDToken();
+    } catch (error) {
+      console.error("Error getting ID token:", error);
+    }
+
+    const responseCashFlow = await fetch(`/api/v1/rekening/hulpvrager/${actieveHulpvrager.id}/periode/${gekozenPeriode.id}/cashflow`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      }
+    })
+    const cashflowData = await responseCashFlow.json();
+    setCashFlow(cashflowData as CashFlow[]);
+
+  }, [actieveHulpvrager, gekozenPeriode, getIDToken]);
+
+  useEffect(() => {
+    if (actieveHulpvrager && gekozenPeriode) {
+      void fetchCashFlow();
+    }
+  }, [actieveHulpvrager, fetchCashFlow, gekozenPeriode]);
+
+  const options = useMemo<AgChartOptions>(() => ({
     title: {
       text: "Periode cashflow",
     },
-    data: getData(),
+    data: cashFlow,
     series: [
       {
         type: "bar",
@@ -47,7 +78,7 @@ export const CashFlowGrafiek = () => {
         yName: "Prognose",
         stroke: "grey",
         lineDash: [10, 4],
-        marker: { size: 4, fill: 'grey'},
+        marker: { size: 4, fill: 'grey' },
       },
     ],
     axes: [
@@ -55,9 +86,8 @@ export const CashFlowGrafiek = () => {
         type: 'category',
         position: 'bottom',
         label: {
-          formatter: (params: any) => {
-            if (params.index % 2 === 0) return params.value;
-            return '';
+          formatter: (params: { value: string; index: number }) => {
+           return dayjs(params.value).format('D/M');
           }
         }
       },
@@ -66,6 +96,6 @@ export const CashFlowGrafiek = () => {
         position: 'left',
       }
     ],
-  });
+  }), [cashFlow]);
   return <AgCharts options={options} style={{ height: '500px' }} />;
 };

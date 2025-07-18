@@ -186,8 +186,6 @@ const Profiel: React.FC = () => {
               Hieronder staat nu de inrichting voor jezelf (heb je zelf gedaan natuurlijk), dan kun je oefenen met de app zonder dat je de gegevens van een hulpvrager gebruikt. Eigenlijk ben je nu je eigen hulpvrager. Dus: experimenteer er op los!
             </Typography>}
 
-          <CashFlowGrafiek />
-          
           {/* periodes */}
           <Typography sx={{ mb: 1 }}>
             De inrichting kan per periode verschillen (bijvoorbeeld andere potjes en budgetten), dus kies eerst de periode waar je de inrichting van wilt zien.
@@ -202,6 +200,9 @@ const Profiel: React.FC = () => {
               <PeriodeSelect isProfiel />
             </AccordionDetails>
           </Accordion>
+
+          {gekozenPeriode && actieveHulpvrager &&
+            <CashFlowGrafiek />}
 
           {/* de kolommen van het kasboek en potjes*/}
           {rekeningGroepPerBetalingsSoort && rekeningGroepPerBetalingsSoort.length >= 0 &&
