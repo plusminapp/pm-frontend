@@ -191,6 +191,10 @@ const Profiel: React.FC = () => {
             De inrichting kan per periode verschillen (bijvoorbeeld andere potjes en budgetten), dus kies eerst de periode waar je de inrichting van wilt zien.
           </Typography>
           <PeriodeSelect />
+
+          {gekozenPeriode && actieveHulpvrager &&
+            <CashFlowGrafiek />}
+
           <Accordion>
             <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
               <Typography ><strong>Periodes</strong>. De periode wisseldag voor {actieveHulpvrager?.bijnaam} is de {actieveHulpvrager?.periodeDag}e.
@@ -200,9 +204,6 @@ const Profiel: React.FC = () => {
               <PeriodeSelect isProfiel />
             </AccordionDetails>
           </Accordion>
-
-          {gekozenPeriode && actieveHulpvrager &&
-            <CashFlowGrafiek />}
 
           {/* de kolommen van het kasboek en potjes*/}
           {rekeningGroepPerBetalingsSoort && rekeningGroepPerBetalingsSoort.length >= 0 &&
