@@ -14,6 +14,7 @@ import LoginPagina from './pages/Login';
 import Container from '@mui/material/Container';
 import NotFound from './pages/NotFound';
 import BankAppAfbeelding from './pages/BankAppAfbeelding';
+import { GridExample } from './pages/Experiment';
 
 const ProtectedRoute: React.FC<{ element: JSX.Element }> = ({ element }) => {
   const { state } = useAuthContext();
@@ -29,7 +30,6 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<LoginPagina />} />
-            <Route path="/ocr" element={<BankAppAfbeelding />} />
 
             {/* Beschermde routes */}
             <Route path="/stand" element={<ProtectedRoute element={<Stand />} />} />
@@ -37,6 +37,8 @@ const App: React.FC = () => {
             <Route path="/aflossen" element={<ProtectedRoute element={<Aflossen />} />} />
             <Route path="/sparen" element={<ProtectedRoute element={<Sparen />} />} />
             <Route path="/profiel" element={<ProtectedRoute element={<Profiel />} />} />
+            <Route path="/experiment" element={<GridExample />} />
+            <Route path="/ocr" element={<BankAppAfbeelding />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
