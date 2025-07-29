@@ -19,7 +19,7 @@ export type RekeningDTO = {
   betaalMethoden: RekeningDTO[] | undefined
   budgetMaandBedrag: number | undefined;
   budgetPeilDatum: string | undefined;
-  budgetBetaling: number | undefined;
+  betaling: number | undefined;
   budgetOpPeilDatum?: number | undefined;
   betaaldBinnenBudget: number | undefined;
   meerDanBudget: number | undefined;

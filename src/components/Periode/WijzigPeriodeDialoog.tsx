@@ -52,8 +52,8 @@ export default function WijzigPeriodeDialoog(props: WijzigPeriodeDialoogProps) {
         .filter((saldo: SaldoDTO) => balansRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
         .map((saldo: SaldoDTO) => ({
           naam: saldo.rekeningNaam,
-          bedrag: Number(saldo.openingsSaldo).toFixed(2),
-          delta: Number(saldo.oorspronkelijkeBudgetBetaling),
+          bedrag: Number(saldo.openingsBalansSaldo).toFixed(2),
+          delta: Number(saldo.oorspronkelijkeBetaling),
         } as FormSaldo)));
       setHeeftAflossingen(stand.geaggregeerdResultaatOpDatum.some((saldo: SaldoDTO) => saldo.rekeningGroepSoort === 'AFLOSSINGEN'));
     }
@@ -74,7 +74,7 @@ export default function WijzigPeriodeDialoog(props: WijzigPeriodeDialoogProps) {
     if (actieveHulpvrager && props.periodes && token) {
       const body = formSaldi.map(saldo => ({
         rekeningNaam: saldo.naam,
-        openingsSaldo: saldo.bedrag,
+        openingsBalansSaldo: saldo.bedrag,
       } as unknown as SaldoDTO))
       console.log("Saving wijzigingen", formSaldi, body);
       const response = await fetch(`/api/v1/periode/hulpvrager/${actieveHulpvrager.id}/wijzig-periode-opening/${props.periodes[props.index].id}`, {

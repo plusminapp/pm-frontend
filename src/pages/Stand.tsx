@@ -199,7 +199,7 @@ export default function Stand() {
                 saldi={stand.geaggregeerdResultaatOpDatum
                   .filter(saldo => betaalmethodeRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                   .sort((a, b) => a.sortOrder - b.sortOrder)
-                  .map(saldo => ({ ...saldo, bedrag: saldo.openingsSaldo + saldo.budgetBetaling }))}
+                  .map(saldo => ({ ...saldo, bedrag: saldo.openingsBalansSaldo + saldo.betaling }))}
               />
             </Grid>
           </Grid>
@@ -234,7 +234,7 @@ export default function Stand() {
                       saldi={stand.geaggregeerdResultaatOpDatum
                         .filter(saldo => balansRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                         .sort((a, b) => a.sortOrder - b.sortOrder)
-                        .map(saldo => ({ ...saldo, bedrag: saldo.openingsSaldo }))}
+                        .map(saldo => ({ ...saldo, bedrag: saldo.openingsBalansSaldo }))}
                     />
                   </Grid>
                   <Grid size={1}>
@@ -244,7 +244,7 @@ export default function Stand() {
                       saldi={stand.geaggregeerdResultaatOpDatum
                         .filter(saldo => resultaatRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                         .sort((a, b) => a.sortOrder - b.sortOrder)
-                        .map(saldo => ({ ...saldo, bedrag: -saldo.budgetBetaling }))}
+                        .map(saldo => ({ ...saldo, bedrag: -saldo.betaling }))}
                     />
                   </Grid>
                   <Grid size={1}>
@@ -254,7 +254,7 @@ export default function Stand() {
                       saldi={stand.geaggregeerdResultaatOpDatum
                         .filter(saldo => balansRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                         .sort((a, b) => a.sortOrder - b.sortOrder)
-                        .map(saldo => ({ ...saldo, bedrag: saldo.budgetBetaling }))}
+                        .map(saldo => ({ ...saldo, bedrag: saldo.betaling }))}
                     />
 
                   </Grid>
@@ -265,7 +265,7 @@ export default function Stand() {
                       saldi={stand.geaggregeerdResultaatOpDatum
                         .filter(saldo => balansRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                         .sort((a, b) => a.sortOrder - b.sortOrder)
-                        .map(saldo => ({ ...saldo, bedrag: saldo.openingsSaldo + saldo.budgetBetaling }))}
+                        .map(saldo => ({ ...saldo, bedrag: saldo.openingsBalansSaldo + saldo.betaling }))}
                     />
                   </Grid>
                 </Grid>

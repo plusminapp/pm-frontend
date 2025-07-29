@@ -19,8 +19,8 @@ export default function SparenTabel(props: SparenProps) {
 
   const { gekozenPeriode } = useCustomContext();
 
-  const actueleStand = (props.sparenSaldo?.openingsSaldo ?? 0) + (props.sparenSaldo?.budgetBetaling ?? 0);
-  const maandenTeGaan = ((props.sparenSaldo?.openingsSaldo ?? 0) >= (props.sparenSaldo.spaartegoed?.eindBedrag ?? 0)) ? 0
+  const actueleStand = (props.sparenSaldo?.openingsBalansSaldo ?? 0) + (props.sparenSaldo?.betaling ?? 0);
+  const maandenTeGaan = ((props.sparenSaldo?.openingsBalansSaldo ?? 0) >= (props.sparenSaldo.spaartegoed?.eindBedrag ?? 0)) ? 0
     : Math.ceil((((props.sparenSaldo.spaartegoed?.eindBedrag ?? 0) - actueleStand) / (props.sparenSaldo?.budgetMaandBedrag ?? 1)));
 
   return (
@@ -57,7 +57,7 @@ export default function SparenTabel(props: SparenProps) {
                 Betaling deze periode
               </TableCell>
               <TableCell align="right" size='small' >
-                {currencyFormatter.format(Math.abs(props.sparenSaldo?.budgetBetaling ?? 0))}
+                {currencyFormatter.format(Math.abs(props.sparenSaldo?.betaling ?? 0))}
               </TableCell>
             </TableRow>
             <TableRow>

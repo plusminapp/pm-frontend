@@ -142,11 +142,11 @@ export const SpaarGrafiek = ({ peilDatum, periode, geaggregeerdResultaatOpDatum,
               {berekenRekeningGroepIcoon(15, geaggregeerdResultaatOpDatum)}
               <Typography variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
                 {geaggregeerdResultaatOpDatum.rekeningGroepNaam} geaggregeerd: <br />
-                openingsSaldo {formatAmount(((geaggregeerdResultaatOpDatum.openingsSaldo ?? 0)).toString())}<br />
+                openingsBalansSaldo {formatAmount(((geaggregeerdResultaatOpDatum.openingsBalansSaldo ?? 0)).toString())}<br />
                 budgetMaandBedrag {formatAmount(((geaggregeerdResultaatOpDatum.budgetMaandBedrag ?? 0)).toString())}<br />
                 budgetOpPeilDatum: {formatAmount((geaggregeerdResultaatOpDatum.budgetOpPeilDatum ?? 0).toString())}<br />
                 achterstand ${formatAmount(((geaggregeerdResultaatOpDatum.achterstand ?? 0)).toString())},<br />
-                betaald {formatAmount(geaggregeerdResultaatOpDatum.budgetBetaling?.toString() ?? "nvt")}, <br />
+                betaald {formatAmount(geaggregeerdResultaatOpDatum.betaling?.toString() ?? "nvt")}, <br />
                 betaaldBinnenBudget {formatAmount(geaggregeerdResultaatOpDatum.betaaldBinnenBudget?.toString() ?? "nvt")}, <br />
                 minderDanBudget ${formatAmount(((geaggregeerdResultaatOpDatum.minderDanBudget ?? 0)).toString())},<br />
                 meerDanBudget ${formatAmount(((geaggregeerdResultaatOpDatum.meerDanBudget ?? 0)).toString())},<br />
@@ -161,12 +161,12 @@ export const SpaarGrafiek = ({ peilDatum, periode, geaggregeerdResultaatOpDatum,
               {berekenRekeningGroepIcoon(15, saldo)}
               <Typography variant='body2' sx={{ fontSize: '0.875rem', ml: 1 }}>
                 {saldo.rekeningNaam}: <br />
-                openingsSaldo {formatAmount(((saldo.openingsSaldo ?? 0)).toString())}<br />
+                openingsBalansSaldo {formatAmount(((saldo.openingsBalansSaldo ?? 0)).toString())}<br />
                 budgetMaandBedrag {formatAmount(((saldo.budgetMaandBedrag ?? 0)).toString())}<br />
                 budgetBetaalDag: {(saldo.budgetBetaalDag ?? 0).toString()}e<br />
                 budgetOpPeilDatum: {formatAmount((saldo.budgetOpPeilDatum ?? 0).toString())}<br />
                 achterstand ${formatAmount(((saldo.achterstand ?? 0)).toString())},<br />
-                betaald {formatAmount(saldo.budgetBetaling?.toString() ?? "nvt")}, <br />
+                betaald {formatAmount(saldo.betaling?.toString() ?? "nvt")}, <br />
                 betaaldBinnenBudget {formatAmount(saldo.betaaldBinnenBudget?.toString() ?? "nvt")}, <br />
                 minderDanBudget ${formatAmount(((saldo.minderDanBudget ?? 0)).toString())},<br />
                 meerDanBudget ${formatAmount(((saldo.meerDanBudget ?? 0)).toString())},<br />

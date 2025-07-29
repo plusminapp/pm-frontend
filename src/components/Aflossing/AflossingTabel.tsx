@@ -19,8 +19,8 @@ export default function AflossingTabel(props: AflossingProps) {
 
   const { gekozenPeriode } = useCustomContext();
 
-  const actueleStand = (props.aflossingSaldo?.openingsSaldo ?? 0) + (props.aflossingSaldo?.budgetBetaling ?? 0);
-  const maandenTeGaan = ((props.aflossingSaldo?.openingsSaldo ?? 0) === 0) ?
+  const actueleStand = (props.aflossingSaldo?.openingsBalansSaldo ?? 0) + (props.aflossingSaldo?.betaling ?? 0);
+  const maandenTeGaan = ((props.aflossingSaldo?.openingsBalansSaldo ?? 0) === 0) ?
     0 : Math.ceil(-(actueleStand / (props.aflossingSaldo?.budgetMaandBedrag ?? 1)));
 
   return (
@@ -73,7 +73,7 @@ export default function AflossingTabel(props: AflossingProps) {
                 Betaling deze periode
               </TableCell>
               <TableCell align="right" size='small' >
-                {currencyFormatter.format(Math.abs(props.aflossingSaldo?.budgetBetaling ?? 0))}
+                {currencyFormatter.format(Math.abs(props.aflossingSaldo?.betaling ?? 0))}
               </TableCell>
             </TableRow>
             <TableRow>
@@ -81,7 +81,7 @@ export default function AflossingTabel(props: AflossingProps) {
                 Achterstand nu
               </TableCell>
               <TableCell align="right" size='small' >
-                {currencyFormatter.format((props.aflossingSaldo?.budgetBetaling ?? 0) - (props.aflossingSaldo?.budgetMaandBedrag ?? 0))}
+                {currencyFormatter.format((props.aflossingSaldo?.betaling ?? 0) - (props.aflossingSaldo?.budgetMaandBedrag ?? 0))}
               </TableCell>
             </TableRow>
             <TableRow>

@@ -211,7 +211,7 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                         onClick={() => handleRekeningClick(rekening.naam)}
                       >
                         {rekening.naam} {rgpb.betalingsSoort === BetalingsSoort.besteden ?
-                          (<><br />{sparenSaldi.filter(s => s.rekeningNaam === rekening.naam)?.map(s => s.openingsSaldo + s.budgetBetaling).reduce((a, b) => a + b, 0).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' }) || ''}</>) : null}
+                          (<><br />{sparenSaldi.filter(s => s.rekeningNaam === rekening.naam)?.map(s => s.openingsBalansSaldo + s.betaling).reduce((a, b) => a + b, 0).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' }) || ''}</>) : null}
                       </Button>
                     ))}
               </Grid>
@@ -344,7 +344,7 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                               variant={selectedRekening?.naam === rekening.naam ? 'contained' : 'outlined'}
                               onClick={() => handleRekeningClick(rekening.naam)}
                             >
-                              {rekening.naam} <br />{sparenSaldi.filter(s => s.rekeningNaam === rekening.naam)?.map(s => s.openingsSaldo + s.budgetBetaling).reduce((a, b) => a + b, 0).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' }) || ''}
+                              {rekening.naam} <br />{sparenSaldi.filter(s => s.rekeningNaam === rekening.naam)?.map(s => s.openingsBalansSaldo + s.betaling).reduce((a, b) => a + b, 0).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' }) || ''}
                             </Button>
                           ))}
                     </Grid>

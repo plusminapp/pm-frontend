@@ -47,7 +47,7 @@ const genereerAflossingSaldi = (aflossingSaldoDTO: SaldoDTO): AflossingGrafiekDa
   }
 
   peilMaand = dayjs(startPeilDatumPeriode.isBefore(startAflossing) ? startAflossing : startPeilDatumPeriode);
-  huidigeBedrag = -aflossingSaldoDTO.openingsSaldo;
+  huidigeBedrag = -aflossingSaldoDTO.openingsBalansSaldo;
   aflossingGrafiekDataLijst.push({
     maand: peilMaand.format(formatter),
     rekeningNaam: aflossingSaldoDTO.rekeningNaam,
@@ -55,7 +55,7 @@ const genereerAflossingSaldi = (aflossingSaldoDTO: SaldoDTO): AflossingGrafiekDa
   });
 
   peilMaand = peilMaand.add(1, "month");
-  huidigeBedrag -= (aflossingSaldoDTO.budgetBetaling ?? 0);
+  huidigeBedrag -= (aflossingSaldoDTO.betaling ?? 0);
 
   while (huidigeBedrag > 0) {
     aflossingGrafiekDataLijst.push({
