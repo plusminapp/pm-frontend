@@ -53,6 +53,7 @@ export enum BetalingsSoort {
   opnemen_contant = 'OPNEMEN_CONTANT',
   storten_contant = 'STORTEN_CONTANT',
   incasso_creditcard = 'INCASSO_CREDITCARD',
+  toevoegen_reservering = 'TOEVOEGEN_RESERVERING',
   }
 
 export const bestemmingBetalingsSoorten = [
