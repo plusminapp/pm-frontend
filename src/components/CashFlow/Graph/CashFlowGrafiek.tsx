@@ -87,13 +87,17 @@ export const CashFlowGrafiek = () => {
         position: 'bottom',
         label: {
           formatter: (params: { value: string; index: number }) => {
-           return dayjs(params.value).format('D/M');
+            return dayjs(params.value).format('D/M');
           }
         }
       },
       {
         type: 'number',
         position: 'left',
+        label: {
+          formatter: (params: { value: number }) =>
+            params.value.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 })
+        }
       }
     ],
   }), [cashFlow]);

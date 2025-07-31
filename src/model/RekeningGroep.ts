@@ -25,6 +25,7 @@ export enum RekeningGroepSoort {
 export enum BudgetType {
   continu = 'CONTINU',
   vast = 'VAST',
+  sparen = 'SPAREN',
 }
 
 export type RekeningGroepPerBetalingsSoort = {
@@ -52,7 +53,6 @@ export const betaalTabelRekeningGroepSoorten = [
 export const profielRekeningGroepSoorten = [
   RekeningGroepSoort.inkomsten,
   RekeningGroepSoort.uitgaven,
-  RekeningGroepSoort.spaarrekening,
   RekeningGroepSoort.aflossing];
 
 export const aflossenRekeningGroepSoorten = [

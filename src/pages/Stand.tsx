@@ -137,6 +137,7 @@ export default function Stand() {
                     rekeningGroepPerBetalingsSoort
                       .flatMap((rgpb) => (rgpb.rekeningGroepen))
                       .filter(rekeningGroep => betaalTabelRekeningGroepSoorten.includes(rekeningGroep.rekeningGroepSoort))
+                      .filter(rekeningGroep => rekeningGroep.budgetType != 'SPAREN')
                       .sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1)
                       // .filter(rekeningGroep => rekeningGroep.rekeningen.length >= 1)
                       .map(rekeningGroep => (

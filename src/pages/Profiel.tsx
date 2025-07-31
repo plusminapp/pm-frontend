@@ -20,7 +20,7 @@ import { CashFlowGrafiek } from '../components/CashFlow/Graph/CashFlowGrafiek';
 const Profiel: React.FC = () => {
   const { state, getIDToken } = useAuthContext();
 
-  const { gebruiker, actieveHulpvrager, rekeningGroepPerBetalingsSoort, gekozenPeriode } = useCustomContext();
+  const { gebruiker, actieveHulpvrager, rekeningGroepPerBetalingsSoort, gekozenPeriode, stand } = useCustomContext();
 
   const [ongeldigeBetalingen, setOngeldigeBetalingen] = React.useState<Betaling[]>([]);
 
@@ -95,8 +95,9 @@ const Profiel: React.FC = () => {
     return ongeldigeBetalingenHeader
   }
 
-  const formatAmount = (amount: string): string => {
-    return parseFloat(amount).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
+  const formatAmount = (amount: number): string => {
+    if (amount === 0 || amount === undefined) return "";
+    return amount.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
   };
 
   const creeerOngeldigeBetalingenTekst = (betaling: Betaling): string => {
@@ -106,7 +107,7 @@ const Profiel: React.FC = () => {
 
     const geldigheid = boekingsdatum.isBefore(naDatum) ? `na ${dayjs(betaling.bron?.vanPeriode?.periodeStartDatum).format('D MMMM')}` :
       boekingsdatum.isAfter(totEnMetDatum) ? `tot ${dayjs(betaling.bron?.totEnMetPeriode?.periodeEindDatum).format('D MMMM')}` : "";
-    return `${formatAmount(betaling.bedrag.toString())} met omschrijving ${betaling.omschrijving} op ${dayjs(betaling.boekingsdatum).format('D MMMM')} naar budget ${betaling.bron?.naam} dat geldig is ${geldigheid}.`
+    return `${formatAmount(betaling.bedrag)} met omschrijving ${betaling.omschrijving} op ${dayjs(betaling.boekingsdatum).format('D MMMM')} naar budget ${betaling.bron?.naam} dat geldig is ${geldigheid}.`
   }
 
   const berekenCategorieIcon = (categorie: string) => {
@@ -260,6 +261,65 @@ const Profiel: React.FC = () => {
                                 </TableRow>
                               </Fragment>
                             ))}
+                        </>
+                      </TableBody>
+                    </Table>
+                  </TableContainer>}
+              </AccordionDetails>
+            </Accordion>
+          }
+
+          {/* de potjes obv de stand*/}
+          {rekeningGroepPerBetalingsSoort && rekeningGroepPerBetalingsSoort.length >= 0 &&
+            <Accordion>
+              <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
+                <Typography ><strong>Potjes</strong> op basis van <strong>stand</strong>.</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                {rekeningGroepPerBetalingsSoort.length > 0 &&
+                  <TableContainer component={Paper} sx={{ maxWidth: "xl", m: 'auto', mt: '10px' }}>
+                    <Table sx={{ width: "100%" }} aria-label="simple table">
+                      <TableHead>
+                        <TableRow sx={{ backgroundColor: '#888' }}>
+                          <TableCell sx={{ color: '#fff', padding: '15px' }}></TableCell>
+                          <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>OBalans</TableCell>
+                          <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>bet</TableCell>
+                          <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>balans</TableCell>
+                          <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>budget</TableCell>
+                          <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>OReserve</TableCell>
+                          <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>res</TableCell>
+                          <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>reserve</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        <>
+                          {stand && stand.resultaatOpDatum
+                            .sort((a, b) => a.sortOrder - b.sortOrder)
+                            .reduce<{ rows: React.ReactNode[]; lastGroep?: string }>((acc, saldo, index) => {
+                              if (saldo.rekeningGroepNaam !== acc.lastGroep) {
+                                acc.rows.push(
+                                  <TableRow key={`groep-${saldo.rekeningGroepNaam}-${index}`}>
+                                    <TableCell colSpan={8} sx={{ backgroundColor: '#f5f5f5', fontWeight: 'bold', padding: '5px' }}>
+                                      {saldo.rekeningGroepNaam}
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                                acc.lastGroep = saldo.rekeningGroepNaam;
+                              }
+                              acc.rows.push(
+                                <TableRow key={saldo.rekeningNaam + index}>
+                                  <TableCell sx={{ padding: '5px' }}>{saldo.rekeningNaam}</TableCell>
+                                  <TableCell sx={{ padding: '5px' }} align="right">{formatAmount(saldo.openingsBalansSaldo)}</TableCell>
+                                  <TableCell sx={{ padding: '5px' }} align="right">{formatAmount(saldo.betaling)}</TableCell>
+                                  <TableCell sx={{ padding: '5px' }} align="right">{formatAmount(saldo.openingsBalansSaldo + saldo.betaling)}</TableCell>
+                                  <TableCell sx={{ padding: '5px' }} align="right">{formatAmount(saldo.budgetMaandBedrag)}</TableCell>
+                                  <TableCell sx={{ padding: '5px' }} align="right">{formatAmount(saldo.openingsReserveSaldo)}</TableCell>
+                                  <TableCell sx={{ padding: '5px' }} align="right">{formatAmount(saldo.reservering)}</TableCell>
+                                  <TableCell sx={{ padding: '5px' }} align="right">{formatAmount(saldo.openingsReserveSaldo + saldo.reservering - saldo.betaling)}</TableCell>
+                                </TableRow>
+                              );
+                              return acc;
+                            }, { rows: [], lastGroep: undefined }).rows}
                         </>
                       </TableBody>
                     </Table>

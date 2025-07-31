@@ -43,7 +43,7 @@ type UpsertBetalingDialoogProps = {
 };
 
 export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps) {
-  const { actieveHulpvrager, gebruiker, periodes, gekozenPeriode, setSnackbarMessage, } = useCustomContext();
+  const { actieveHulpvrager, gebruiker, periodes, gekozenPeriode, setSnackbarMessage, setIsStandDirty } = useCustomContext();
 
   const boekingsDatum = gekozenPeriode?.periodeEindDatum && dayjs().toISOString().slice(0, 10) > gekozenPeriode?.periodeEindDatum ? dayjs(gekozenPeriode?.periodeEindDatum) : dayjs()
 
@@ -205,6 +205,7 @@ export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps)
           message: "Betaling is opgeslagen.",
           type: "success"
         })
+        setIsStandDirty(true);
         const responseJson = await response.json()
         if (props.isOcr) {
           props.onBetalingBewaardChange(betalingDTO);
@@ -249,6 +250,7 @@ export default function UpsertBetalingDialoog(props: UpsertBetalingDialoogProps)
         message: 'Betaling is verwijderd.',
         type: "success"
       })
+      setIsStandDirty(true);
       setBetalingDTO(initialBetalingDTO)
       handleClose()
 
