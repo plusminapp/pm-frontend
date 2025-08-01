@@ -45,7 +45,6 @@ export default function KolommenTabel(props: KolommenTabelProps) {
   const berekenUitgavenTotaal = (): number => {
     return props.betalingen
       .filter((betaling) => (betaling.betalingsSoort === BetalingsSoort.uitgaven ||
-        betaling.betalingsSoort === BetalingsSoort.toevoegen_reservering ||
         betaling.betalingsSoort === BetalingsSoort.aflossen
       ))
       .reduce((acc, betaling) => (acc - betaling.bedrag), 0)
