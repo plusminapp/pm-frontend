@@ -26,7 +26,6 @@ const Profiel: React.FC = () => {
 
   const reserveringBuffer = stand?.geaggregeerdResultaatOpDatum
     .find(saldo => saldo.rekeningGroepSoort === 'RESERVERING_BUFFER')
-    ?.reservering ?? 0;
 
 
   const fetchfetchOngeldigeBetalingen = useCallback(async () => {
@@ -278,7 +277,10 @@ const Profiel: React.FC = () => {
           {rekeningGroepPerBetalingsSoort && rekeningGroepPerBetalingsSoort.length >= 0 &&
             <Accordion>
               <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
-                <Typography ><strong>Potjes</strong> reserveringsbuffer {formatAmount(reserveringBuffer)}</Typography>
+                <Typography >
+                  <strong>Potjes</strong> actuele reserveringsbuffer {formatAmount(reserveringBuffer?.reservering ?? 0) }&nbsp; 
+                  (bij opening: {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}).
+                </Typography>
               </AccordionSummary>
               <AccordionDetails>
                 {rekeningGroepPerBetalingsSoort.length > 0 &&
@@ -287,6 +289,7 @@ const Profiel: React.FC = () => {
                       <TableHead>
                         <TableRow sx={{ backgroundColor: '#888' }}>
                           <TableCell sx={{ color: '#fff', padding: '15px' }}></TableCell>
+                          <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>betaaldag</TableCell>
                           <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>budget</TableCell>
                           <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>opening</TableCell>
                           <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>reservering</TableCell>
@@ -313,6 +316,7 @@ const Profiel: React.FC = () => {
                               acc.rows.push(
                                 <TableRow key={saldo.rekeningNaam + index}>
                                   <TableCell sx={{ padding: '5px' }}>{saldo.rekeningNaam}</TableCell>
+                                  <TableCell sx={{ padding: '5px' }} align="right">{(saldo.budgetBetaalDag)}</TableCell>
                                   <TableCell sx={{ padding: '5px' }} align="right">{formatAmount(saldo.budgetMaandBedrag)}</TableCell>
                                   <TableCell sx={{ padding: '5px' }} align="right">{formatAmount(saldo.openingsReserveSaldo)}</TableCell>
                                   <TableCell sx={{ padding: '5px' }} align="right">{formatAmount(saldo.reservering)}</TableCell>
