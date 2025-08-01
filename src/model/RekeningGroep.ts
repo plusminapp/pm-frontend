@@ -60,7 +60,8 @@ export const aflossenRekeningGroepSoorten = [
   RekeningGroepSoort.aflossing];
 
 export const reserverenRekeningGroepSoorten = [
-  RekeningGroepSoort.spaartegoed];
+  RekeningGroepSoort.uitgaven,
+  RekeningGroepSoort.aflossing];
 
 export const betaalmethodeRekeningGroepSoorten = [
   RekeningGroepSoort.betaalrekening,
