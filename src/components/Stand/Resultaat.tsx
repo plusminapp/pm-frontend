@@ -54,6 +54,7 @@ export default function Resultaat(props: PeriodeProps) {
           </TableBody>
         </Table>
       </TableContainer >
+      {/* {JSON.stringify(props.saldi)} */}
     </>
   );
 }

@@ -20,7 +20,7 @@ export enum RekeningGroepSoort {
   contant = 'CONTANT',
   creditcard = 'CREDITCARD',
   aflossing = 'AFLOSSING',
-  spaartegoed = 'SPAARTEGOED',
+  reserveringBuffer = 'RESERVERING_BUFFER',
 }
 export enum BudgetType {
   continu = 'CONTINU',
@@ -38,8 +38,7 @@ export const balansRekeningGroepSoorten: RekeningGroepSoort[] = [
   RekeningGroepSoort.spaarrekening,
   RekeningGroepSoort.contant,
   RekeningGroepSoort.creditcard,
-  RekeningGroepSoort.aflossing,
-  RekeningGroepSoort.spaartegoed];
+  RekeningGroepSoort.aflossing];
 
 export const resultaatRekeningGroepSoorten = [
   RekeningGroepSoort.inkomsten,
@@ -63,6 +62,11 @@ export const reserverenRekeningGroepSoorten = [
   RekeningGroepSoort.uitgaven,
   RekeningGroepSoort.aflossing];
 
+export const reserveRekeningGroepSoorten = [
+  RekeningGroepSoort.reserveringBuffer,
+  RekeningGroepSoort.uitgaven,
+  RekeningGroepSoort.aflossing];
+
 export const betaalmethodeRekeningGroepSoorten = [
   RekeningGroepSoort.betaalrekening,
   RekeningGroepSoort.spaarrekening,
@@ -83,14 +87,12 @@ export const inkomstenRekeningGroepSoorten = [
 export const uitgavenRekeningGroepSoorten = [
   RekeningGroepSoort.uitgaven,
   RekeningGroepSoort.aflossing,
-  RekeningGroepSoort.spaartegoed,
 ]
 
 export const interneRekeningGroepSoorten = [
   RekeningGroepSoort.spaarrekening,
   RekeningGroepSoort.contant,
   RekeningGroepSoort.creditcard,
-  RekeningGroepSoort.spaartegoed,
 ]
 
 export const cashflowRekeningGroepSoorten = [

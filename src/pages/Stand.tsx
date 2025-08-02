@@ -10,7 +10,7 @@ import { PeriodeSelect } from "../components/Periode/PeriodeSelect";
 import { ArrowDropDownIcon } from "@mui/x-date-pickers";
 import SamenvattingGrafiek from "../components/Stand/SamenvattingGrafiek";
 import StandGrafiek from "../components/Stand/StandGrafiek";
-import { balansRekeningGroepSoorten, betaalmethodeRekeningGroepSoorten, betaalTabelRekeningGroepSoorten, RekeningGroepSoort, resultaatRekeningGroepSoorten } from "../model/RekeningGroep";
+import { balansRekeningGroepSoorten, betaalmethodeRekeningGroepSoorten, betaalTabelRekeningGroepSoorten, RekeningGroepSoort, reserveRekeningGroepSoorten, resultaatRekeningGroepSoorten } from "../model/RekeningGroep";
 import SpaarGrafiek from "../components/Stand/SpaarGrafiek";
 import { BetalingsSoort } from "../model/Betaling";
 
@@ -201,6 +201,14 @@ export default function Stand() {
                   .filter(saldo => betaalmethodeRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                   .sort((a, b) => a.sortOrder - b.sortOrder)
                   .map(saldo => ({ ...saldo, bedrag: saldo.openingsBalansSaldo + saldo.betaling }))}
+              />
+              <Resultaat
+                title={'Stand van de reserve'}
+                datum={stand.peilDatum}
+                saldi={stand.geaggregeerdResultaatOpDatum
+                  .filter(saldo => reserveRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
+                  .sort((a, b) => a.sortOrder - b.sortOrder)
+                  .map(saldo => ({ ...saldo, bedrag: saldo.openingsReserveSaldo + saldo.reservering - saldo.betaling}))}
               />
             </Grid>
           </Grid>

@@ -3,6 +3,7 @@ import { AllCommunityModule, ModuleRegistry,   RowDragModule } from 'ag-grid-com
 ModuleRegistry.registerModules([AllCommunityModule, RowDragModule]);
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef } from 'ag-grid-community';
+import Weegschaal from '../components/experiment/Weegeschaal';
 
 export const GridExample = () => {
   // Row Data: The data to be displayed.
@@ -29,6 +30,8 @@ export const GridExample = () => {
         columnDefs={colDefs}
         rowDragManaged={true}
       />
+      <Weegschaal leftWeights={[10.3, 5, 2]} rightWeights={[10, 38]} scale={3} />
     </div>
+    
   )
 }
