@@ -16,7 +16,7 @@ export default function Weegschaal({ leftWeights, rightWeights, scale = 1 }: { l
   const beamLength = 100;
   const beamXLeft = 100;
   const beamXRight = beamXLeft + beamLength;
-  const panHeight = 40;
+  // const panHeight = 40;
   const panBaseWidth = 50;
   const panTopXLeft = beamXLeft;
   const panTopXRight = beamXRight;
@@ -25,7 +25,7 @@ export default function Weegschaal({ leftWeights, rightWeights, scale = 1 }: { l
   const panBaseYWeight = panBaseY - 2; // ruimte voor gewichten
 
   // Helper voor gewichten: breedte schalen naar gewicht, grootste onderop
-  function renderWeights(weights: number[], panBaseX: number, panBaseY: number, panBaseWidth: number, panHeight: number) {
+  function renderWeights(weights: number[], panBaseX: number, panBaseY: number, panBaseWidth: number) {
     if (weights.length === 0) return null;
     const sorted = [...weights].sort((a, b) => a - b); // kleinste boven, grootste onder
     const maxWeight = Math.max(...weights);
@@ -115,7 +115,7 @@ export default function Weegschaal({ leftWeights, rightWeights, scale = 1 }: { l
             rx={2}
           />
           {/* Gewichten */}
-          {renderWeights(leftWeights, panTopXLeft - panBaseWidth / 2, panBaseYWeight, panBaseWidth, panHeight)}
+          {renderWeights(leftWeights, panTopXLeft - panBaseWidth / 2, panBaseYWeight, panBaseWidth)}
         </motion.g>
 
         {/* Right Pan: gelijkbenige driehoek met dikke bodem */}
@@ -142,7 +142,7 @@ export default function Weegschaal({ leftWeights, rightWeights, scale = 1 }: { l
             rx={2}
           />
           {/* Gewichten */}
-          {renderWeights(rightWeights, panTopXRight - panBaseWidth / 2, panBaseYWeight, panBaseWidth, panHeight)}
+          {renderWeights(rightWeights, panTopXRight - panBaseWidth / 2, panBaseYWeight, panBaseWidth)}
         </motion.g>
       </svg>
 
