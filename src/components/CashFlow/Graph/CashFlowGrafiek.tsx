@@ -64,12 +64,19 @@ export const CashFlowGrafiek = () => {
         fill: "red",
       },
       {
+        type: "bar",
+        xKey: "datum",
+        stacked: true,
+        yKey: "spaarReserveringen",
+        yName: "Spaarreserveringen",
+        fill: "blue",
+      },
+      {
         type: "line",
         xKey: "datum",
         yKey: "saldo",
         yName: "Saldo",
-        stroke: "grey",
-        marker: { size: 4 },
+        marker: { size: 7 },
       },
       {
         type: "line",
@@ -78,7 +85,7 @@ export const CashFlowGrafiek = () => {
         yName: "Prognose",
         stroke: "grey",
         lineDash: [10, 4],
-        marker: { size: 4, fill: 'grey' },
+        marker: { size: 7, fill: 'grey' },
       },
     ],
     axes: [
