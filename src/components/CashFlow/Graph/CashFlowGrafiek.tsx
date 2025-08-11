@@ -72,11 +72,20 @@ export const CashFlowGrafiek = () => {
         fill: "blue",
       },
       {
+        type: "bar",
+        xKey: "datum",
+        stacked: true,
+        yKey: "aflossing",
+        yName: "Aflossing",
+        fill: "darkred",
+      },
+      {
         type: "line",
         xKey: "datum",
         yKey: "saldo",
         yName: "Saldo",
-        marker: { size: 7 },
+        stroke: "lightblue",
+        marker: { size: 7, fill: 'lightblue' },
       },
       {
         type: "line",
