@@ -7,7 +7,7 @@ import { useAuthContext } from "@asgardeo/auth-react";
 import { useCustomContext } from '../context/CustomContext';
 import { bestemmingBetalingsSoorten, Betaling, currencyFormatter, ontdubbelBetalingsSoorten } from '../model/Betaling';
 import { PeriodeSelect } from '../components/Periode/PeriodeSelect';
-import { blaatRekeningGroepSoorten, BudgetType, profielRekeningGroepSoorten, RekeningGroepSoort } from '../model/RekeningGroep';
+import { BudgetType, profielRekeningGroepSoorten, RekeningGroepSoort, reserverenRekeningGroepSoorten } from '../model/RekeningGroep';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers';
 import { InkomstenIcon } from '../icons/Inkomsten';
 import { UitgavenIcon } from '../icons/Uitgaven';
@@ -29,7 +29,7 @@ const Profiel: React.FC = () => {
 
   const reserveringsSaldoPotjesVanNu = stand?.geaggregeerdResultaatOpDatum
     .filter(saldo => saldo.rekeningGroepSoort === 'UITGAVEN' && saldo.budgetType !== BudgetType.sparen)
-    .reduce((acc, saldo) => acc + saldo.reservering - saldo.betaling, 0)
+    .reduce((acc, saldo) => acc + saldo.openingsReserveSaldo + saldo.reservering - saldo.betaling, 0)
 
   const fetchfetchOngeldigeBetalingen = useCallback(async () => {
     if (!actieveHulpvrager) {
@@ -281,8 +281,10 @@ const Profiel: React.FC = () => {
             <Accordion>
               <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
                 <Typography >
-                  <strong>Potjes</strong> actuele reserveringsbuffer {formatAmount((reserveringBuffer?.openingsReserveSaldo ?? 0) + (reserveringBuffer?.reservering ?? 0) + (reserveringsSaldoPotjesVanNu ?? 0)) }&nbsp; 
-                   ({formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)} + {formatAmount(reserveringBuffer?.reservering ?? 0)} + {formatAmount(reserveringsSaldoPotjesVanNu ?? 0)}).
+                  <strong>Potjes</strong> actuele reserveringsbuffer {formatAmount((reserveringBuffer?.openingsReserveSaldo ?? 0) + (reserveringBuffer?.reservering ?? 0) + (reserveringsSaldoPotjesVanNu ?? 0))}<br />
+                  openingssaldo: {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}<br />
+                  meer inkomsten dan reservering: {formatAmount(reserveringBuffer?.reservering ?? 0)} <br />
+                  reserve in potjes voor nu: {formatAmount(reserveringsSaldoPotjesVanNu ?? 0)}
                 </Typography>
               </AccordionSummary>
               <AccordionDetails>
@@ -303,7 +305,7 @@ const Profiel: React.FC = () => {
                       <TableBody>
                         <>
                           {stand && stand.resultaatOpDatum
-                            .filter(saldo => blaatRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
+                            .filter(saldo => reserverenRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                             .sort((a, b) => a.sortOrder - b.sortOrder)
                             .reduce<{ rows: React.ReactNode[]; lastGroep?: string }>((acc, saldo, index) => {
                               if (saldo.rekeningGroepNaam !== acc.lastGroep) {
