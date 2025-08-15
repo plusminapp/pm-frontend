@@ -14,7 +14,7 @@ type SamenvattingGrafiekProps = {
 
 export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
 
-  const { percentagePeriodeVoorbij, budgetMaandInkomstenBedrag, besteedTotPeilDatum, nogNodigNaPeilDatum, actueleBuffer } = props.resultaatSamenvattingOpDatum;
+  const { percentagePeriodeVoorbij, budgetMaandInkomstenBedrag, besteedTotPeilDatum, gespaardTotPeilDatum, nogNodigNaPeilDatum, actueleBuffer, extraGespaardTotPeilDatum } = props.resultaatSamenvattingOpDatum;
   const detailsVisible = props.detailsVisible;
   const formatAmount = (amount: string): string => {
     return parseFloat(amount).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
@@ -69,6 +69,44 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
                     <>
                       {formatAmount(besteedTotPeilDatum.toString())}
                       <br />besteed
+                    </>
+                  )}
+                </TableCell>
+              )}
+              {gespaardTotPeilDatum > 0 && (
+                <TableCell
+                  width={`${(gespaardTotPeilDatum / budgetMaandInkomstenBedrag) * 90}%`}
+                  sx={{
+                    backgroundColor: '#f1c131',
+                    borderBottom: detailsVisible ? '4px solid black' : '0px',
+                    color: 'white',
+                    textAlign: 'center',
+                    fontSize: '0.7rem'
+                  }}
+                >
+                  {detailsVisible && (
+                    <>
+                      {formatAmount(gespaardTotPeilDatum.toString())}
+                      <br />gespaard
+                    </>
+                  )}
+                </TableCell>
+              )}
+              {extraGespaardTotPeilDatum > 0 && (
+                <TableCell
+                  width={`${(extraGespaardTotPeilDatum / budgetMaandInkomstenBedrag) * 90}%`}
+                  sx={{
+                    backgroundColor: '#bf9001',
+                    borderBottom: detailsVisible ? '4px solid black' : '0px',
+                    color: 'white',
+                    textAlign: 'center',
+                    fontSize: '0.7rem'
+                  }}
+                >
+                  {detailsVisible && (
+                    <>
+                      {formatAmount(extraGespaardTotPeilDatum.toString())}
+                      <br /> extra gespaard
                     </>
                   )}
                 </TableCell>
@@ -133,6 +171,7 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
                   )}
                 </TableCell>
               )}
+
             </TableRow>
           </TableBody>
         </Table>

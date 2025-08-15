@@ -42,8 +42,11 @@ export type SaldoDTO = {
 
 export type ResultaatSamenvattingOpDatumDTO = {
   percentagePeriodeVoorbij: number
+  openingsReservePotjesVoorNuSaldo: number
   budgetMaandInkomstenBedrag: number
   besteedTotPeilDatum: number
+  gespaardTotPeilDatum: number
   nogNodigNaPeilDatum: number
   actueleBuffer: number
+  extraGespaardTotPeilDatum: number
 }

@@ -7,7 +7,7 @@ import { useAuthContext } from "@asgardeo/auth-react";
 import { useCustomContext } from '../context/CustomContext';
 import { bestemmingBetalingsSoorten, Betaling, currencyFormatter, ontdubbelBetalingsSoorten } from '../model/Betaling';
 import { PeriodeSelect } from '../components/Periode/PeriodeSelect';
-import { BudgetType, profielRekeningGroepSoorten, RekeningGroepSoort, reserverenRekeningGroepSoorten } from '../model/RekeningGroep';
+import { blaatRekeningGroepSoorten, BudgetType, profielRekeningGroepSoorten, RekeningGroepSoort } from '../model/RekeningGroep';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers';
 import { InkomstenIcon } from '../icons/Inkomsten';
 import { UitgavenIcon } from '../icons/Uitgaven';
@@ -299,19 +299,21 @@ const Profiel: React.FC = () => {
                           <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>opening</TableCell>
                           <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>reservering</TableCell>
                           <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>betalingen</TableCell>
-                          <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>reserve</TableCell>
+                          <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>reserve nu</TableCell>
+                          <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>nog nodig</TableCell>
+                          <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>eindreserve</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
                         <>
                           {stand && stand.resultaatOpDatum
-                            .filter(saldo => reserverenRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
+                            .filter(saldo => blaatRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                             .sort((a, b) => a.sortOrder - b.sortOrder)
                             .reduce<{ rows: React.ReactNode[]; lastGroep?: string }>((acc, saldo, index) => {
                               if (saldo.rekeningGroepNaam !== acc.lastGroep) {
                                 acc.rows.push(
                                   <TableRow key={`groep-${saldo.rekeningGroepNaam}-${index}`}>
-                                    <TableCell colSpan={8} sx={{ backgroundColor: '#f5f5f5', fontWeight: 'bold', padding: '5px' }}>
+                                    <TableCell colSpan={10} sx={{ backgroundColor: '#f5f5f5', fontWeight: 'bold', padding: '5px' }}>
                                       {saldo.rekeningGroepNaam}
                                     </TableCell>
                                   </TableRow>
@@ -327,6 +329,8 @@ const Profiel: React.FC = () => {
                                   <TableCell sx={{ padding: '5px' }} align="right">{formatAmount(saldo.reservering)}</TableCell>
                                   <TableCell sx={{ padding: '5px' }} align="right">{formatAmount(saldo.betaling)}</TableCell>
                                   <TableCell sx={{ padding: '5px' }} align="right">{formatAmount(saldo.openingsReserveSaldo + saldo.reservering - saldo.betaling)}</TableCell>
+                                  <TableCell sx={{ padding: '5px' }} align="right">{formatAmount(saldo.restMaandBudget)}</TableCell>
+                                  <TableCell sx={{ padding: '5px' }} align="right">{formatAmount(saldo.openingsReserveSaldo + saldo.reservering - saldo.betaling - saldo.restMaandBudget)}</TableCell>
                                 </TableRow>
                               );
                               return acc;
