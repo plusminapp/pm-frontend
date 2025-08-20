@@ -4,6 +4,7 @@ import { Periode } from '../../model/Periode';
 import StandGeneriekGrafiek from '../../components/Stand/StandGeneriekGrafiek';
 import { ResultaatSamenvattingOpDatumDTO } from '../../model/Saldo';
 import { berekenRekeningGroepIcoonOpKleur } from './BerekenStandKleurEnTekst';
+import { JSX } from 'react';
 
 type SamenvattingGrafiekProps = {
   peilDatum: dayjs.Dayjs;
