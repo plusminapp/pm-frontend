@@ -10,9 +10,10 @@ import { PeriodeSelect } from "../components/Periode/PeriodeSelect";
 import { ArrowDropDownIcon } from "@mui/x-date-pickers";
 import SamenvattingGrafiek from "../components/Stand/SamenvattingGrafiek";
 import StandGrafiek from "../components/Stand/StandGrafiek";
-import { balansRekeningGroepSoorten, betaalmethodeRekeningGroepSoorten, betaalTabelRekeningGroepSoorten, RekeningGroepSoort, reserveRekeningGroepSoorten, resultaatRekeningGroepSoorten } from "../model/RekeningGroep";
+import { balansRekeningGroepSoorten, betaalmethodeRekeningGroepSoorten, betaalTabelRekeningGroepSoorten, BudgetType, RekeningGroepSoort, reserveRekeningGroepSoorten, resultaatRekeningGroepSoorten } from "../model/RekeningGroep";
 import SpaarGrafiek from "../components/Stand/SpaarGrafiek";
 import { BetalingsSoort } from "../model/Betaling";
+import RekeningResultaat from "../components/Stand/RekeningResultaat";
 
 export default function Stand() {
 
@@ -26,7 +27,7 @@ export default function Stand() {
     setToonDebug(!toonDebug);
   };
 
-  const periodeIsVoorbij = gekozenPeriode && dayjs(gekozenPeriode.periodeEindDatum).isBefore(dayjs());
+  const periodeIsVoorbij = (gekozenPeriode && dayjs(gekozenPeriode.periodeEindDatum).endOf('day').isBefore(dayjs())) ?? true;
 
   const [detailsVisible, setDetailsVisible] = useState<string | null>(localStorage.getItem('toonBudgetDetails'));
   const toggleToonBudgetDetails = (naam: string) => {
@@ -87,6 +88,7 @@ export default function Stand() {
     const maandEinde = dayjs(gekozenPeriode?.periodeEindDatum).format('MMMM YYYY');
     return `periode ${maandStart}/${maandEinde}`;
   }
+  const aantalDagenResterend = dayjs(gekozenPeriode?.periodeEindDatum).diff(dayjs(), 'day') + 1
 
 
   return (
@@ -100,7 +102,7 @@ export default function Stand() {
               <Typography variant='body2'>
                 {periodeIsVoorbij ? 'De periode is afgelopen.' :
                   stand.datumLaatsteBetaling ? `Laatste betaling geregistreerd op ${dayjs(stand.datumLaatsteBetaling).format('D MMMM')}.` : 'Er is nog geen betaling geregistreerd.'}
-                {!periodeIsVoorbij && ` Er zijn nog ${dayjs(gekozenPeriode?.periodeEindDatum).diff(dayjs(), 'day') + 1} dagen tot het einde van de periode.`}
+                {!periodeIsVoorbij && ` Er ${aantalDagenResterend == 1 ? 'is' : 'zijn'} nog ${aantalDagenResterend} ${aantalDagenResterend == 1 ? 'dag' : 'dagen'} tot het einde van de periode.`}
               </Typography>
 
 
@@ -127,7 +129,7 @@ export default function Stand() {
                   {gekozenPeriode &&
                     <Box onClick={() => toggleToonBudgetDetails('samenvatting')}>
                       <SamenvattingGrafiek
-                        peilDatum={(dayjs(gekozenPeriode.periodeEindDatum)).isAfter(dayjs()) ? dayjs() : dayjs(gekozenPeriode.periodeEindDatum)}
+                        periodeIsVoorbij={periodeIsVoorbij ?? true}
                         periode={gekozenPeriode}
                         resultaatSamenvattingOpDatum={stand.resultaatSamenvattingOpDatum}
                         detailsVisible={detailsVisible === 'samenvatting'} />
@@ -208,7 +210,7 @@ export default function Stand() {
                 saldi={stand.geaggregeerdResultaatOpDatum
                   .filter(saldo => reserveRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                   .sort((a, b) => a.sortOrder - b.sortOrder)
-                  .map(saldo => ({ ...saldo, bedrag: saldo.openingsReserveSaldo + saldo.reservering - saldo.betaling}))}
+                  .map(saldo => ({ ...saldo, bedrag: saldo.openingsReserveSaldo + saldo.reservering - saldo.betaling }))}
               />
             </Grid>
           </Grid>
@@ -220,22 +222,8 @@ export default function Stand() {
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Grid container spacing={{ xs: 1, md: 2 }} columns={{ xs: 1, md: 2 }}>
-                {/* <Grid size={1} alignItems={{ xs: 'start', md: 'end' }} sx={{ mb: '12px', display: 'flex' }}>
-                  <FormGroup sx={{ ml: 'auto' }} >
-                    <FormControlLabel control={
-                      <Switch
-                        sx={{ transform: 'scale(0.6)' }}
-                        checked={toonMutaties}
-                        onChange={handleToonMutatiesChange}
-                        slotProps={{ input: { 'aria-label': 'controlled' } }}
-                      />}
-                      label="Toon mutaties" />
-                  </FormGroup>
-                </Grid> */}
-              </Grid>
               <Grid sx={{ flexGrow: 1 }}>
-                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 1, sm: 2, md: 4 }}>
+                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 1, md: 3 }}>
                   <Grid size={1}>
                     <Resultaat
                       title={'Opening'}
@@ -244,16 +232,6 @@ export default function Stand() {
                         .filter(saldo => balansRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                         .sort((a, b) => a.sortOrder - b.sortOrder)
                         .map(saldo => ({ ...saldo, bedrag: saldo.openingsBalansSaldo }))}
-                    />
-                  </Grid>
-                  <Grid size={1}>
-                    <Resultaat
-                      title={'Inkomsten en uitgaven'}
-                      datum={stand.peilDatum}
-                      saldi={stand.geaggregeerdResultaatOpDatum
-                        .filter(saldo => resultaatRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
-                        .sort((a, b) => a.sortOrder - b.sortOrder)
-                        .map(saldo => ({ ...saldo, bedrag: -saldo.betaling }))}
                     />
                   </Grid>
                   <Grid size={1}>
@@ -275,6 +253,51 @@ export default function Stand() {
                         .filter(saldo => balansRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                         .sort((a, b) => a.sortOrder - b.sortOrder)
                         .map(saldo => ({ ...saldo, bedrag: saldo.openingsBalansSaldo + saldo.betaling }))}
+                    />
+                  </Grid>
+                </Grid>
+                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 1, md: 3 }}>
+                  <Grid size={1}>
+                    <Resultaat
+                      title={'Inkomsten en uitgaven'}
+                      datum={stand.peilDatum}
+                      saldi={stand.geaggregeerdResultaatOpDatum
+                        .filter(saldo => resultaatRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map(saldo => ({ ...saldo, bedrag: -saldo.betaling }))}
+                    />
+                  </Grid>
+                </Grid>
+                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 1, md: 3 }}>
+                  <Grid size={1}>
+                    <RekeningResultaat
+                      title={'Spaarpotten opening'}
+                      datum={stand.periodeStartDatum}
+                      saldi={stand.resultaatOpDatum
+                        .filter(saldo => saldo.budgetType === BudgetType.sparen)
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map(saldo => ({ ...saldo, bedrag: saldo.openingsReserveSaldo }))}
+                    />
+                  </Grid>
+                  <Grid size={1}>
+                    <RekeningResultaat
+                      title={'Mutaties per'}
+                      datum={stand.peilDatum}
+                      saldi={stand.resultaatOpDatum
+                        .filter(saldo => saldo.budgetType === BudgetType.sparen)
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map(saldo => ({ ...saldo, bedrag: saldo.reservering }))}
+                    />
+
+                  </Grid>
+                  <Grid size={1}>
+                    <RekeningResultaat
+                      title={'Stand'}
+                      datum={stand.peilDatum}
+                      saldi={stand.resultaatOpDatum
+                        .filter(saldo => saldo.budgetType === BudgetType.sparen)
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map(saldo => ({ ...saldo, bedrag: saldo.openingsReserveSaldo + saldo.reservering }))}
                     />
                   </Grid>
                 </Grid>

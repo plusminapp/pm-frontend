@@ -7,7 +7,7 @@ import { useAuthContext } from "@asgardeo/auth-react";
 import { useCustomContext } from '../context/CustomContext';
 import { bestemmingBetalingsSoorten, Betaling, currencyFormatter, ontdubbelBetalingsSoorten } from '../model/Betaling';
 import { PeriodeSelect } from '../components/Periode/PeriodeSelect';
-import { blaatRekeningGroepSoorten, BudgetType, profielRekeningGroepSoorten, RekeningGroepSoort } from '../model/RekeningGroep';
+import { BudgetType, profielRekeningGroepSoorten, RekeningGroepSoort, reserverenRekeningGroepSoorten } from '../model/RekeningGroep';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers';
 import { InkomstenIcon } from '../icons/Inkomsten';
 import { UitgavenIcon } from '../icons/Uitgaven';
@@ -27,8 +27,9 @@ const Profiel: React.FC = () => {
   const reserveringBuffer = stand?.geaggregeerdResultaatOpDatum
     .find(saldo => saldo.rekeningGroepSoort === 'RESERVERING_BUFFER')
 
+  const openingsReservePotjesVoorNuSaldo = stand?.resultaatSamenvattingOpDatum.openingsReservePotjesVoorNuSaldo
   const reserveringsSaldoPotjesVanNu = stand?.geaggregeerdResultaatOpDatum
-    .filter(saldo => saldo.rekeningGroepSoort === 'UITGAVEN' && saldo.budgetType !== BudgetType.sparen)
+    .filter(saldo => (saldo.rekeningGroepSoort === 'UITGAVEN' && saldo.budgetType !== BudgetType.sparen) || saldo.rekeningGroepSoort === 'AFLOSSING')
     .reduce((acc, saldo) => acc + saldo.openingsReserveSaldo + saldo.reservering - saldo.betaling, 0)
 
   const fetchfetchOngeldigeBetalingen = useCallback(async () => {
@@ -67,6 +68,7 @@ const Profiel: React.FC = () => {
     const uitgaven = rekeningGroepPerBetalingsSoort
       .filter(rgpb => rgpb.betalingsSoort === 'UITGAVEN')
       .flatMap(rgpb => rgpb.rekeningGroepen)
+      .filter(rg => rg.budgetType !== 'SPAREN')
       .flatMap(rg => rg.rekeningen)
       .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
     const aflossen = rekeningGroepPerBetalingsSoort
@@ -75,8 +77,9 @@ const Profiel: React.FC = () => {
       .flatMap(rg => rg.rekeningen)
       .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
     const sparen = rekeningGroepPerBetalingsSoort
-      .filter(rgpb => rgpb.betalingsSoort === 'SPAREN')
+      .filter(rgpb => rgpb.betalingsSoort === 'UITGAVEN')
       .flatMap(rgpb => rgpb.rekeningGroepen)
+      .filter(rg => rg.budgetType === 'SPAREN')
       .flatMap(rg => rg.rekeningen)
       .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0)
     const budgetTekst = `In: ${currencyFormatter.format(inkomsten)}, Uit: ${currencyFormatter.format(uitgaven)}, Aflossen: ${currencyFormatter.format(aflossen)}, Sparen: ${currencyFormatter.format(sparen)}, Over: ${currencyFormatter.format(inkomsten - uitgaven - aflossen - sparen)} per maand. `;
@@ -249,7 +252,7 @@ const Profiel: React.FC = () => {
                                           gekozenPeriode && isPeriodeOpen(gekozenPeriode) ?
                                             `${r.naam} (${currencyFormatter.format(Number(r.budgetBedrag))}/${r.budgetPeriodiciteit?.toLowerCase()}
                                  ${r.budgetPeriodiciteit?.toLowerCase() === 'week' ? `= ${currencyFormatter.format(r.budgetMaandBedrag ?? 0)}/maand` : ''}
-                                 ${rekeningGroep.budgetType === BudgetType.continu ? 'doorlopend' : 'op de ' + r.budgetBetaalDag + 'e'}${berekenVariabiliteit(r)})` :
+                                 ${rekeningGroep.budgetType !== BudgetType.vast ? 'doorlopend' : 'op de ' + r.budgetBetaalDag + 'e'}${berekenVariabiliteit(r)})` :
                                             `${r.naam} (${currencyFormatter.format(r.budgetMaandBedrag ?? 0)}/maand)`)
                                           .join('<br />') +
                                           (rekeningGroep.rekeningen.length > 0 ? `<br />Totaal: ${currencyFormatter.format(rekeningGroep.rekeningen.reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0))}/maand` : '')
@@ -281,10 +284,15 @@ const Profiel: React.FC = () => {
             <Accordion>
               <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
                 <Typography >
-                  <strong>Potjes</strong> actuele reserveringsbuffer {formatAmount((reserveringBuffer?.openingsReserveSaldo ?? 0) + (reserveringBuffer?.reservering ?? 0) + (reserveringsSaldoPotjesVanNu ?? 0))}<br />
-                  openingssaldo: {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}<br />
-                  meer inkomsten dan reservering: {formatAmount(reserveringBuffer?.reservering ?? 0)} <br />
-                  reserve in potjes voor nu: {formatAmount(reserveringsSaldoPotjesVanNu ?? 0)}
+                  <strong>Potjes</strong> <br />
+                  openingsstand: {formatAmount((reserveringBuffer?.openingsReserveSaldo ?? 0) + (openingsReservePotjesVoorNuSaldo ?? 0))}&nbsp;
+                  = openingssaldo buffer: {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}&nbsp;
+                  + openingsReservePotjesVoorNuSaldo: {formatAmount(openingsReservePotjesVoorNuSaldo ?? 0)}
+                  <br />
+                  actuele stand {formatAmount((reserveringBuffer?.openingsReserveSaldo ?? 0) + (reserveringBuffer?.reservering ?? 0) + (reserveringsSaldoPotjesVanNu ?? 0))}&nbsp;
+                  = openingssaldo buffer: {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}&nbsp;
+                  + inkomsten - reservering: {formatAmount(reserveringBuffer?.reservering ?? 0)}&nbsp;
+                  + huidige reserve in potjes voor nu: {formatAmount(reserveringsSaldoPotjesVanNu ?? 0)}
                 </Typography>
               </AccordionSummary>
               <AccordionDetails>
@@ -307,7 +315,7 @@ const Profiel: React.FC = () => {
                       <TableBody>
                         <>
                           {stand && stand.resultaatOpDatum
-                            .filter(saldo => blaatRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
+                            .filter(saldo => reserverenRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
                             .sort((a, b) => a.sortOrder - b.sortOrder)
                             .reduce<{ rows: React.ReactNode[]; lastGroep?: string }>((acc, saldo, index) => {
                               if (saldo.rekeningGroepNaam !== acc.lastGroep) {

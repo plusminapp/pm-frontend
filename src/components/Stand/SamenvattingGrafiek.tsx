@@ -1,12 +1,11 @@
 import { Box, Table, TableBody, TableCell, TableContainer, TableRow } from '@mui/material';
-import dayjs from 'dayjs';
 import { Periode } from '../../model/Periode';
 import StandGeneriekGrafiek from '../../components/Stand/StandGeneriekGrafiek';
 import { ResultaatSamenvattingOpDatumDTO } from '../../model/Saldo';
 import { berekenRekeningGroepIcoonOpKleur } from './BerekenStandKleurEnTekst';
 
 type SamenvattingGrafiekProps = {
-  peilDatum: dayjs.Dayjs;
+  periodeIsVoorbij: boolean;
   periode: Periode;
   resultaatSamenvattingOpDatum: ResultaatSamenvattingOpDatumDTO;
   detailsVisible: boolean;
@@ -14,27 +13,28 @@ type SamenvattingGrafiekProps = {
 
 export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
 
-  const { percentagePeriodeVoorbij, budgetMaandInkomstenBedrag, besteedTotPeilDatum, gespaardTotPeilDatum, nogNodigNaPeilDatum, actueleBuffer, extraGespaardTotPeilDatum } = props.resultaatSamenvattingOpDatum;
+  const { percentagePeriodeVoorbij, openingsReservePotjesVoorNuSaldo, budgetMaandInkomstenBedrag, besteedTotPeilDatum, gespaardTotPeilDatum, nogNodigNaPeilDatum, actueleBuffer } = props.resultaatSamenvattingOpDatum;
   const detailsVisible = props.detailsVisible;
   const formatAmount = (amount: string): string => {
     return parseFloat(amount).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
   };
   const gevarenZone = 0.02
-  const isPeriodeAfgelopen = props.peilDatum.startOf('day').isSame(dayjs(props.periode.periodeEindDatum).startOf('day'));
-  const isInGevarenZone = actueleBuffer < gevarenZone * budgetMaandInkomstenBedrag && !isPeriodeAfgelopen;
+  const periodeIsVoorbij = props.periodeIsVoorbij;
+  const isInGevarenZone = actueleBuffer < gevarenZone * budgetMaandInkomstenBedrag && !periodeIsVoorbij;
 
-  const berekenStandGeneriekGrafiek = (): JSX.Element => {
+  const berekenStandGeneriekGrafiek = (): React.ReactElement => {
     const roundUp = (value: number) => Math.ceil(value * 100) / 100;
     const bedragRounded = roundUp(Math.abs(actueleBuffer)).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const budgetRounded = roundUp(Number(budgetMaandInkomstenBedrag)).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const openingsReservePotjesVoorNu = roundUp(Number(openingsReservePotjesVoorNuSaldo)).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const percentageBuffer = roundUp((actueleBuffer * 100) / (budgetMaandInkomstenBedrag));
     const bufferTekst =
-      isPeriodeAfgelopen && actueleBuffer > 0 ? `Het periodeinkomen was ${budgetRounded} waarvan ${bedragRounded} over was.` :
-        isPeriodeAfgelopen && actueleBuffer === 0 ? `Het periodeinkomen was ${budgetRounded} waarmee je precies uit kwam.` :
-          isPeriodeAfgelopen && actueleBuffer < 0 ? `Het periodeinkomen was ${budgetRounded} waarbij je ${bedragRounded} tekort kwam.` :
+      periodeIsVoorbij && actueleBuffer > 0 ? `Het periodeinkomen was ${budgetRounded} waarvan ${bedragRounded} over was.` :
+        periodeIsVoorbij && actueleBuffer === 0 ? `Het periodeinkomen was ${budgetRounded} waarmee je precies uit kwam.` :
+          periodeIsVoorbij && actueleBuffer < 0 ? `Het periodeinkomen was ${budgetRounded} waarbij je ${bedragRounded} tekort kwam.` :
             actueleBuffer < 0 ? `Het periodeinkomen is ${budgetRounded} waarbij je einde van de periode ${bedragRounded} tekort komt.` :
               isInGevarenZone ? `Het periodeinkomen is ${budgetRounded} waarbij je einde van de periode ${bedragRounded} over houdt; dat is ${percentageBuffer}% van het budget.` :
-                `Het periodeinkomen is ${budgetRounded} waarvan ${bedragRounded} buffer.`;
+                `Besteedbaar is ${budgetRounded} inkomen en een start reserve ${openingsReservePotjesVoorNu}; je hebt nog ${bedragRounded} buffer.`;
     const color = actueleBuffer < 0 ? 'red' : isInGevarenZone ? 'orange' : 'green';
     return <StandGeneriekGrafiek
       statusIcon={berekenRekeningGroepIcoonOpKleur(36, color)}
@@ -75,7 +75,7 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
               )}
               {gespaardTotPeilDatum > 0 && (
                 <TableCell
-                  width={`${(gespaardTotPeilDatum / budgetMaandInkomstenBedrag) * 90}%`}
+                  width={`${((gespaardTotPeilDatum) / budgetMaandInkomstenBedrag) * 90}%`}
                   sx={{
                     backgroundColor: '#f1c131',
                     borderBottom: detailsVisible ? '4px solid black' : '0px',
@@ -86,27 +86,8 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
                 >
                   {detailsVisible && (
                     <>
-                      {formatAmount(gespaardTotPeilDatum.toString())}
+                      {formatAmount((gespaardTotPeilDatum).toString())}
                       <br />gespaard
-                    </>
-                  )}
-                </TableCell>
-              )}
-              {extraGespaardTotPeilDatum > 0 && (
-                <TableCell
-                  width={`${(extraGespaardTotPeilDatum / budgetMaandInkomstenBedrag) * 90}%`}
-                  sx={{
-                    backgroundColor: '#bf9001',
-                    borderBottom: detailsVisible ? '4px solid black' : '0px',
-                    color: 'white',
-                    textAlign: 'center',
-                    fontSize: '0.7rem'
-                  }}
-                >
-                  {detailsVisible && (
-                    <>
-                      {formatAmount(extraGespaardTotPeilDatum.toString())}
-                      <br /> extra gespaard
                     </>
                   )}
                 </TableCell>
@@ -146,7 +127,7 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
                     <>
                       {formatAmount(actueleBuffer.toString())}
                       <br />
-                      {isPeriodeAfgelopen ? 'over' : 'buffer'}
+                      {periodeIsVoorbij ? 'over' : 'buffer'}
                     </>
                   )}
                 </TableCell>

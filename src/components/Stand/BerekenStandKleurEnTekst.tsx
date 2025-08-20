@@ -1,3 +1,4 @@
+import React from 'react';
 import { SaldoDTO } from "../../model/Saldo";
 import { PlusIcon } from '../../icons/Plus';
 import { MinIcon } from '../../icons/Min';
@@ -25,7 +26,7 @@ export const berekenRekeningGroepIcoonKleur = (saldo: SaldoDTO): string => {
   }
 }
 
-export const berekenRekeningGroepIcoonOpKleur = (heigth: number, color: string): JSX.Element => {
+export const berekenRekeningGroepIcoonOpKleur = (heigth: number, color: string): React.ReactElement => {
   switch (color) {
     case 'green':
     case '#1977d3':
@@ -40,7 +41,7 @@ export const berekenRekeningGroepIcoonOpKleur = (heigth: number, color: string):
   }
 }
 
-export const berekenRekeningGroepIcoon = (heigth: number, saldo: SaldoDTO): JSX.Element => {
+export const berekenRekeningGroepIcoon = (heigth: number, saldo: SaldoDTO): React.ReactElement => {
   return berekenRekeningGroepIcoonOpKleur(heigth, berekenRekeningGroepIcoonKleur(saldo));
 }
 

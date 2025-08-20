@@ -85,23 +85,8 @@ export const currencyFormatter = new Intl.NumberFormat("nl-NL", {
   currency: "EUR",
 });
 
-// export const betalingsSoorten2RekeningGroepSoorten = new Map<BetalingsSoort, RekeningGroepSoortPaar>([
-//   // Inkomsten
-//   [BetalingsSoort.inkomsten, { bron: RekeningGroepSoort.inkomsten, bestemming: RekeningGroepSoort.betaalmethode }],
-//   // Uitgaven
-//   [BetalingsSoort.uitgaven, { bron: RekeningGroepSoort.betaalmethode, bestemming: RekeningGroepSoort.uitgaven }],
-//   [BetalingsSoort.aflossen, { bron: RekeningGroepSoort.betaalmethode, bestemming: RekeningGroepSoort.aflossing }],
-//   // Intern
-//   [BetalingsSoort.incasso_creditcard, { bron: RekeningGroepSoort.betaalrekening, bestemming: RekeningGroepSoort.creditcard }],
-//   [BetalingsSoort.opnemen, { bron: RekeningGroepSoort.spaarrekening, bestemming: RekeningGroepSoort.betaalrekening }],
-//   [BetalingsSoort.sparen, { bron: RekeningGroepSoort.betaalrekening, bestemming: RekeningGroepSoort.spaarrekening }],
-//   [BetalingsSoort.opnemen_contant, { bron: RekeningGroepSoort.betaalrekening, bestemming: RekeningGroepSoort.contant }],
-//   [BetalingsSoort.storten_contant, { bron: RekeningGroepSoort.contant, bestemming: RekeningGroepSoort.betaalrekening }],
-// ]
-// );
-
 export const inkomstenBetalingsSoorten = [BetalingsSoort.inkomsten]
-export const uitgavenBetalingsSoorten = [BetalingsSoort.uitgaven, BetalingsSoort.aflossen, BetalingsSoort.besteden]
+export const uitgavenBetalingsSoorten = [BetalingsSoort.uitgaven, BetalingsSoort.aflossen]//, BetalingsSoort.besteden]
 export const internBetalingsSoorten = [BetalingsSoort.incasso_creditcard, BetalingsSoort.opnemen, BetalingsSoort.sparen, BetalingsSoort.opnemen_contant, BetalingsSoort.storten_contant]
 
 export const betalingsSoort2Categorie = (betalingsSoort: BetalingsSoort | undefined): BetalingsCategorie | undefined => {

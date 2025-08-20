@@ -6,7 +6,7 @@ import { useCustomContext } from '../../context/CustomContext';
 import { InternIcon } from '../../icons/Intern';
 import { InkomstenIcon } from '../../icons/Inkomsten';
 import { UitgavenIcon } from '../../icons/Uitgaven';
-import { RekeningGroepDTO, RekeningGroepSoort } from '../../model/RekeningGroep';
+import { RekeningGroepDTO, RekeningGroepPerBetalingsSoort, RekeningGroepSoort } from '../../model/RekeningGroep';
 import { RekeningDTO } from '../../model/Rekening';
 import { SaldoDTO } from '../../model/Saldo';
 
@@ -27,9 +27,11 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
   const [sparenSaldi, setSparenSaldi] = useState<SaldoDTO[]>([]);
 
   useEffect(() => {
-    stand && setSparenSaldi(stand.resultaatOpDatum.
-      filter((r) => r.rekeningGroepSoort === RekeningGroepSoort.spaarrekening)
-    );
+    if (stand) {
+      setSparenSaldi(
+        stand.resultaatOpDatum.filter((r) => r.rekeningGroepSoort === RekeningGroepSoort.spaarrekening)
+      );
+    }
   }, [stand]);
 
 
@@ -167,7 +169,7 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
   function renderBetaalSelectBlok({
     filterFn,
   }: {
-    filterFn: (rgpb: any) => boolean,
+    filterFn: (rgpb: RekeningGroepPerBetalingsSoort) => boolean,
   }) {
     return (
       <Box mt={2}>
@@ -318,7 +320,7 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                     variant={selectedBetalingsSoort === rgpb.betalingsSoort ? 'contained' : 'outlined'}
                     onClick={() => handleBetalingsSoortClick(rgpb.betalingsSoort)}
                   >
-                    {betalingsSoortFormatter(rgpb.betalingsSoort.toString())}
+                     {betalingsSoortFormatter(rgpb.betalingsSoort.toString())}
                   </Button>
                 )
               }
