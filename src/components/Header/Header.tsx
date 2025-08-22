@@ -15,13 +15,17 @@ import Typography from '@mui/material/Typography';
 import { useAuthContext } from '@asgardeo/auth-react';
 
 import dayjs from 'dayjs';
+import {
+  useGetGebruikerZelf,
+  useGetRekeningenVoorHulpvragerEnPeriode,
+  useGetStandVoorHulpvragerEnDatum,
+} from '../../api/plusminApi';
 import { PlusMinLogo } from '../../assets/PlusMinLogo';
 import { useCustomContext } from '../../context/CustomContext';
 import { Gebruiker } from '../../model/Gebruiker';
 import { Periode } from '../../model/Periode';
 import { RekeningGroepPerBetalingsSoort } from '../../model/RekeningGroep';
-import StyledSnackbar from './../StyledSnackbar';
-
+import StyledSnackbar from '../StyledSnackbar';
 function Header() {
   const navigate = useNavigate();
   const handleNavigation = (page: string) => {
@@ -30,7 +34,6 @@ function Header() {
   };
   const { state, signIn, getIDToken, signOut, revokeAccessToken } =
     useAuthContext();
-
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
     null,
   );
@@ -38,6 +41,11 @@ function Header() {
     React.useState<null | HTMLElement>(null);
   const [expiry, setExpiry] = React.useState<Date | null>(null);
 
+  const [fetchGebruikerZelf] = useGetGebruikerZelf();
+  const [fetchRekeningenVoorHulpvragerEnPeriode] =
+    useGetRekeningenVoorHulpvragerEnPeriode();
+  const [fetchStandVoorHulpvragerEnDatum] =
+    useGetStandVoorHulpvragerEnDatum();
   const {
     gebruiker,
     setGebruiker,
@@ -50,7 +58,6 @@ function Header() {
     gekozenPeriode,
     setGekozenPeriode,
     setStand,
-    isStandDirty,
     setIsStandDirty,
     rekeningGroepPerBetalingsSoort,
     setRekeningGroepPerBetalingsSoort,
@@ -106,31 +113,18 @@ function Header() {
 
   const fetchRekeningen = useCallback(
     async (hulpvrager: Gebruiker, periode: Periode) => {
-      let token;
-      try {
-        token = await getIDToken();
-      } catch (error) {
-        console.error('Error getting ID token:', error);
-      }
-
-      const responseRekening = await fetch(
-        `/api/v1/rekening/hulpvrager/${hulpvrager.id}/periode/${periode.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        },
+      const dataRekening = await fetchRekeningenVoorHulpvragerEnPeriode(
+        hulpvrager,
+        periode,
       );
-      const dataRekening = await responseRekening.json();
       setRekeningGroepPerBetalingsSoort(
         dataRekening as RekeningGroepPerBetalingsSoort[],
       );
     },
-    [getIDToken, setRekeningGroepPerBetalingsSoort],
+    [fetchRekeningenVoorHulpvragerEnPeriode, setRekeningGroepPerBetalingsSoort],
   );
 
-  const fetchGebruikerMetHulpvragers = useCallback(async () => {
+  const determineSessionExpiry = useCallback(async () => {
     let token;
     try {
       token = await getIDToken();
@@ -148,16 +142,11 @@ function Header() {
     } catch (error) {
       console.error('Error getting ID token:', error);
     }
+  }, [getIDToken]);
 
-    const responseGebruiker = await fetch('/api/v1/gebruiker/zelf', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const dataGebruiker = await responseGebruiker.json();
-    setGebruiker(dataGebruiker.gebruiker as Gebruiker);
+  const fetchGebruikerMetHulpvragers = useCallback(async () => {
+    const dataGebruiker = await fetchGebruikerZelf();
+    setGebruiker(dataGebruiker.gebruiker);
     setHulpvragers(dataGebruiker.hulpvragers as Gebruiker[]);
 
     const opgeslagenActieveHulpvragerId =
@@ -174,7 +163,7 @@ function Header() {
 
     const opgeslagenGekozenPeriodeId = localStorage.getItem('gekozenPeriode');
     const opgeslagenGekozenPeriode = opgeslagenGekozenPeriodeId
-      ? (opgeslagenActieveHulpvrager.periodes as Periode[]).find(
+      ? (opgeslagenActieveHulpvrager?.periodes as Periode[]).find(
           (periode) => periode.id === Number(opgeslagenGekozenPeriodeId),
         )
       : undefined;
@@ -203,64 +192,57 @@ function Header() {
 
     setActieveHulpvrager(nieuweActieveHulpvrager);
     setGekozenPeriode(nieuweGekozenPeriode);
-    localStorage.setItem('gekozenPeriode', nieuweGekozenPeriode.id + '');
+    localStorage.setItem('gekozenPeriode', nieuweGekozenPeriode?.id + '');
 
-    await fetchRekeningen(nieuweActieveHulpvrager, nieuweGekozenPeriode);
+    if (nieuweGekozenPeriode) {
+      await fetchRekeningen(nieuweActieveHulpvrager, nieuweGekozenPeriode);
+    }
   }, [
-    getIDToken,
-    setActieveHulpvrager,
+    fetchGebruikerZelf,
     setGebruiker,
     setHulpvragers,
+    setActieveHulpvrager,
     setGekozenPeriode,
     fetchRekeningen,
   ]);
 
   useEffect(() => {
     if (state.isAuthenticated) {
+      determineSessionExpiry();
       fetchGebruikerMetHulpvragers();
     }
-  }, [state.isAuthenticated, fetchGebruikerMetHulpvragers]);
+  }, [
+    state.isAuthenticated,
+    fetchGebruikerMetHulpvragers,
+    determineSessionExpiry,
+  ]);
 
   useEffect(() => {
     const fetchSaldi = async () => {
-      let token = '';
-      try {
-        token = await getIDToken();
-      } catch (error) {
-        console.error('Failed to fetch data', error);
-      }
-      if (actieveHulpvrager && gekozenPeriode && token) {
+      if (actieveHulpvrager && gekozenPeriode) {
         const vandaag = dayjs().format('YYYY-MM-DD');
         const datum =
           gekozenPeriode.periodeEindDatum > vandaag
             ? vandaag
             : gekozenPeriode.periodeEindDatum;
-        const id = actieveHulpvrager.id;
-        const response = await fetch(
-          `/api/v1/stand/hulpvrager/${id}/datum/${datum}`,
-          {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          },
-        );
-        if (response.ok) {
-          const result = await response.json();
-          setStand(result);
+        try {
+          const stand = await fetchStandVoorHulpvragerEnDatum(
+            actieveHulpvrager,
+            datum,
+          );
+
+          setStand(stand);
           setIsStandDirty(false);
-        } else {
-          console.error('Failed to fetch data', response.status);
+        } catch (error) {
+          console.error('Error fetching stand:', error);
         }
       }
     };
     fetchSaldi();
   }, [
     actieveHulpvrager,
+    fetchStandVoorHulpvragerEnDatum,
     gekozenPeriode,
-    getIDToken,
-    isStandDirty,
     setIsStandDirty,
     setStand,
   ]);
