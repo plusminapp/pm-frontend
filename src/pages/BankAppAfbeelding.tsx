@@ -80,7 +80,7 @@ const BankAppAfbeelding: React.FC = () => {
         tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
         tessedit_char_whitelist: '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+-,.',
         tessedit_char_blacklist: '€',
-        tessedit_preserve_interword_spaces: 1 as any,
+        tessedit_preserve_interword_spaces: 1,
       } as Partial<Tesseract.WorkerOptions>
     ).then(({ data: { text, confidence } }) => {
       const filteredText = text.replace(/^\d{2}:\d{2}.*\n/, '').trim();
@@ -99,10 +99,9 @@ const BankAppAfbeelding: React.FC = () => {
   useEffect(() => {
     // TODO? - Implement the valideerBetalingen function zonder useEffect?
     const valideerBetalingen = async () => {
-      console.log('valideerBetalingen', ocrBankRekening, parsedData, actieveHulpvrager);
       let token = '';
       try { token = await getIDToken() }
-      catch (error) {
+      catch {
         navigate('/login');
       }
       if (actieveHulpvrager && ocrBankRekening && token && parsedData.length > 0) {
@@ -146,15 +145,14 @@ const BankAppAfbeelding: React.FC = () => {
     };
     valideerBetalingen();
 
-  }, [ocrBankRekening, parsedData, actieveHulpvrager, getIDToken]);
+  }, [ocrBankRekening, parsedData, actieveHulpvrager, getIDToken, navigate, setSnackbarMessage]);
 
   const wijzigOcrBankRekening = (bankRekening: RekeningDTO | undefined) => {
     setOcrBankRekening(bankRekening);
   };
 
-  const onBetalingBewaardChange = (sortOrder: string) => {
+  const onBetalingBewaardChange = () => {
     setAantalVerwerkteBetalingen(aantalVerwerkteBetalingen + 1);
-    console.log('onBetalingBewaardChange', sortOrder);
   }
   
   const onBetalingVerwijderdChange = (sortOrder: string) => {
@@ -199,7 +197,7 @@ const BankAppAfbeelding: React.FC = () => {
             editMode={false}
             betaling={undefined}
             onUpsertBetalingClose={() => { }}
-            onBetalingBewaardChange={(betalingDTO) => onBetalingBewaardChange(betalingDTO.sortOrder)}
+            onBetalingBewaardChange={onBetalingBewaardChange}
             onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO.sortOrder)} />
         </Grid>}
 
@@ -232,7 +230,7 @@ const BankAppAfbeelding: React.FC = () => {
                   actueleRekeningGroep={undefined}
                   isOcr={true}
                   betalingen={validatedData.betalingen}
-                  onBetalingBewaardChange={(betalingDTO) => onBetalingBewaardChange(betalingDTO.sortOrder)}
+                  onBetalingBewaardChange={onBetalingBewaardChange}
                   onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO.sortOrder)} />
               </>
             )}
