@@ -15,11 +15,7 @@ import Typography from '@mui/material/Typography';
 import { useAuthContext } from '@asgardeo/auth-react';
 
 import dayjs from 'dayjs';
-import {
-  useGetGebruikerZelf,
-  useGetRekeningenVoorHulpvragerEnPeriode,
-  useGetStandVoorHulpvragerEnDatum,
-} from '../../api/plusminApi';
+import { usePlusminApi } from '../../api/plusminApi';
 import { PlusMinLogo } from '../../assets/PlusMinLogo';
 import { useCustomContext } from '../../context/CustomContext';
 import { Gebruiker } from '../../model/Gebruiker';
@@ -41,10 +37,12 @@ function Header() {
     React.useState<null | HTMLElement>(null);
   const [expiry, setExpiry] = React.useState<Date | null>(null);
 
-  const [fetchGebruikerZelf] = useGetGebruikerZelf();
-  const [fetchRekeningenVoorHulpvragerEnPeriode] =
-    useGetRekeningenVoorHulpvragerEnPeriode();
-  const [fetchStandVoorHulpvragerEnDatum] = useGetStandVoorHulpvragerEnDatum();
+  const {
+    getGebruikerZelf,
+    getRekeningenVoorHulpvragerEnPeriode,
+    getStandVoorHulpvragerEnDatum,
+  } = usePlusminApi();
+
   const {
     gebruiker,
     setGebruiker,
@@ -116,7 +114,7 @@ function Header() {
 
   const fetchRekeningen = useCallback(
     async (hulpvrager: Gebruiker, periode: Periode) => {
-      const dataRekening = await fetchRekeningenVoorHulpvragerEnPeriode(
+      const dataRekening = await getRekeningenVoorHulpvragerEnPeriode(
         hulpvrager,
         periode,
       );
@@ -124,7 +122,7 @@ function Header() {
         dataRekening as RekeningGroepPerBetalingsSoort[],
       );
     },
-    [fetchRekeningenVoorHulpvragerEnPeriode, setRekeningGroepPerBetalingsSoort],
+    [getRekeningenVoorHulpvragerEnPeriode, setRekeningGroepPerBetalingsSoort],
   );
 
   const determineSessionExpiry = useCallback(async () => {
@@ -148,7 +146,7 @@ function Header() {
   }, [getIDToken]);
 
   const fetchGebruikerMetHulpvragers = useCallback(async () => {
-    const dataGebruiker = await fetchGebruikerZelf();
+    const dataGebruiker = await getGebruikerZelf();
     setGebruiker(dataGebruiker.gebruiker);
     setHulpvragers(dataGebruiker.hulpvragers as Gebruiker[]);
 
@@ -201,7 +199,7 @@ function Header() {
       await fetchRekeningen(nieuweActieveHulpvrager, nieuweGekozenPeriode);
     }
   }, [
-    fetchGebruikerZelf,
+    getGebruikerZelf,
     setGebruiker,
     setHulpvragers,
     setActieveHulpvrager,
@@ -229,7 +227,7 @@ function Header() {
             ? vandaag
             : gekozenPeriode.periodeEindDatum;
         try {
-          const stand = await fetchStandVoorHulpvragerEnDatum(
+          const stand = await getStandVoorHulpvragerEnDatum(
             actieveHulpvrager,
             datum,
           );
@@ -244,7 +242,7 @@ function Header() {
     fetchSaldi();
   }, [
     actieveHulpvrager,
-    fetchStandVoorHulpvragerEnDatum,
+    getStandVoorHulpvragerEnDatum,
     gekozenPeriode,
     setIsStandDirty,
     setStand,
