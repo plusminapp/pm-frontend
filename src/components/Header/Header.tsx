@@ -446,6 +446,7 @@ function Header() {
                       <MenuItem
                         key={page}
                         onClick={() => handleNavigation(formatRoute(page))}
+                        selected={currentPage === page}
                       >
                         <Typography sx={{ textAlign: 'center', color: '#222' }}>
                           {page}
