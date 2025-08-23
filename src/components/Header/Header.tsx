@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import MenuIcon from '@mui/icons-material/Menu';
 import AppBar from '@mui/material/AppBar';
@@ -44,8 +44,7 @@ function Header() {
   const [fetchGebruikerZelf] = useGetGebruikerZelf();
   const [fetchRekeningenVoorHulpvragerEnPeriode] =
     useGetRekeningenVoorHulpvragerEnPeriode();
-  const [fetchStandVoorHulpvragerEnDatum] =
-    useGetStandVoorHulpvragerEnDatum();
+  const [fetchStandVoorHulpvragerEnDatum] = useGetStandVoorHulpvragerEnDatum();
   const {
     gebruiker,
     setGebruiker,
@@ -63,6 +62,10 @@ function Header() {
     setRekeningGroepPerBetalingsSoort,
     setPeriodes,
   } = useCustomContext();
+
+  const { pathname } = useLocation();
+  const currentPage =
+    pathname.slice(1).charAt(0).toUpperCase() + pathname.slice(2);
 
   const rekeningGroepen = Array.from(
     new Map(
@@ -303,6 +306,7 @@ function Header() {
                     key={page}
                     onClick={() => handleNavigation(formatRoute(page))}
                     sx={{ mx: 2, color: '#222', display: 'block' }}
+                    className={currentPage === page ? 'selected' : ''}
                   >
                     {page}
                   </Button>
