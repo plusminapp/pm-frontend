@@ -4,5 +4,6 @@ export type CashFlow = {
     inkomsten: number,
     uitgaven: number,
     saldo: number,
+    prognose: number,
 }
 

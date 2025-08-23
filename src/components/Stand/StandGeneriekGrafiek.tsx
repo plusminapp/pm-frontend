@@ -11,7 +11,7 @@ import SavingsOutlinedIcon from '@mui/icons-material/SavingsOutlined';
 import QuestionMarkOutlinedIcon from '@mui/icons-material/QuestionMarkOutlined';
 
 interface StandGeneriekIconProps {
-  statusIcon: React.ReactElement;
+  statusIcon: JSX.Element;
   percentageFill: number;
   rekeningIconNaam: string | undefined;
   headerText: string;
