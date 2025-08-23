@@ -18,21 +18,18 @@ async function fetchData<T>(endpoint: string, bearerToken: string) {
   return response.json() as T;
 }
 
-function useGetGebruikerZelf() {
+function usePlusminApi() {
   const { getIDToken } = useAuthContext();
-  const fetch = useCallback(async () => {
+
+  const getGebruikerZelf = useCallback(async () => {
     const token = await getIDToken();
     return fetchData<{
       gebruiker: Gebruiker;
       hulpvragers: Gebruiker[];
     }>('/api/v1/gebruiker/zelf', token);
   }, [getIDToken]);
-  return [fetch];
-}
 
-function useGetRekeningenVoorHulpvragerEnPeriode() {
-  const { getIDToken } = useAuthContext();
-  const fetch = useCallback(
+  const getRekeningenVoorHulpvragerEnPeriode = useCallback(
     async (hulpvrager: Gebruiker, periode: Periode) => {
       const token = await getIDToken();
       return fetchData<RekeningGroepPerBetalingsSoort[]>(
@@ -42,12 +39,8 @@ function useGetRekeningenVoorHulpvragerEnPeriode() {
     },
     [getIDToken],
   );
-  return [fetch];
-}
 
-function useGetStandVoorHulpvragerEnDatum() {
-  const { getIDToken } = useAuthContext();
-  const fetch = useCallback(
+  const getStandVoorHulpvragerEnDatum = useCallback(
     async (hulpvrager: Gebruiker, datum: string) => {
       const token = await getIDToken();
       return fetchData<Stand>(
@@ -57,11 +50,12 @@ function useGetStandVoorHulpvragerEnDatum() {
     },
     [getIDToken],
   );
-  return [fetch];
+
+  return {
+    getGebruikerZelf,
+    getRekeningenVoorHulpvragerEnPeriode,
+    getStandVoorHulpvragerEnDatum,
+  };
 }
 
-export {
-  useGetGebruikerZelf,
-  useGetRekeningenVoorHulpvragerEnPeriode,
-  useGetStandVoorHulpvragerEnDatum,
-};
+export { usePlusminApi };
