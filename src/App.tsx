@@ -16,7 +16,7 @@ import NotFound from './pages/NotFound';
 import BankAppAfbeelding from './pages/BankAppAfbeelding';
 import { GridExample } from './pages/Experiment';
 
-const ProtectedRoute: React.FC<{ element: React.ReactElement }> = ({ element }) => {
+const ProtectedRoute: React.FC<{ element: JSX.Element }> = ({ element }) => {
   const { state } = useAuthContext();
   return state.isAuthenticated ? element : <Navigate to="/login" />;
 };

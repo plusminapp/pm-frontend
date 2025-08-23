@@ -1,9 +1,8 @@
-import React from 'react';
+import { JSX } from "react";
 import { SaldoDTO } from "../../model/Saldo";
 import { PlusIcon } from '../../icons/Plus';
 import { MinIcon } from '../../icons/Min';
 import QuestionMarkOutlinedIcon from '@mui/icons-material/QuestionMarkOutlined';
-import { JSX } from "react";
 
 const formatAmount = (amount: number): string => {
   return amount.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
@@ -27,7 +26,7 @@ export const berekenRekeningGroepIcoonKleur = (saldo: SaldoDTO): string => {
   }
 }
 
-export const berekenRekeningGroepIcoonOpKleur = (heigth: number, color: string): React.ReactElement => {
+export const berekenRekeningGroepIcoonOpKleur = (heigth: number, color: string): JSX.Element => {
   switch (color) {
     case 'green':
     case '#1977d3':
@@ -42,7 +41,7 @@ export const berekenRekeningGroepIcoonOpKleur = (heigth: number, color: string):
   }
 }
 
-export const berekenRekeningGroepIcoon = (heigth: number, saldo: SaldoDTO): React.ReactElement => {
+export const berekenRekeningGroepIcoon = (heigth: number, saldo: SaldoDTO): JSX.Element => {
   return berekenRekeningGroepIcoonOpKleur(heigth, berekenRekeningGroepIcoonKleur(saldo));
 }
 

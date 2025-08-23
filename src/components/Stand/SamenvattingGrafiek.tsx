@@ -23,7 +23,7 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
   const periodeIsVoorbij = props.periodeIsVoorbij;
   const isInGevarenZone = actueleBuffer < gevarenZone * budgetMaandInkomstenBedrag && !periodeIsVoorbij;
 
-  const berekenStandGeneriekGrafiek = (): React.ReactElement => {
+  const berekenStandGeneriekGrafiek = (): JSX.Element => {
     const roundUp = (value: number) => Math.ceil(value * 100) / 100;
     const bedragRounded = roundUp(Math.abs(actueleBuffer)).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const budgetRounded = roundUp(Number(budgetMaandInkomstenBedrag)).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
