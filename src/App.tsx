@@ -15,6 +15,7 @@ import Container from '@mui/material/Container';
 import NotFound from './pages/NotFound';
 import BankAppAfbeelding from './pages/BankAppAfbeelding';
 import { GridExample } from './pages/Experiment';
+import './App.css';
 
 const ProtectedRoute: React.FC<{ element: JSX.Element }> = ({ element }) => {
   const { state } = useAuthContext();
