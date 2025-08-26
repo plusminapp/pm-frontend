@@ -1,4 +1,12 @@
 ## Devcontainer technologie
+
+De pm-frontend ontwikkelomgeving maakt gebruik van devcontainer technologie.
+Devcontainers is een open spec welke in de eerste plaats het probleem van - works on my machine - oplost.
+Aangezien Vscode erg ver is op het gebied van ondersteuning voor devcontainers, wordt voor de pm-frontend
+de combinatie van vscode en devcontainers toegepast. 
+
+Algemene vscode devcontainer info zie https://code.visualstudio.com/docs/devcontainers/containers. 
+
 De gebruikte devcontainer config zorgt ervoor dat iedere ontwikkelaar dezelfde ontwikkel omgeving heeft, inclusief
 vscode extensions. De inhoud van de devcontainer vind je in de devcontainer.json file.
 Als je de container opspint, krijg je lokaal de remote vscode view te zien met daarin de pm-frontend repo code.
