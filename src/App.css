@@ -8,12 +8,11 @@
 /*
  Mui customization
 */
-.MuiButton-root.selected{
+.MuiButton-root.selected, .MuiTypography-root.selected {
   border-bottom: thin green solid;
   background-color: inherit;
   border-bottom-left-radius: 0px;
   border-bottom-right-radius: 0px;
-
 }
 
 .MuiTypography-root.MuiTypography-h4{
