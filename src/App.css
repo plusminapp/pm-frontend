@@ -2,18 +2,19 @@
   max-width: 1280px;
   margin: 0 auto;
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
-
 }
 
 /*
  Mui customization
 */
-.MuiButton-root.selected{
-  border-bottom: thin green solid;
-  background-color: inherit;
-  border-bottom-left-radius: 0px;
-  border-bottom-right-radius: 0px;
-
+.MuiAppBar-root {
+  button.MuiButton-root.selected,
+  p.MuiTypography-root.selected {
+    border-bottom: thin green solid;
+    background-color: inherit;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+  }
 }
 
 .MuiTypography-root.MuiTypography-h4{
