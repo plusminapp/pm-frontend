@@ -1,8 +1,12 @@
 import { BetalingDTO } from '../model/Betaling';
-import { useEffect, useState, useCallback } from 'react';
-
-import { useAuthContext } from "@asgardeo/auth-react";
-import { Accordion, AccordionDetails, AccordionSummary, Button, Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Button,
+  Typography,
+} from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useCustomContext } from '../context/CustomContext';
@@ -15,124 +19,163 @@ import PhotoCameraOutlinedIcon from '@mui/icons-material/PhotoCameraOutlined';
 import dayjs from 'dayjs';
 import BetalingTabel from '../components/Kasboek/BetalingTabel';
 import KolommenTabel from '../components/Kasboek/KolommenTabel';
+import { usePlusminApi } from '../api/plusminApi';
 
 export default function Kasboek() {
-  const { getIDToken } = useAuthContext();
-  const { actieveHulpvrager, gekozenPeriode, stand, setIsStandDirty } = useCustomContext();
+  const { actieveHulpvrager, gekozenPeriode, stand, setIsStandDirty } =
+    useCustomContext();
 
-  const [betalingen, setBetalingen] = useState<BetalingDTO[]>([])
+  const [betalingen, setBetalingen] = useState<BetalingDTO[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const theme = useTheme();
   const isMdOrLarger = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate();
+  const { getBetalingenVoorHulpvragerVoorPeriode } = usePlusminApi();
 
-  const [expanded, setExpanded] = useState<string | false>(isMdOrLarger ? 'tabel' : 'kolommen');
-  const handleChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
-    setExpanded(isExpanded ? panel : false);
-  };
-
-  const fetchBetalingen = useCallback(async () => {
-    let token
-    try {
-      token = await getIDToken();
-    } catch (error) {
-      console.error("Error fetching token", error);
-      setIsLoading(false);
-    }
-    if (actieveHulpvrager && token && gekozenPeriode) {
-      setIsLoading(true);
-      const id = actieveHulpvrager.id
-      const response = await fetch(`/api/v1/betalingen/hulpvrager/${id}?fromDate=${gekozenPeriode.periodeStartDatum}&toDate=${gekozenPeriode.periodeEindDatum}&size=-1`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      setIsLoading(false);
-      if (response.ok) {
-        const result = await response.json() as { data: { content: BetalingDTO[] } };
-        setBetalingen(result.data.content);
-      } else {
-        console.error("Failed to fetch betalingen", response.status);
-      }
-    }
-  }, [getIDToken, actieveHulpvrager, gekozenPeriode]);
+  const [expanded, setExpanded] = useState<string | false>(
+    isMdOrLarger ? 'tabel' : 'kolommen',
+  );
+  const handleChange =
+    (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
+      setExpanded(isExpanded ? panel : false);
+    };
 
   useEffect(() => {
-    fetchBetalingen();
-  }, [fetchBetalingen]);
+    if (actieveHulpvrager && gekozenPeriode) {
+      setIsLoading(true);
+      getBetalingenVoorHulpvragerVoorPeriode(actieveHulpvrager, gekozenPeriode)
+        .then((response) => {
+          setBetalingen(response.data.content);
+        })
+        .catch((error) => {
+          console.error('Failed to fetch betalingen', error);
+          setBetalingen([]);
+        })
+        .finally(() => setIsLoading(false));
+    }
+  }, [
+    actieveHulpvrager,
+    gekozenPeriode,
+    getBetalingenVoorHulpvragerVoorPeriode,
+  ]);
 
   const onBetalingBewaardChange = (betaling: BetalingDTO): void => {
     const isBoekingInGekozenPeriode =
-      dayjs(betaling?.boekingsdatum).isAfter(dayjs(gekozenPeriode?.periodeStartDatum).subtract(1, 'day')) &&
-      dayjs(betaling?.boekingsdatum).isBefore(dayjs(gekozenPeriode?.periodeEindDatum).add(1, 'day'));
+      dayjs(betaling?.boekingsdatum).isAfter(
+        dayjs(gekozenPeriode?.periodeStartDatum).subtract(1, 'day'),
+      ) &&
+      dayjs(betaling?.boekingsdatum).isBefore(
+        dayjs(gekozenPeriode?.periodeEindDatum).add(1, 'day'),
+      );
     if (isBoekingInGekozenPeriode && betaling) {
-      setBetalingen([...betalingen.filter(b => b.id !== betaling?.id), betaling]);
+      setBetalingen([
+        ...betalingen.filter((b) => b.id !== betaling?.id),
+        betaling,
+      ]);
     }
     setIsStandDirty(true);
-  }
+  };
   const onBetalingVerwijderdChange = (sortOrder: string): void => {
-    setBetalingen(betalingen.filter(b => b.sortOrder !== sortOrder));
+    setBetalingen(betalingen.filter((b) => b.sortOrder !== sortOrder));
     setIsStandDirty(true);
-  }
-  const isPeriodeOpen = gekozenPeriode?.periodeStatus === 'OPEN' || gekozenPeriode?.periodeStatus === 'HUIDIG';
+  };
+  const isPeriodeOpen =
+    gekozenPeriode?.periodeStatus === 'OPEN' ||
+    gekozenPeriode?.periodeStatus === 'HUIDIG';
 
   if (isLoading) {
-    return <Typography sx={{ mb: '25px' }}>De betalingen worden opgehaald.</Typography>
+    return (
+      <Typography sx={{ mb: '25px' }}>
+        De betalingen worden opgehaald.
+      </Typography>
+    );
   }
+
   return (
     <>
-      <Typography variant='h4'>Kasboek</Typography>
+      <Typography variant="h4">Kasboek</Typography>
       <Grid container spacing={{ xs: 1, md: 3 }} columns={{ xs: 2, md: 6 }}>
         <Grid size={2}>
-          <PeriodeSelect
-            isKasboek />
+          <PeriodeSelect isKasboek />
         </Grid>
         <Grid size={{ xs: 2, md: 3 }}>
           <Typography sx={{ mt: { xs: '0px', md: '35px' } }}>
             {/* IN ({currencyFormatter.format(Number(berekenInkomstenTotaal()))}) - UIT ({currencyFormatter.format(Number(berekenUitgavenTotaal()))}) = {currencyFormatter.format(berekenCashFlowTotaal())} */}
           </Typography>
         </Grid>
-        {isPeriodeOpen &&
-          <Grid size={1} alignItems={{ xs: 'start', md: 'end' }} sx={{ mb: '12px', display: 'flex', justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
-            <Button variant="contained" color="success" onClick={() => navigate('/ocr')} sx={{ mt: '10px', ml: 0 }}>
+        {isPeriodeOpen && (
+          <Grid
+            size={1}
+            alignItems={{ xs: 'start', md: 'end' }}
+            sx={{
+              mb: '12px',
+              display: 'flex',
+              justifyContent: { xs: 'flex-start', md: 'flex-end' },
+            }}
+          >
+            <Button
+              variant="contained"
+              color="success"
+              onClick={() => navigate('/ocr')}
+              sx={{ mt: '10px', ml: 0 }}
+            >
               <PhotoCameraOutlinedIcon />
             </Button>
             <UpsertBetalingDialoog
               editMode={false}
               betaling={undefined}
-              onUpsertBetalingClose={() => { }}
-              onBetalingBewaardChange={(betalingDTO) => onBetalingBewaardChange(betalingDTO)}
-              onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO.sortOrder)} />
-          </Grid>}
+              onUpsertBetalingClose={() => {}}
+              onBetalingBewaardChange={(betalingDTO) =>
+                onBetalingBewaardChange(betalingDTO)
+              }
+              onBetalingVerwijderdChange={(betalingDTO) =>
+                onBetalingVerwijderdChange(betalingDTO.sortOrder)
+              }
+            />
+          </Grid>
+        )}
       </Grid>
-      {isMdOrLarger && gekozenPeriode && stand &&
+      {isMdOrLarger && gekozenPeriode && stand && (
         <BetalingTabel
           rekeningGroep={undefined}
           betalingen={betalingen}
-          geaggregeerdResultaatOpDatum={stand?.geaggregeerdResultaatOpDatum.sort((a, b) => a.sortOrder - b.sortOrder)}
-          onBetalingBewaardChange={(betalingDTO) => onBetalingBewaardChange(betalingDTO)}
-          onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO.sortOrder)}
+          geaggregeerdResultaatOpDatum={stand?.geaggregeerdResultaatOpDatum.sort(
+            (a, b) => a.sortOrder - b.sortOrder,
+          )}
+          onBetalingBewaardChange={(betalingDTO) =>
+            onBetalingBewaardChange(betalingDTO)
+          }
+          onBetalingVerwijderdChange={(betalingDTO) =>
+            onBetalingVerwijderdChange(betalingDTO.sortOrder)
+          }
         />
-      }
+      )}
       <Grid sx={{ mb: '25px' }}>
-        <Accordion expanded={expanded === 'kolommen'} onChange={handleChange('kolommen')}>
+        <Accordion
+          expanded={expanded === 'kolommen'}
+          onChange={handleChange('kolommen')}
+        >
           <AccordionSummary
             expandIcon={<ArrowDropDownIcon />}
             aria-controls={'BetalingTabel'}
-            id={'BetalingTabel'}>
+            id={'BetalingTabel'}
+          >
             <Typography component="span">Weergave per kolom</Typography>
           </AccordionSummary>
           <AccordionDetails sx={{ p: 0 }}>
             <KolommenTabel
               betalingen={betalingen}
-              geaggregeerdResultaatOpDatum={stand?.geaggregeerdResultaatOpDatum ?? []}
-              onBetalingBewaardChange={(betalingDTO) => onBetalingBewaardChange(betalingDTO)}
-              onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO.sortOrder)}
+              geaggregeerdResultaatOpDatum={
+                stand?.geaggregeerdResultaatOpDatum ?? []
+              }
+              onBetalingBewaardChange={(betalingDTO) =>
+                onBetalingBewaardChange(betalingDTO)
+              }
+              onBetalingVerwijderdChange={(betalingDTO) =>
+                onBetalingVerwijderdChange(betalingDTO.sortOrder)
+              }
             />
-
           </AccordionDetails>
         </Accordion>
       </Grid>
