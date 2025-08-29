@@ -1,3 +1,8 @@
+import CleaningServicesOutlinedIcon from '@mui/icons-material/CleaningServicesOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import LockOpenOutlinedIcon from '@mui/icons-material/LockOpenOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import {
   Box,
   Button,
@@ -9,24 +14,18 @@ import {
   Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
+import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
+import { usePlusminApi } from '../../api/plusminApi.ts';
+import { useCustomContext } from '../../context/CustomContext';
+import { BetalingsSoort } from '../../model/Betaling.ts';
 import {
   eersteOpenPeriode,
   formateerNlDatum,
   laatsteGeslotenPeriode,
   Periode,
 } from '../../model/Periode';
-import { useCustomContext } from '../../context/CustomContext';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import LockOpenOutlinedIcon from '@mui/icons-material/LockOpenOutlined';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import CleaningServicesOutlinedIcon from '@mui/icons-material/CleaningServicesOutlined';
-import { useAuthContext } from '@asgardeo/auth-react';
-import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
 import WijzigPeriodeDialoog from './WijzigPeriodeDialoog.tsx';
-import { BetalingsSoort } from '../../model/Betaling.ts';
-import { usePlusminApi } from '../../api/plusminApi.ts';
 
 interface PeriodeSelectProps {
   isProfiel?: boolean;
@@ -39,7 +38,6 @@ export function PeriodeSelect({
   isProfiel = false,
   isKasboek = false,
 }: PeriodeSelectProps) {
-  const { getIDToken } = useAuthContext();
   const {
     periodes,
     setPeriodes,
@@ -50,6 +48,7 @@ export function PeriodeSelect({
     setRekeningGroepPerBetalingsSoort,
     setSnackbarMessage,
   } = useCustomContext();
+  const { putPeriodeActie } = usePlusminApi();
 
   const [editMode, setEditMode] = useState<boolean>(false);
   const [formPeriodes, setFormPeriodes] = useState<Periode[]>(periodes);
@@ -146,52 +145,34 @@ export function PeriodeSelect({
       ),
     );
   };
-  const handleOpenSluitClick = async (periode: Periode, actie: string) => {
+  const handleOpenSluitClick = async (
+    periode: Periode,
+    actie: 'heropenen' | 'sluiten' | 'opruimen',
+  ) => {
     if (actieveHulpvrager && periode) {
-      let token;
       try {
-        token = await getIDToken();
-      } catch (error) {
-        console.error('Error getting ID token:', error);
-      }
-
-      try {
-        const response = await fetch(
-          `/api/v1/periode/hulpvrager/${actieveHulpvrager.id}/${actie}/${periode.id}`,
-          {
-            method: 'PUT',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify([]),
-          },
+        await putPeriodeActie(actieveHulpvrager, actie, periode);
+        setPeriodes(
+          periodes.map((p) =>
+            p.id !== periode.id
+              ? p
+              : {
+                  ...p,
+                  periodeStatus:
+                    actie === 'heropenen'
+                      ? 'OPEN'
+                      : actie === 'sluiten'
+                        ? 'GESLOTEN'
+                        : 'OPGERUIMD',
+                },
+          ),
         );
-        if (response.ok) {
-          setPeriodes(
-            periodes.map((p) =>
-              p.id !== periode.id
-                ? p
-                : {
-                    ...p,
-                    periodeStatus:
-                      actie === 'heropenen'
-                        ? 'OPEN'
-                        : actie === 'sluiten'
-                          ? 'GESLOTEN'
-                          : 'OPGERUIMD',
-                  },
-            ),
-          );
-          setSnackbarMessage({
-            message: `Het ${actie} van de periode is succesvol uitgevoerd.`,
-            type: 'success',
-          });
-        } else {
-          throw new Error(`Fetch failed with status: ${response.status}`);
-        }
+        setSnackbarMessage({
+          message: `Het ${actie} van de periode is succesvol uitgevoerd.`,
+          type: 'success',
+        });
       } catch (error) {
-        console.error('Error fetching periode details:', error);
+        throw new Error(`Fetch failed with status: ${error}`);
       }
     }
   };
