@@ -19,8 +19,6 @@ export default function Stand() {
 
   const { actieveHulpvrager, gekozenPeriode, rekeningGroepPerBetalingsSoort, stand } = useCustomContext();
 
-  // const [betalingen, setBetalingen] = useState<BetalingDTO[]>([])
-
   const [toonDebug, setToonDebug] = useState(localStorage.getItem('toonDebug') === 'true');
   const toggleToonDebug = () => {
     localStorage.setItem('toonDebug', (!toonDebug).toString());
@@ -35,39 +33,6 @@ export default function Stand() {
     localStorage.setItem('toonBudgetDetails', naam)
     setDetailsVisible(naam);
   };
-
-  // const fetchBetalingen = useCallback(async () => {
-  //   let token
-  //   try {
-  //     token = await getIDToken();
-  //   } catch (error) {
-  //     console.error("Error fetching token", error);
-  //     setIsLoading(false);
-  //   }
-  //   if (actieveHulpvrager && token && gekozenPeriode) {
-  //     setIsLoading(true);
-  //     const id = actieveHulpvrager.id
-  //     const response = await fetch(`/api/v1/betalingen/hulpvrager/${id}?fromDate=${gekozenPeriode.periodeStartDatum}&toDate=${gekozenPeriode.periodeEindDatum}&size=-1`, {
-  //       method: "GET",
-  //       headers: {
-  //         "Authorization": `Bearer ${token}`,
-  //         "Content-Type": "application/json",
-  //       },
-  //     });
-  //     setIsLoading(false);
-  //     if (response.ok) {
-  //       const result = await response.json() as { data: { content: BetalingDTO[] } };
-  //       setBetalingen(result.data.content);
-  //     } else {
-  //       console.error("Failed to fetch betalingen", response.status);
-  //     }
-  //   }
-  // }, [getIDToken, actieveHulpvrager, gekozenPeriode]);
-
-  // useEffect(() => {
-  //   fetchBetalingen();
-  // }, [fetchBetalingen]);
-
 
   const berekenPeriodeNaam = () => {
     if (gekozenPeriode?.periodeStatus.toLowerCase() === 'huidig') {
