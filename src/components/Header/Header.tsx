@@ -164,7 +164,7 @@ function Header() {
 
     const opgeslagenGekozenPeriodeId = localStorage.getItem('gekozenPeriode');
     const opgeslagenGekozenPeriode = opgeslagenGekozenPeriodeId
-      ? (opgeslagenActieveHulpvrager?.periodes as Periode[]).find(
+      ? (opgeslagenActieveHulpvrager?.periodes as Periode[])?.find(
         (periode) => periode.id === Number(opgeslagenGekozenPeriodeId),
       )
       : undefined;
