@@ -251,7 +251,7 @@ export default function Stand() {
                       saldi={stand.resultaatOpDatum
                         .filter(saldo => saldo.budgetType === BudgetType.sparen)
                         .sort((a, b) => a.sortOrder - b.sortOrder)
-                        .map(saldo => ({ ...saldo, bedrag: saldo.reservering }))}
+                        .map(saldo => ({ ...saldo, bedrag: saldo.reservering - saldo.betaling}))}
                     />
 
                   </Grid>
@@ -262,7 +262,7 @@ export default function Stand() {
                       saldi={stand.resultaatOpDatum
                         .filter(saldo => saldo.budgetType === BudgetType.sparen)
                         .sort((a, b) => a.sortOrder - b.sortOrder)
-                        .map(saldo => ({ ...saldo, bedrag: saldo.openingsReserveSaldo + saldo.reservering }))}
+                        .map(saldo => ({ ...saldo, bedrag: saldo.openingsReserveSaldo + saldo.reservering - saldo.betaling}))}
                     />
                   </Grid>
                 </Grid>
