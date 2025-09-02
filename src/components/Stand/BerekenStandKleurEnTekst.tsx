@@ -1,9 +1,8 @@
-import { JSX } from "react";
-import { SaldoDTO } from "../../model/Saldo";
+import { JSX } from 'react';
+import { SaldoDTO } from '../../model/Saldo';
 import { PlusIcon } from '../../icons/Plus';
 import { MinIcon } from '../../icons/Min';
 import QuestionMarkOutlinedIcon from '@mui/icons-material/QuestionMarkOutlined';
-import { JSX } from "react";
 
 const formatAmount = (amount: number): string => {
   return amount.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
@@ -17,17 +16,26 @@ export const berekenRekeningGroepIcoonKleur = (saldo: SaldoDTO): string => {
     case 'inkomsten':
       return saldo.minderDanBudget > 0 ? 'red' : 'green';
     case 'continu':
-      return (saldo.meerDanMaandBudget > 0 ? '#c00' : saldo.meerDanBudget > 0) ? 'red' : 'green';
+      return (saldo.meerDanMaandBudget > 0 ? '#c00' : saldo.meerDanBudget > 0)
+        ? 'red'
+        : 'green';
     case 'vast':
-      return saldo.minderDanBudget > 0 || saldo.achterstandOpPeilDatum < 0 ? 'red' : (saldo.meerDanMaandBudget > 0 || saldo.meerDanBudget > 0) ? 'orange' : 'green';
+      return saldo.minderDanBudget > 0 || saldo.achterstandOpPeilDatum < 0
+        ? 'red'
+        : saldo.meerDanMaandBudget > 0 || saldo.meerDanBudget > 0
+          ? 'orange'
+          : 'green';
     case 'sparen':
       return 'orange';
     default:
       return 'black';
   }
-}
+};
 
-export const berekenRekeningGroepIcoonOpKleur = (heigth: number, color: string): JSX.Element => {
+export const berekenRekeningGroepIcoonOpKleur = (
+  heigth: number,
+  color: string,
+): JSX.Element => {
   switch (color) {
     case 'green':
     case '#1977d3':
@@ -40,52 +48,93 @@ export const berekenRekeningGroepIcoonOpKleur = (heigth: number, color: string):
     default:
       return <QuestionMarkOutlinedIcon color={'disabled'} height={heigth} />;
   }
-}
+};
 
-export const berekenRekeningGroepIcoon = (heigth: number, saldo: SaldoDTO): JSX.Element => {
-  return berekenRekeningGroepIcoonOpKleur(heigth, berekenRekeningGroepIcoonKleur(saldo));
-}
+export const berekenRekeningGroepIcoon = (
+  heigth: number,
+  saldo: SaldoDTO,
+): JSX.Element => {
+  return berekenRekeningGroepIcoonOpKleur(
+    heigth,
+    berekenRekeningGroepIcoonKleur(saldo),
+  );
+};
 
-export const berekenStandBodyTekst = (rekeningGroepSaldo: SaldoDTO, rekeningSaldi: SaldoDTO[]): string => {
+export const berekenStandBodyTekst = (
+  rekeningGroepSaldo: SaldoDTO,
+  rekeningSaldi: SaldoDTO[],
+): string => {
   const fouteRekeningen = rekeningSaldi
-    .filter(saldo => berekenRekeningGroepIcoonKleur(saldo) !== 'green' && berekenRekeningGroepIcoonKleur(saldo) !== '#1977d3')
-    .map((saldo) => saldo.rekeningNaam)
+    .filter(
+      (saldo) =>
+        berekenRekeningGroepIcoonKleur(saldo) !== 'green' &&
+        berekenRekeningGroepIcoonKleur(saldo) !== '#1977d3',
+    )
+    .map((saldo) => saldo.rekeningNaam);
   if (fouteRekeningen.length === 0) {
-    return `${rekeningGroepSaldo.rekeningGroepNaam} precies ok` + (rekeningGroepSaldo.achterstand < 0 ? ` en de achterstand zelfs helemaal weggewerkt!` : '!');
+    return (
+      `${rekeningGroepSaldo.rekeningGroepNaam} precies ok` +
+      (rekeningGroepSaldo.achterstand < 0
+        ? ` en de achterstand zelfs helemaal weggewerkt!`
+        : '!')
+    );
   } else if (fouteRekeningen.length === 1) {
     return `${rekeningGroepSaldo.rekeningGroepNaam} niet ok, check ${fouteRekeningen[0]}.`;
   } else if (fouteRekeningen.length === 2) {
-    return `${rekeningGroepSaldo.rekeningGroepNaam} niet ok, check ` + fouteRekeningen.join(' en ');
+    return (
+      `${rekeningGroepSaldo.rekeningGroepNaam} niet ok, check ` +
+      fouteRekeningen.join(' en ')
+    );
   } else {
-    return `${rekeningGroepSaldo.rekeningGroepNaam} niet ok, check ` + fouteRekeningen.slice(0, -1).join(', ') + ' en ' + fouteRekeningen.slice(-1);
+    return (
+      `${rekeningGroepSaldo.rekeningGroepNaam} niet ok, check ` +
+      fouteRekeningen.slice(0, -1).join(', ') +
+      ' en ' +
+      fouteRekeningen.slice(-1)
+    );
   }
-}
+};
 
-export const berekenStandDetailsTekst = (rekeningSaldi: SaldoDTO[]): string[] => {
-  const fouteRekeningen = rekeningSaldi
-    .filter(saldo => 
-      saldo.achterstandOpPeilDatum < 0 || (berekenRekeningGroepIcoonKleur(saldo) !== 'green' && berekenRekeningGroepIcoonKleur(saldo) !== '#1977d3'))
+export const berekenStandDetailsTekst = (
+  rekeningSaldi: SaldoDTO[],
+): string[] => {
+  const fouteRekeningen = rekeningSaldi.filter(
+    (saldo) =>
+      saldo.achterstandOpPeilDatum < 0 ||
+      (berekenRekeningGroepIcoonKleur(saldo) !== 'green' &&
+        berekenRekeningGroepIcoonKleur(saldo) !== '#1977d3'),
+  );
 
   return fouteRekeningen.map((saldo) => {
     switch (saldo.budgetType?.toLowerCase()) {
       case 'inkomsten':
         if (saldo.betaling === 0) {
           return `${saldo.rekeningNaam}: verwachte ${formatAmount(saldo.budgetOpPeilDatum)} niet ontvangen (betaaldag ${saldo.budgetBetaalDag}e)`;
-        } else 
-        return `${saldo.rekeningNaam}: ${formatAmount(saldo.minderDanBudget)} minder dan de verwachte ${formatAmount(saldo.budgetOpPeilDatum)}`;
+        } else
+          return `${saldo.rekeningNaam}: ${formatAmount(saldo.minderDanBudget)} minder dan de verwachte ${formatAmount(saldo.budgetOpPeilDatum)}`;
       case 'continu':
         return `${saldo.rekeningNaam}: ${formatAmount(saldo.meerDanBudget + saldo.meerDanMaandBudget)} meer besteed dan de verwachte ${formatAmount(saldo.budgetOpPeilDatum)}`;
-      case 'vast':
-        { const achterstand = (saldo.achterstandOpPeilDatum < 0) ? ` ${formatAmount(-saldo.achterstandOpPeilDatum)} achterstand` : '';
+      case 'vast': {
+        const achterstand =
+          saldo.achterstandOpPeilDatum < 0
+            ? ` ${formatAmount(-saldo.achterstandOpPeilDatum)} achterstand`
+            : '';
         if (saldo.betaling === 0) {
           return `${saldo.rekeningNaam}:${achterstand} deze periode niet betaald (betaaldag ${saldo.budgetBetaalDag}e)`;
         } else if (saldo.meerDanBudget > 0 || saldo.meerDanMaandBudget > 0) {
           return `${saldo.rekeningNaam}: ${formatAmount(saldo.meerDanBudget + saldo.meerDanMaandBudget)} meer betaald dan het maandbudget van ${formatAmount(saldo.budgetMaandBedrag)}.`;
         } else if (saldo.achterstandOpPeilDatum < 0) {
-        return `${saldo.rekeningNaam}: ${achterstand}` + (saldo.minderDanBudget > 0 ? ` ${formatAmount(saldo.minderDanBudget)} te weinig betaald.` : '.' );
-        } else return `${saldo.rekeningNaam}: ${formatAmount(saldo.minderDanBudget)} te weinig betaald.`; }
+          return (
+            `${saldo.rekeningNaam}: ${achterstand}` +
+            (saldo.minderDanBudget > 0
+              ? ` ${formatAmount(saldo.minderDanBudget)} te weinig betaald.`
+              : '.')
+          );
+        } else
+          return `${saldo.rekeningNaam}: ${formatAmount(saldo.minderDanBudget)} te weinig betaald.`;
+      }
       default:
         return 'black';
     }
-  })
-}
+  });
+};
