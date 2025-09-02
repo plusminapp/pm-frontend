@@ -3,7 +3,6 @@ import { SaldoDTO } from "../../model/Saldo";
 import { PlusIcon } from '../../icons/Plus';
 import { MinIcon } from '../../icons/Min';
 import QuestionMarkOutlinedIcon from '@mui/icons-material/QuestionMarkOutlined';
-import { JSX } from "react";
 
 const formatAmount = (amount: number): string => {
   return amount.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
