@@ -34,12 +34,12 @@ const App: React.FC = () => {
 
             {/* Beschermde routes */}
             <Route path="/stand" element={<ProtectedRoute element={<Stand />} />} />
+            <Route path="/kasboek/ocr" element={<BankAppAfbeelding />} />
             <Route path="/kasboek" element={<ProtectedRoute element={<Kasboek />} />} />
             <Route path="/aflossen" element={<ProtectedRoute element={<Aflossen />} />} />
             <Route path="/sparen" element={<ProtectedRoute element={<Sparen />} />} />
             <Route path="/profiel" element={<ProtectedRoute element={<Profiel />} />} />
             <Route path="/experiment" element={<GridExample />} />
-            <Route path="/ocr" element={<BankAppAfbeelding />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
