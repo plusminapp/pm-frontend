@@ -423,7 +423,7 @@ const Profiel: React.FC = () => {
                 <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
                   <Typography>
                     <strong>Potjes</strong> <br />
-                    openingsstand:{' '}
+                    Openingsstand:{' '}
                     {formatAmount(
                       (reserveringBuffer?.openingsReserveSaldo ?? 0) +
                         (openingsReservePotjesVoorNuSaldo ?? 0),
@@ -433,7 +433,7 @@ const Profiel: React.FC = () => {
                     &nbsp; + openingsReservePotjesVoorNuSaldo:{' '}
                     {formatAmount(openingsReservePotjesVoorNuSaldo ?? 0)}
                     <br />
-                    actuele stand{' '}
+                    Actuele stand{' '}
                     {formatAmount(
                       (reserveringBuffer?.openingsReserveSaldo ?? 0) +
                         (reserveringBuffer?.reservering ?? 0) +
@@ -445,6 +445,16 @@ const Profiel: React.FC = () => {
                     {formatAmount(reserveringBuffer?.reservering ?? 0)}&nbsp; +
                     huidige reserve in potjes voor nu:{' '}
                     {formatAmount(reserveringsSaldoPotjesVanNu ?? 0)}
+                    <br />
+                    De potjes zijn gevuld tot en met{' '}
+                    {dayjs(stand?.budgetHorizon).format('D MMMM')}; er zijn
+                    daarna nog{' '}
+                    {dayjs(gekozenPeriode?.periodeEindDatum).diff(
+                      dayjs(stand?.budgetHorizon),
+                      'day',
+                    )}{' '}
+                    dagen tot het einde van de periode (
+                    {dayjs(gekozenPeriode?.periodeEindDatum).format('D MMMM')}).
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
