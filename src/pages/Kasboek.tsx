@@ -117,7 +117,7 @@ export default function Kasboek() {
             <Button
               variant="contained"
               color="success"
-              onClick={() => navigate('/ocr')}
+              onClick={() => navigate('/kasboek/ocr')}
               sx={{ mt: '10px', ml: 0 }}
             >
               <PhotoCameraOutlinedIcon />

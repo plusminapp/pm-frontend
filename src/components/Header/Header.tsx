@@ -62,8 +62,11 @@ function Header() {
   } = useCustomContext();
 
   const { pathname } = useLocation();
-  const currentPage =
-    pathname.slice(1).charAt(0).toUpperCase() + pathname.slice(2);
+  const currentPage = (() => {
+    const first = pathname.indexOf('/', 1);
+    const page = first === -1 ? pathname.slice(1) : pathname.slice(1, first);
+    return page.charAt(0).toUpperCase() + page.slice(1);
+  })();
 
   const rekeningGroepen = Array.from(
     new Map(
