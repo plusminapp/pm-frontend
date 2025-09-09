@@ -163,6 +163,17 @@ const Profiel: React.FC = () => {
     return `${formatAmount(betaling.bedrag)} met omschrijving ${betaling.omschrijving} op ${dayjs(betaling.boekingsdatum).format('D MMMM')} naar budget ${betaling.bron?.naam} dat geldig is ${geldigheid}.`;
   };
 
+  const creeerReserveringsHorizonTekst = () => {
+    return (
+      <>
+        De potjes zijn gevuld tot en met {dayjs(stand?.reserveringsHorizon).format('D MMMM')}.
+        {dayjs(stand?.reserveringsHorizon).isBefore(dayjs(stand?.budgetHorizon))
+          ? ` Ze kunnen worden gevuld tot en met ${dayjs(stand?.budgetHorizon).format('D MMMM')}.`
+          : ''}
+      </>
+    );
+  };
+
   const berekenCategorieIcon = (categorie: string) => {
     switch (categorie) {
       case 'INKOMSTEN':
@@ -446,15 +457,7 @@ const Profiel: React.FC = () => {
                     huidige reserve in potjes voor nu:{' '}
                     {formatAmount(reserveringsSaldoPotjesVanNu ?? 0)}
                     <br />
-                    De potjes zijn gevuld tot en met{' '}
-                    {dayjs(stand?.budgetHorizon).format('D MMMM')}; er zijn
-                    daarna nog{' '}
-                    {dayjs(gekozenPeriode?.periodeEindDatum).diff(
-                      dayjs(stand?.budgetHorizon),
-                      'day',
-                    )}{' '}
-                    dagen tot het einde van de periode (
-                    {dayjs(gekozenPeriode?.periodeEindDatum).format('D MMMM')}).
+                    {creeerReserveringsHorizonTekst()}
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>

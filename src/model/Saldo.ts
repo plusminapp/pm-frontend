@@ -7,6 +7,7 @@ export type Stand = {
     peilDatum: string,
     datumLaatsteBetaling: string | undefined,
     budgetHorizon: string,
+    reserveringsHorizon: string,
     resultaatOpDatum: SaldoDTO[],
     geaggregeerdResultaatOpDatum: SaldoDTO[],
     resultaatSamenvattingOpDatum: ResultaatSamenvattingOpDatumDTO
