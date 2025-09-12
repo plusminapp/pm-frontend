@@ -20,23 +20,17 @@ import { berekenRekeningGroepIcoon } from '../components/Stand/BerekenStandKleur
 export default function Sparen() {
   const { actieveHulpvrager, gekozenPeriode, stand } = useCustomContext();
 
-  // const sparen = rekeningGroepPerBetalingsSoort
-  //   .filter(r => r.betalingsSoort === BetalingsSoort.sparen)
-  //   .flatMap(r => r.rekeningGroepen)
-  //   .flatMap(r => r.rekeningen)
-
-  //   console.log("sparen", sparen);
-
   const [sparenSaldi, setSparenSaldi] = useState<SaldoDTO[]>([]);
 
   useEffect(() => {
-    stand &&
+    if (stand) {
       setSparenSaldi(
         stand.resultaatOpDatum.filter(
           (r: SaldoDTO) =>
             r.rekeningGroepSoort === RekeningGroepSoort.spaarrekening,
         ),
       );
+    }
   }, [stand]);
 
   return (
@@ -74,10 +68,6 @@ export default function Sparen() {
                 Verwachte opbouw van het spaartegoed
               </Typography>
             </AccordionSummary>
-            {/* <AccordionDetails sx={{ p: 0 }} >
-              <SpaartegoedAfbouwGrafiek
-                spaartegoed={sparen} sparenSaldi={sparenSaldi} />
-            </AccordionDetails> */}
           </Accordion>
         </>
       )}

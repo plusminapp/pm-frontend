@@ -35,13 +35,14 @@ export default function Aflossen() {
   const [aflossingSaldi, setAflossingSaldi] = useState<SaldoDTO[]>([]);
 
   useEffect(() => {
-    stand &&
+    if (stand) {
       setAflossingSaldi(
         stand.resultaatOpDatum.filter(
           (r: SaldoDTO) =>
             r.rekeningGroepSoort === RekeningGroepSoort.aflossing,
         ),
       );
+    }
   }, [stand]);
 
   return (
@@ -111,11 +112,6 @@ export default function Aflossen() {
           </AccordionDetails>
         </Accordion>
       ))}
-      {/* aflossingSaldi: {JSON.stringify(aflossingSaldi)} */}
-      {/*<hr />
-      series: {JSON.stringify(getSeries(aflossingSaldi))}
-      <hr />
-      data: {JSON.stringify(getData(aflossingSaldi))} */}
     </>
   );
 }

@@ -9,7 +9,7 @@ type AflossingGrafiekData = {
 
 type AflossingGrafiekDataMap = Record<string, Record<string, number>>;
 
-export function getData(aflossingSaldi: SaldoDTO[]): Record<string, any>[] {
+export function getData(aflossingSaldi: SaldoDTO[]): Record<string, string|number>[] {
   const aflossingGrafiekDataLijst = aflossingSaldi.flatMap(
     genereerAflossingSaldi,
   );
@@ -23,7 +23,7 @@ export function getData(aflossingSaldi: SaldoDTO[]): Record<string, any>[] {
       return acc;
     }, {} as AflossingGrafiekDataMap);
 
-  const result: Record<string, any>[] = Object.entries(
+  const result: Record<string, string|number>[] = Object.entries(
     aflossingGrafiekDataMap,
   ).map(([maand, saldi]) => ({
     month: maand,
@@ -38,10 +38,10 @@ const genereerAflossingSaldi = (
   const formatter = 'YYYY-MM';
   const aflossingGrafiekDataLijst: AflossingGrafiekData[] = [];
   let huidigeBedrag = Number(aflossingSaldoDTO.aflossing?.eindBedrag ?? 0);
-  let startAflossing = dayjs(aflossingSaldoDTO.aflossing?.startDatum).startOf(
+  const startAflossing = dayjs(aflossingSaldoDTO.aflossing?.startDatum).startOf(
     'month',
   );
-  let startPeilDatumPeriode = dayjs(aflossingSaldoDTO.budgetPeilDatum)
+  const startPeilDatumPeriode = dayjs(aflossingSaldoDTO.budgetPeilDatum)
     .subtract(1, 'month')
     .startOf('month');
 
