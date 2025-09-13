@@ -163,6 +163,17 @@ const Profiel: React.FC = () => {
     return `${formatAmount(betaling.bedrag)} met omschrijving ${betaling.omschrijving} op ${dayjs(betaling.boekingsdatum).format('D MMMM')} naar budget ${betaling.bron?.naam} dat geldig is ${geldigheid}.`;
   };
 
+  const creeerReserveringsHorizonTekst = () => {
+    return (
+      <>
+        De potjes zijn gevuld tot en met {dayjs(stand?.reserveringsHorizon).format('D MMMM')}.
+        {dayjs(stand?.reserveringsHorizon).isBefore(dayjs(stand?.budgetHorizon))
+          ? ` Ze kunnen worden gevuld tot en met ${dayjs(stand?.budgetHorizon).format('D MMMM')}.`
+          : ''}
+      </>
+    );
+  };
+
   const berekenCategorieIcon = (categorie: string) => {
     switch (categorie) {
       case 'INKOMSTEN':
@@ -423,7 +434,7 @@ const Profiel: React.FC = () => {
                 <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
                   <Typography>
                     <strong>Potjes</strong> <br />
-                    openingsstand:{' '}
+                    Openingsstand:{' '}
                     {formatAmount(
                       (reserveringBuffer?.openingsReserveSaldo ?? 0) +
                         (openingsReservePotjesVoorNuSaldo ?? 0),
@@ -433,7 +444,7 @@ const Profiel: React.FC = () => {
                     &nbsp; + openingsReservePotjesVoorNuSaldo:{' '}
                     {formatAmount(openingsReservePotjesVoorNuSaldo ?? 0)}
                     <br />
-                    actuele stand{' '}
+                    Actuele stand{' '}
                     {formatAmount(
                       (reserveringBuffer?.openingsReserveSaldo ?? 0) +
                         (reserveringBuffer?.reservering ?? 0) +
@@ -445,6 +456,8 @@ const Profiel: React.FC = () => {
                     {formatAmount(reserveringBuffer?.reservering ?? 0)}&nbsp; +
                     huidige reserve in potjes voor nu:{' '}
                     {formatAmount(reserveringsSaldoPotjesVanNu ?? 0)}
+                    <br />
+                    {creeerReserveringsHorizonTekst()}
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
