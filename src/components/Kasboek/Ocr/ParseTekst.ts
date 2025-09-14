@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import { BetalingDTO } from "../../../model/Betaling";
+import { DateFormats } from "../../../util/date-formats";
 
 export const parseText = (text: string): BetalingDTO[] => {
   const dateRegex = /((vandaag|gisteren)?( - )?\d{1,2} (januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december|jan|feb|mrt|apr|mei|jun|jul|aug|sep|okt|nov|dec)( \d{4})?|(vandaag|gisteren)( - )?)/i;
@@ -9,7 +10,7 @@ export const parseText = (text: string): BetalingDTO[] => {
 
   let currentDate = dayjs();
   let sortOrderBase = 900;
-  const parsed = text.split('\n').reduce((acc, line) => {
+  const parsed = text.split('\n').reduce((acc: BetalingDTO[], line) => {
     const dateMatch = line.match(dateRegex);
     const amountMatch = line.match(amountRegex);
 
@@ -22,7 +23,7 @@ export const parseText = (text: string): BetalingDTO[] => {
       const sortOrder = `${dayjs(currentDate).format('YYYYMMDD')}.${sortOrderBase}`;
       acc.push({
         id: Number(sortOrder),
-        boekingsdatum: currentDate,
+        boekingsdatum: currentDate.format(DateFormats.YYYY_MM_DD),
         omschrijving: '',
         ocrOmschrijving: ocrOmschrijving,
         bedrag: Number(amount),
@@ -56,6 +57,6 @@ export const parseText = (text: string): BetalingDTO[] => {
       sortOrderBase = 900; // Reset sortOrderBase for a new date
     }
     return acc;
-  }, [] as BetalingDTO[]);
+  }, []);
   return parsed;
 };
