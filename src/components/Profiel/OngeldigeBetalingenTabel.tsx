@@ -42,10 +42,10 @@
 //       const filterBetalingenOpBronBestemming = betalingen
 //         .filter((betaling) => betaling.bron === actueleRekening?.naam || betaling.bestemming === actueleRekening?.naam || actueleRekening === undefined)
 //         .reduce((acc, item) => {
-//           if (!acc[item.boekingsdatum.toString()]) {
-//             acc[item.boekingsdatum.toString()] = [];
+//           if (!acc[item.boekingsdatum]) {
+//             acc[item.boekingsdatum] = [];
 //           }
-//           acc[item.boekingsdatum.toString()].push(item);
+//           acc[item.boekingsdatum].push(item);
 //           return acc;
 //         }, {} as { [key: string]: BetalingDTO[] });
 //       setFilteredBetalingen(filterBetalingenOpBronBestemming)
