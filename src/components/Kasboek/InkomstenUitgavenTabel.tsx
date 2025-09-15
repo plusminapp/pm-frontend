@@ -56,10 +56,10 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
       const filterBetalingenOpBronBestemming = betalingen
         .filter((betaling) => actueleRekeningGroep?.rekeningen.some(r => r.naam === betaling.bron || r.naam === betaling.bestemming) || actueleRekeningGroep === undefined)
         .reduce((acc, item) => {
-          if (!acc[item.boekingsdatum.toString()]) {
-            acc[item.boekingsdatum.toString()] = [];
+          if (!acc[item.boekingsdatum]) {
+            acc[item.boekingsdatum] = [];
           }
-          acc[item.boekingsdatum.toString()].push(item);
+          acc[item.boekingsdatum].push(item);
           return acc;
         }, {} as { [key: string]: BetalingDTO[] });
       setFilteredBetalingen(filterBetalingenOpBronBestemming)

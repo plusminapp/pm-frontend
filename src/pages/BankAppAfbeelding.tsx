@@ -28,6 +28,7 @@ import UpsertBetalingDialoog from '../components/Kasboek/UpsertBetalingDialoog';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { RekeningDTO } from '../model/Rekening';
 import { usePlusminApi } from '../api/plusminApi';
+import { DateFormats } from '../util/date-formats';
 
 dayjs.extend(customParseFormat); // Extend dayjs with the customParseFormat plugin
 dayjs.locale('nl'); // Set the locale to Dutch
@@ -162,7 +163,7 @@ const BankAppAfbeelding: React.FC = () => {
           const response = await putBetalingValidatie(
             actieveHulpvrager,
             saldoOpLaatsteBetalingDatum,
-            betalingen as unknown as BetalingDTO[],
+            betalingen,
           );
           setIsLoading(false);
           setValidatedData({
@@ -170,7 +171,7 @@ const BankAppAfbeelding: React.FC = () => {
             saldoOpLaatsteBetalingDatum: response.saldoOpLaatsteBetalingDatum,
             betalingen: response.betalingen.map((betaling: BetalingDTO) => ({
               ...betaling,
-              boekingsdatum: dayjs(betaling.boekingsdatum),
+              boekingsdatum: dayjs(betaling.boekingsdatum).format(DateFormats.YYYY_MM_DD),
             })),
           });
         } catch (error) {
@@ -202,10 +203,10 @@ const BankAppAfbeelding: React.FC = () => {
     setGroupedData(
       validatedData.betalingen.reduce(
         (acc, item) => {
-          if (!acc[item.boekingsdatum.format('YYYY-MM-DD')]) {
-            acc[item.boekingsdatum.format('YYYY-MM-DD')] = [];
+          if (!acc[item.boekingsdatum]) {
+            acc[item.boekingsdatum] = [];
           }
-          acc[item.boekingsdatum.format('YYYY-MM-DD')].push(item);
+          acc[item.boekingsdatum].push(item);
           return acc;
         },
         {} as { [key: string]: BetalingDTO[] },

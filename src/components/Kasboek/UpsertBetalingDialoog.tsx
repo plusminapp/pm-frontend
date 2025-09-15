@@ -37,6 +37,7 @@ import 'dayjs/locale/nl';
 import { usePlusminApi } from '../../api/plusminApi';
 import { useCustomContext } from '../../context/CustomContext';
 import BetalingsSoortSelect from './BetalingsSoortSelect';
+import { DateFormats } from '../../util/date-formats';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -73,8 +74,8 @@ export default function UpsertBetalingDialoog(
   const boekingsDatum =
     gekozenPeriode?.periodeEindDatum &&
     dayjs().toISOString().slice(0, 10) > gekozenPeriode?.periodeEindDatum
-      ? dayjs(gekozenPeriode?.periodeEindDatum)
-      : dayjs();
+      ? dayjs(gekozenPeriode?.periodeEindDatum).format(DateFormats.YYYY_MM_DD)
+      : dayjs().format(DateFormats.YYYY_MM_DD);
 
   const initialBetalingDTO = useMemo(
     () => ({
@@ -117,7 +118,9 @@ export default function UpsertBetalingDialoog(
             props.betaling.bedrag < 0
               ? -props.betaling.bedrag
               : props.betaling.bedrag,
-          boekingsdatum: dayjs(props.betaling.boekingsdatum),
+          boekingsdatum: dayjs(props.betaling.boekingsdatum).format(
+            DateFormats.YYYY_MM_DD,
+          ),
         }
       : initialBetalingDTO,
   );
@@ -180,8 +183,8 @@ export default function UpsertBetalingDialoog(
       const startDatum = eersteOpenPeriode?.periodeStartDatum;
       const eindDatum = laatstePeriode.periodeEindDatum;
       if (
-        dayjs(value as dayjs.Dayjs).isBefore(startDatum) ||
-        dayjs(value as dayjs.Dayjs).isAfter(eindDatum)
+        dayjs(value as string).isBefore(startDatum) ||
+        dayjs(value as string).isAfter(eindDatum)
       ) {
         return `De boekingsdatum moet in een open periode, tussen ${startDatum} en ${eindDatum}, liggen.`;
       }
@@ -195,10 +198,8 @@ export default function UpsertBetalingDialoog(
   ): string | undefined => {
     if (
       key === 'boekingsdatum' &&
-      (dayjs(value as dayjs.Dayjs).isBefore(
-        gekozenPeriode?.periodeStartDatum,
-      ) ||
-        dayjs(value as dayjs.Dayjs).isAfter(gekozenPeriode?.periodeEindDatum))
+      (dayjs(value as string).isBefore(gekozenPeriode?.periodeStartDatum) ||
+        dayjs(value as string).isAfter(gekozenPeriode?.periodeEindDatum))
     ) {
       return `De boekingsdatum valt buiten de gekozen periode (van ${gekozenPeriode?.periodeStartDatum} t/m ${gekozenPeriode?.periodeEindDatum}) en wordt dus niet meteen getoond.`;
     }
@@ -271,9 +272,7 @@ export default function UpsertBetalingDialoog(
           ? betalingDTO.ocrOmschrijving
           : betalingDTO.omschrijving
         )?.trim(),
-        boekingsdatum: betalingDTO.boekingsdatum.format(
-          'YYYY-MM-DD',
-        ) as unknown as dayjs.Dayjs,
+        boekingsdatum: betalingDTO.boekingsdatum,
         bedrag:
           isOntvangst &&
           betalingDTO.betalingsSoort &&
@@ -525,11 +524,13 @@ export default function UpsertBetalingDialoog(
                 maxDate={dayjs(laatstePeriode?.periodeEindDatum)}
                 slotProps={{ textField: { variant: 'standard' } }}
                 label="Wanneer was de betaling?"
-                value={betalingDTO.boekingsdatum}
+                value={dayjs(betalingDTO.boekingsdatum)}
                 onChange={(newvalue) =>
                   handleInputChange(
                     'boekingsdatum',
-                    newvalue ? newvalue : dayjs(),
+                    newvalue
+                      ? newvalue.format(DateFormats.YYYY_MM_DD)
+                      : dayjs().format(DateFormats.YYYY_MM_DD),
                   )
                 }
               />
