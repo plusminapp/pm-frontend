@@ -490,10 +490,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
           betaling={{ ...selectedBetaling }}
         />
       )}
-      {JSON.stringify(betaalTabelRekeningGroepen.map((rg) => rg.naam))}
-      {JSON.stringify(
-        rekeningGroepPerBetalingsSoort.map((rg) => rg.betalingsSoort),
-      )}
+      {/* {JSON.stringify(betaalTabelRekeningGroepen.map((rg) => rg.naam))} */}
     </>
   );
 };

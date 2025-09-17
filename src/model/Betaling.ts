@@ -22,8 +22,6 @@ export type BetalingDTO = {
   bestaatAl: boolean;
   bron: string | undefined;
   bestemming: string | undefined;
-  reserveringBron: string | undefined;
-  reserveringBestemming: string | undefined;
 };
 
 export type BetalingvalidatieWrapper = {

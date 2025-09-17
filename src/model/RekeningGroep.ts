@@ -68,8 +68,6 @@ export const aflossenRekeningGroepSoorten = [
 
 export const reserverenRekeningGroepSoorten = [
   RekeningGroepSoort.reserveringBuffer,
-  RekeningGroepSoort.betaalrekening,
-  RekeningGroepSoort.spaarrekening,
   RekeningGroepSoort.uitgaven,
   RekeningGroepSoort.spaarpot,
   RekeningGroepSoort.aflossing,

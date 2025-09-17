@@ -163,7 +163,7 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
   };
 
   function renderLijstLangerDan1<T>(lijst: T[]) {
-    if (!lijst || lijst.length <= 1) return [];
+    if (!lijst || lijst.length < 1) return [];
     return lijst;
   }
   function renderBetaalSelectBlok({
@@ -371,8 +371,8 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
           {creeerBronBestemmingTekst()}
         </Typography>
       }
-      {JSON.stringify(props.betaling)}<br /><br />
-      {JSON.stringify(rekeningGroepPerBetalingsSoort.find(rgpb => rgpb.betalingsSoort === props.betaling?.betalingsSoort))}
+      {/* {JSON.stringify(props.betaling)}<br /><br />
+      {JSON.stringify(rekeningGroepPerBetalingsSoort.find(rgpb => rgpb.betalingsSoort === props.betaling?.betalingsSoort))} */}
     </div>
   );
 };
