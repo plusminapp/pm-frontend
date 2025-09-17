@@ -371,6 +371,7 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
           {creeerBronBestemmingTekst()}
         </Typography>
       }
+      {JSON.stringify(props.betaling)}
     </div>
   );
 };

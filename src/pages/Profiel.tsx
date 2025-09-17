@@ -39,6 +39,7 @@ import { RekeningDTO } from '../model/Rekening';
 import { isPeriodeOpen } from '../model/Periode';
 import { CashFlowGrafiek } from '../components/CashFlow/Graph/CashFlowGrafiek';
 import { usePlusminApi } from '../api/plusminApi';
+import { SaldoDTO } from '../model/Saldo';
 
 const Profiel: React.FC = () => {
   const { state } = useAuthContext();
@@ -74,6 +75,8 @@ const Profiel: React.FC = () => {
         acc + saldo.openingsReserveSaldo + saldo.reservering - saldo.betaling,
       0,
     );
+    const isSpaarpot = (saldo: SaldoDTO) =>
+      saldo.budgetType === BudgetType.sparen;
 
   const fetchfetchOngeldigeBetalingen = useCallback(async () => {
     if (!actieveHulpvrager) {
@@ -500,6 +503,12 @@ const Profiel: React.FC = () => {
                               align="right"
                               sx={{ color: '#fff', padding: '5px' }}
                             >
+                              opgenomen
+                            </TableCell>
+                            <TableCell
+                              align="right"
+                              sx={{ color: '#fff', padding: '5px' }}
+                            >
                               betalingen
                             </TableCell>
                             <TableCell
@@ -592,6 +601,12 @@ const Profiel: React.FC = () => {
                                           align="right"
                                         >
                                           {formatAmount(saldo.reservering)}
+                                        </TableCell>
+                                        <TableCell
+                                          sx={{ padding: '5px' }}
+                                          align="right"
+                                        >
+                                          {isSpaarpot(saldo) ? formatAmount(saldo.openingsOpgenomenSaldo + saldo.opgenomenSaldo) : null}
                                         </TableCell>
                                         <TableCell
                                           sx={{ padding: '5px' }}

@@ -1,5 +1,5 @@
-import { MinIcon } from "./Min";
-import { PlusIcon } from "./Plus";
+import { MinIcon } from './Min';
+import { PlusIcon } from './Plus';
 
 interface BudgetStatusIconProps {
   verwachtLaag: number;
@@ -7,11 +7,12 @@ interface BudgetStatusIconProps {
 }
 
 export const BudgetStatusIcon = (props: BudgetStatusIconProps) => {
-  if (props.verwachtLaag === undefined || !props.verwachtHoog === undefined) {
-    return <MinIcon color={'black'} height={15} />;
-  } else if (Number(props.verwachtHoog) === 0 && Number(props.verwachtLaag === 0)) {
+  if (Number(props.verwachtHoog) === 0 && Number(props.verwachtLaag === 0)) {
     return <PlusIcon color={'#bdbdbd'} height={15} />;
-  } else if (Number(props.verwachtHoog.toFixed(2)) < Number(props.verwachtLaag.toFixed(2))) {
+  } else if (
+    Number(props.verwachtHoog.toFixed(2)) <
+    Number(props.verwachtLaag.toFixed(2))
+  ) {
     return <MinIcon color={'red'} height={15} />;
   } else {
     return <PlusIcon color={'green'} height={15} />;

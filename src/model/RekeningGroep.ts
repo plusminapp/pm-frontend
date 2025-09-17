@@ -20,6 +20,7 @@ export enum RekeningGroepSoort {
   contant = 'CONTANT',
   creditcard = 'CREDITCARD',
   aflossing = 'AFLOSSING',
+  spaarpot = 'SPAARPOT',
   reserveringBuffer = 'RESERVERING_BUFFER',
 }
 export enum BudgetType {
@@ -47,6 +48,7 @@ export const resultaatRekeningGroepSoorten = [
 export const betaalTabelRekeningGroepSoorten = [
   RekeningGroepSoort.inkomsten,
   RekeningGroepSoort.uitgaven,
+  RekeningGroepSoort.spaarpot,
   RekeningGroepSoort.aflossing];
 
 export const profielRekeningGroepSoorten = [
@@ -60,6 +62,7 @@ export const aflossenRekeningGroepSoorten = [
 
 export const reserverenRekeningGroepSoorten = [
   RekeningGroepSoort.uitgaven,
+  RekeningGroepSoort.spaarpot,
   RekeningGroepSoort.aflossing];
 
 export const reserveRekeningGroepSoorten = [
