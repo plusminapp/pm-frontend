@@ -1,5 +1,5 @@
-import { BetalingDTO, BetalingsSoort } from "./Betaling";
-import { RekeningDTO } from "./Rekening";
+import { BetalingDTO, BetalingsSoort } from './Betaling';
+import { RekeningDTO } from './Rekening';
 
 export type RekeningGroepDTO = {
   id: number;
@@ -9,7 +9,7 @@ export type RekeningGroepDTO = {
   sortOrder: number;
   budgetType: BudgetType | undefined;
   rekeningen: RekeningDTO[];
-}
+};
 
 export enum RekeningGroepSoort {
   inkomsten = 'INKOMSTEN',
@@ -32,89 +32,109 @@ export enum BudgetType {
 export type RekeningGroepPerBetalingsSoort = {
   betalingsSoort: BetalingsSoort;
   rekeningGroepen: RekeningGroepDTO[];
-}
+};
 
 export const balansRekeningGroepSoorten: RekeningGroepSoort[] = [
   RekeningGroepSoort.betaalrekening,
   RekeningGroepSoort.spaarrekening,
   RekeningGroepSoort.contant,
   RekeningGroepSoort.creditcard,
-  RekeningGroepSoort.aflossing];
+  RekeningGroepSoort.aflossing,
+];
 
 export const resultaatRekeningGroepSoorten = [
   RekeningGroepSoort.inkomsten,
-  RekeningGroepSoort.uitgaven];
+  RekeningGroepSoort.uitgaven,
+];
 
 export const betaalTabelRekeningGroepSoorten = [
   RekeningGroepSoort.inkomsten,
   RekeningGroepSoort.uitgaven,
   RekeningGroepSoort.spaarpot,
-  RekeningGroepSoort.aflossing];
+  RekeningGroepSoort.aflossing,
+];
 
 export const profielRekeningGroepSoorten = [
   RekeningGroepSoort.inkomsten,
   RekeningGroepSoort.uitgaven,
-  RekeningGroepSoort.aflossing];
+  RekeningGroepSoort.spaarpot,
+  RekeningGroepSoort.aflossing,
+];
 
 export const aflossenRekeningGroepSoorten = [
   RekeningGroepSoort.creditcard,
-  RekeningGroepSoort.aflossing];
+  RekeningGroepSoort.aflossing,
+];
 
 export const reserverenRekeningGroepSoorten = [
+  RekeningGroepSoort.reserveringBuffer,
+  RekeningGroepSoort.betaalrekening,
+  RekeningGroepSoort.spaarrekening,
   RekeningGroepSoort.uitgaven,
   RekeningGroepSoort.spaarpot,
-  RekeningGroepSoort.aflossing];
+  RekeningGroepSoort.aflossing,
+];
 
 export const reserveRekeningGroepSoorten = [
   RekeningGroepSoort.reserveringBuffer,
   RekeningGroepSoort.uitgaven,
-  RekeningGroepSoort.aflossing];
+  RekeningGroepSoort.spaarpot,
+  RekeningGroepSoort.aflossing,
+];
 
 export const blaatRekeningGroepSoorten = [
   RekeningGroepSoort.reserveringBuffer,
   RekeningGroepSoort.inkomsten,
   RekeningGroepSoort.uitgaven,
-  RekeningGroepSoort.aflossing];
+  RekeningGroepSoort.aflossing,
+];
 
 export const betaalmethodeRekeningGroepSoorten = [
   RekeningGroepSoort.betaalrekening,
   RekeningGroepSoort.spaarrekening,
   RekeningGroepSoort.contant,
   RekeningGroepSoort.creditcard,
-]
+];
 
 export const bankRekeningGroepSoorten = [
   RekeningGroepSoort.betaalrekening,
   RekeningGroepSoort.spaarrekening,
   RekeningGroepSoort.creditcard,
-]
+];
 
-export const inkomstenRekeningGroepSoorten = [
-  RekeningGroepSoort.inkomsten,
-]
+export const inkomstenRekeningGroepSoorten = [RekeningGroepSoort.inkomsten];
 
 export const uitgavenRekeningGroepSoorten = [
   RekeningGroepSoort.uitgaven,
   RekeningGroepSoort.aflossing,
-]
+];
 
 export const interneRekeningGroepSoorten = [
   RekeningGroepSoort.spaarrekening,
   RekeningGroepSoort.contant,
   RekeningGroepSoort.creditcard,
-]
+];
 
 export const cashflowRekeningGroepSoorten = [
   RekeningGroepSoort.betaalrekening,
   RekeningGroepSoort.spaarrekening,
   RekeningGroepSoort.contant,
   RekeningGroepSoort.creditcard,
-]
+];
 
-export const berekenBedragVoorRekenining = (betaling: BetalingDTO, rekeningGroep: RekeningGroepDTO | undefined) => {
-    if (rekeningGroep === undefined) return betaling.bedrag // filter = 'all'
-    const factor = resultaatRekeningGroepSoorten.includes(rekeningGroep.rekeningGroepSoort) ? -1 : 1
-    if (rekeningGroep.rekeningen.some(r => r.naam === betaling.bron)) return Number(-betaling.bedrag) * factor
-    if (rekeningGroep.rekeningen.some(r => r.naam === betaling.bestemming)) return Number(betaling.bedrag) * factor
-    return 0
-  }
+export const berekenBedragVoorRekenining = (
+  betaling: BetalingDTO,
+  rekeningGroep: RekeningGroepDTO | undefined,
+) => {
+  if (rekeningGroep === undefined) return betaling.bedrag; // filter = 'all'
+  const factor = resultaatRekeningGroepSoorten.includes(
+    rekeningGroep.rekeningGroepSoort,
+  )
+    ? -1
+    : 1;
+  if (rekeningGroep.rekeningen.some((r) => r.naam === betaling.bron))
+    return Number(-betaling.bedrag) * factor;
+  if (rekeningGroep.rekeningen.some((r) => r.naam === betaling.bestemming))
+    return Number(betaling.bedrag) * factor;
+  return 0;
+};

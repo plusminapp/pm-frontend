@@ -371,7 +371,8 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
           {creeerBronBestemmingTekst()}
         </Typography>
       }
-      {JSON.stringify(props.betaling)}
+      {JSON.stringify(props.betaling)}<br /><br />
+      {JSON.stringify(rekeningGroepPerBetalingsSoort.find(rgpb => rgpb.betalingsSoort === props.betaling?.betalingsSoort))}
     </div>
   );
 };

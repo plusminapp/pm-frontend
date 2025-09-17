@@ -22,6 +22,8 @@ export type BetalingDTO = {
   bestaatAl: boolean;
   bron: string | undefined;
   bestemming: string | undefined;
+  reserveringBron: string | undefined;
+  reserveringBestemming: string | undefined;
 };
 
 export type BetalingvalidatieWrapper = {
@@ -45,8 +47,9 @@ export enum BetalingsSoort {
   besteden = 'BESTEDEN',
   // Intern
   // lenen = 'LENEN',
-  opnemen = 'OPNEMEN',
   sparen = 'SPAREN',
+  opnemen = 'OPNEMEN',
+  terugstorten = 'TERUGSTORTEN',
   opnemen_contant = 'OPNEMEN_CONTANT',
   storten_contant = 'STORTEN_CONTANT',
   incasso_creditcard = 'INCASSO_CREDITCARD',
@@ -97,8 +100,9 @@ export const uitgavenBetalingsSoorten = [
 ];
 export const internBetalingsSoorten = [
   BetalingsSoort.incasso_creditcard,
-  BetalingsSoort.opnemen,
   BetalingsSoort.sparen,
+  BetalingsSoort.opnemen,
+  BetalingsSoort.terugstorten,
   BetalingsSoort.opnemen_contant,
   BetalingsSoort.storten_contant,
 ];

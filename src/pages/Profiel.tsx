@@ -13,6 +13,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 
 import { useAuthContext } from '@asgardeo/auth-react';
 
@@ -29,6 +30,7 @@ import {
   profielRekeningGroepSoorten,
   RekeningGroepSoort,
   reserverenRekeningGroepSoorten,
+  balansRekeningGroepSoorten, 
 } from '../model/RekeningGroep';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers';
 import { InkomstenIcon } from '../icons/Inkomsten';
@@ -40,6 +42,7 @@ import { isPeriodeOpen } from '../model/Periode';
 import { CashFlowGrafiek } from '../components/CashFlow/Graph/CashFlowGrafiek';
 import { usePlusminApi } from '../api/plusminApi';
 import { SaldoDTO } from '../model/Saldo';
+import  Resultaat  from '../components/Stand/Resultaat';
 
 const Profiel: React.FC = () => {
   const { state } = useAuthContext();
@@ -75,8 +78,8 @@ const Profiel: React.FC = () => {
         acc + saldo.openingsReserveSaldo + saldo.reservering - saldo.betaling,
       0,
     );
-    const isSpaarpot = (saldo: SaldoDTO) =>
-      saldo.budgetType === BudgetType.sparen;
+  const isSpaarpot = (saldo: SaldoDTO) =>
+    saldo.budgetType === BudgetType.sparen;
 
   const fetchfetchOngeldigeBetalingen = useCallback(async () => {
     if (!actieveHulpvrager) {
@@ -169,7 +172,8 @@ const Profiel: React.FC = () => {
   const creeerReserveringsHorizonTekst = () => {
     return (
       <>
-        De potjes zijn gevuld tot en met {dayjs(stand?.reserveringsHorizon).format('D MMMM')}.
+        De potjes zijn gevuld tot en met{' '}
+        {dayjs(stand?.reserveringsHorizon).format('D MMMM')}.
         {dayjs(stand?.reserveringsHorizon).isBefore(dayjs(stand?.budgetHorizon))
           ? ` Ze kunnen worden gevuld tot en met ${dayjs(stand?.budgetHorizon).format('D MMMM')}.`
           : ''}
@@ -430,6 +434,54 @@ const Profiel: React.FC = () => {
               </Accordion>
             )}
 
+          {stand &&
+            <Accordion>
+            <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
+              <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                Saldo's op {dayjs(stand.peilDatum).format('D MMMM')}
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid sx={{ flexGrow: 1 }}>
+                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 1, md: 3 }}>
+                  <Grid size={1}>
+                    <Resultaat
+                      title={'Opening'}
+                      datum={stand.periodeStartDatum}
+                      saldi={stand.geaggregeerdResultaatOpDatum
+                        .filter(saldo => balansRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map(saldo => ({ ...saldo, bedrag: saldo.openingsBalansSaldo }))}
+                    />
+                  </Grid>
+                  <Grid size={1}>
+                    <Resultaat
+                      title={'Mutaties per'}
+                      datum={stand.peilDatum}
+                      saldi={stand.geaggregeerdResultaatOpDatum
+                        .filter(saldo => balansRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map(saldo => ({ ...saldo, bedrag: saldo.betaling }))}
+                    />
+
+                  </Grid>
+                  <Grid size={1}>
+                    <Resultaat
+                      title={'Stand'}
+                      datum={stand.peilDatum}
+                      saldi={stand.geaggregeerdResultaatOpDatum
+                        .filter(saldo => balansRekeningGroepSoorten.includes(saldo.rekeningGroepSoort as RekeningGroepSoort))
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map(saldo => ({ ...saldo, bedrag: saldo.openingsBalansSaldo + saldo.betaling }))}
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+              {/* {JSON.stringify(stand.balansOpDatum)} */}
+            </AccordionDetails>
+          </Accordion>}
+
+
           {/* de potjes obv de stand*/}
           {rekeningGroepPerBetalingsSoort &&
             rekeningGroepPerBetalingsSoort.length >= 0 && (
@@ -585,7 +637,7 @@ const Profiel: React.FC = () => {
                                           align="right"
                                         >
                                           {formatAmount(
-                                            saldo.budgetMaandBedrag,
+                                                saldo.budgetMaandBedrag,
                                           )}
                                         </TableCell>
                                         <TableCell
@@ -593,8 +645,8 @@ const Profiel: React.FC = () => {
                                           align="right"
                                         >
                                           {formatAmount(
-                                            saldo.openingsReserveSaldo,
-                                          )}
+                                                saldo.openingsReserveSaldo,
+                                              )}
                                         </TableCell>
                                         <TableCell
                                           sx={{ padding: '5px' }}
@@ -606,7 +658,12 @@ const Profiel: React.FC = () => {
                                           sx={{ padding: '5px' }}
                                           align="right"
                                         >
-                                          {isSpaarpot(saldo) ? formatAmount(saldo.openingsOpgenomenSaldo + saldo.opgenomenSaldo) : null}
+                                          {isSpaarpot(saldo)
+                                            ? formatAmount(
+                                                saldo.openingsOpgenomenSaldo +
+                                                  saldo.opgenomenSaldo,
+                                              )
+                                            : null}
                                         </TableCell>
                                         <TableCell
                                           sx={{ padding: '5px' }}
