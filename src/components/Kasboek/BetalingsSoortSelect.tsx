@@ -162,10 +162,6 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
     return `van ${bron} naar ${bestemming}`;
   };
 
-  function renderLijstLangerDan1<T>(lijst: T[]) {
-    if (!lijst || lijst.length < 1) return [];
-    return lijst;
-  }
   function renderBetaalSelectBlok({
     filterFn,
   }: {
@@ -174,9 +170,9 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
     return (
       <Box mt={2}>
         <Grid container spacing={2} justifyContent={"center"}>
-          {renderLijstLangerDan1(rekeningGroepPerBetalingsSoort
+          {rekeningGroepPerBetalingsSoort
             .filter(filterFn)
-            .flatMap((rgpb) => rgpb.rekeningGroepen))
+            .flatMap((rgpb) => rgpb.rekeningGroepen)
             .sort((a, b) => a.sortOrder - b.sortOrder)
             .map((rekeningGroep, index) => (
               <Button
