@@ -13,6 +13,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 
 import { useAuthContext } from '@asgardeo/auth-react';
 
@@ -29,6 +30,7 @@ import {
   profielRekeningGroepSoorten,
   RekeningGroepSoort,
   reserverenRekeningGroepSoorten,
+  balansRekeningGroepSoorten,
 } from '../model/RekeningGroep';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers';
 import { InkomstenIcon } from '../icons/Inkomsten';
@@ -39,6 +41,8 @@ import { RekeningDTO } from '../model/Rekening';
 import { isPeriodeOpen } from '../model/Periode';
 import { CashFlowGrafiek } from '../components/CashFlow/Graph/CashFlowGrafiek';
 import { usePlusminApi } from '../api/plusminApi';
+import { SaldoDTO } from '../model/Saldo';
+import Resultaat from '../components/Stand/Resultaat';
 
 const Profiel: React.FC = () => {
   const { state } = useAuthContext();
@@ -74,6 +78,8 @@ const Profiel: React.FC = () => {
         acc + saldo.openingsReserveSaldo + saldo.reservering - saldo.betaling,
       0,
     );
+  const isSpaarpot = (saldo: SaldoDTO) =>
+    saldo.budgetType === BudgetType.sparen;
 
   const fetchfetchOngeldigeBetalingen = useCallback(async () => {
     if (!actieveHulpvrager) {
@@ -166,7 +172,8 @@ const Profiel: React.FC = () => {
   const creeerReserveringsHorizonTekst = () => {
     return (
       <>
-        De potjes zijn gevuld tot en met {dayjs(stand?.reserveringsHorizon).format('D MMMM')}.
+        De potjes zijn gevuld tot en met{' '}
+        {dayjs(stand?.reserveringsHorizon).format('D MMMM')}.
         {dayjs(stand?.reserveringsHorizon).isBefore(dayjs(stand?.budgetHorizon))
           ? ` Ze kunnen worden gevuld tot en met ${dayjs(stand?.budgetHorizon).format('D MMMM')}.`
           : ''}
@@ -213,79 +220,312 @@ const Profiel: React.FC = () => {
       )}
       {state.isAuthenticated && (
         <>
-          <Accordion>
-            <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
-              <Typography sx={{ mt: '25px' }}>
-                Nieuwsgierig naar meer info over jezelf?
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography sx={{ my: '5px' }}>
-                Je bent ingelogd met email "{state.username}".
-                <br />
-                Je hebt "{gebruiker?.bijnaam}" als bijnaam gekozen.
-                <br />
-                Je{' '}
-                {gebruiker?.roles.length && gebruiker?.roles.length > 1
-                  ? ' rollen zijn '
-                  : ' rol is '}
-                "
-                {gebruiker?.roles
-                  .map((x) => x.split('_')[1].toLowerCase())
-                  .join('", "')}
-                ".
-              </Typography>
-            </AccordionDetails>
-          </Accordion>
-
-          {gebruiker?.roles.includes('ROLE_HULPVRAGER') && (
-            <Typography sx={{ my: '25px' }}>
-              Je wordt begeleid door "{gebruiker.vrijwilligerBijnaam}".
-            </Typography>
-          )}
-        </>
-      )}
-      <>
-        {actieveHulpvrager === gebruiker &&
-          gebruiker?.roles.includes('ROLE_VRIJWILLIGER') && (
-            <>
-              <Typography variant="h4" sx={{ my: '25px' }}>
-                Dit is je eigen inrichting om te kunnen testen.
-              </Typography>
-            </>
-          )}
-        {actieveHulpvrager !== gebruiker &&
-          gebruiker?.roles.includes('ROLE_VRIJWILLIGER') && (
-            <>
-              <Typography variant="h4" sx={{ my: '25px' }}>
-                De gekozen hulpvrager is {actieveHulpvrager?.bijnaam}.
-              </Typography>
-              <Typography sx={{ mb: 1 }}>
-                Samen met {actieveHulpvrager?.bijnaam} is de app als volgt
-                ingericht.
-              </Typography>
-            </>
-          )}
-        {/* {checked && */}
-        <>
-          {actieveHulpvrager &&
-            actieveHulpvrager === gebruiker &&
-            gebruiker?.roles.includes('ROLE_VRIJWILLIGER') && (
-              <Typography sx={{ mb: 1 }}>
-                Hieronder staat nu de inrichting voor jezelf (heb je zelf gedaan
-                natuurlijk), dan kun je oefenen met de app zonder dat je de
-                gegevens van een hulpvrager gebruikt. Eigenlijk ben je nu je
-                eigen hulpvrager. Dus: experimenteer er op los!
-              </Typography>
-            )}
-
           {/* periodes */}
-          <Typography sx={{ mb: 1 }}>
-            De inrichting kan per periode verschillen (bijvoorbeeld andere
-            potjes en budgetten), dus kies eerst de periode waar je de
-            inrichting van wilt zien.
-          </Typography>
           <PeriodeSelect />
+
+          {stand && (
+            <Accordion defaultExpanded>
+              <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
+                <Typography>
+                  <strong>Saldi</strong> van de betaalmiddelen op{' '}
+                  {dayjs(stand.peilDatum).format('D MMMM')}
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid sx={{ flexGrow: 1 }}>
+                  <Grid
+                    container
+                    spacing={{ xs: 2, md: 3 }}
+                    columns={{ xs: 1, md: 3 }}
+                  >
+                    <Grid size={1}>
+                      <Resultaat
+                        title={'Opening'}
+                        datum={stand.periodeStartDatum}
+                        saldi={stand.geaggregeerdResultaatOpDatum
+                          .filter((saldo) =>
+                            balansRekeningGroepSoorten.includes(
+                              saldo.rekeningGroepSoort as RekeningGroepSoort,
+                            ),
+                          )
+                          .sort((a, b) => a.sortOrder - b.sortOrder)
+                          .map((saldo) => ({
+                            ...saldo,
+                            bedrag: saldo.openingsBalansSaldo,
+                          }))}
+                      />
+                    </Grid>
+                    <Grid size={1}>
+                      <Resultaat
+                        title={'Mutaties per'}
+                        datum={stand.peilDatum}
+                        saldi={stand.geaggregeerdResultaatOpDatum
+                          .filter((saldo) =>
+                            balansRekeningGroepSoorten.includes(
+                              saldo.rekeningGroepSoort as RekeningGroepSoort,
+                            ),
+                          )
+                          .sort((a, b) => a.sortOrder - b.sortOrder)
+                          .map((saldo) => ({
+                            ...saldo,
+                            bedrag: saldo.betaling,
+                          }))}
+                      />
+                    </Grid>
+                    <Grid size={1}>
+                      <Resultaat
+                        title={'Stand'}
+                        datum={stand.peilDatum}
+                        saldi={stand.geaggregeerdResultaatOpDatum
+                          .filter((saldo) =>
+                            balansRekeningGroepSoorten.includes(
+                              saldo.rekeningGroepSoort as RekeningGroepSoort,
+                            ),
+                          )
+                          .sort((a, b) => a.sortOrder - b.sortOrder)
+                          .map((saldo) => ({
+                            ...saldo,
+                            bedrag: saldo.openingsBalansSaldo + saldo.betaling,
+                          }))}
+                      />
+                    </Grid>
+                  </Grid>
+                </Grid>
+                {/* {JSON.stringify(stand.balansOpDatum)} */}
+              </AccordionDetails>
+            </Accordion>
+          )}
+
+          {/* de potjes obv de stand*/}
+          {rekeningGroepPerBetalingsSoort &&
+            rekeningGroepPerBetalingsSoort.length >= 0 && (
+              <Accordion defaultExpanded>
+                <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
+                  <Typography>
+                    <strong>Potjes</strong> <br />
+                    Openingsstand:{' '}
+                    {formatAmount(
+                      (reserveringBuffer?.openingsReserveSaldo ?? 0) +
+                        (openingsReservePotjesVoorNuSaldo ?? 0),
+                    )}
+                    &nbsp; = openingssaldo buffer:{' '}
+                    {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}
+                    &nbsp; + openingsReservePotjesVoorNuSaldo:{' '}
+                    {formatAmount(openingsReservePotjesVoorNuSaldo ?? 0)}
+                    <br />
+                    Actuele stand{' '}
+                    {formatAmount(
+                      (reserveringBuffer?.openingsReserveSaldo ?? 0) +
+                        (reserveringBuffer?.reservering ?? 0) +
+                        (reserveringsSaldoPotjesVanNu ?? 0),
+                    )}
+                    &nbsp; = openingssaldo buffer:{' '}
+                    {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}
+                    &nbsp; + inkomsten - reservering:{' '}
+                    {formatAmount(reserveringBuffer?.reservering ?? 0)}&nbsp; +
+                    huidige reserve in potjes voor nu:{' '}
+                    {formatAmount(reserveringsSaldoPotjesVanNu ?? 0)}
+                    <br />
+                    {creeerReserveringsHorizonTekst()}
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  {rekeningGroepPerBetalingsSoort.length > 0 && (
+                    <TableContainer
+                      component={Paper}
+                      sx={{ maxWidth: 'xl', m: 'auto', mt: '10px' }}
+                    >
+                      <Table sx={{ width: '100%' }} aria-label="simple table">
+                        <TableHead>
+                          <TableRow sx={{ backgroundColor: '#888' }}>
+                            <TableCell
+                              sx={{ color: '#fff', padding: '15px' }}
+                            ></TableCell>
+                            <TableCell
+                              align="right"
+                              sx={{ color: '#fff', padding: '5px' }}
+                            >
+                              betaaldag
+                            </TableCell>
+                            <TableCell
+                              align="right"
+                              sx={{ color: '#fff', padding: '5px' }}
+                            >
+                              budget
+                            </TableCell>
+                            <TableCell
+                              align="right"
+                              sx={{ color: '#fff', padding: '5px' }}
+                            >
+                              opening
+                            </TableCell>
+                            <TableCell
+                              align="right"
+                              sx={{ color: '#fff', padding: '5px' }}
+                            >
+                              reservering
+                            </TableCell>
+                            <TableCell
+                              align="right"
+                              sx={{ color: '#fff', padding: '5px' }}
+                            >
+                              opgenomen
+                            </TableCell>
+                            <TableCell
+                              align="right"
+                              sx={{ color: '#fff', padding: '5px' }}
+                            >
+                              betalingen
+                            </TableCell>
+                            <TableCell
+                              align="right"
+                              sx={{ color: '#fff', padding: '5px' }}
+                            >
+                              reserve nu
+                            </TableCell>
+                            <TableCell
+                              align="right"
+                              sx={{ color: '#fff', padding: '5px' }}
+                            >
+                              nog nodig
+                            </TableCell>
+                            <TableCell
+                              align="right"
+                              sx={{ color: '#fff', padding: '5px' }}
+                            >
+                              eindreserve
+                            </TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          <>
+                            {stand &&
+                              stand.resultaatOpDatum
+                                .filter((saldo) =>
+                                  reserverenRekeningGroepSoorten.includes(
+                                    saldo.rekeningGroepSoort as RekeningGroepSoort,
+                                  ),
+                                )
+                                .sort((a, b) => a.sortOrder - b.sortOrder)
+                                .reduce<{
+                                  rows: React.ReactNode[];
+                                  lastGroep?: string;
+                                }>(
+                                  (acc, saldo, index) => {
+                                    if (
+                                      saldo.rekeningGroepNaam !== acc.lastGroep
+                                    ) {
+                                      acc.rows.push(
+                                        <TableRow
+                                          key={`groep-${saldo.rekeningGroepNaam}-${index}`}
+                                        >
+                                          <TableCell
+                                            colSpan={10}
+                                            sx={{
+                                              backgroundColor: '#f5f5f5',
+                                              fontWeight: 'bold',
+                                              padding: '5px',
+                                            }}
+                                          >
+                                            {saldo.rekeningGroepNaam}
+                                          </TableCell>
+                                        </TableRow>,
+                                      );
+                                      acc.lastGroep = saldo.rekeningGroepNaam;
+                                    }
+                                    acc.rows.push(
+                                      <TableRow
+                                        key={saldo.rekeningNaam + index}
+                                      >
+                                        <TableCell sx={{ padding: '5px' }}>
+                                          {saldo.rekeningNaam}
+                                        </TableCell>
+                                        <TableCell
+                                          sx={{ padding: '5px' }}
+                                          align="right"
+                                        >
+                                          {saldo.budgetBetaalDag}
+                                        </TableCell>
+                                        <TableCell
+                                          sx={{ padding: '5px' }}
+                                          align="right"
+                                        >
+                                          {formatAmount(
+                                            saldo.budgetMaandBedrag,
+                                          )}
+                                        </TableCell>
+                                        <TableCell
+                                          sx={{ padding: '5px' }}
+                                          align="right"
+                                        >
+                                          {formatAmount(
+                                            saldo.openingsReserveSaldo,
+                                          )}
+                                        </TableCell>
+                                        <TableCell
+                                          sx={{ padding: '5px' }}
+                                          align="right"
+                                        >
+                                          {formatAmount(saldo.reservering)}
+                                        </TableCell>
+                                        <TableCell
+                                          sx={{ padding: '5px' }}
+                                          align="right"
+                                        >
+                                          {isSpaarpot(saldo)
+                                            ? formatAmount(
+                                                saldo.openingsOpgenomenSaldo +
+                                                  saldo.opgenomenSaldo,
+                                              )
+                                            : null}
+                                        </TableCell>
+                                        <TableCell
+                                          sx={{ padding: '5px' }}
+                                          align="right"
+                                        >
+                                          {formatAmount(saldo.betaling)}
+                                        </TableCell>
+                                        <TableCell
+                                          sx={{ padding: '5px' }}
+                                          align="right"
+                                        >
+                                          {formatAmount(
+                                            saldo.openingsReserveSaldo +
+                                              saldo.reservering -
+                                              saldo.betaling,
+                                          )}
+                                        </TableCell>
+                                        <TableCell
+                                          sx={{ padding: '5px' }}
+                                          align="right"
+                                        >
+                                          {formatAmount(saldo.restMaandBudget)}
+                                        </TableCell>
+                                        <TableCell
+                                          sx={{ padding: '5px' }}
+                                          align="right"
+                                        >
+                                          {formatAmount(
+                                            saldo.openingsReserveSaldo +
+                                              saldo.reservering -
+                                              saldo.betaling -
+                                              saldo.restMaandBudget,
+                                          )}
+                                        </TableCell>
+                                      </TableRow>,
+                                    );
+                                    return acc;
+                                  },
+                                  { rows: [], lastGroep: undefined },
+                                ).rows}
+                          </>
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  )}
+                </AccordionDetails>
+              </Accordion>
+            )}
 
           {gekozenPeriode && actieveHulpvrager && <CashFlowGrafiek />}
 
@@ -427,220 +667,6 @@ const Profiel: React.FC = () => {
               </Accordion>
             )}
 
-          {/* de potjes obv de stand*/}
-          {rekeningGroepPerBetalingsSoort &&
-            rekeningGroepPerBetalingsSoort.length >= 0 && (
-              <Accordion>
-                <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
-                  <Typography>
-                    <strong>Potjes</strong> <br />
-                    Openingsstand:{' '}
-                    {formatAmount(
-                      (reserveringBuffer?.openingsReserveSaldo ?? 0) +
-                        (openingsReservePotjesVoorNuSaldo ?? 0),
-                    )}
-                    &nbsp; = openingssaldo buffer:{' '}
-                    {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}
-                    &nbsp; + openingsReservePotjesVoorNuSaldo:{' '}
-                    {formatAmount(openingsReservePotjesVoorNuSaldo ?? 0)}
-                    <br />
-                    Actuele stand{' '}
-                    {formatAmount(
-                      (reserveringBuffer?.openingsReserveSaldo ?? 0) +
-                        (reserveringBuffer?.reservering ?? 0) +
-                        (reserveringsSaldoPotjesVanNu ?? 0),
-                    )}
-                    &nbsp; = openingssaldo buffer:{' '}
-                    {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}
-                    &nbsp; + inkomsten - reservering:{' '}
-                    {formatAmount(reserveringBuffer?.reservering ?? 0)}&nbsp; +
-                    huidige reserve in potjes voor nu:{' '}
-                    {formatAmount(reserveringsSaldoPotjesVanNu ?? 0)}
-                    <br />
-                    {creeerReserveringsHorizonTekst()}
-                  </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  {rekeningGroepPerBetalingsSoort.length > 0 && (
-                    <TableContainer
-                      component={Paper}
-                      sx={{ maxWidth: 'xl', m: 'auto', mt: '10px' }}
-                    >
-                      <Table sx={{ width: '100%' }} aria-label="simple table">
-                        <TableHead>
-                          <TableRow sx={{ backgroundColor: '#888' }}>
-                            <TableCell
-                              sx={{ color: '#fff', padding: '15px' }}
-                            ></TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{ color: '#fff', padding: '5px' }}
-                            >
-                              betaaldag
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{ color: '#fff', padding: '5px' }}
-                            >
-                              budget
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{ color: '#fff', padding: '5px' }}
-                            >
-                              opening
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{ color: '#fff', padding: '5px' }}
-                            >
-                              reservering
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{ color: '#fff', padding: '5px' }}
-                            >
-                              betalingen
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{ color: '#fff', padding: '5px' }}
-                            >
-                              reserve nu
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{ color: '#fff', padding: '5px' }}
-                            >
-                              nog nodig
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{ color: '#fff', padding: '5px' }}
-                            >
-                              eindreserve
-                            </TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          <>
-                            {stand &&
-                              stand.resultaatOpDatum
-                                .filter((saldo) =>
-                                  reserverenRekeningGroepSoorten.includes(
-                                    saldo.rekeningGroepSoort as RekeningGroepSoort,
-                                  ),
-                                )
-                                .sort((a, b) => a.sortOrder - b.sortOrder)
-                                .reduce<{
-                                  rows: React.ReactNode[];
-                                  lastGroep?: string;
-                                }>(
-                                  (acc, saldo, index) => {
-                                    if (
-                                      saldo.rekeningGroepNaam !== acc.lastGroep
-                                    ) {
-                                      acc.rows.push(
-                                        <TableRow
-                                          key={`groep-${saldo.rekeningGroepNaam}-${index}`}
-                                        >
-                                          <TableCell
-                                            colSpan={10}
-                                            sx={{
-                                              backgroundColor: '#f5f5f5',
-                                              fontWeight: 'bold',
-                                              padding: '5px',
-                                            }}
-                                          >
-                                            {saldo.rekeningGroepNaam}
-                                          </TableCell>
-                                        </TableRow>,
-                                      );
-                                      acc.lastGroep = saldo.rekeningGroepNaam;
-                                    }
-                                    acc.rows.push(
-                                      <TableRow
-                                        key={saldo.rekeningNaam + index}
-                                      >
-                                        <TableCell sx={{ padding: '5px' }}>
-                                          {saldo.rekeningNaam}
-                                        </TableCell>
-                                        <TableCell
-                                          sx={{ padding: '5px' }}
-                                          align="right"
-                                        >
-                                          {saldo.budgetBetaalDag}
-                                        </TableCell>
-                                        <TableCell
-                                          sx={{ padding: '5px' }}
-                                          align="right"
-                                        >
-                                          {formatAmount(
-                                            saldo.budgetMaandBedrag,
-                                          )}
-                                        </TableCell>
-                                        <TableCell
-                                          sx={{ padding: '5px' }}
-                                          align="right"
-                                        >
-                                          {formatAmount(
-                                            saldo.openingsReserveSaldo,
-                                          )}
-                                        </TableCell>
-                                        <TableCell
-                                          sx={{ padding: '5px' }}
-                                          align="right"
-                                        >
-                                          {formatAmount(saldo.reservering)}
-                                        </TableCell>
-                                        <TableCell
-                                          sx={{ padding: '5px' }}
-                                          align="right"
-                                        >
-                                          {formatAmount(saldo.betaling)}
-                                        </TableCell>
-                                        <TableCell
-                                          sx={{ padding: '5px' }}
-                                          align="right"
-                                        >
-                                          {formatAmount(
-                                            saldo.openingsReserveSaldo +
-                                              saldo.reservering -
-                                              saldo.betaling,
-                                          )}
-                                        </TableCell>
-                                        <TableCell
-                                          sx={{ padding: '5px' }}
-                                          align="right"
-                                        >
-                                          {formatAmount(saldo.restMaandBudget)}
-                                        </TableCell>
-                                        <TableCell
-                                          sx={{ padding: '5px' }}
-                                          align="right"
-                                        >
-                                          {formatAmount(
-                                            saldo.openingsReserveSaldo +
-                                              saldo.reservering -
-                                              saldo.betaling -
-                                              saldo.restMaandBudget,
-                                          )}
-                                        </TableCell>
-                                      </TableRow>,
-                                    );
-                                    return acc;
-                                  },
-                                  { rows: [], lastGroep: undefined },
-                                ).rows}
-                          </>
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  )}
-                </AccordionDetails>
-              </Accordion>
-            )}
-
           {/* ongeldige betalingen */}
           <Accordion>
             <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
@@ -668,6 +694,72 @@ const Profiel: React.FC = () => {
               </AccordionDetails>
             )}
           </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
+              <Typography>
+                Nieuwsgierig naar meer info over jezelf?
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography sx={{ my: '5px' }}>
+                Je bent ingelogd met email "{state.username}".
+                <br />
+                Je hebt "{gebruiker?.bijnaam}" als bijnaam gekozen.
+                <br />
+                Je{' '}
+                {gebruiker?.roles.length && gebruiker?.roles.length > 1
+                  ? ' rollen zijn '
+                  : ' rol is '}
+                "
+                {gebruiker?.roles
+                  .map((x) => x.split('_')[1].toLowerCase())
+                  .join('", "')}
+                ".
+              </Typography>
+            </AccordionDetails>
+          </Accordion>
+
+          {gebruiker?.roles.includes('ROLE_HULPVRAGER') && (
+            <Typography sx={{ my: '25px' }}>
+              Je wordt begeleid door "{gebruiker.vrijwilligerBijnaam}".
+            </Typography>
+          )}
+        </>
+      )}
+      <>
+        {actieveHulpvrager === gebruiker &&
+          gebruiker?.roles.includes('ROLE_VRIJWILLIGER') && (
+            <>
+              <Typography variant="h4" sx={{ my: '25px' }}>
+                Dit is je eigen inrichting om te kunnen testen.
+              </Typography>
+            </>
+          )}
+        {actieveHulpvrager !== gebruiker &&
+          gebruiker?.roles.includes('ROLE_VRIJWILLIGER') && (
+            <>
+              <Typography variant="h4" sx={{ my: '25px' }}>
+                De gekozen hulpvrager is {actieveHulpvrager?.bijnaam}.
+              </Typography>
+              <Typography sx={{ mb: 1 }}>
+                Samen met {actieveHulpvrager?.bijnaam} is de app als volgt
+                ingericht.
+              </Typography>
+            </>
+          )}
+        {/* {checked && */}
+        <>
+          {actieveHulpvrager &&
+            actieveHulpvrager === gebruiker &&
+            gebruiker?.roles.includes('ROLE_VRIJWILLIGER') && (
+              <Typography sx={{ mb: 1 }}>
+                Hieronder staat nu de inrichting voor jezelf (heb je zelf gedaan
+                natuurlijk), dan kun je oefenen met de app zonder dat je de
+                gegevens van een hulpvrager gebruikt. Eigenlijk ben je nu je
+                eigen hulpvrager. Dus: experimenteer er op los!
+              </Typography>
+            )}
 
           {/* voor de boekhouders onder ons: betalingsSoorten2Rekeningen */}
           {rekeningGroepPerBetalingsSoort && (

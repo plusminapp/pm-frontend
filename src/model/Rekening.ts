@@ -12,6 +12,7 @@ export type RekeningDTO = {
   budgetPeriodiciteit: string;
   vanPeriode: Periode | undefined;
   totEnMetPeriode: Periode | undefined;
+  gekoppeldeRekening: string | undefined;
   budgetBedrag: number;
   budgetVariabiliteit: number | undefined;
   maanden: number[] | undefined;

@@ -45,11 +45,16 @@ export enum BetalingsSoort {
   besteden = 'BESTEDEN',
   // Intern
   // lenen = 'LENEN',
-  opnemen = 'OPNEMEN',
   sparen = 'SPAREN',
+  opnemen = 'OPNEMEN',
+  terugstorten = 'TERUGSTORTEN',
   opnemen_contant = 'OPNEMEN_CONTANT',
   storten_contant = 'STORTEN_CONTANT',
   incasso_creditcard = 'INCASSO_CREDITCARD',
+  potje2potje = 'P2P',
+  spaarpotje2spaarpotje = 'SP2SP',
+  potje2spaarpotje = 'P2SP',
+  spaarpotje2potje = 'SP2P',
 }
 
 export const bestemmingBetalingsSoorten = [
@@ -89,11 +94,13 @@ export const inkomstenBetalingsSoorten = [BetalingsSoort.inkomsten];
 export const uitgavenBetalingsSoorten = [
   BetalingsSoort.uitgaven,
   BetalingsSoort.aflossen,
-]; //, BetalingsSoort.besteden]
+  BetalingsSoort.besteden
+];
 export const internBetalingsSoorten = [
   BetalingsSoort.incasso_creditcard,
-  BetalingsSoort.opnemen,
   BetalingsSoort.sparen,
+  BetalingsSoort.opnemen,
+  BetalingsSoort.terugstorten,
   BetalingsSoort.opnemen_contant,
   BetalingsSoort.storten_contant,
 ];

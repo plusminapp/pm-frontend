@@ -24,12 +24,14 @@ export type SaldoDTO = {
     sortOrder: number;
     openingsBalansSaldo: number;
     openingsReserveSaldo: number;
+    openingsOpgenomenSaldo: number;
     achterstand: number;
     achterstandOpPeilDatum: number;
     budgetMaandBedrag: number;
     budgetBetaalDag: number;
     betaling: number;
     reservering: number;
+    opgenomenSaldo: number;
     oorspronkelijkeBetaling: number;
     periode: Periode;
     budgetPeilDatum: string;
