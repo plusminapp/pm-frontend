@@ -1,5 +1,10 @@
 import React, { JSX } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
 import { useAuthContext } from '@asgardeo/auth-react';
 
 import Profiel from './pages/Profiel';
@@ -25,20 +30,38 @@ const ProtectedRoute: React.FC<{ element: JSX.Element }> = ({ element }) => {
 const App: React.FC = () => {
   return (
     <>
-      <Container maxWidth="xl" sx={{ p: { xs: 2, sm: 3, md: 4 }, mx: { xs: 0, sm: 2, md: 'auto' } }}>
-      <Router>
-        <Header />
+      <Container
+        maxWidth="xl"
+        sx={{ p: { xs: 2, sm: 3, md: 4 }, mx: { xs: 0, sm: 2, md: 'auto' } }}
+      >
+        <Router>
+          <Header />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<LoginPagina />} />
 
             {/* Beschermde routes */}
-            <Route path="/stand" element={<ProtectedRoute element={<Stand />} />} />
+            <Route
+              path="/stand"
+              element={<ProtectedRoute element={<Stand />} />}
+            />
             <Route path="/kasboek/ocr" element={<BankAppAfbeelding />} />
-            <Route path="/kasboek" element={<ProtectedRoute element={<Kasboek />} />} />
-            <Route path="/aflossen" element={<ProtectedRoute element={<Aflossen />} />} />
-            <Route path="/sparen" element={<ProtectedRoute element={<Sparen />} />} />
-            <Route path="/profiel" element={<ProtectedRoute element={<Profiel />} />} />
+            <Route
+              path="/kasboek"
+              element={<ProtectedRoute element={<Kasboek />} />}
+            />
+            <Route
+              path="/aflossen"
+              element={<ProtectedRoute element={<Aflossen />} />}
+            />
+            <Route
+              path="/sparen"
+              element={<ProtectedRoute element={<Sparen />} />}
+            />
+            <Route
+              path="/profiel"
+              element={<ProtectedRoute element={<Profiel />} />}
+            />
             <Route path="/experiment" element={<GridExample />} />
 
             <Route path="*" element={<NotFound />} />

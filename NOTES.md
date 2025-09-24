@@ -3,9 +3,9 @@
 De pm-frontend ontwikkelomgeving maakt gebruik van devcontainer technologie.
 Devcontainers is een open spec welke in de eerste plaats het probleem van - works on my machine - oplost.
 Aangezien Vscode erg ver is op het gebied van ondersteuning voor devcontainers, wordt voor de pm-frontend
-de combinatie van vscode en devcontainers toegepast. 
+de combinatie van vscode en devcontainers toegepast.
 
-Algemene vscode devcontainer info zie https://code.visualstudio.com/docs/devcontainers/containers. 
+Algemene vscode devcontainer info zie https://code.visualstudio.com/docs/devcontainers/containers.
 
 De gebruikte devcontainer config zorgt ervoor dat iedere ontwikkelaar dezelfde ontwikkel omgeving heeft, inclusief
 vscode extensions. De inhoud van de devcontainer vind je in de devcontainer.json file.
@@ -15,10 +15,11 @@ Browser wordt door vscode geopend op localhost:5173
 Swagger is bereikbaar op http://localhost:5173/api/v1/swagger-ui/index.html
 
 Let op: aanpassingen worden via de vscode git tools naar github gesynced (commandline push werkt (nog) niet?)
-Let op: de proxy in vite.config.ts wijst naar host.docker.internal. Daarom werkt pm-frontend voorlopig alleen 
+Let op: de proxy in vite.config.ts wijst naar host.docker.internal. Daarom werkt pm-frontend voorlopig alleen
 nog in de devcontainer.
 
 # Voorwaarden
+
 - Gebruik lokale Vscode of installeer deze.
 - Check of de Make tool bestaat (`which make`) of installeer deze.
 - Installeer extension "Dev Containers" van microsoft (ms-vscode-remote.remote-containers) >= 0.409.0
@@ -29,11 +30,12 @@ nog in de devcontainer.
 - Een asguardeo login is (nu nog) nodig om met de runtime omgeving verbinding te maken.
 
 ## TL;DR
+
 - Check de repo van pm-frontend uit (deze dus ;))
 - Navigeer naar de .devcontainer folder en selecteer de devcontainer.json file.
 - Open command pallet (mac fn+f1) en zoek "Dev Containers"
 - Selecteer "Dev Containers: Rebuild and reopen in container"
-and bob's your uncle!
+  and bob's your uncle!
 
 Er draait nu een ontwikkelomgeving die voor elke ontwikkelaar hetzelfde is.
 De postinstall_actions.sh lijst een aantal variabelen uit:
@@ -41,5 +43,5 @@ De postinstall_actions.sh lijst een aantal variabelen uit:
 Alle oh-my-zsh shell goodies zijn available (aanvullen commandline promt, geen cd meer nodig, - en .. werken ook etc)
 Daarnaast zijn ook alle default aliassen voor git geinstalleerd (vb gst, gcmsg, gbr etc) (probeer eens: alias | grep "check")
 
-Als bonus heb je de zsh shell van "Agnoster" welke een mooie git weergave heeft. 
+Als bonus heb je de zsh shell van "Agnoster" welke een mooie git weergave heeft.
 Nb. powerlevel10k is een aparte zsh shell feature die op verzoek kan worden toegevoegd.

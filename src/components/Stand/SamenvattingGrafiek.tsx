@@ -1,4 +1,11 @@
-import { Box, Table, TableBody, TableCell, TableContainer, TableRow } from '@mui/material';
+import {
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+} from '@mui/material';
 import { Periode } from '../../model/Periode';
 import StandGeneriekGrafiek from '../../components/Stand/StandGeneriekGrafiek';
 import { ResultaatSamenvattingOpDatumDTO } from '../../model/Saldo';
@@ -13,46 +20,89 @@ type SamenvattingGrafiekProps = {
 };
 
 export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
-
-  const { percentagePeriodeVoorbij, openingsReservePotjesVoorNuSaldo, budgetMaandInkomstenBedrag, besteedTotPeilDatum, gespaardTotPeilDatum, nogNodigNaPeilDatum, actueleBuffer } = props.resultaatSamenvattingOpDatum;
+  const {
+    percentagePeriodeVoorbij,
+    openingsReservePotjesVoorNuSaldo,
+    budgetMaandInkomstenBedrag,
+    besteedTotPeilDatum,
+    gespaardTotPeilDatum,
+    nogNodigNaPeilDatum,
+    actueleBuffer,
+  } = props.resultaatSamenvattingOpDatum;
   const detailsVisible = props.detailsVisible;
   const formatAmount = (amount: string): string => {
-    return parseFloat(amount).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
+    return parseFloat(amount).toLocaleString('nl-NL', {
+      style: 'currency',
+      currency: 'EUR',
+    });
   };
-  const gevarenZone = 0.02
+  const gevarenZone = 0.02;
   const periodeIsVoorbij = props.periodeIsVoorbij;
-  const isInGevarenZone = actueleBuffer < gevarenZone * budgetMaandInkomstenBedrag && !periodeIsVoorbij;
+  const isInGevarenZone =
+    actueleBuffer < gevarenZone * budgetMaandInkomstenBedrag &&
+    !periodeIsVoorbij;
 
   const berekenStandGeneriekGrafiek = (): JSX.Element => {
     const roundUp = (value: number) => Math.ceil(value * 100) / 100;
-    const bedragRounded = roundUp(Math.abs(actueleBuffer)).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const budgetRounded = roundUp(Number(budgetMaandInkomstenBedrag)).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const openingsReservePotjesVoorNu = roundUp(Number(openingsReservePotjesVoorNuSaldo)).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const percentageBuffer = roundUp((actueleBuffer * 100) / (budgetMaandInkomstenBedrag));
+    const bedragRounded = roundUp(Math.abs(actueleBuffer)).toLocaleString(
+      'nl-NL',
+      {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      },
+    );
+    const budgetRounded = roundUp(
+      Number(budgetMaandInkomstenBedrag),
+    ).toLocaleString('nl-NL', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    const openingsReservePotjesVoorNu = roundUp(
+      Number(openingsReservePotjesVoorNuSaldo),
+    ).toLocaleString('nl-NL', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    const percentageBuffer = roundUp(
+      (actueleBuffer * 100) / budgetMaandInkomstenBedrag,
+    );
     const bufferTekst =
-      periodeIsVoorbij && actueleBuffer > 0 ? `Het periodeinkomen was ${budgetRounded} waarvan ${bedragRounded} over was.` :
-        periodeIsVoorbij && actueleBuffer === 0 ? `Het periodeinkomen was ${budgetRounded} waarmee je precies uit kwam.` :
-          periodeIsVoorbij && actueleBuffer < 0 ? `Het periodeinkomen was ${budgetRounded} waarbij je ${bedragRounded} tekort kwam.` :
-            actueleBuffer < 0 ? `Het periodeinkomen is ${budgetRounded} waarbij je einde van de periode ${bedragRounded} tekort komt.` :
-              isInGevarenZone ? `Het periodeinkomen is ${budgetRounded} waarbij je einde van de periode ${bedragRounded} over houdt; dat is ${percentageBuffer}% van het budget.` :
-                `Besteedbaar is ${budgetRounded} inkomen en een start reserve ${openingsReservePotjesVoorNu}; je hebt nog ${bedragRounded} buffer.`;
-    const color = actueleBuffer < 0 ? 'red' : isInGevarenZone ? 'orange' : 'green';
-    return <StandGeneriekGrafiek
-      statusIcon={berekenRekeningGroepIcoonOpKleur(36, color)}
-      percentageFill={percentagePeriodeVoorbij}
-      headerText={'Samenvatting'}
-      rekeningIconNaam='samenvatting'
-      bodyText={bufferTekst}
-      cfaText={''} />
-  }
+      periodeIsVoorbij && actueleBuffer > 0
+        ? `Het periodeinkomen was ${budgetRounded} waarvan ${bedragRounded} over was.`
+        : periodeIsVoorbij && actueleBuffer === 0
+          ? `Het periodeinkomen was ${budgetRounded} waarmee je precies uit kwam.`
+          : periodeIsVoorbij && actueleBuffer < 0
+            ? `Het periodeinkomen was ${budgetRounded} waarbij je ${bedragRounded} tekort kwam.`
+            : actueleBuffer < 0
+              ? `Het periodeinkomen is ${budgetRounded} waarbij je einde van de periode ${bedragRounded} tekort komt.`
+              : isInGevarenZone
+                ? `Het periodeinkomen is ${budgetRounded} waarbij je einde van de periode ${bedragRounded} over houdt; dat is ${percentageBuffer}% van het budget.`
+                : `Besteedbaar is ${budgetRounded} inkomen en een start reserve ${openingsReservePotjesVoorNu}; je hebt nog ${bedragRounded} buffer.`;
+    const color =
+      actueleBuffer < 0 ? 'red' : isInGevarenZone ? 'orange' : 'green';
+    return (
+      <StandGeneriekGrafiek
+        statusIcon={berekenRekeningGroepIcoonOpKleur(36, color)}
+        percentageFill={percentagePeriodeVoorbij}
+        headerText={'Samenvatting'}
+        rekeningIconNaam="samenvatting"
+        bodyText={bufferTekst}
+        cfaText={''}
+      />
+    );
+  };
 
   return (
     <Box sx={{ width: '100%', maxWidth: '500px' }}>
-      <Box >
-        {berekenStandGeneriekGrafiek()}
-      </Box>
+      <Box>{berekenStandGeneriekGrafiek()}</Box>
       <TableContainer>
-        <Table size={"small"}>
+        <Table size={'small'}>
           <TableBody>
             <TableRow>
               {besteedTotPeilDatum > 0 && (
@@ -63,32 +113,34 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
                     borderBottom: detailsVisible ? '4px solid #333' : '0px',
                     color: 'white',
                     textAlign: 'center',
-                    fontSize: '0.7rem'
+                    fontSize: '0.7rem',
                   }}
                 >
                   {detailsVisible && (
                     <>
                       {formatAmount(besteedTotPeilDatum.toString())}
-                      <br />besteed
+                      <br />
+                      besteed
                     </>
                   )}
                 </TableCell>
               )}
               {gespaardTotPeilDatum > 0 && (
                 <TableCell
-                  width={`${((gespaardTotPeilDatum) / budgetMaandInkomstenBedrag) * 90}%`}
+                  width={`${(gespaardTotPeilDatum / budgetMaandInkomstenBedrag) * 90}%`}
                   sx={{
                     backgroundColor: '#f1c131',
                     borderBottom: detailsVisible ? '4px solid black' : '0px',
                     color: 'white',
                     textAlign: 'center',
-                    fontSize: '0.7rem'
+                    fontSize: '0.7rem',
                   }}
                 >
                   {detailsVisible && (
                     <>
-                      {formatAmount((gespaardTotPeilDatum).toString())}
-                      <br />gespaard
+                      {formatAmount(gespaardTotPeilDatum.toString())}
+                      <br />
+                      gespaard
                     </>
                   )}
                 </TableCell>
@@ -101,13 +153,14 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
                     borderBottom: detailsVisible ? '4px solid #1977D3' : '0px',
                     color: 'white',
                     textAlign: 'center',
-                    fontSize: '0.7rem'
+                    fontSize: '0.7rem',
                   }}
                 >
                   {detailsVisible && (
                     <>
                       {formatAmount(nogNodigNaPeilDatum.toString())}
-                      <br />nog nodig
+                      <br />
+                      nog nodig
                     </>
                   )}
                 </TableCell>
@@ -119,8 +172,12 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
                     backgroundColor: isInGevarenZone ? 'orange' : 'green',
                     color: 'white',
                     textAlign: 'center',
-                    borderBottom: detailsVisible && isInGevarenZone ? '4px solid orange' :
-                      detailsVisible && !isInGevarenZone ? '4px solid green' : '0px',
+                    borderBottom:
+                      detailsVisible && isInGevarenZone
+                        ? '4px solid orange'
+                        : detailsVisible && !isInGevarenZone
+                          ? '4px solid green'
+                          : '0px',
                     fontSize: '0.7rem',
                   }}
                 >
@@ -153,7 +210,6 @@ export const SamenvattingGrafiek = (props: SamenvattingGrafiekProps) => {
                   )}
                 </TableCell>
               )}
-
             </TableRow>
           </TableBody>
         </Table>

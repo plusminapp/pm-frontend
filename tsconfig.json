@@ -4,14 +4,13 @@
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
   ],
-  
-    "compilerOptions": {
-      "target": "es2021",
-      "lib": ["es2021"],
-      "module": "commonjs",
-      "strict": true,
-      "esModuleInterop": true,
-      "skipLibCheck": true
-    }
+
+  "compilerOptions": {
+    "target": "es2021",
+    "lib": ["es2021"],
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
   }
-  
+}

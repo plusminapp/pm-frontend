@@ -152,7 +152,7 @@ const BankAppAfbeelding: React.FC = () => {
           id: 0,
           rekeningNaam: ocrBankRekening?.naam,
           bedrag: 0,
-        } as unknown as SaldoDTO; 
+        } as unknown as SaldoDTO;
         const betalingen = parsedData
           .filter((betaling) => betaling.bedrag !== null)
           .map((betaling) => ({
@@ -171,7 +171,9 @@ const BankAppAfbeelding: React.FC = () => {
             saldoOpLaatsteBetalingDatum: response.saldoOpLaatsteBetalingDatum,
             betalingen: response.betalingen.map((betaling: BetalingDTO) => ({
               ...betaling,
-              boekingsdatum: dayjs(betaling.boekingsdatum).format(DateFormats.YYYY_MM_DD),
+              boekingsdatum: dayjs(betaling.boekingsdatum).format(
+                DateFormats.YYYY_MM_DD,
+              ),
             })),
           });
         } catch (error) {
@@ -184,7 +186,15 @@ const BankAppAfbeelding: React.FC = () => {
       }
     };
     valideerBetalingen();
-  }, [ocrBankRekening, parsedData, actieveHulpvrager, navigate, setSnackbarMessage, getIDToken, putBetalingValidatie]);
+  }, [
+    ocrBankRekening,
+    parsedData,
+    actieveHulpvrager,
+    navigate,
+    setSnackbarMessage,
+    getIDToken,
+    putBetalingValidatie,
+  ]);
 
   const wijzigOcrBankRekening = (bankRekening: RekeningDTO | undefined) => {
     setOcrBankRekening(bankRekening);

@@ -22,17 +22,14 @@ export default function UpsertCamt053Dialoog() {
   return (
     <React.Fragment>
       <Button variant="outlined" onClick={handleClickOpen}>
-      <UploadIcon />    
-            </Button>
-      <Dialog
-        open={open}
-        onClose={handleClose}
-      >
+        <UploadIcon />
+      </Button>
+      <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Subscribe</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            To subscribe to this website, please enter your email address here. We
-            will send updates occasionally.
+            To subscribe to this website, please enter your email address here.
+            We will send updates occasionally.
           </DialogContentText>
           <TextField
             autoFocus

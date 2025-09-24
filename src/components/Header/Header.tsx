@@ -159,17 +159,17 @@ function Header() {
       opgeslagenActieveHulpvragerId === undefined
         ? dataGebruiker.gebruiker
         : Number(dataGebruiker.gebruiker?.id) ===
-          Number(opgeslagenActieveHulpvragerId)
+            Number(opgeslagenActieveHulpvragerId)
           ? dataGebruiker.gebruiker
           : (dataGebruiker.hulpvragers as Gebruiker[]).find(
-            (hv) => Number(hv.id) === Number(opgeslagenActieveHulpvragerId),
-          );
+              (hv) => Number(hv.id) === Number(opgeslagenActieveHulpvragerId),
+            );
 
     const opgeslagenGekozenPeriodeId = localStorage.getItem('gekozenPeriode');
     const opgeslagenGekozenPeriode = opgeslagenGekozenPeriodeId
       ? (opgeslagenActieveHulpvrager?.periodes as Periode[])?.find(
-        (periode) => periode.id === Number(opgeslagenGekozenPeriodeId),
-      )
+          (periode) => periode.id === Number(opgeslagenGekozenPeriodeId),
+        )
       : undefined;
 
     let nieuweActieveHulpvrager, nieuweGekozenPeriode;
@@ -334,7 +334,9 @@ function Header() {
                 >
                   <Typography
                     sx={{ p: '6px', my: 'auto', mr: { xs: '3px', md: '10px' } }}
-                    className={currentPage.toLowerCase() === 'profiel' ? 'selected' : ''}
+                    className={
+                      currentPage.toLowerCase() === 'profiel' ? 'selected' : ''
+                    }
                   >
                     {actieveHulpvrager?.bijnaam}
                   </Typography>

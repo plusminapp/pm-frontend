@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface StandIconProps {
   color: string; // De fill color van de cirkel
@@ -37,7 +37,7 @@ const OudStandIcon: React.FC<StandIconProps> = ({
       />
 
       {/* Tekst in het midden */}
-      {typeof text === 'string' &&
+      {typeof text === 'string' && (
         <text
           x="50%"
           y="47%"
@@ -48,14 +48,10 @@ const OudStandIcon: React.FC<StandIconProps> = ({
           fontFamily="Roboto" // Lettertype gewijzigd naar Roboto
         >
           {text}
-        </text>}
+        </text>
+      )}
       {typeof text !== 'string' && (
-        <foreignObject
-          x="40%"
-          y="40%"
-          width="20%" 
-          height="20%"
-          color="white">
+        <foreignObject x="40%" y="40%" width="20%" height="20%" color="white">
           {text}
         </foreignObject>
       )}

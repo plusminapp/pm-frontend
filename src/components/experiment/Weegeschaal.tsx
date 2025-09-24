@@ -1,11 +1,20 @@
 import { motion } from 'framer-motion';
 
-export default function Weegschaal({ leftWeights, rightWeights, scale = 1 }: { leftWeights: number[], rightWeights: number[], scale?: number }) {
+export default function Weegschaal({
+  leftWeights,
+  rightWeights,
+  scale = 1,
+}: {
+  leftWeights: number[];
+  rightWeights: number[];
+  scale?: number;
+}) {
   const maxTilt = 15;
   const leftWeightTotal = leftWeights.reduce((a, b) => a + b, 0);
   const rightWeightTotal = rightWeights.reduce((a, b) => a + b, 0);
   const total = leftWeightTotal + rightWeightTotal;
-  const balance = total === 0 ? 0 : (rightWeightTotal - leftWeightTotal) / total;
+  const balance =
+    total === 0 ? 0 : (rightWeightTotal - leftWeightTotal) / total;
   const tilt = balance * maxTilt;
 
   const baseWidth = 300;
@@ -25,7 +34,12 @@ export default function Weegschaal({ leftWeights, rightWeights, scale = 1 }: { l
   const panBaseYWeight = panBaseY - 2; // ruimte voor gewichten
 
   // Helper voor gewichten: breedte schalen naar gewicht, grootste onderop
-  function renderWeights(weights: number[], panBaseX: number, panBaseY: number, panBaseWidth: number) {
+  function renderWeights(
+    weights: number[],
+    panBaseX: number,
+    panBaseY: number,
+    panBaseWidth: number,
+  ) {
     if (weights.length === 0) return null;
     const sorted = [...weights].sort((a, b) => a - b); // kleinste boven, grootste onder
     const maxWeight = Math.max(...weights);
@@ -34,7 +48,10 @@ export default function Weegschaal({ leftWeights, rightWeights, scale = 1 }: { l
     const boxSpacing = 2;
     return sorted.map((weight, i) => {
       // breedte tussen 18 en panBaseWidth-8
-      const w = 18 + ((panBaseWidth - 8 - 18) * (weight - minWeight) / (maxWeight === minWeight ? 1 : maxWeight - minWeight));
+      const w =
+        18 +
+        ((panBaseWidth - 8 - 18) * (weight - minWeight)) /
+          (maxWeight === minWeight ? 1 : maxWeight - minWeight);
       const x = panBaseX + (panBaseWidth - w) / 2;
       const y = panBaseY - (sorted.length - i) * (boxHeight + boxSpacing);
       return (
@@ -57,7 +74,10 @@ export default function Weegschaal({ leftWeights, rightWeights, scale = 1 }: { l
             alignmentBaseline="middle"
             fill="#222"
           >
-            {weight.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })}
+            {weight.toLocaleString('nl-NL', {
+              style: 'currency',
+              currency: 'EUR',
+            })}
           </text>
         </g>
       );
@@ -75,9 +95,19 @@ export default function Weegschaal({ leftWeights, rightWeights, scale = 1 }: { l
         overflow: 'visible',
       }}
     >
-      <svg width={baseWidth} height={baseHeight} viewBox={`0 0 ${baseWidth} ${baseHeight}`}>
+      <svg
+        width={baseWidth}
+        height={baseHeight}
+        viewBox={`0 0 ${baseWidth} ${baseHeight}`}
+      >
         {/* Stand */}
-        <rect x="145" y={standTopY} width="10" height={standBottomY - standTopY} fill="#444" />
+        <rect
+          x="145"
+          y={standTopY}
+          width="10"
+          height={standBottomY - standTopY}
+          fill="#444"
+        />
 
         {/* Beam */}
         <motion.rect
@@ -88,7 +118,9 @@ export default function Weegschaal({ leftWeights, rightWeights, scale = 1 }: { l
           fill="#666"
           origin="center"
           animate={{ rotate: tilt }}
-          style={{ transformOrigin: `${beamXLeft + beamLength / 2}px ${beamY + 5}px` }}
+          style={{
+            transformOrigin: `${beamXLeft + beamLength / 2}px ${beamY + 5}px`,
+          }}
         />
 
         {/* Left Pan: gelijkbenige driehoek met dikke bodem */}
@@ -115,7 +147,12 @@ export default function Weegschaal({ leftWeights, rightWeights, scale = 1 }: { l
             rx={2}
           />
           {/* Gewichten */}
-          {renderWeights(leftWeights, panTopXLeft - panBaseWidth / 2, panBaseYWeight, panBaseWidth)}
+          {renderWeights(
+            leftWeights,
+            panTopXLeft - panBaseWidth / 2,
+            panBaseYWeight,
+            panBaseWidth,
+          )}
         </motion.g>
 
         {/* Right Pan: gelijkbenige driehoek met dikke bodem */}
@@ -142,7 +179,12 @@ export default function Weegschaal({ leftWeights, rightWeights, scale = 1 }: { l
             rx={2}
           />
           {/* Gewichten */}
-          {renderWeights(rightWeights, panTopXRight - panBaseWidth / 2, panBaseYWeight, panBaseWidth)}
+          {renderWeights(
+            rightWeights,
+            panTopXRight - panBaseWidth / 2,
+            panBaseYWeight,
+            panBaseWidth,
+          )}
         </motion.g>
       </svg>
 

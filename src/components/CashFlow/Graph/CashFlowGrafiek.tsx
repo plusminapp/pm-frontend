@@ -16,7 +16,10 @@ export const CashFlowGrafiek = () => {
     if (!actieveHulpvrager || !gekozenPeriode) {
       return;
     }
-    const cashflowData = await getCashFlowVoorHulpvragerEnPeriode(actieveHulpvrager, gekozenPeriode);
+    const cashflowData = await getCashFlowVoorHulpvragerEnPeriode(
+      actieveHulpvrager,
+      gekozenPeriode,
+    );
     setCashFlow(cashflowData);
   }, [actieveHulpvrager, gekozenPeriode, getCashFlowVoorHulpvragerEnPeriode]);
 

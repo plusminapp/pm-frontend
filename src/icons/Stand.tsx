@@ -1,18 +1,15 @@
-import React from "react";
-import { PlusIcon } from "./Plus";
-import { MinIcon } from "./Min";
-import { UitroeptekenIcon } from "./Uitroepteken";
-import { VraagtekenIcon } from "./Vraagteken";
+import React from 'react';
+import { PlusIcon } from './Plus';
+import { MinIcon } from './Min';
+import { UitroeptekenIcon } from './Uitroepteken';
+import { VraagtekenIcon } from './Vraagteken';
 
 interface StandIconProps {
-  color: string; 
+  color: string;
   height: number;
 }
 
-const StandIcon: React.FC<StandIconProps> = ({
-  color,
-  height,
-}) => {
+const StandIcon: React.FC<StandIconProps> = ({ color, height }) => {
   let statusIcon;
   switch (color) {
     case 'green':
@@ -28,9 +25,7 @@ const StandIcon: React.FC<StandIconProps> = ({
       statusIcon = <VraagtekenIcon color={'grey'} height={height} />;
   }
 
-  return (
-    statusIcon
-  );
+  return statusIcon;
 };
 
 export default StandIcon;

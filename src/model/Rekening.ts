@@ -1,5 +1,5 @@
-import { AflossingDTO } from "./Aflossing";
-import { Periode } from "./Periode";
+import { AflossingDTO } from './Aflossing';
+import { Periode } from './Periode';
 
 export type RekeningDTO = {
   id: number;
@@ -17,7 +17,7 @@ export type RekeningDTO = {
   budgetVariabiliteit: number | undefined;
   maanden: number[] | undefined;
   budgetBetaalDag: number | undefined;
-  betaalMethoden: RekeningDTO[] | undefined
+  betaalMethoden: RekeningDTO[] | undefined;
   budgetMaandBedrag: number | undefined;
   budgetPeilDatum: string | undefined;
   betaling: number | undefined;
@@ -28,4 +28,4 @@ export type RekeningDTO = {
   meerDanMaandBudget: number | undefined;
   restMaandBudget: number | undefined;
   aflossing: AflossingDTO | undefined;
-}  
+};
