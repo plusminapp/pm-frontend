@@ -7,7 +7,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
 import { SaldoDTO } from '../../model/Saldo';
-import { currencyFormatter } from '../../model/Betaling'
+import { currencyFormatter } from '../../model/Betaling';
 import dayjs from 'dayjs';
 
 interface PeriodeProps {
@@ -17,43 +17,60 @@ interface PeriodeProps {
 }
 
 export default function RekeningResultaat(props: PeriodeProps) {
-
   const dateFormatter = (date: string) => {
-    return new Intl.DateTimeFormat('nl-NL', { month: "short", day: "numeric" })
-    .format(dayjs(date).toDate());
-  }
+    return new Intl.DateTimeFormat('nl-NL', {
+      month: 'short',
+      day: 'numeric',
+    }).format(dayjs(date).toDate());
+  };
 
   const calculateResult = (): number => {
-    const saldoLijst: SaldoDTO[] = props.saldi
-    return saldoLijst.reduce((acc, saldo) => (acc + saldo.bedrag), 0)
-  }
+    const saldoLijst: SaldoDTO[] = props.saldi;
+    return saldoLijst.reduce((acc, saldo) => acc + saldo.bedrag, 0);
+  };
 
   return (
     <>
       <TableContainer component={Paper} sx={{ mr: 'auto', my: '10px' }}>
-        <Table sx={{ width: "100%" }} aria-label="simple table">
+        <Table sx={{ width: '100%' }} aria-label="simple table">
           <TableHead>
-            <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-              <TableCell align="left" size='small' sx={{ p: "6px" }}>{props.title}</TableCell>
-              <TableCell align="right" size='small' sx={{ p: "6px" }}>{dateFormatter(props.datum)}</TableCell>
+            <TableRow
+              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+            >
+              <TableCell align="left" size="small" sx={{ p: '6px' }}>
+                {props.title}
+              </TableCell>
+              <TableCell align="right" size="small" sx={{ p: '6px' }}>
+                {dateFormatter(props.datum)}
+              </TableCell>
             </TableRow>
-            <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-              <TableCell align="left" size='small' sx={{ p: "6px" }}>Totaal</TableCell>
-              <TableCell align="right" size='small' sx={{ p: "6px" }}>{currencyFormatter.format(calculateResult())}</TableCell>
+            <TableRow
+              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+            >
+              <TableCell align="left" size="small" sx={{ p: '6px' }}>
+                Totaal
+              </TableCell>
+              <TableCell align="right" size="small" sx={{ p: '6px' }}>
+                {currencyFormatter.format(calculateResult())}
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {props.saldi
-            .sort((a, b) => a.sortOrder - b.sortOrder)
-            .map((saldo, index) => (
-              <TableRow key={saldo.rekeningNaam+index}>
-                <TableCell align="left" size='small' sx={{ p: "6px" }}>{saldo.rekeningNaam}</TableCell>
-                <TableCell align="right" size='small' sx={{ p: "6px" }}>{currencyFormatter.format(saldo.bedrag)}</TableCell>
-              </TableRow>
-            ))}
+              .sort((a, b) => a.sortOrder - b.sortOrder)
+              .map((saldo, index) => (
+                <TableRow key={saldo.rekeningNaam + index}>
+                  <TableCell align="left" size="small" sx={{ p: '6px' }}>
+                    {saldo.rekeningNaam}
+                  </TableCell>
+                  <TableCell align="right" size="small" sx={{ p: '6px' }}>
+                    {currencyFormatter.format(saldo.bedrag)}
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
-      </TableContainer >
+      </TableContainer>
       {/* {JSON.stringify(props.saldi)} */}
     </>
   );

@@ -7,6 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "fix-all": "npm run lint:fix && npm run format",
     "preview": "vite preview --port 3030",
     "clean": "rm -rf node_modules/.vite"
   },

@@ -15,7 +15,9 @@ interface TablePaginationActionsProps {
   ) => void;
 }
 
-export default function TablePaginationActions(props: TablePaginationActionsProps) {
+export default function TablePaginationActions(
+  props: TablePaginationActionsProps,
+) {
   const theme = useTheme();
   const { count, page, rowsPerPage, onPageChange } = props;
 
@@ -25,15 +27,21 @@ export default function TablePaginationActions(props: TablePaginationActionsProp
     onPageChange(event, 0);
   };
 
-  const handleBackButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleBackButtonClick = (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
     onPageChange(event, page - 1);
   };
 
-  const handleNextButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleNextButtonClick = (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
     onPageChange(event, page + 1);
   };
 
-  const handleLastPageButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleLastPageButtonClick = (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
     onPageChange(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
   };
 
@@ -53,7 +61,11 @@ export default function TablePaginationActions(props: TablePaginationActionsProp
         aria-label="previous page"
         sx={{ m: 0, p: 0 }}
       >
-        {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
+        {theme.direction === 'rtl' ? (
+          <KeyboardArrowRight />
+        ) : (
+          <KeyboardArrowLeft />
+        )}
       </IconButton>
       <IconButton
         onClick={handleNextButtonClick}
@@ -61,7 +73,11 @@ export default function TablePaginationActions(props: TablePaginationActionsProp
         aria-label="next page"
         sx={{ m: 0, p: 0 }}
       >
-        {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
+        {theme.direction === 'rtl' ? (
+          <KeyboardArrowLeft />
+        ) : (
+          <KeyboardArrowRight />
+        )}
       </IconButton>
       <IconButton
         onClick={handleLastPageButtonClick}
@@ -74,4 +90,3 @@ export default function TablePaginationActions(props: TablePaginationActionsProp
     </Box>
   );
 }
-

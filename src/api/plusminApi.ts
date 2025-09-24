@@ -204,7 +204,7 @@ function usePlusminApi() {
     deleteBetaling,
     putPeriodeActie,
     putPeriodeOpeningWijziging,
-    putBetalingValidatie
+    putBetalingValidatie,
   };
 }
 

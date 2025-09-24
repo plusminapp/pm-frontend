@@ -9,7 +9,9 @@ type AflossingGrafiekData = {
 
 type AflossingGrafiekDataMap = Record<string, Record<string, number>>;
 
-export function getData(aflossingSaldi: SaldoDTO[]): Record<string, string|number>[] {
+export function getData(
+  aflossingSaldi: SaldoDTO[],
+): Record<string, string | number>[] {
   const aflossingGrafiekDataLijst = aflossingSaldi.flatMap(
     genereerAflossingSaldi,
   );
@@ -23,7 +25,7 @@ export function getData(aflossingSaldi: SaldoDTO[]): Record<string, string|numbe
       return acc;
     }, {} as AflossingGrafiekDataMap);
 
-  const result: Record<string, string|number>[] = Object.entries(
+  const result: Record<string, string | number>[] = Object.entries(
     aflossingGrafiekDataMap,
   ).map(([maand, saldi]) => ({
     month: maand,

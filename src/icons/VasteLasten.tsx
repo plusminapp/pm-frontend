@@ -9,10 +9,9 @@ const VasteLastenIcon: FC<SVGProps<SVGSVGElement>> = (props) => {
       version="1.1"
       id="svg1"
       fill="grey"
-      {...props}>
-      <path
-     d="m 2.0713578,12.25115 v 1.95 H 22.071358 v -1.95"
-     id="path1" />
+      {...props}
+    >
+      <path d="m 2.0713578,12.25115 v 1.95 H 22.071358 v -1.95" id="path1" />
     </svg>
   );
 };

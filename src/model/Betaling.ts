@@ -94,7 +94,7 @@ export const inkomstenBetalingsSoorten = [BetalingsSoort.inkomsten];
 export const uitgavenBetalingsSoorten = [
   BetalingsSoort.uitgaven,
   BetalingsSoort.aflossen,
-  BetalingsSoort.besteden
+  BetalingsSoort.besteden,
 ];
 export const internBetalingsSoorten = [
   BetalingsSoort.incasso_creditcard,

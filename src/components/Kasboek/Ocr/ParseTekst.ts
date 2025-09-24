@@ -1,12 +1,15 @@
-import dayjs from "dayjs";
-import { BetalingDTO } from "../../../model/Betaling";
-import { DateFormats } from "../../../util/date-formats";
+import dayjs from 'dayjs';
+import { BetalingDTO } from '../../../model/Betaling';
+import { DateFormats } from '../../../util/date-formats';
 
 export const parseText = (text: string): BetalingDTO[] => {
-  const dateRegex = /((vandaag|gisteren)?( - )?\d{1,2} (januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december|jan|feb|mrt|apr|mei|jun|jul|aug|sep|okt|nov|dec)( \d{4})?|(vandaag|gisteren)( - )?)/i;
+  const dateRegex =
+    /((vandaag|gisteren)?( - )?\d{1,2} (januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december|jan|feb|mrt|apr|mei|jun|jul|aug|sep|okt|nov|dec)( \d{4})?|(vandaag|gisteren)( - )?)/i;
   const currentYear = dayjs().year();
   const previousYear = currentYear - 1;
-  const amountRegex = new RegExp(`[+-]?[0-9.,]+(?<!${currentYear}|${previousYear})$`);
+  const amountRegex = new RegExp(
+    `[+-]?[0-9.,]+(?<!${currentYear}|${previousYear})$`,
+  );
 
   let currentDate = dayjs();
   let sortOrderBase = 900;
@@ -45,9 +48,17 @@ export const parseText = (text: string): BetalingDTO[] => {
         currentDate = dayjs();
       } else if (dateStr === 'gisteren') {
         currentDate = dayjs().subtract(1, 'day');
-      } else if (/\d{1,2} (januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)/.test(dateStr)) {
+      } else if (
+        /\d{1,2} (januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)/.test(
+          dateStr,
+        )
+      ) {
         currentDate = dayjs(`${dateStr} ${year}`, 'D MMMM YYYY', 'nl');
-      } else if (/\d{1,2} (jan|feb|mrt|apr|mei|jun|jul|aug|sep|okt|nov|dec)/.test(dateStr)) {
+      } else if (
+        /\d{1,2} (jan|feb|mrt|apr|mei|jun|jul|aug|sep|okt|nov|dec)/.test(
+          dateStr,
+        )
+      ) {
         currentDate = dayjs(`${dateStr} ${year}`, 'D MMM YYYY', 'nl');
       } else if (/\d{1,2}-\d{1,2}/.test(dateStr)) {
         currentDate = dayjs(`${dateStr}-${year}`, 'D-MM-YYYY');

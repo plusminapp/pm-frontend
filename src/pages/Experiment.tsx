@@ -1,4 +1,8 @@
-import { AllCommunityModule, ModuleRegistry,   RowDragModule } from 'ag-grid-community';
+import {
+  AllCommunityModule,
+  ModuleRegistry,
+  RowDragModule,
+} from 'ag-grid-community';
 
 ModuleRegistry.registerModules([AllCommunityModule, RowDragModule]);
 import { AgGridReact } from 'ag-grid-react';
@@ -8,18 +12,18 @@ import Weegschaal from '../components/experiment/Weegeschaal';
 export const GridExample = () => {
   // Row Data: The data to be displayed.
   const rowData = [
-    { make: "Tesla", model: "Model Y", price: 64950, electric: true },
-    { make: "Ford", model: "F-Series", price: 33850, electric: false },
-    { make: "Toyota", model: "Corolla", price: 29600, electric: false },
+    { make: 'Tesla', model: 'Model Y', price: 64950, electric: true },
+    { make: 'Ford', model: 'F-Series', price: 33850, electric: false },
+    { make: 'Toyota', model: 'Corolla', price: 29600, electric: false },
   ];
 
   // Column Definitions: Defines the columns to be displayed.
 
   const colDefs: ColDef[] = [
-    { field: "make", rowDrag: true },
-    { field: "model" },
-    { field: "price" },
-    { field: "electric" }
+    { field: 'make', rowDrag: true },
+    { field: 'model' },
+    { field: 'price' },
+    { field: 'electric' },
   ];
 
   return (
@@ -30,8 +34,11 @@ export const GridExample = () => {
         columnDefs={colDefs}
         rowDragManaged={true}
       />
-      <Weegschaal leftWeights={[10.3, 5, 2]} rightWeights={[10, 38]} scale={3} />
+      <Weegschaal
+        leftWeights={[10.3, 5, 2]}
+        rightWeights={[10, 38]}
+        scale={3}
+      />
     </div>
-    
-  )
-}
+  );
+};

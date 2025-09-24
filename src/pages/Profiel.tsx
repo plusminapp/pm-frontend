@@ -697,9 +697,7 @@ const Profiel: React.FC = () => {
 
           <Accordion>
             <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
-              <Typography>
-                Nieuwsgierig naar meer info over jezelf?
-              </Typography>
+              <Typography>Nieuwsgierig naar meer info over jezelf?</Typography>
             </AccordionSummary>
             <AccordionDetails>
               <Typography sx={{ my: '5px' }}>

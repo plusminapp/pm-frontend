@@ -8,11 +8,23 @@ import Paper from '@mui/material/Paper';
 import { BetalingDTO, currencyFormatter } from '../../model/Betaling';
 import { useEffect, useState } from 'react';
 
-import { Box, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
+import {
+  Box,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  Typography,
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { useCustomContext } from '../../context/CustomContext';
-import { berekenBedragVoorRekenining, RekeningGroepDTO } from '../../model/RekeningGroep';
+import {
+  berekenBedragVoorRekenining,
+  RekeningGroepDTO,
+} from '../../model/RekeningGroep';
 import UpsertBetalingDialoog from './UpsertBetalingDialoog';
 import dayjs from 'dayjs';
 import React from 'react';
@@ -28,18 +40,32 @@ interface InUitTabelProps {
 }
 
 export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
-
-  const { actieveHulpvrager, gebruiker, gekozenPeriode, setSnackbarMessage, rekeningGroepPerBetalingsSoort } = useCustomContext();
-  const betalingen = props.betalingen
-  const [actueleRekeningGroep, setActueleRekeningGroep] = useState<RekeningGroepDTO | undefined>(props.actueleRekeningGroep)
-  const [filteredBetalingen, setFilteredBetalingen] = useState<{ [key: string]: BetalingDTO[] }>({})
-  const [selectedBetaling, setSelectedBetaling] = useState<BetalingDTO | undefined>(undefined);
+  const {
+    actieveHulpvrager,
+    gebruiker,
+    gekozenPeriode,
+    setSnackbarMessage,
+    rekeningGroepPerBetalingsSoort,
+  } = useCustomContext();
+  const betalingen = props.betalingen;
+  const [actueleRekeningGroep, setActueleRekeningGroep] = useState<
+    RekeningGroepDTO | undefined
+  >(props.actueleRekeningGroep);
+  const [filteredBetalingen, setFilteredBetalingen] = useState<{
+    [key: string]: BetalingDTO[];
+  }>({});
+  const [selectedBetaling, setSelectedBetaling] = useState<
+    BetalingDTO | undefined
+  >(undefined);
   const [verwerkteBetalingen, setVerwerkteBetalingen] = useState<string[]>([]);
   const handleEditClick = (sortOrder: string) => {
     if (props.isOcr && verwerkteBetalingen.includes(sortOrder)) {
-      setSnackbarMessage({ message: toonVerwerkteBetalingMeassage, type: 'info' });
+      setSnackbarMessage({
+        message: toonVerwerkteBetalingMeassage,
+        type: 'info',
+      });
     } else {
-      const betaling = betalingen.find(b => b.sortOrder === sortOrder);
+      const betaling = betalingen.find((b) => b.sortOrder === sortOrder);
       setSelectedBetaling(betaling);
     }
   };
@@ -47,27 +73,38 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
   const rekeningGroepen = Array.from(
     new Map(
       rekeningGroepPerBetalingsSoort
-        .flatMap(bs => bs.rekeningGroepen)
-        .map(r => [r.id, r])
-    ).values())
+        .flatMap((bs) => bs.rekeningGroepen)
+        .map((r) => [r.id, r]),
+    ).values(),
+  );
 
   useEffect(() => {
     if (betalingen.length > 0) {
       const filterBetalingenOpBronBestemming = betalingen
-        .filter((betaling) => actueleRekeningGroep?.rekeningen.some(r => r.naam === betaling.bron || r.naam === betaling.bestemming) || actueleRekeningGroep === undefined)
-        .reduce((acc, item) => {
-          if (!acc[item.boekingsdatum]) {
-            acc[item.boekingsdatum] = [];
-          }
-          acc[item.boekingsdatum].push(item);
-          return acc;
-        }, {} as { [key: string]: BetalingDTO[] });
-      setFilteredBetalingen(filterBetalingenOpBronBestemming)
+        .filter(
+          (betaling) =>
+            actueleRekeningGroep?.rekeningen.some(
+              (r) => r.naam === betaling.bron || r.naam === betaling.bestemming,
+            ) || actueleRekeningGroep === undefined,
+        )
+        .reduce(
+          (acc, item) => {
+            if (!acc[item.boekingsdatum]) {
+              acc[item.boekingsdatum] = [];
+            }
+            acc[item.boekingsdatum].push(item);
+            return acc;
+          },
+          {} as { [key: string]: BetalingDTO[] },
+        );
+      setFilteredBetalingen(filterBetalingenOpBronBestemming);
     }
   }, [actueleRekeningGroep, betalingen, setFilteredBetalingen]);
 
   const handleWeergaveChange = (event: SelectChangeEvent) => {
-    setActueleRekeningGroep(rekeningGroepen.find(r => r.naam === event.target.value))
+    setActueleRekeningGroep(
+      rekeningGroepen.find((r) => r.naam === event.target.value),
+    );
   };
 
   const onUpsertBetalingClose = () => {
@@ -75,98 +112,174 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
   };
 
   const formatAmount = (amount: string): string => {
-    return currencyFormatter.format(parseFloat(amount))
+    return currencyFormatter.format(parseFloat(amount));
   };
 
   const onBetalingBewaardChange = (betalingDTO: BetalingDTO) => {
     props.onBetalingBewaardChange(betalingDTO);
-    if (props.isOcr) setVerwerkteBetalingen([...verwerkteBetalingen, betalingDTO?.sortOrder]);
+    if (props.isOcr)
+      setVerwerkteBetalingen([...verwerkteBetalingen, betalingDTO?.sortOrder]);
   };
 
   const onBetalingVerwijderdChange = (betalingDTO: BetalingDTO) => {
     props.onBetalingVerwijderdChange(betalingDTO);
-    if (props.isOcr) setVerwerkteBetalingen([...verwerkteBetalingen, betalingDTO?.sortOrder]);
+    if (props.isOcr)
+      setVerwerkteBetalingen([...verwerkteBetalingen, betalingDTO?.sortOrder]);
   };
 
-  const toonVerwerkteBetalingMeassage = 'Deze betaling is verwerkt. Je kunt deze hier niet meer bewerken of verwijderen. ' +
+  const toonVerwerkteBetalingMeassage =
+    'Deze betaling is verwerkt. Je kunt deze hier niet meer bewerken of verwijderen. ' +
     'Je kunt m terugvinden in het kasboek. Daar kan je m eventueel nog aanpassen. Als je de betaling hier onbedoeld hebt ' +
     'verwijderd kun je de schermafbeelding nog een keer inlezen: dubbele betaingen zijn duidelijk herkenbaar en kun je ' +
     'gemakkelijk overslaan of weggooien.';
 
-  const isPeriodeOpen = gekozenPeriode?.periodeStatus === 'OPEN' || gekozenPeriode?.periodeStatus === 'HUIDIG';
+  const isPeriodeOpen =
+    gekozenPeriode?.periodeStatus === 'OPEN' ||
+    gekozenPeriode?.periodeStatus === 'HUIDIG';
 
   return (
     <>
-      {props.isFilterSelectable &&
+      {props.isFilterSelectable && (
         <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
-          <InputLabel id="demo-simple-select-standard-label">Weergave kiezen</InputLabel>
+          <InputLabel id="demo-simple-select-standard-label">
+            Weergave kiezen
+          </InputLabel>
           <Select
             labelId="demo-simple-select-standard-label"
             id="demo-simple-select-standard"
             value={actueleRekeningGroep ? actueleRekeningGroep.naam : 'alles'}
             onChange={handleWeergaveChange}
-            label="Weergave kiezen">
-            <MenuItem value='alles'>Alle betalingen</MenuItem>
+            label="Weergave kiezen"
+          >
+            <MenuItem value="alles">Alle betalingen</MenuItem>
             {rekeningGroepen.map((rg) => (
-              <MenuItem key={rg.id} value={rg.naam}>{rg.naam}</MenuItem>
+              <MenuItem key={rg.id} value={rg.naam}>
+                {rg.naam}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>
-      }
-      {Object.keys(filteredBetalingen).length === 0 &&
+      )}
+      {Object.keys(filteredBetalingen).length === 0 && (
         <Typography sx={{ mx: '25px', fontSize: '12px' }}>
-          {actieveHulpvrager?.id !== gebruiker?.id ? `${actieveHulpvrager!.bijnaam} heeft` : "Je hebt"} nog geen betalingen geregistreerd{actueleRekeningGroep ? ` voor ${actueleRekeningGroep.naam}` : ''}.
+          {actieveHulpvrager?.id !== gebruiker?.id
+            ? `${actieveHulpvrager!.bijnaam} heeft`
+            : 'Je hebt'}{' '}
+          nog geen betalingen geregistreerd
+          {actueleRekeningGroep ? ` voor ${actueleRekeningGroep.naam}` : ''}.
         </Typography>
-      }
-      {Object.keys(filteredBetalingen).length > 0 &&
+      )}
+      {Object.keys(filteredBetalingen).length > 0 && (
         <>
           <TableContainer component={Paper}>
             <Table>
               <TableBody>
                 {Object.keys(filteredBetalingen).map((date) => (
                   <React.Fragment key={date}>
-                    {props.isOcr &&
+                    {props.isOcr && (
                       <TableRow>
-                        <TableCell colSpan={3} sx={{ fontWeight: '900', padding: '5px' }}>
-                          {dayjs(date).year() === dayjs().year() ? dayjs(date).format('D MMMM') : dayjs(date).format('D MMMM YYYY')}
+                        <TableCell
+                          colSpan={3}
+                          sx={{ fontWeight: '900', padding: '5px' }}
+                        >
+                          {dayjs(date).year() === dayjs().year()
+                            ? dayjs(date).format('D MMMM')
+                            : dayjs(date).format('D MMMM YYYY')}
                         </TableCell>
-                      </TableRow>}
+                      </TableRow>
+                    )}
                     {filteredBetalingen[date].map((item) => (
                       <TableRow key={item.sortOrder}>
-                        {!props.isOcr &&
-                          <TableCell sx={{ padding: '5px' }} onClick={() => handleEditClick(item.sortOrder)}>
-                            {dayjs(date).year() === dayjs().year() ? dayjs(date).format('D MMMM') : dayjs(date).format('D MMMM YYYY')}
-                          </TableCell>}
-                        <TableCell sx={{ padding: '5px', color: verwerkteBetalingen.includes(item.sortOrder) ? 'lightgrey' : 'inherit' }}
-                          onClick={() => handleEditClick(item.sortOrder)}>
-                          {props.isOcr ? item.ocrOmschrijving : item.omschrijving}
-                          {item.bestaatAl && !verwerkteBetalingen.includes(item.sortOrder) &&
-                            <>
-                              <br />
-                              <Typography variant="caption" color="error">Bestaat al met omschrijving {item.omschrijving}</Typography>
-                            </>}
+                        {!props.isOcr && (
+                          <TableCell
+                            sx={{ padding: '5px' }}
+                            onClick={() => handleEditClick(item.sortOrder)}
+                          >
+                            {dayjs(date).year() === dayjs().year()
+                              ? dayjs(date).format('D MMMM')
+                              : dayjs(date).format('D MMMM YYYY')}
+                          </TableCell>
+                        )}
+                        <TableCell
+                          sx={{
+                            padding: '5px',
+                            color: verwerkteBetalingen.includes(item.sortOrder)
+                              ? 'lightgrey'
+                              : 'inherit',
+                          }}
+                          onClick={() => handleEditClick(item.sortOrder)}
+                        >
+                          {props.isOcr
+                            ? item.ocrOmschrijving
+                            : item.omschrijving}
+                          {item.bestaatAl &&
+                            !verwerkteBetalingen.includes(item.sortOrder) && (
+                              <>
+                                <br />
+                                <Typography variant="caption" color="error">
+                                  Bestaat al met omschrijving{' '}
+                                  {item.omschrijving}
+                                </Typography>
+                              </>
+                            )}
                         </TableCell>
-                        <TableCell sx={{ padding: '5px', color: verwerkteBetalingen.includes(item.sortOrder) ? 'lightgrey' : 'inherit' }}
-                          onClick={() => handleEditClick(item.sortOrder)}>
-                          {formatAmount(berekenBedragVoorRekenining(item, actueleRekeningGroep).toString())}
+                        <TableCell
+                          sx={{
+                            padding: '5px',
+                            color: verwerkteBetalingen.includes(item.sortOrder)
+                              ? 'lightgrey'
+                              : 'inherit',
+                          }}
+                          onClick={() => handleEditClick(item.sortOrder)}
+                        >
+                          {formatAmount(
+                            berekenBedragVoorRekenining(
+                              item,
+                              actueleRekeningGroep,
+                            ).toString(),
+                          )}
                         </TableCell>
                         {/* <TableCell sx={{ padding: '5px' }}>{item.sortOrder}</TableCell> */}
                         <TableCell sx={{ padding: '5px' }}>
-                          {isPeriodeOpen && !verwerkteBetalingen.includes(item.sortOrder) &&
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <IconButton onClick={() => handleEditClick(item.sortOrder)}>
-                                <EditIcon />
-                              </IconButton>
-                              {props.isOcr &&
-                                <IconButton onClick={() => onBetalingVerwijderdChange(item)} color={item.bestaatAl ? 'error' : 'default'}>
-                                  <DeleteIcon />
-                                </IconButton>}
-                            </Box>}
-                          {verwerkteBetalingen.includes(item.sortOrder) &&
-                            <Box alignItems={'center'} display={'flex'} sx={{ cursor: 'pointer' }}
-                              onClick={() => setSnackbarMessage({ message: toonVerwerkteBetalingMeassage, type: 'info' })}>
-                              <InfoIcon height='16' />
-                            </Box>}
+                          {isPeriodeOpen &&
+                            !verwerkteBetalingen.includes(item.sortOrder) && (
+                              <Box
+                                sx={{ display: 'flex', alignItems: 'center' }}
+                              >
+                                <IconButton
+                                  onClick={() =>
+                                    handleEditClick(item.sortOrder)
+                                  }
+                                >
+                                  <EditIcon />
+                                </IconButton>
+                                {props.isOcr && (
+                                  <IconButton
+                                    onClick={() =>
+                                      onBetalingVerwijderdChange(item)
+                                    }
+                                    color={item.bestaatAl ? 'error' : 'default'}
+                                  >
+                                    <DeleteIcon />
+                                  </IconButton>
+                                )}
+                              </Box>
+                            )}
+                          {verwerkteBetalingen.includes(item.sortOrder) && (
+                            <Box
+                              alignItems={'center'}
+                              display={'flex'}
+                              sx={{ cursor: 'pointer' }}
+                              onClick={() =>
+                                setSnackbarMessage({
+                                  message: toonVerwerkteBetalingMeassage,
+                                  type: 'info',
+                                })
+                              }
+                            >
+                              <InfoIcon height="16" />
+                            </Box>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -175,18 +288,26 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
               </TableBody>
             </Table>
           </TableContainer>
-          {selectedBetaling &&
+          {selectedBetaling && (
             <UpsertBetalingDialoog
               onUpsertBetalingClose={onUpsertBetalingClose}
-              onBetalingBewaardChange={(betalingDTO) => onBetalingBewaardChange(betalingDTO)}
-              onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO)}
+              onBetalingBewaardChange={(betalingDTO) =>
+                onBetalingBewaardChange(betalingDTO)
+              }
+              onBetalingVerwijderdChange={(betalingDTO) =>
+                onBetalingVerwijderdChange(betalingDTO)
+              }
               isOcr={props.isOcr}
               editMode={true}
-              betaling={{ ...selectedBetaling, bron: selectedBetaling.bron, bestemming: selectedBetaling.bestemming }}
+              betaling={{
+                ...selectedBetaling,
+                bron: selectedBetaling.bron,
+                bestemming: selectedBetaling.bestemming,
+              }}
             />
-          }
+          )}
         </>
-      }
+      )}
     </>
   );
 }

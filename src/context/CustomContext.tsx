@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from 'react';
 import { Gebruiker } from '../model/Gebruiker';
 import { RekeningGroepPerBetalingsSoort } from '../model/RekeningGroep';
 import { Periode } from '../model/Periode';
@@ -21,7 +27,9 @@ interface CustomContextType {
   isStandDirty: boolean;
   setIsStandDirty: (isStandDiry: boolean) => void;
   rekeningGroepPerBetalingsSoort: Array<RekeningGroepPerBetalingsSoort>;
-  setRekeningGroepPerBetalingsSoort: (rekeningGroepPerBetalingsSoort: Array<RekeningGroepPerBetalingsSoort>) => void;
+  setRekeningGroepPerBetalingsSoort: (
+    rekeningGroepPerBetalingsSoort: Array<RekeningGroepPerBetalingsSoort>,
+  ) => void;
   snackbarMessage: SnackbarMessage;
   setSnackbarMessage: (snackbarMessage: SnackbarMessage) => void;
 }
@@ -43,34 +51,53 @@ interface CustomProviderProps {
 
 export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
   const [gebruiker, setGebruiker] = useState<Gebruiker | undefined>(undefined);
-  const [actieveHulpvrager, setActieveHulpvrager] = useState<Gebruiker | undefined>(undefined);
+  const [actieveHulpvrager, setActieveHulpvrager] = useState<
+    Gebruiker | undefined
+  >(undefined);
   const [hulpvragers, setHulpvragers] = useState<Array<Gebruiker>>([]);
   const [periodes, setPeriodes] = useState<Array<Periode>>([]);
-  const [gekozenPeriode, setGekozenPeriode] = useState<Periode | undefined>(undefined);
+  const [gekozenPeriode, setGekozenPeriode] = useState<Periode | undefined>(
+    undefined,
+  );
   const [stand, setStand] = useState<Stand | undefined>(undefined);
   const [isStandDirty, setIsStandDirty] = useState<boolean>(true);
-  const [rekeningGroepPerBetalingsSoort, setRekeningGroepPerBetalingsSoort] = useState<Array<RekeningGroepPerBetalingsSoort>>([]);
-  const [snackbarMessage, setSnackbarMessage] = useState<SnackbarMessage>({ message: undefined, type: undefined });
+  const [rekeningGroepPerBetalingsSoort, setRekeningGroepPerBetalingsSoort] =
+    useState<Array<RekeningGroepPerBetalingsSoort>>([]);
+  const [snackbarMessage, setSnackbarMessage] = useState<SnackbarMessage>({
+    message: undefined,
+    type: undefined,
+  });
 
   useEffect(() => {
     if (!actieveHulpvrager) return;
     setActieveHulpvrager(actieveHulpvrager);
-    setPeriodes(actieveHulpvrager.periodes)
+    setPeriodes(actieveHulpvrager.periodes);
     localStorage.setItem('actieveHulpvrager', actieveHulpvrager.id + '');
   }, [actieveHulpvrager]);
 
   return (
-    <CustomContext.Provider value={{
-      gebruiker, setGebruiker,
-      actieveHulpvrager, setActieveHulpvrager,
-      hulpvragers, setHulpvragers,
-      periodes, setPeriodes,
-      gekozenPeriode, setGekozenPeriode,
-      stand, setStand,
-      isStandDirty, setIsStandDirty,
-      rekeningGroepPerBetalingsSoort, setRekeningGroepPerBetalingsSoort,
-      snackbarMessage, setSnackbarMessage
-    }}>
+    <CustomContext.Provider
+      value={{
+        gebruiker,
+        setGebruiker,
+        actieveHulpvrager,
+        setActieveHulpvrager,
+        hulpvragers,
+        setHulpvragers,
+        periodes,
+        setPeriodes,
+        gekozenPeriode,
+        setGekozenPeriode,
+        stand,
+        setStand,
+        isStandDirty,
+        setIsStandDirty,
+        rekeningGroepPerBetalingsSoort,
+        setRekeningGroepPerBetalingsSoort,
+        snackbarMessage,
+        setSnackbarMessage,
+      }}
+    >
       {children}
       {/* {JSON.stringify(actieveHulpvrager)} */}
     </CustomContext.Provider>
