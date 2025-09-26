@@ -12,6 +12,7 @@ async function fetchData<T>(
   bearerToken: string,
   method: string = 'GET',
   body?: unknown,
+  responseType: 'json' | 'text' = 'json',
 ) {
   const response = await fetch(`${endpoint}`, {
     method,
@@ -23,6 +24,9 @@ async function fetchData<T>(
   });
   if (!response.ok) {
     throw new Error('Network response was not ok');
+  }
+  if (responseType === 'text') {  
+    return response.text() as unknown as T;
   }
   return response.json() as T;
 }
@@ -187,6 +191,7 @@ function usePlusminApi() {
         token,
         'PUT',
         saldos,
+        'text'
       );
     },
     [getIDToken],
