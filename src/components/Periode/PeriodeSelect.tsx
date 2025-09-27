@@ -25,7 +25,8 @@ import {
   laatsteGeslotenPeriode,
   Periode,
 } from '../../model/Periode';
-import WijzigPeriodeDialoog from './WijzigPeriodeDialoog.tsx';
+// import WijzigPeriodeDialoog from './WijzigPeriodeDialoog.tsx';
+import { WijzigPeriodeForm } from './WijzigPeriodeForm.tsx';
 
 interface PeriodeSelectProps {
   isProfiel?: boolean;
@@ -47,6 +48,7 @@ export function PeriodeSelect({
     rekeningGroepPerBetalingsSoort,
     setRekeningGroepPerBetalingsSoort,
     setSnackbarMessage,
+    stand,
   } = useCustomContext();
   const { putPeriodeActie } = usePlusminApi();
 
@@ -304,12 +306,13 @@ export function PeriodeSelect({
             ))}
         </Box>
       )}
-      {teWijzigenOpeneingsSaldiPeriode !== undefined && (
-        <WijzigPeriodeDialoog
+      {teWijzigenOpeneingsSaldiPeriode !== undefined && stand && (
+        <WijzigPeriodeForm
           index={teWijzigenOpeneingsSaldiPeriode}
           onWijzigPeriodeClose={onWijzigPeriodeClose}
           periodes={periodes}
           editMode={editMode}
+          stand={stand}
         />
       )}
     </>
