@@ -25,7 +25,7 @@ import {
   laatsteGeslotenPeriode,
   Periode,
 } from '../../model/Periode';
-import WijzigPeriodeDialoog from './WijzigPeriodeDialoog.tsx';
+import { WijzigPeriodeForm } from './WijzigPeriodeForm.tsx';
 
 interface PeriodeSelectProps {
   isProfiel?: boolean;
@@ -47,6 +47,7 @@ export function PeriodeSelect({
     rekeningGroepPerBetalingsSoort,
     setRekeningGroepPerBetalingsSoort,
     setSnackbarMessage,
+    stand,
   } = useCustomContext();
   const { putPeriodeActie } = usePlusminApi();
 
@@ -111,7 +112,7 @@ export function PeriodeSelect({
             dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum)),
           );
 
-  const [teWijzigenOpeneingsSaldiPeriode, setTeWijzigenOpeningsSaldiPeriode] =
+  const [teWijzigenOpeningsSaldiPeriode, setTeWijzigenOpeningsSaldiPeriode] =
     useState<number | undefined>(undefined);
   const handleOpeningsSaldiClick = (index: number, editMode: boolean) => {
     console.log('handleOpeningsSaldiClick', index, periodes[index]);
@@ -304,12 +305,13 @@ export function PeriodeSelect({
             ))}
         </Box>
       )}
-      {teWijzigenOpeneingsSaldiPeriode !== undefined && (
-        <WijzigPeriodeDialoog
-          index={teWijzigenOpeneingsSaldiPeriode}
+      {teWijzigenOpeningsSaldiPeriode !== undefined && stand && (
+        <WijzigPeriodeForm
+          index={teWijzigenOpeningsSaldiPeriode}
           onWijzigPeriodeClose={onWijzigPeriodeClose}
           periodes={periodes}
           editMode={editMode}
+          stand={stand}
         />
       )}
     </>
