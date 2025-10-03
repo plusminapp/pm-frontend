@@ -3,14 +3,23 @@ import {
   RekeningGroepSoort,
 } from '../../model/RekeningGroep';
 import { SaldoDTO, Stand } from '../../model/Saldo';
+import z from 'zod';
 
-export type FormSaldo = {
-  naam: string;
-  bedrag: string;
-  delta: number;
-};
+export const formSchema = z.object({
+  formSaldi: z.array(
+    z.object({
+      huidig: z.number().readonly(),
+      nieuw: z.string().refine((val) => {
+        return /^-?\d*(\.\d{0,2})?$/.test(val);
+      }, 'geen valide invoer'),
+      delta: z.number(),
+      naam: z.string().readonly(),
+    }),
+  ),
+});
+export type FormValues = z.infer<typeof formSchema>;
 
-export const defaultFormSaldos = (stand: Stand): FormSaldo[] =>
+export const defaultFormSaldos = (stand: Stand) =>
   stand.resultaatOpDatum
     .filter((saldo: SaldoDTO) =>
       balansRekeningGroepSoorten.includes(
@@ -19,8 +28,9 @@ export const defaultFormSaldos = (stand: Stand): FormSaldo[] =>
     )
     .map((saldo: SaldoDTO) => ({
       naam: saldo.rekeningNaam,
-      bedrag: Number(saldo.openingsBalansSaldo).toFixed(2),
-      delta: Number(saldo.oorspronkelijkeBetaling),
+      nieuw: String(saldo.openingsBalansSaldo.toFixed(2)),
+      huidig: saldo.openingsBalansSaldo,
+      delta: 0,
     }));
 
 export const defaultHeeftAflossingen = (stand: Stand): boolean =>
