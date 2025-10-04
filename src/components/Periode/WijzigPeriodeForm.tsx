@@ -7,7 +7,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import { styled } from '@mui/material/styles';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import {
   InputAdornment,
@@ -21,8 +21,10 @@ import {
   Typography,
 } from '@mui/material';
 
+import { zodResolver } from '@hookform/resolvers/zod';
 import dayjs from 'dayjs';
 import 'dayjs/locale/nl';
+import { useForm } from 'react-hook-form';
 import { usePlusminApi } from '../../api/plusminApi';
 import { useCustomContext } from '../../context/CustomContext';
 import { currencyFormatter } from '../../model/Betaling';
@@ -31,7 +33,8 @@ import { SaldoDTO, Stand } from '../../model/Saldo';
 import {
   defaultFormSaldos,
   defaultHeeftAflossingen,
-  FormSaldo,
+  formSchema,
+  FormValues,
 } from './WijzigPeriodeFormUtil';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
@@ -60,17 +63,49 @@ export function WijzigPeriodeForm({
 }: WijzigPeriodeFormProps) {
   const { actieveHulpvrager, setSnackbarMessage } = useCustomContext();
   const { putPeriodeOpeningWijziging } = usePlusminApi();
-  const [formSaldi, setFormSaldi] = useState<FormSaldo[]>(
-    defaultFormSaldos(stand),
-  );
   const [open, setOpen] = useState<boolean>(true);
   const heeftAflossingen = defaultHeeftAflossingen(stand);
 
-  const saveWijzigingen = async () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    getValues,
+    watch,
+    setValue,
+  } = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      formSaldi: defaultFormSaldos(stand),
+    },
+  });
+
+  const formSaldi = getValues('formSaldi');
+  watch('formSaldi').forEach((saldo, index) => {
+    const nieuw = saldo.nieuw.replace(/,/g, '.');
+    if (getValues(`formSaldi.${index}.nieuw`) !== nieuw) {
+      setValue(`formSaldi.${index}.nieuw`, nieuw);
+    }
+    const delta = parseFloat(nieuw) - saldo.huidig;
+    if (getValues(`formSaldi.${index}.delta`) !== delta && !isNaN(delta)) {
+      setValue(`formSaldi.${index}.delta`, delta);
+    }
+  });
+
+  const onSubmit = (data: FormValues) => {
+    saveWijzigingen(data.formSaldi);
+    handleClose();
+    setSnackbarMessage({
+      message: `De beginstand van de periode is aangepast.`,
+      type: 'success',
+    });
+  };
+
+  const saveWijzigingen = async (formSaldi: FormValues['formSaldi']) => {
     if (actieveHulpvrager) {
       const saldos = formSaldi.map((formSaldo) => ({
         rekeningNaam: formSaldo.naam,
-        openingsBalansSaldo: formSaldo.bedrag,
+        openingsBalansSaldo: Number(formSaldo.nieuw),
       }));
       console.log('Saving wijzigingen', formSaldi, saldos);
       try {
@@ -98,38 +133,6 @@ export function WijzigPeriodeForm({
     setOpen(false);
   };
 
-  const handleKeyPress = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' || event.key === 'NumpadEnter') {
-      // handleSubmit(event as unknown as React.FormEvent);
-      console.log('Enter pressed');
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    saveWijzigingen();
-    handleClose();
-    setSnackbarMessage({
-      message: `De beginstand van de periode is aangepast.`,
-      type: 'success',
-    });
-  };
-
-  const handleInputChange = (saldo: FormSaldo, event: string) => {
-    const raw = event.replace(/[^0-9,\-.]/g, '').replace(',', '.');
-    const newValue = parseFloat(raw) || 0;
-    const delta = saldo.delta + newValue - parseFloat(saldo.bedrag);
-    const newSaldi = formSaldi.map((s) =>
-      s.naam === saldo.naam ? { ...s, bedrag: raw, delta: delta } : s,
-    );
-    setFormSaldi(newSaldi);
-    console.log(`New value for ${saldo.naam}:`, JSON.stringify(newSaldi));
-  };
-
-  const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => {
-    event.target.select();
-  };
-
   return (
     <BootstrapDialog
       onClose={handleClose}
@@ -137,178 +140,184 @@ export function WijzigPeriodeForm({
       open={open}
       fullWidth
     >
-      <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
-        {editMode ? 'Wijzig p' : 'P'}
-        eriodeopening op{' '}
-        {dayjs(periodes[index].periodeStartDatum).format('D MMMM')}
-      </DialogTitle>
-      <IconButton
-        aria-label="close"
-        onClick={() => handleClose()}
-        sx={(theme) => ({
-          position: 'absolute',
-          right: 8,
-          top: 8,
-          color: theme.palette.grey[500],
-        })}
-      >
-        <CloseIcon />
-      </IconButton>
-      <DialogContent dividers>
-        {!editMode && (
-          <Typography variant="body2" sx={{ mb: 2 }}>
-            Dit zijn de openingssaldi van de betaalmiddelen
-            {heeftAflossingen && ' en aflossingen'}.
-          </Typography>
-        )}
-        {editMode && (
-          <Typography variant="body2" sx={{ mb: 2 }}>
-            Pas hier de beginstand van de <strong>eerste open periode</strong>{' '}
-            aan. Zo kun je ervoor zorgen dat de actuele stand van de
-            betaalmiddelen klopt, ook als er uitgaven of inkomsten zijn geweest
-            die niet zijn geregistreerd. Het heeft gevolgen voor{' '}
-            <strong>alle volgende open periodes</strong>.
-          </Typography>
-        )}
-        <Stack spacing={2} onKeyDown={handleKeyPress}>
-          <TableContainer sx={{ mr: 'auto', my: '10px' }}>
-            <Table sx={{ width: '100%' }} aria-label="simple table">
-              <TableBody>
-                <TableRow sx={{ '& td, & th': { border: 0 } }}>
-                  <TableCell
-                    align="left"
-                    size="small"
-                    sx={{ fontWeight: '500' }}
-                  >
-                    Rekening
-                  </TableCell>
-                  <TableCell
-                    align="right"
-                    size="small"
-                    sx={{ fontWeight: '500' }}
-                  >
-                    {dayjs(periodes[index].periodeStartDatum).format('D MMMM')}
-                  </TableCell>
-                  {editMode && (
-                    <TableCell
-                      align="right"
-                      size="small"
-                      sx={{ fontWeight: '500' }}
-                    >
-                      Verschil
-                    </TableCell>
-                  )}
-                </TableRow>
-                {formSaldi.map((saldo) => (
-                  <TableRow
-                    key={saldo.naam}
-                    sx={{ '& td, & th': { border: 0 } }}
-                  >
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
+          {editMode ? 'Wijzig p' : 'P'}
+          eriodeopening op{' '}
+          {dayjs(periodes[index].periodeStartDatum).format('D MMMM')}
+        </DialogTitle>
+        <IconButton
+          aria-label="close"
+          onClick={() => handleClose()}
+          sx={(theme) => ({
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: theme.palette.grey[500],
+          })}
+        >
+          <CloseIcon />
+        </IconButton>
+        <DialogContent dividers>
+          {!editMode && (
+            <Typography variant="body2" sx={{ mb: 2 }}>
+              Dit zijn de openingssaldi van de betaalmiddelen
+              {heeftAflossingen && ' en aflossingen'}.
+            </Typography>
+          )}
+          {editMode && (
+            <Typography variant="body2" sx={{ mb: 2 }}>
+              Pas hier de beginstand van de <strong>eerste open periode</strong>{' '}
+              aan. Zo kun je ervoor zorgen dat de actuele stand van de
+              betaalmiddelen klopt, ook als er uitgaven of inkomsten zijn
+              geweest die niet zijn geregistreerd. Het heeft gevolgen voor{' '}
+              <strong>alle volgende open periodes</strong>.
+            </Typography>
+          )}
+          <Stack spacing={2}>
+            <TableContainer sx={{ mr: 'auto', my: '10px' }}>
+              <Table sx={{ width: '100%' }} aria-label="simple table">
+                <TableBody>
+                  <TableRow sx={{ '& td, & th': { border: 0 } }}>
                     <TableCell
                       align="left"
                       size="small"
                       sx={{ fontWeight: '500' }}
                     >
-                      {saldo.naam}
+                      Rekening
                     </TableCell>
-                    {!editMode && (
-                      <TableCell
-                        align="right"
-                        size="small"
-                        sx={{ textAlign: 'right', fontSize: '0.85rem' }}
-                      >
-                        {currencyFormatter.format(Number(saldo.bedrag))}
-                      </TableCell>
-                    )}
+                    <TableCell
+                      align="right"
+                      size="small"
+                      sx={{ fontWeight: '500' }}
+                    >
+                      {dayjs(periodes[index].periodeStartDatum).format(
+                        'D MMMM',
+                      )}
+                    </TableCell>
                     {editMode && (
                       <TableCell
                         align="right"
                         size="small"
-                        sx={{ textAlign: 'right', fontSize: '0.85rem' }}
+                        sx={{ fontWeight: '500' }}
                       >
-                        <TextField
-                          // sx={{ width: '33%' }}
-                          variant="standard"
-                          id="betaling-bedrag"
-                          value={saldo.bedrag}
-                          type="text"
-                          onChange={(e) =>
-                            handleInputChange(saldo, e.target.value)
-                          }
-                          onFocus={handleFocus}
-                          inputProps={{ style: { textAlign: 'right' } }}
-                          slotProps={{
-                            input: {
-                              style: {
-                                textAlign: 'right',
-                                fontSize: '0.9rem',
-                              },
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  €
-                                </InputAdornment>
-                              ),
-                            },
-                          }}
-                        />
-                      </TableCell>
-                    )}
-                    {editMode && (
-                      <TableCell sx={{}} align="right" size="small">
-                        <Typography
-                          sx={{ textAlign: 'right', fontSize: '0.85rem' }}
-                        >
-                          {currencyFormatter.format(saldo.delta)}
-                        </Typography>
+                        Verschil
                       </TableCell>
                     )}
                   </TableRow>
-                ))}
-                <TableRow sx={{ '& td, & th': { border: 0 } }}>
-                  <TableCell
-                    size="small"
-                    sx={{ fontWeight: '500', fontSize: '0.85rem' }}
-                  >
-                    Totaal
-                  </TableCell>
-                  <TableCell sx={{ textAlign: 'right', fontSize: '0.85rem' }}>
-                    {currencyFormatter.format(
-                      formSaldi.reduce(
-                        (acc, saldo) => acc + parseFloat(saldo.bedrag || '0'),
-                        0,
-                      ),
-                    )}
-                  </TableCell>
-                  {editMode && (
+                  {formSaldi.map((saldo, index) => (
+                    <TableRow
+                      key={saldo.naam}
+                      sx={{ '& td, & th': { border: 0 } }}
+                    >
+                      <TableCell
+                        align="left"
+                        size="small"
+                        sx={{ fontWeight: '500' }}
+                      >
+                        {saldo.naam}
+                      </TableCell>
+
+                      <TableCell
+                        align="right"
+                        size="small"
+                        sx={{ textAlign: 'right', fontSize: '0.85rem' }}
+                      >
+                        {editMode ? (
+                          <TextField
+                            sx={{ width: '33%' }}
+                            variant="standard"
+                            id={`formSaldi.${index}.nieuw`}
+                            type="text"
+                            inputRef={register(`formSaldi.${index}.nieuw`).ref}
+                            {...register(`formSaldi.${index}.nieuw`)}
+                            inputProps={{ style: { textAlign: 'right' } }}
+                            slotProps={{
+                              input: {
+                                style: {
+                                  textAlign: 'right',
+                                  fontSize: '0.9rem',
+                                },
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    €
+                                  </InputAdornment>
+                                ),
+                              },
+                            }}
+                            error={
+                              errors.formSaldi?.[index]?.nieuw ? true : false
+                            }
+                            helperText={
+                              errors.formSaldi?.[index]?.nieuw?.message
+                            }
+                          />
+                        ) : (
+                          currencyFormatter.format(Number(saldo.nieuw))
+                        )}
+                      </TableCell>
+
+                      {editMode && (
+                        <TableCell sx={{}} align="right" size="small">
+                          <Typography
+                            sx={{ textAlign: 'right', fontSize: '0.85rem' }}
+                          >
+                            {currencyFormatter.format(saldo.delta)}
+                          </Typography>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))}
+                  <TableRow sx={{ '& td, & th': { border: 0 } }}>
+                    <TableCell
+                      size="small"
+                      sx={{ fontWeight: '500', fontSize: '0.85rem' }}
+                    >
+                      Totaal
+                    </TableCell>
                     <TableCell sx={{ textAlign: 'right', fontSize: '0.85rem' }}>
                       {currencyFormatter.format(
-                        formSaldi.reduce((acc, saldo) => acc + saldo.delta, 0),
+                        formSaldi.reduce(
+                          (acc, saldo) => acc + Number(saldo.nieuw) || 0,
+                          0,
+                        ),
                       )}
                     </TableCell>
-                  )}
-                </TableRow>
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Stack>
-      </DialogContent>
-      {editMode && (
-        <DialogActions>
-          <Button
-            autoFocus
-            sx={{ color: 'success.main' }}
-            startIcon={
-              <SaveOutlinedIcon
-                sx={{ fontSize: '35px', color: 'success.main' }}
-              />
-            }
-            onClick={handleSubmit}
-          >
-            BEWAAR
-          </Button>
-          {/* {JSON.stringify(formSaldi)} */}
-        </DialogActions>
-      )}
+                    {editMode && (
+                      <TableCell
+                        sx={{ textAlign: 'right', fontSize: '0.85rem' }}
+                      >
+                        {currencyFormatter.format(
+                          formSaldi.reduce(
+                            (acc, saldo) => acc + saldo.delta,
+                            0,
+                          ),
+                        )}
+                      </TableCell>
+                    )}
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Stack>
+        </DialogContent>
+        {editMode && (
+          <DialogActions>
+            <Button
+              autoFocus
+              sx={{ color: 'success.main' }}
+              startIcon={
+                <SaveOutlinedIcon
+                  sx={{ fontSize: '35px', color: 'success.main' }}
+                />
+              }
+              type="submit"
+            >
+              BEWAAR
+            </Button>
+          </DialogActions>
+        )}
+      </form>
     </BootstrapDialog>
   );
 }
