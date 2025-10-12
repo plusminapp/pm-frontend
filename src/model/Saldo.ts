@@ -32,7 +32,7 @@ export type SaldoDTO = {
   betaling: number;
   reservering: number;
   opgenomenSaldo: number;
-  oorspronkelijkeBetaling: number;
+  correctieBoeking: number;
   periode: Periode;
   budgetPeilDatum: string;
   budgetOpPeilDatum: number;

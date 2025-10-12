@@ -12,7 +12,6 @@ async function fetchData<T>(
   bearerToken: string,
   method: string = 'GET',
   body?: unknown,
-  responseType: 'json' | 'text' = 'json',
 ) {
   const response = await fetch(`${endpoint}`, {
     method,
@@ -24,9 +23,6 @@ async function fetchData<T>(
   });
   if (!response.ok) {
     throw new Error('Network response was not ok');
-  }
-  if (responseType === 'text') {  
-    return response.text() as unknown as T;
   }
   return response.json() as T;
 }
@@ -191,7 +187,18 @@ function usePlusminApi() {
         token,
         'PUT',
         saldos,
-        'text'
+      );
+    },
+    [getIDToken],
+  );
+
+  const getPeriodeOpening = useCallback(
+    async (hulpvrager: Gebruiker, periode: Periode) => {
+      const token = await getIDToken();
+      return fetchData<SaldoDTO[]>(
+        `/api/v1/stand/hulpvrager/${hulpvrager.id}/periode/${periode.id}/openingsbalans`,
+        token,
+        'GET',
       );
     },
     [getIDToken],
@@ -209,6 +216,7 @@ function usePlusminApi() {
     deleteBetaling,
     putPeriodeActie,
     putPeriodeOpeningWijziging,
+    getPeriodeOpening,
     putBetalingValidatie,
   };
 }
