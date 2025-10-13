@@ -12,7 +12,6 @@ async function fetchData<T>(
   bearerToken: string,
   method: string = 'GET',
   body?: unknown,
-  responseType: 'json' | 'text' = 'json',
 ) {
   const response = await fetch(`${endpoint}`, {
     method,
@@ -24,9 +23,6 @@ async function fetchData<T>(
   });
   if (!response.ok) {
     throw new Error('Network response was not ok');
-  }
-  if (responseType === 'text') {  
-    return response.text() as unknown as T;
   }
   return response.json() as T;
 }
@@ -40,7 +36,7 @@ function usePlusminApi() {
     return fetchData<{
       gebruiker: Gebruiker;
       hulpvragers: Gebruiker[];
-    }>('/api/v1/gebruiker/zelf', token);
+    }>('/api/v1/gebruikers/zelf', token);
   }, [getIDToken]);
 
   /* Rekening */
@@ -48,7 +44,7 @@ function usePlusminApi() {
     async (hulpvrager: Gebruiker, periode: Periode) => {
       const token = await getIDToken();
       return fetchData<RekeningGroepPerBetalingsSoort[]>(
-        `/api/v1/rekening/hulpvrager/${hulpvrager.id}/periode/${periode.id}`,
+        `/api/v1/rekeningen/hulpvrager/${hulpvrager.id}/periodes/${periode.id}`,
         token,
       );
     },
@@ -59,7 +55,7 @@ function usePlusminApi() {
     async (hulpvrager: Gebruiker, periode: Periode) => {
       const token = await getIDToken();
       return fetchData<CashFlow[]>(
-        `/api/v1/rekening/hulpvrager/${hulpvrager.id}/periode/${periode.id}/cashflow`,
+        `/api/v1/rekeningen/hulpvrager/${hulpvrager.id}/periodes/${periode.id}/cashflow`,
         token,
       );
     },
@@ -174,7 +170,7 @@ function usePlusminApi() {
     ) => {
       const token = await getIDToken();
       return fetchData(
-        `/api/v1/periode/hulpvrager/${hulpvrager.id}/${actie}/${periode.id}`,
+        `/api/v1/periodes/hulpvrager/${hulpvrager.id}/${actie}/${periode.id}`,
         token,
         'PUT',
         [],
@@ -187,11 +183,22 @@ function usePlusminApi() {
     async (hulpvrager: Gebruiker, periode: Periode, saldos: SaldoDTO[]) => {
       const token = await getIDToken();
       return fetchData(
-        `/api/v1/periode/hulpvrager/${hulpvrager.id}/wijzig-periode-opening/${periode.id}`,
+        `/api/v1/periodes/hulpvrager/${hulpvrager.id}/wijzig-periode-opening/${periode.id}`,
         token,
         'PUT',
         saldos,
-        'text'
+      );
+    },
+    [getIDToken],
+  );
+
+  const getPeriodeOpening = useCallback(
+    async (hulpvrager: Gebruiker, periode: Periode) => {
+      const token = await getIDToken();
+      return fetchData<SaldoDTO[]>(
+        `/api/v1/stand/hulpvrager/${hulpvrager.id}/periodes/${periode.id}/openingsbalans`,
+        token,
+        'GET',
       );
     },
     [getIDToken],
@@ -209,6 +216,7 @@ function usePlusminApi() {
     deleteBetaling,
     putPeriodeActie,
     putPeriodeOpeningWijziging,
+    getPeriodeOpening,
     putBetalingValidatie,
   };
 }
