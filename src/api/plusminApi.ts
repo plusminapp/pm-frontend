@@ -36,7 +36,7 @@ function usePlusminApi() {
     return fetchData<{
       gebruiker: Gebruiker;
       hulpvragers: Gebruiker[];
-    }>('/api/v1/gebruikers/zelf', token);
+    }>('/api/v1/gebruiker/zelf', token);
   }, [getIDToken]);
 
   /* Rekening */
