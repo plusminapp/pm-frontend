@@ -36,7 +36,7 @@ function usePlusminApi() {
     return fetchData<{
       gebruiker: Gebruiker;
       hulpvragers: Gebruiker[];
-    }>('/api/v1/gebruiker/zelf', token);
+    }>('/api/v1/gebruikers/zelf', token);
   }, [getIDToken]);
 
   /* Rekening */
@@ -44,7 +44,7 @@ function usePlusminApi() {
     async (hulpvrager: Gebruiker, periode: Periode) => {
       const token = await getIDToken();
       return fetchData<RekeningGroepPerBetalingsSoort[]>(
-        `/api/v1/rekeningen/hulpvrager/${hulpvrager.id}/periodes/${periode.id}`,
+        `/api/v1/rekeningen/hulpvrager/${hulpvrager.id}/periode/${periode.id}`,
         token,
       );
     },
@@ -55,7 +55,7 @@ function usePlusminApi() {
     async (hulpvrager: Gebruiker, periode: Periode) => {
       const token = await getIDToken();
       return fetchData<CashFlow[]>(
-        `/api/v1/rekeningen/hulpvrager/${hulpvrager.id}/periodes/${periode.id}/cashflow`,
+        `/api/v1/rekeningen/hulpvrager/${hulpvrager.id}/periode/${periode.id}/cashflow`,
         token,
       );
     },
@@ -196,7 +196,7 @@ function usePlusminApi() {
     async (hulpvrager: Gebruiker, periode: Periode) => {
       const token = await getIDToken();
       return fetchData<SaldoDTO[]>(
-        `/api/v1/stand/hulpvrager/${hulpvrager.id}/periodes/${periode.id}/openingsbalans`,
+        `/api/v1/stand/hulpvrager/${hulpvrager.id}/periode/${periode.id}/openingsbalans`,
         token,
         'GET',
       );
