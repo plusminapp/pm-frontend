@@ -22,7 +22,14 @@ import { Gebruiker } from '../../model/Gebruiker';
 import { Periode } from '../../model/Periode';
 import { RekeningGroepPerBetalingsSoort } from '../../model/RekeningGroep';
 import StyledSnackbar from '../StyledSnackbar';
+import { useTranslation } from 'react-i18next';
+import { TaalKeuzes } from './TaalKeuzes';
+
+const I18N_KEY = 'components.header';
+
 function Header() {
+  const { t } = useTranslation();
+
   const navigate = useNavigate();
   const handleNavigation = (page: string) => {
     setAnchorElNav(null);
@@ -309,7 +316,7 @@ function Header() {
                     sx={{ mx: 2, color: '#222', display: 'block' }}
                     className={currentPage === page ? 'selected' : ''}
                   >
-                    {page}
+                    {t(`${I18N_KEY}.${page.toLowerCase()}`)}
                   </Button>
                 ))}
               </Box>
@@ -410,6 +417,9 @@ function Header() {
                       <Typography sx={{ textAlign: 'center' }}>
                         Uitloggen
                       </Typography>
+                    </MenuItem>
+                    <MenuItem>
+                      <TaalKeuzes />
                     </MenuItem>
                   </Menu>
                 </Box>

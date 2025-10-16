@@ -21,6 +21,7 @@ import NotFound from './pages/NotFound';
 import BankAppAfbeelding from './pages/BankAppAfbeelding';
 import { GridExample } from './pages/Experiment';
 import './App.css';
+import './i18n';
 
 const ProtectedRoute: React.FC<{ element: JSX.Element }> = ({ element }) => {
   const { state } = useAuthContext();
