@@ -29,7 +29,7 @@ import { usePlusminApi } from '../../api/plusminApi';
 import { useCustomContext } from '../../context/CustomContext';
 import { currencyFormatter } from '../../model/Betaling';
 import { Periode } from '../../model/Periode';
-import { SaldoDTO, Stand } from '../../model/Saldo';
+import { SaldoDTO } from '../../model/Saldo';
 import {
   defaultFormSaldos,
   defaultHeeftAflossingen,
@@ -47,24 +47,22 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 }));
 
 interface WijzigPeriodeFormProps {
-  periodes: Periode[];
-  index: number;
+  periode: Periode;
   editMode?: boolean;
   onWijzigPeriodeClose: () => void;
-  stand: Stand;
+  openingsBalansSaldi: SaldoDTO[];
 }
 
 export function WijzigPeriodeForm({
-  periodes,
-  index,
+  periode,
   editMode,
-  stand,
   onWijzigPeriodeClose,
+  openingsBalansSaldi,
 }: WijzigPeriodeFormProps) {
   const { actieveHulpvrager, setSnackbarMessage } = useCustomContext();
   const { putPeriodeOpeningWijziging } = usePlusminApi();
   const [open, setOpen] = useState<boolean>(true);
-  const heeftAflossingen = defaultHeeftAflossingen(stand);
+  const heeftAflossingen = defaultHeeftAflossingen(openingsBalansSaldi);
 
   const {
     register,
@@ -76,7 +74,7 @@ export function WijzigPeriodeForm({
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      formSaldi: defaultFormSaldos(stand),
+      formSaldi: defaultFormSaldos(openingsBalansSaldi),
     },
   });
 
@@ -86,9 +84,10 @@ export function WijzigPeriodeForm({
     if (getValues(`formSaldi.${index}.nieuw`) !== nieuw) {
       setValue(`formSaldi.${index}.nieuw`, nieuw);
     }
-    const delta = parseFloat(nieuw) - saldo.huidig;
-    if (getValues(`formSaldi.${index}.delta`) !== delta && !isNaN(delta)) {
-      setValue(`formSaldi.${index}.delta`, delta);
+    const oldDelta = defaultFormSaldos(openingsBalansSaldi)[index].delta;
+    const newDelta = oldDelta + parseFloat(nieuw) - saldo.huidig;
+    if (getValues(`formSaldi.${index}.delta`) !== newDelta && !isNaN(newDelta)) {
+      setValue(`formSaldi.${index}.delta`, newDelta);
     }
   });
 
@@ -111,7 +110,7 @@ export function WijzigPeriodeForm({
       try {
         await putPeriodeOpeningWijziging(
           actieveHulpvrager,
-          periodes[index],
+          periode,
           saldos as unknown as SaldoDTO[],
         );
         setSnackbarMessage({
@@ -143,8 +142,7 @@ export function WijzigPeriodeForm({
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
           {editMode ? 'Wijzig p' : 'P'}
-          eriodeopening op{' '}
-          {dayjs(periodes[index].periodeStartDatum).format('D MMMM')}
+          eriodeopening op {dayjs(periode.periodeStartDatum).format('D MMMM')}
         </DialogTitle>
         <IconButton
           aria-label="close"
@@ -161,7 +159,7 @@ export function WijzigPeriodeForm({
         <DialogContent dividers>
           {!editMode && (
             <Typography variant="body2" sx={{ mb: 2 }}>
-              Dit zijn de openingssaldi van de betaalmiddelen
+              Dit zijn de openingsbalanssaldi van de betaalmiddelen
               {heeftAflossingen && ' en aflossingen'}.
             </Typography>
           )}
@@ -191,19 +189,17 @@ export function WijzigPeriodeForm({
                       size="small"
                       sx={{ fontWeight: '500' }}
                     >
-                      {dayjs(periodes[index].periodeStartDatum).format(
-                        'D MMMM',
-                      )}
+                      {dayjs(periode.periodeStartDatum).format('D MMMM')}
                     </TableCell>
-                    {editMode && (
+                    {/* {editMode && ( */}
                       <TableCell
                         align="right"
                         size="small"
                         sx={{ fontWeight: '500' }}
                       >
-                        Verschil
+                        Correctie
                       </TableCell>
-                    )}
+                    {/* )} */}
                   </TableRow>
                   {formSaldi.map((saldo, index) => (
                     <TableRow
@@ -231,7 +227,6 @@ export function WijzigPeriodeForm({
                             type="text"
                             inputRef={register(`formSaldi.${index}.nieuw`).ref}
                             {...register(`formSaldi.${index}.nieuw`)}
-                            inputProps={{ style: { textAlign: 'right' } }}
                             slotProps={{
                               input: {
                                 style: {
@@ -257,7 +252,7 @@ export function WijzigPeriodeForm({
                         )}
                       </TableCell>
 
-                      {editMode && (
+                      {/* {editMode && ( */}
                         <TableCell sx={{}} align="right" size="small">
                           <Typography
                             sx={{ textAlign: 'right', fontSize: '0.85rem' }}
@@ -265,7 +260,7 @@ export function WijzigPeriodeForm({
                             {currencyFormatter.format(saldo.delta)}
                           </Typography>
                         </TableCell>
-                      )}
+                      {/* )} */}
                     </TableRow>
                   ))}
                   <TableRow sx={{ '& td, & th': { border: 0 } }}>
