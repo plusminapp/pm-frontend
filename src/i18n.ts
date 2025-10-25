@@ -4,18 +4,34 @@ import { initReactI18next } from 'react-i18next';
 const resources = {
   en: {
     translation: {
-      components: { header: { kasboek: 'Ledger', stand: 'Financial status' } },
+      components: {
+        header: {
+          kasboek: 'Ledger',
+          stand: 'Status',
+          aflossen: 'Repayment',
+        },
+      },
     },
   },
   nl: {
     translation: {
-      components: { header: { kasboek: 'Kasboek', stand: 'Stand' } },
+      components: {
+        header: {
+          kasboek: 'Kasboek',
+          stand: 'Stand',
+          aflossen: 'Aflossen',
+        },
+      },
     },
   },
   fr: {
     translation: {
       components: {
-        header: { kasboek: 'Le grand livre', stand: 'Situation financière' },
+        header: {
+          kasboek: 'Livre',
+          stand: 'Situation',
+          aflossen: 'Remboursement',
+        },
       },
     },
   },
