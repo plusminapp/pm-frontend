@@ -303,21 +303,6 @@ export function HevelReserveOverForm({
                       size="small"
                       sx={{ fontWeight: '500', fontSize: '0.85rem' }}
                     >
-                      Bestemming
-                    </TableCell>
-                    <TableCell
-                      size="small"
-                      sx={{ fontWeight: '500', fontSize: '0.85rem' }}
-                    >
-                      {formReservering.bestemming}
-                    </TableCell>
-                  </TableRow>
-
-                  <TableRow sx={{ '& td, & th': { border: 0 } }}>
-                    <TableCell
-                      size="small"
-                      sx={{ fontWeight: '500', fontSize: '0.85rem' }}
-                    >
                       Omschrijving
                     </TableCell>
                     <TableCell
