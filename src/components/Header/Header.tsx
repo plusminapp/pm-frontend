@@ -62,6 +62,7 @@ function Header() {
     gekozenPeriode,
     setGekozenPeriode,
     setStand,
+    isStandDirty,
     setIsStandDirty,
     rekeningGroepPerBetalingsSoort,
     setRekeningGroepPerBetalingsSoort,
@@ -254,6 +255,7 @@ function Header() {
     actieveHulpvrager,
     getStandVoorHulpvragerEnDatum,
     gekozenPeriode,
+    isStandDirty,
     setIsStandDirty,
     setStand,
   ]);

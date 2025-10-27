@@ -59,7 +59,7 @@ export function WijzigPeriodeForm({
   onWijzigPeriodeClose,
   openingsBalansSaldi,
 }: WijzigPeriodeFormProps) {
-  const { actieveHulpvrager, setSnackbarMessage } = useCustomContext();
+  const { actieveHulpvrager, setSnackbarMessage, setIsStandDirty } = useCustomContext();
   const { putPeriodeOpeningWijziging } = usePlusminApi();
   const [open, setOpen] = useState<boolean>(true);
   const heeftAflossingen = defaultHeeftAflossingen(openingsBalansSaldi);
@@ -116,7 +116,8 @@ export function WijzigPeriodeForm({
         setSnackbarMessage({
           message: `De periodeopening is succesvol aangepast.`,
           type: 'success',
-        });
+        })
+        setIsStandDirty(true);
       } catch (error) {
         console.error('Error saving wijzigingen', error);
         setSnackbarMessage({

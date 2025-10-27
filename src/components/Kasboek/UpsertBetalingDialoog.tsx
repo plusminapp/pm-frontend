@@ -300,6 +300,7 @@ export default function UpsertBetalingDialoog(
           message: 'Betaling is opgeslagen.',
           type: 'success',
         });
+        setIsStandDirty(true);
       } catch (error) {
         console.error('Fout bij betaling', error);
         setSnackbarMessage({

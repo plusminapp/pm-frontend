@@ -5,7 +5,10 @@ export const formSchema = z.object({
   formReservering: z.object({
     bestemming: z.string().readonly(),
     bron: z.string(),
-    bedrag: z.number(),
+    bedrag: z.string().refine((val) => {
+      return /^\d*(\.\d{0,2})?$/.test(val);
+    }, 'Geen geldig bedrag'),
+    omschrijving: z.string().max(100).optional().or(z.literal('')) ,
   }),
 });
 export type FormValues = z.infer<typeof formSchema>;
@@ -13,18 +16,11 @@ export type FormValues = z.infer<typeof formSchema>;
 export const defaultFormSaldos = (saldo: SaldoDTO) => ({
   bestemming: saldo.rekeningNaam,
   bron: 'Kies een bron',
-  bedrag: 0,
+  bedrag: "0",
 });
 
-export const defaultHeeftAflossingen = (
-  openingsBalansSaldi: SaldoDTO[],
-): boolean =>
-  openingsBalansSaldi.some(
-    (saldo: SaldoDTO) => saldo.rekeningGroepSoort === 'AFLOSSING',
-  );
-
 export const formatAmount = (amount: number): string => {
-  if (!!!amount) amount = 0;
+  if (!amount) amount = 0;
   return amount.toLocaleString('nl-NL', {
     style: 'currency',
     currency: 'EUR',

@@ -30,7 +30,7 @@ import 'dayjs/locale/nl';
 import { useForm } from 'react-hook-form';
 import { usePlusminApi } from '../../api/plusminApi';
 import { useCustomContext } from '../../context/CustomContext';
-import { BetalingDTO } from '../../model/Betaling';
+import { BetalingDTO, BetalingsSoort } from '../../model/Betaling';
 import { SaldoDTO } from '../../model/Saldo';
 import {
   defaultFormSaldos,
@@ -63,17 +63,18 @@ export function HevelReserveOverForm({
   onHevelReserveOverClose,
   resultaatOpDatum: resultaatOpDatum,
 }: HevelReserveOverFormProps) {
-  const { actieveHulpvrager, setSnackbarMessage } = useCustomContext();
+  const { actieveHulpvrager, setSnackbarMessage, setIsStandDirty } =
+    useCustomContext();
   const { postBetalingVoorHulpvrager } = usePlusminApi();
   const [open, setOpen] = useState<boolean>(true);
 
   const selecteerbareBonnen = resultaatOpDatum
-  .filter((item) =>
-    reserverenRekeningGroepSoorten.includes(
-      item.rekeningGroepSoort as RekeningGroepSoort,
+    .filter((item) =>
+      reserverenRekeningGroepSoorten.includes(
+        item.rekeningGroepSoort as RekeningGroepSoort,
+      ),
     )
-  )
-  .sort((a, b) => a.sortOrder - b.sortOrder);
+    .sort((a, b) => a.sortOrder - b.sortOrder);
 
   const {
     register,
@@ -91,11 +92,12 @@ export function HevelReserveOverForm({
             (item) => item.rekeningNaam === geselecteerdeBestemming,
           ) ?? resultaatOpDatum[0],
         ),
-        bron: selecteerbareBonnen[0]?.rekeningNaam || '', // Selecteer standaard de eerste bron
+        bron: selecteerbareBonnen[0]?.rekeningNaam || '',
       },
     },
   });
 
+  const watchedBedrag = watch('formReservering.bedrag');
   const formReservering = getValues('formReservering');
   const bron = formReservering.bron.replace(/,/g, '.');
   if (getValues(`formReservering.bron`) !== bron) {
@@ -107,27 +109,50 @@ export function HevelReserveOverForm({
     handleClose();
   };
 
+  const bepaalPotjeSoort = (rekeningNaam: string) => {
+    const gevondenSaldo = resultaatOpDatum.find(
+      (item) => item.rekeningNaam === rekeningNaam,
+    )!;
+    console.log(
+      'Gevonden saldo voor rekeningNaam',
+      rekeningNaam,
+      gevondenSaldo.rekeningGroepSoort,
+    );
+    return gevondenSaldo.rekeningGroepSoort === RekeningGroepSoort.spaarpot
+      ? 'SP'
+      : 'P';
+  };
+
   const saveWijzigingen = async (
     formReservering: FormValues['formReservering'],
   ) => {
     if (actieveHulpvrager) {
-      console.log('Saving wijzigingen', formReservering);
-      // try {
-      //   await postBetalingVoorHulpvrager(
-      //     actieveHulpvrager,
-      //     formReservering as unknown as BetalingDTO,
-      //   );
-      //   setSnackbarMessage({
-      //     message: `De reserve is succesvol overgeheveld.`,
-      //     type: 'success',
-      //   });
-      // } catch (error) {
-      //   console.error('Error saving wijzigingen', error);
-      //   setSnackbarMessage({
-      //     message: `De configuratie voor ${actieveHulpvrager!.bijnaam} is niet correct.`,
-      //     type: 'warning',
-      //   });
-      // }
+      const betalingsSoort = `${bepaalPotjeSoort(formReservering.bron)}2${bepaalPotjeSoort(formReservering.bestemming)}`;
+      console.log('Saving wijzigingen', formReservering, betalingsSoort);
+      try {
+        await postBetalingVoorHulpvrager(actieveHulpvrager, {
+          ...(formReservering as unknown as BetalingDTO),
+          betalingsSoort: betalingsSoort as BetalingsSoort,
+          bedrag: Number(formReservering.bedrag),
+          boekingsdatum: new Date().toISOString().split('T')[0],
+          omschrijving:
+            formReservering.omschrijving &&
+            formReservering.omschrijving?.length > 0
+              ? formReservering.omschrijving
+              : `Hevel reserve over van ${formReservering.bron} naar ${formReservering.bestemming}`,
+        });
+        setSnackbarMessage({
+          message: `De reserve is succesvol overgeheveld.`,
+          type: 'success',
+        });
+        setIsStandDirty(true);
+      } catch (error) {
+        console.error('Error saving wijzigingen', error);
+        setSnackbarMessage({
+          message: `De configuratie voor ${actieveHulpvrager!.bijnaam} is niet correct.`,
+          type: 'warning',
+        });
+      }
     }
   };
 
@@ -145,7 +170,7 @@ export function HevelReserveOverForm({
     >
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
-          Hevel reserve over
+          Hevel reserve over naar {formReservering.bestemming}
         </DialogTitle>
         <IconButton
           aria-label="close"
@@ -235,21 +260,34 @@ export function HevelReserveOverForm({
                             );
                           }}
                         >
-                          {selecteerbareBonnen.map((saldo) => (
-                            <MenuItem
-                              key={saldo.rekeningNaam}
-                              value={saldo.rekeningNaam}
-                              sx={{ fontSize: '0.85rem' }}
-                            >
-                              {saldo.rekeningNaam} (
-                              {formatAmount(
+                          {selecteerbareBonnen
+                            .filter(
+                              (saldo) =>
+                                saldo.rekeningNaam !==
+                                formReservering.bestemming,
+                            )
+                            .map((saldo) => {
+                              const beschikbareBedrag =
                                 saldo.openingsReserveSaldo +
-                                  saldo.reservering -
-                                  saldo.betaling,
-                              )}
-                              )
-                            </MenuItem>
-                          ))}
+                                saldo.reservering -
+                                saldo.betaling;
+                              const gewenstBedrag = Number(watchedBedrag) || 0;
+
+                              return (
+                                <MenuItem
+                                  key={saldo.rekeningNaam}
+                                  value={saldo.rekeningNaam}
+                                  sx={{ fontSize: '0.85rem' }}
+                                  disabled={
+                                    beschikbareBedrag <= 0 ||
+                                    beschikbareBedrag < gewenstBedrag
+                                  }
+                                >
+                                  {saldo.rekeningNaam} (
+                                  {formatAmount(beschikbareBedrag)})
+                                </MenuItem>
+                              );
+                            })}
                         </Select>
                         {errors.formReservering?.bron && (
                           <FormHelperText>
@@ -272,6 +310,36 @@ export function HevelReserveOverForm({
                       sx={{ fontWeight: '500', fontSize: '0.85rem' }}
                     >
                       {formReservering.bestemming}
+                    </TableCell>
+                  </TableRow>
+
+                  <TableRow sx={{ '& td, & th': { border: 0 } }}>
+                    <TableCell
+                      size="small"
+                      sx={{ fontWeight: '500', fontSize: '0.85rem' }}
+                    >
+                      Omschrijving
+                    </TableCell>
+                    <TableCell
+                      size="small"
+                      sx={{ fontWeight: '500', fontSize: '0.85rem' }}
+                    >
+                      <TextField
+                        sx={{
+                          width: '100%',
+                          fontWeight: '500',
+                          fontSize: '0.85rem',
+                        }}
+                        variant="standard"
+                        id={`formReservering.omschrijving`}
+                        type="text"
+                        multiline
+                        minRows={1}
+                        maxRows={4}
+                        placeholder="Optioneel: extra toelichting"
+                        inputRef={register(`formReservering.omschrijving`).ref}
+                        {...register(`formReservering.omschrijving`)}
+                      />
                     </TableCell>
                   </TableRow>
                 </TableBody>
