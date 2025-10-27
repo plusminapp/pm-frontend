@@ -128,6 +128,7 @@ export function HevelReserveOverForm({
   ) => {
     if (actieveHulpvrager) {
       const betalingsSoort = `${bepaalPotjeSoort(formReservering.bron)}2${bepaalPotjeSoort(formReservering.bestemming)}`;
+      const waarschuwing = bepaalPotjeSoort(formReservering.bron) !== bepaalPotjeSoort(formReservering.bestemming);
       console.log('Saving wijzigingen', formReservering, betalingsSoort);
       try {
         await postBetalingVoorHulpvrager(actieveHulpvrager, {
@@ -142,7 +143,7 @@ export function HevelReserveOverForm({
               : `Hevel reserve over van ${formReservering.bron} naar ${formReservering.bestemming}`,
         });
         setSnackbarMessage({
-          message: `De reserve is succesvol overgeheveld.`,
+          message: `De reserve is succesvol overgeheveld.` + (waarschuwing ? ' Let op: er is geld geboekt tussen spaar- en betaalrekening' : ''),
           type: 'success',
         });
         setIsStandDirty(true);
