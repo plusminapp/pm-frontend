@@ -179,7 +179,7 @@ const BankAppAfbeelding: React.FC = () => {
         } catch (error) {
           console.error('Failed to fetch data', error);
           setSnackbarMessage({
-            message: `De configuratie voor ${actieveAdministratie.bijnaam} is niet correct.`,
+            message: `De configuratie voor ${actieveAdministratie.naam} is niet correct.`,
             type: 'warning',
           });
         }

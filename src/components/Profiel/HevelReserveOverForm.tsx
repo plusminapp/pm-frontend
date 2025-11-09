@@ -150,7 +150,7 @@ export function HevelReserveOverForm({
       } catch (error) {
         console.error('Error saving wijzigingen', error);
         setSnackbarMessage({
-          message: `De configuratie voor ${actieveAdministratie!.bijnaam} is niet correct.`,
+          message: `De configuratie voor ${actieveAdministratie!.naam} is niet correct.`,
           type: 'warning',
         });
       }

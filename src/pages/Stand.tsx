@@ -100,7 +100,7 @@ export default function Stand() {
       {stand !== undefined && (
         <>
           <Typography variant="h4" sx={{ mb: 2 }}>
-            Hi {actieveAdministratie?.bijnaam}, hoe is 't?
+            Hi {actieveAdministratie?.naam}, hoe is 't?
           </Typography>
           <Grid
             container

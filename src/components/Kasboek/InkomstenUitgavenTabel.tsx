@@ -163,7 +163,7 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
       {Object.keys(filteredBetalingen).length === 0 && (
         <Typography sx={{ mx: '25px', fontSize: '12px' }}>
           {actieveAdministratie?.id !== gebruiker?.id
-            ? `${actieveAdministratie!.bijnaam} heeft`
+            ? `${actieveAdministratie!.naam} heeft`
             : 'Je hebt'}{' '}
           nog geen betalingen geregistreerd
           {actueleRekeningGroep ? ` voor ${actueleRekeningGroep.naam}` : ''}.

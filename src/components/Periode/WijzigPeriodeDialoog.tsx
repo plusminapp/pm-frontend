@@ -1,10 +1,10 @@
 import 'dayjs/locale/nl';
 import { Periode } from '../../model/Periode';
 import { WijzigPeriodeForm } from './WijzigPeriodeForm';
-import { Gebruiker } from '../../model/Gebruiker';
 import { useEffect, useState } from 'react';
 import { usePlusminApi } from '../../api/plusminApi';
 import { SaldoDTO } from '../../model/Saldo';
+import { Administratie } from '../../model/Administratie';
 
 type WijzigPeriodeDialoogProps = {
   periode: Periode;

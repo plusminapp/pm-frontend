@@ -281,7 +281,7 @@ export default function UpsertBetalingDialoog(
             : betalingDTO.bedrag,
       };
       try {
-        const administratie = actieveAdministratie ?? gebruiker;
+        const administratie = actieveAdministratie ?? gebruiker?.administraties[0] ;
         if (!betalingDTO.id && administratie) {
           const bijgewerkteBetaling = await postBetalingVooradministratie(
             administratie,

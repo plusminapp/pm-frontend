@@ -51,7 +51,7 @@ export default function Aflossen() {
         <>
           <Typography variant="h4">Aflossen</Typography>
           <Typography variant="body2">
-            {actieveAdministratie?.bijnaam} heeft op{' '}
+            {actieveAdministratie?.naam} heeft op{' '}
             {gekozenPeriode?.periodeStartDatum} geen aflossingen ingericht.
           </Typography>
           <PeriodeSelect isAflossing />

@@ -39,7 +39,7 @@ export default function Sparen() {
         <>
           <Typography variant="h4">Sparen</Typography>
           <Typography variant="body2">
-            {actieveAdministratie?.bijnaam} heeft op{' '}
+            {actieveAdministratie?.naam} heeft op{' '}
             {gekozenPeriode?.periodeStartDatum} geen spaartegoed ingericht.
           </Typography>
           <PeriodeSelect />
