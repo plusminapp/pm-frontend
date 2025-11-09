@@ -29,7 +29,6 @@ import {
   BudgetType,
   profielRekeningGroepSoorten,
   RekeningGroepSoort,
-  reserverenRekeningGroepSoorten,
   balansRekeningGroepSoorten,
 } from '../model/RekeningGroep';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers';
@@ -41,8 +40,8 @@ import { RekeningDTO } from '../model/Rekening';
 import { isPeriodeOpen } from '../model/Periode';
 import { CashFlowGrafiek } from '../components/CashFlow/Graph/CashFlowGrafiek';
 import { usePlusminApi } from '../api/plusminApi';
-import { SaldoDTO } from '../model/Saldo';
 import Resultaat from '../components/Stand/Resultaat';
+import { ReserveringTabel } from '../components/Profiel/ReserveringTabel';
 
 const Profiel: React.FC = () => {
   const { state } = useAuthContext();
@@ -78,9 +77,6 @@ const Profiel: React.FC = () => {
         acc + saldo.openingsReserveSaldo + saldo.reservering - saldo.betaling,
       0,
     );
-  const isSpaarpot = (saldo: SaldoDTO) =>
-    saldo.budgetType === BudgetType.sparen;
-
   const fetchfetchOngeldigeBetalingen = useCallback(async () => {
     if (!actieveHulpvrager) {
       return;
@@ -224,7 +220,7 @@ const Profiel: React.FC = () => {
           <PeriodeSelect />
 
           {stand && (
-            <Accordion defaultExpanded>
+            <Accordion>
               <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
                 <Typography>
                   <strong>Saldi</strong> van de betaalmiddelen op{' '}
@@ -299,7 +295,7 @@ const Profiel: React.FC = () => {
           {/* de potjes obv de stand*/}
           {rekeningGroepPerBetalingsSoort &&
             rekeningGroepPerBetalingsSoort.length >= 0 && (
-              <Accordion defaultExpanded>
+              <Accordion>
                 <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
                   <Typography>
                     <strong>Potjes</strong> <br />
@@ -330,199 +326,7 @@ const Profiel: React.FC = () => {
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  {rekeningGroepPerBetalingsSoort.length > 0 && (
-                    <TableContainer
-                      component={Paper}
-                      sx={{ maxWidth: 'xl', m: 'auto', mt: '10px' }}
-                    >
-                      <Table sx={{ width: '100%' }} aria-label="simple table">
-                        <TableHead>
-                          <TableRow sx={{ backgroundColor: '#888' }}>
-                            <TableCell
-                              sx={{ color: '#fff', padding: '15px' }}
-                            ></TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{ color: '#fff', padding: '5px' }}
-                            >
-                              betaaldag
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{ color: '#fff', padding: '5px' }}
-                            >
-                              budget
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{ color: '#fff', padding: '5px' }}
-                            >
-                              opening
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{ color: '#fff', padding: '5px' }}
-                            >
-                              reservering
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{ color: '#fff', padding: '5px' }}
-                            >
-                              opgenomen
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{ color: '#fff', padding: '5px' }}
-                            >
-                              betalingen
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{ color: '#fff', padding: '5px' }}
-                            >
-                              reserve nu
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{ color: '#fff', padding: '5px' }}
-                            >
-                              nog nodig
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{ color: '#fff', padding: '5px' }}
-                            >
-                              eindreserve
-                            </TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          <>
-                            {stand &&
-                              stand.resultaatOpDatum
-                                .filter((saldo) =>
-                                  reserverenRekeningGroepSoorten.includes(
-                                    saldo.rekeningGroepSoort as RekeningGroepSoort,
-                                  ),
-                                )
-                                .sort((a, b) => a.sortOrder - b.sortOrder)
-                                .reduce<{
-                                  rows: React.ReactNode[];
-                                  lastGroep?: string;
-                                }>(
-                                  (acc, saldo, index) => {
-                                    if (
-                                      saldo.rekeningGroepNaam !== acc.lastGroep
-                                    ) {
-                                      acc.rows.push(
-                                        <TableRow
-                                          key={`groep-${saldo.rekeningGroepNaam}-${index}`}
-                                        >
-                                          <TableCell
-                                            colSpan={10}
-                                            sx={{
-                                              backgroundColor: '#f5f5f5',
-                                              fontWeight: 'bold',
-                                              padding: '5px',
-                                            }}
-                                          >
-                                            {saldo.rekeningGroepNaam}
-                                          </TableCell>
-                                        </TableRow>,
-                                      );
-                                      acc.lastGroep = saldo.rekeningGroepNaam;
-                                    }
-                                    acc.rows.push(
-                                      <TableRow
-                                        key={saldo.rekeningNaam + index}
-                                      >
-                                        <TableCell sx={{ padding: '5px' }}>
-                                          {saldo.rekeningNaam}
-                                        </TableCell>
-                                        <TableCell
-                                          sx={{ padding: '5px' }}
-                                          align="right"
-                                        >
-                                          {saldo.budgetBetaalDag}
-                                        </TableCell>
-                                        <TableCell
-                                          sx={{ padding: '5px' }}
-                                          align="right"
-                                        >
-                                          {formatAmount(
-                                            saldo.budgetMaandBedrag,
-                                          )}
-                                        </TableCell>
-                                        <TableCell
-                                          sx={{ padding: '5px' }}
-                                          align="right"
-                                        >
-                                          {formatAmount(
-                                            saldo.openingsReserveSaldo,
-                                          )}
-                                        </TableCell>
-                                        <TableCell
-                                          sx={{ padding: '5px' }}
-                                          align="right"
-                                        >
-                                          {formatAmount(saldo.reservering)}
-                                        </TableCell>
-                                        <TableCell
-                                          sx={{ padding: '5px' }}
-                                          align="right"
-                                        >
-                                          {isSpaarpot(saldo)
-                                            ? formatAmount(
-                                                saldo.openingsOpgenomenSaldo +
-                                                  saldo.opgenomenSaldo,
-                                              )
-                                            : null}
-                                        </TableCell>
-                                        <TableCell
-                                          sx={{ padding: '5px' }}
-                                          align="right"
-                                        >
-                                          {formatAmount(saldo.betaling)}
-                                        </TableCell>
-                                        <TableCell
-                                          sx={{ padding: '5px' }}
-                                          align="right"
-                                        >
-                                          {formatAmount(
-                                            saldo.openingsReserveSaldo +
-                                              saldo.reservering -
-                                              saldo.betaling,
-                                          )}
-                                        </TableCell>
-                                        <TableCell
-                                          sx={{ padding: '5px' }}
-                                          align="right"
-                                        >
-                                          {formatAmount(saldo.restMaandBudget)}
-                                        </TableCell>
-                                        <TableCell
-                                          sx={{ padding: '5px' }}
-                                          align="right"
-                                        >
-                                          {formatAmount(
-                                            saldo.openingsReserveSaldo +
-                                              saldo.reservering -
-                                              saldo.betaling -
-                                              saldo.restMaandBudget,
-                                          )}
-                                        </TableCell>
-                                      </TableRow>,
-                                    );
-                                    return acc;
-                                  },
-                                  { rows: [], lastGroep: undefined },
-                                ).rows}
-                          </>
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  )}
+                  <ReserveringTabel />
                 </AccordionDetails>
               </Accordion>
             )}
