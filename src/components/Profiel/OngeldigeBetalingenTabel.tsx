@@ -26,7 +26,7 @@
 
 // export default function OngeldigeBetalingenTabel(props: OngeldigeBetalingenTabelProps) {
 
-//   const { actieveHulpvrager, gebruiker, gekozenPeriode } = useCustomContext();
+//   const { actieveAdministratie, gebruiker, gekozenPeriode } = useCustomContext();
 //   const betalingen = props.betalingen
 //   const [actueleRekening, setActueleRekening] = useState<RekeningGroepDTO | undefined>(props.actueleRekening)
 //   const [filteredBetalingen, setFilteredBetalingen] = useState<{ [key: string]: BetalingDTO[] }>({})
@@ -94,7 +94,7 @@
 //       }
 //       {Object.keys(filteredBetalingen).length === 0 &&
 //         <Typography sx={{ mx: '25px', fontSize: '12px' }}>
-//           {actieveHulpvrager?.id !== gebruiker?.id ? `${actieveHulpvrager!.bijnaam} heeft` : "Je hebt"} nog geen betalingen geregistreerd{actueleRekening ? ` voor ${actueleRekening.naam}` : ''}.
+//           {actieveAdministratie?.id !== gebruiker?.id ? `${actieveAdministratie!.bijnaam} heeft` : "Je hebt"} nog geen betalingen geregistreerd{actueleRekening ? ` voor ${actueleRekening.naam}` : ''}.
 //         </Typography>
 //       }
 //       {Object.keys(filteredBetalingen).length > 0 &&

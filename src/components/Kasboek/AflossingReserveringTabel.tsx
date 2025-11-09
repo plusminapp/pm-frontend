@@ -29,7 +29,7 @@ interface AflossingReserveringTabelProps {
 export default function AflossingReserveringTabel(
   props: AflossingReserveringTabelProps,
 ) {
-  const { actieveHulpvrager, gebruiker, gekozenPeriode } = useCustomContext();
+  const { actieveAdministratie, gebruiker, gekozenPeriode } = useCustomContext();
   const betalingsSoorten = aflossenBetalingsSoorten;
   const betalingen = props.betalingen.filter(
     (betaling) =>
@@ -63,8 +63,8 @@ export default function AflossingReserveringTabel(
     <>
       {betalingen.length === 0 && (
         <Typography sx={{ mx: '25px', fontSize: '12px' }}>
-          {actieveHulpvrager?.id !== gebruiker?.id
-            ? `${actieveHulpvrager!.bijnaam} heeft`
+          {actieveAdministratie?.id !== gebruiker?.id
+            ? `${actieveAdministratie!.naam} heeft`
             : 'Je hebt'}{' '}
           nog geen betalingen geregistreerd.
         </Typography>

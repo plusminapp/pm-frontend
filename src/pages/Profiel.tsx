@@ -48,12 +48,12 @@ const Profiel: React.FC = () => {
 
   const {
     gebruiker,
-    actieveHulpvrager,
+    actieveAdministratie,
     rekeningGroepPerBetalingsSoort,
     gekozenPeriode,
     stand,
   } = useCustomContext();
-  const { getOngeldigeBetalingenVoorHulpvrager } = usePlusminApi();
+  const { getOngeldigeBetalingenVooradministratie } = usePlusminApi();
 
   const [ongeldigeBetalingen, setOngeldigeBetalingen] = React.useState<
     Betaling[]
@@ -77,20 +77,36 @@ const Profiel: React.FC = () => {
         acc + saldo.openingsReserveSaldo + saldo.reservering - saldo.betaling,
       0,
     );
+  const actueleStand =
+    (reserveringBuffer?.openingsReserveSaldo ?? 0) +
+    (reserveringBuffer?.reservering ?? 0) +
+    (reserveringsSaldoPotjesVanNu ?? 0);
+  const verwachteInkomsten = stand?.geaggregeerdResultaatOpDatum
+    .filter((saldo) => saldo.rekeningGroepSoort === 'INKOMSTEN')
+    .reduce((acc, saldo) => acc + saldo.restMaandBudget, 0);
+  const verwachteUitgaven = stand?.geaggregeerdResultaatOpDatum
+    .filter(
+      (saldo) =>
+        (saldo.rekeningGroepSoort === 'UITGAVEN' &&
+          saldo.budgetType !== BudgetType.sparen) ||
+        saldo.rekeningGroepSoort === 'AFLOSSING',
+    )
+    .reduce((acc, saldo) => acc + saldo.restMaandBudget, 0);
+
   const fetchfetchOngeldigeBetalingen = useCallback(async () => {
-    if (!actieveHulpvrager) {
+    if (!actieveAdministratie) {
       return;
     }
     const ongeldigeBetalingen =
-      await getOngeldigeBetalingenVoorHulpvrager(actieveHulpvrager);
+      await getOngeldigeBetalingenVooradministratie(actieveAdministratie);
     setOngeldigeBetalingen(ongeldigeBetalingen);
-  }, [actieveHulpvrager, getOngeldigeBetalingenVoorHulpvrager]);
+  }, [actieveAdministratie, getOngeldigeBetalingenVooradministratie]);
 
   useEffect(() => {
-    if (actieveHulpvrager) {
+    if (actieveAdministratie) {
       fetchfetchOngeldigeBetalingen();
     }
-  }, [actieveHulpvrager, fetchfetchOngeldigeBetalingen]);
+  }, [actieveAdministratie, fetchfetchOngeldigeBetalingen]);
 
   const creeerBudgetTekst = (): string => {
     const inkomsten = rekeningGroepPerBetalingsSoort
@@ -310,17 +326,22 @@ const Profiel: React.FC = () => {
                     {formatAmount(openingsReservePotjesVoorNuSaldo ?? 0)}
                     <br />
                     Actuele stand{' '}
-                    {formatAmount(
-                      (reserveringBuffer?.openingsReserveSaldo ?? 0) +
-                        (reserveringBuffer?.reservering ?? 0) +
-                        (reserveringsSaldoPotjesVanNu ?? 0),
-                    )}
+                    {formatAmount(actueleStand)}
                     &nbsp; = openingssaldo buffer:{' '}
                     {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}
                     &nbsp; + inkomsten - reservering:{' '}
                     {formatAmount(reserveringBuffer?.reservering ?? 0)}&nbsp; +
                     huidige reserve in potjes voor nu:{' '}
                     {formatAmount(reserveringsSaldoPotjesVanNu ?? 0)}
+                    <br />
+                    Verwachte eindstand{' '}
+                    {formatAmount(actueleStand + (verwachteInkomsten ?? 0) - (verwachteUitgaven ?? 0))}
+                    &nbsp; = actuele stand:{' '}
+                    {formatAmount(actueleStand ?? 0)}
+                    &nbsp; + verwachte inkomsten:{' '}
+                    {formatAmount(verwachteInkomsten ?? 0)}
+                    &nbsp; - verwachte uitgaven:{' '}
+                    {formatAmount(verwachteUitgaven ?? 0)}
                     <br />
                     {creeerReserveringsHorizonTekst()}
                   </Typography>
@@ -331,14 +352,14 @@ const Profiel: React.FC = () => {
               </Accordion>
             )}
 
-          {gekozenPeriode && actieveHulpvrager && <CashFlowGrafiek />}
+          {gekozenPeriode && actieveAdministratie && <CashFlowGrafiek />}
 
           <Accordion>
             <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
               <Typography>
                 <strong>Periodes</strong>. De periode wisseldag voor{' '}
-                {actieveHulpvrager?.bijnaam} is de{' '}
-                {actieveHulpvrager?.periodeDag}e.
+                {actieveAdministratie?.naam} is de{' '}
+                {actieveAdministratie?.periodeDag}e.
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
@@ -521,48 +542,23 @@ const Profiel: React.FC = () => {
               </Typography>
             </AccordionDetails>
           </Accordion>
-
-          {gebruiker?.roles.includes('ROLE_HULPVRAGER') && (
-            <Typography sx={{ my: '25px' }}>
-              Je wordt begeleid door "{gebruiker.vrijwilligerBijnaam}".
-            </Typography>
-          )}
         </>
       )}
       <>
-        {actieveHulpvrager === gebruiker &&
+        {actieveAdministratie !== gebruiker &&
           gebruiker?.roles.includes('ROLE_VRIJWILLIGER') && (
             <>
               <Typography variant="h4" sx={{ my: '25px' }}>
-                Dit is je eigen inrichting om te kunnen testen.
-              </Typography>
-            </>
-          )}
-        {actieveHulpvrager !== gebruiker &&
-          gebruiker?.roles.includes('ROLE_VRIJWILLIGER') && (
-            <>
-              <Typography variant="h4" sx={{ my: '25px' }}>
-                De gekozen hulpvrager is {actieveHulpvrager?.bijnaam}.
+                De gekozen administratie is {actieveAdministratie?.naam}.
               </Typography>
               <Typography sx={{ mb: 1 }}>
-                Samen met {actieveHulpvrager?.bijnaam} is de app als volgt
+                Samen met {actieveAdministratie?.naam} is de app als volgt
                 ingericht.
               </Typography>
             </>
           )}
         {/* {checked && */}
         <>
-          {actieveHulpvrager &&
-            actieveHulpvrager === gebruiker &&
-            gebruiker?.roles.includes('ROLE_VRIJWILLIGER') && (
-              <Typography sx={{ mb: 1 }}>
-                Hieronder staat nu de inrichting voor jezelf (heb je zelf gedaan
-                natuurlijk), dan kun je oefenen met de app zonder dat je de
-                gegevens van een hulpvrager gebruikt. Eigenlijk ben je nu je
-                eigen hulpvrager. Dus: experimenteer er op los!
-              </Typography>
-            )}
-
           {/* voor de boekhouders onder ons: betalingsSoorten2Rekeningen */}
           {rekeningGroepPerBetalingsSoort && (
             <Accordion>
@@ -588,7 +584,7 @@ const Profiel: React.FC = () => {
                   &nbsp;Intern. Vervolgens vragen we, indien er meerdere
                   mogelijkheden zijn, de rekeningen uit die bij de betaling
                   horen. Hieronder staat de inrichting van de betalingen voor{' '}
-                  {actieveHulpvrager?.bijnaam}:
+                  {actieveAdministratie?.naam}:
                 </Typography>
                 <TableContainer
                   component={Paper}

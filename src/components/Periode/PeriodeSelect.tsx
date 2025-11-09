@@ -41,7 +41,7 @@ export function PeriodeSelect({
   const {
     periodes,
     setPeriodes,
-    actieveHulpvrager,
+    actieveAdministratie,
     gekozenPeriode,
     setGekozenPeriode,
     rekeningGroepPerBetalingsSoort,
@@ -52,7 +52,7 @@ export function PeriodeSelect({
 
   const [editMode, setEditMode] = useState<boolean>(false);
   const [formPeriodes, setFormPeriodes] = useState<Periode[]>(periodes);
-  const { getRekeningenVoorHulpvragerEnPeriode } = usePlusminApi();
+  const { getRekeningenVooradministratieEnPeriode } = usePlusminApi();
 
   useEffect(() => {
     setFormPeriodes(periodes);
@@ -67,9 +67,9 @@ export function PeriodeSelect({
     setGekozenPeriode(periode);
     localStorage.setItem('gekozenPeriode', periode?.id + '');
 
-    if (actieveHulpvrager && periode) {
-      const dataRekening = await getRekeningenVoorHulpvragerEnPeriode(
-        actieveHulpvrager,
+    if (actieveAdministratie && periode) {
+      const dataRekening = await getRekeningenVooradministratieEnPeriode(
+        actieveAdministratie,
         periode,
       );
       setRekeningGroepPerBetalingsSoort(dataRekening);
@@ -149,9 +149,9 @@ export function PeriodeSelect({
     periode: Periode,
     actie: 'heropenen' | 'sluiten' | 'opruimen',
   ) => {
-    if (actieveHulpvrager && periode) {
+    if (actieveAdministratie && periode) {
       try {
-        await putPeriodeActie(actieveHulpvrager, actie, periode);
+        await putPeriodeActie(actieveAdministratie, actie, periode);
         setPeriodes(
           periodes.map((p) =>
             p.id !== periode.id
@@ -304,12 +304,12 @@ export function PeriodeSelect({
             ))}
         </Box>
       )}
-      {teWijzigenOpeningsSaldiPeriode !== undefined && actieveHulpvrager && (
+      {teWijzigenOpeningsSaldiPeriode !== undefined && actieveAdministratie && (
         <WijzigPeriodeDialoog
           onWijzigPeriodeClose={onWijzigPeriodeClose}
           periode={periodes[teWijzigenOpeningsSaldiPeriode]}
           editMode={editMode}
-          actieveHulpvrager={actieveHulpvrager}
+          actieveAdministratie={actieveAdministratie}
         />
       )}
     </>

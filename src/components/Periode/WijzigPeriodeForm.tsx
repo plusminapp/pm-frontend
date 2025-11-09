@@ -59,7 +59,7 @@ export function WijzigPeriodeForm({
   onWijzigPeriodeClose,
   openingsBalansSaldi,
 }: WijzigPeriodeFormProps) {
-  const { actieveHulpvrager, setSnackbarMessage, setIsStandDirty } = useCustomContext();
+  const { actieveAdministratie, setSnackbarMessage, setIsStandDirty } = useCustomContext();
   const { putPeriodeOpeningWijziging } = usePlusminApi();
   const [open, setOpen] = useState<boolean>(true);
   const heeftAflossingen = defaultHeeftAflossingen(openingsBalansSaldi);
@@ -101,7 +101,7 @@ export function WijzigPeriodeForm({
   };
 
   const saveWijzigingen = async (formSaldi: FormValues['formSaldi']) => {
-    if (actieveHulpvrager) {
+    if (actieveAdministratie) {
       const saldos = formSaldi.map((formSaldo) => ({
         rekeningNaam: formSaldo.naam,
         openingsBalansSaldo: Number(formSaldo.nieuw),
@@ -109,7 +109,7 @@ export function WijzigPeriodeForm({
       console.log('Saving wijzigingen', formSaldi, saldos);
       try {
         await putPeriodeOpeningWijziging(
-          actieveHulpvrager,
+          actieveAdministratie,
           periode,
           saldos as unknown as SaldoDTO[],
         );
@@ -121,7 +121,7 @@ export function WijzigPeriodeForm({
       } catch (error) {
         console.error('Error saving wijzigingen', error);
         setSnackbarMessage({
-          message: `De configuratie voor ${actieveHulpvrager!.bijnaam} is niet correct.`,
+          message: `De configuratie voor ${actieveAdministratie!.naam} is niet correct.`,
           type: 'warning',
         });
       }

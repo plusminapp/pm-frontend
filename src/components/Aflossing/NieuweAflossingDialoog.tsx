@@ -77,7 +77,7 @@
 //   const [isValid, setIsValid] = useState<boolean>(false);
 
 //   const { getIDToken } = useAuthContext();
-//   const { actieveHulpvrager, setActieveHulpvrager, gebruiker, rekeningen, setRekeningen, setBetalingsSoorten2Rekeningen, setSnackbarMessage } = useCustomContext();
+//   const { actieveAdministratie, setActieveAdministratie, gebruiker, rekeningen, setRekeningen, setBetalingsSoorten2Rekeningen, setSnackbarMessage } = useCustomContext();
 
 //   const handleClickOpen = () => {
 //     setOpen(true);
@@ -128,8 +128,8 @@
 //           console.error('Error getting ID token:', error);
 //           navigate('/login');
 //         }
-//         const id = actieveHulpvrager ? actieveHulpvrager.id : gebruiker?.id
-//         const response = await fetch(`/api/v1/aflossing/hulpvrager/${id}`, {
+//         const id = actieveAdministratie ? actieveAdministratie.id : gebruiker?.id
+//         const response = await fetch(`/api/v1/aflossing/administratie/${id}`, {
 //           method: "PUT",
 //           headers: {
 //             "Authorization": `Bearer ${token}`,
@@ -148,8 +148,8 @@
 //           setRekeningen([...rekeningen, RekeningGroep])
 //           setBetalingsSoorten2Rekeningen(transformRekeningGroepenToBetalingsSoorten([...rekeningen, RekeningGroep]))
 //           setAflossing({...aflossing, RekeningGroep: RekeningGroep,})
-//           if (actieveHulpvrager && actieveHulpvrager.id !== undefined) {
-//             setActieveHulpvrager({...actieveHulpvrager, aflossingen: [...actieveHulpvrager.aflossingen, {...aflossing, aflossingNaam: RekeningGroep.naam}]})
+//           if (actieveAdministratie && actieveAdministratie.id !== undefined) {
+//             setActieveAdministratie({...actieveAdministratie, aflossingen: [...actieveAdministratie.aflossingen, {...aflossing, aflossingNaam: RekeningGroep.naam}]})
 //           }
 
 //           setIsValid(false)

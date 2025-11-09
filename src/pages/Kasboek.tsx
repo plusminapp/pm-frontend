@@ -22,7 +22,7 @@ import KolommenTabel from '../components/Kasboek/KolommenTabel';
 import { usePlusminApi } from '../api/plusminApi';
 
 export default function Kasboek() {
-  const { actieveHulpvrager, gekozenPeriode, stand, setIsStandDirty } =
+  const { actieveAdministratie, gekozenPeriode, stand, setIsStandDirty } =
     useCustomContext();
 
   const [betalingen, setBetalingen] = useState<BetalingDTO[]>([]);
@@ -31,7 +31,7 @@ export default function Kasboek() {
   const theme = useTheme();
   const isMdOrLarger = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate();
-  const { getBetalingenVoorHulpvragerVoorPeriode } = usePlusminApi();
+  const { getBetalingenVooradministratieVoorPeriode } = usePlusminApi();
 
   const [expanded, setExpanded] = useState<string | false>(
     isMdOrLarger ? 'tabel' : 'kolommen',
@@ -42,9 +42,9 @@ export default function Kasboek() {
     };
 
   useEffect(() => {
-    if (actieveHulpvrager && gekozenPeriode) {
+    if (actieveAdministratie && gekozenPeriode) {
       setIsLoading(true);
-      getBetalingenVoorHulpvragerVoorPeriode(actieveHulpvrager, gekozenPeriode)
+      getBetalingenVooradministratieVoorPeriode(actieveAdministratie, gekozenPeriode)
         .then((response) => {
           setBetalingen(response.data.content);
         })
@@ -55,9 +55,9 @@ export default function Kasboek() {
         .finally(() => setIsLoading(false));
     }
   }, [
-    actieveHulpvrager,
+    actieveAdministratie,
     gekozenPeriode,
-    getBetalingenVoorHulpvragerVoorPeriode,
+    getBetalingenVooradministratieVoorPeriode,
   ]);
 
   const onBetalingBewaardChange = (betaling: BetalingDTO): void => {

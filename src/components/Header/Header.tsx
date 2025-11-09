@@ -18,12 +18,12 @@ import dayjs from 'dayjs';
 import { usePlusminApi } from '../../api/plusminApi';
 import { PlusMinLogo } from '../../assets/PlusMinLogo';
 import { useCustomContext } from '../../context/CustomContext';
-import { Gebruiker } from '../../model/Gebruiker';
 import { Periode } from '../../model/Periode';
 import { RekeningGroepPerBetalingsSoort } from '../../model/RekeningGroep';
 import StyledSnackbar from '../StyledSnackbar';
 import { useTranslation } from 'react-i18next';
 import { TaalKeuzes } from './TaalKeuzes';
+import { Administratie } from '../../model/Administratie';
 
 const I18N_KEY = 'components.header';
 
@@ -46,17 +46,17 @@ function Header() {
 
   const {
     getGebruikerZelf,
-    getRekeningenVoorHulpvragerEnPeriode,
-    getStandVoorHulpvragerEnDatum,
+    getRekeningenVooradministratieEnPeriode: getRekeningenVoorAdministratieEnPeriode,
+    getStandVooradministratieEnDatum,
   } = usePlusminApi();
 
   const {
     gebruiker,
     setGebruiker,
-    hulpvragers,
-    setHulpvragers,
-    actieveHulpvrager,
-    setActieveHulpvrager,
+    administraties,
+    setAdministraties,
+    actieveAdministratie,
+    setActieveAdministratie,
     snackbarMessage,
     setSnackbarMessage,
     gekozenPeriode,
@@ -101,17 +101,21 @@ function Header() {
     setAnchorElGebruiker(null);
   };
 
-  const handleActieveHulpvragerChange = async (id: number) => {
-    let ahv = hulpvragers.find((hv) => hv.id === id);
-    ahv = ahv ? ahv : gebruiker;
-    setActieveHulpvrager(ahv);
+  const handleActieveAdministratieChange = async (id: number) => {
+    let ahv = administraties.find((hv) => hv.id === id);
+    ahv = ahv ? ahv : undefined;
+    setActieveAdministratie(ahv);
     setPeriodes(
       ahv!.periodes.sort((a, b) =>
         dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum)),
       ),
     );
     let nieuweGekozenPeriode = gekozenPeriode;
-    if (!gekozenPeriode || !ahv!.periodes.includes(gekozenPeriode)) {
+    if (
+      !gekozenPeriode ||
+      !ahv!.periodes.includes(gekozenPeriode) ||
+      gekozenPeriode.periodeStartDatum === gekozenPeriode.periodeEindDatum
+    ) {
       nieuweGekozenPeriode = ahv!.periodes.find(
         (periode) => periode.periodeStatus === 'HUIDIG',
       );
@@ -124,16 +128,16 @@ function Header() {
   };
 
   const fetchRekeningen = useCallback(
-    async (hulpvrager: Gebruiker, periode: Periode) => {
-      const dataRekening = await getRekeningenVoorHulpvragerEnPeriode(
-        hulpvrager,
+    async (administratie: Administratie, periode: Periode) => {
+      const dataRekening = await getRekeningenVoorAdministratieEnPeriode(
+        administratie,
         periode,
       );
       setRekeningGroepPerBetalingsSoort(
         dataRekening as RekeningGroepPerBetalingsSoort[],
       );
     },
-    [getRekeningenVoorHulpvragerEnPeriode, setRekeningGroepPerBetalingsSoort],
+    [getRekeningenVoorAdministratieEnPeriode, setRekeningGroepPerBetalingsSoort],
   );
 
   const determineSessionExpiry = useCallback(async () => {
@@ -156,64 +160,61 @@ function Header() {
     }
   }, [getIDToken]);
 
-  const fetchGebruikerMetHulpvragers = useCallback(async () => {
+  const fetchGebruikerMetAdministraties = useCallback(async () => {
     const dataGebruiker = await getGebruikerZelf();
-    setGebruiker(dataGebruiker.gebruiker);
-    setHulpvragers(dataGebruiker.hulpvragers as Gebruiker[]);
+    setGebruiker(dataGebruiker);
+    setAdministraties(dataGebruiker.administraties as Administratie[]);
 
-    const opgeslagenActieveHulpvragerId =
-      localStorage.getItem('actieveHulpvrager');
-    const opgeslagenActieveHulpvrager =
-      opgeslagenActieveHulpvragerId === undefined
-        ? dataGebruiker.gebruiker
-        : Number(dataGebruiker.gebruiker?.id) ===
-            Number(opgeslagenActieveHulpvragerId)
-          ? dataGebruiker.gebruiker
-          : (dataGebruiker.hulpvragers as Gebruiker[]).find(
-              (hv) => Number(hv.id) === Number(opgeslagenActieveHulpvragerId),
+    const opgeslagenActieveAdministratieId =
+      localStorage.getItem('actieveAdministratie');
+    const opgeslagenActieveAdministratie =
+      (opgeslagenActieveAdministratieId === undefined)
+        ? dataGebruiker?.administraties[0]
+          : (dataGebruiker.administraties as Administratie[]).find(
+              (hv) => Number(hv.id) === Number(opgeslagenActieveAdministratieId),
             );
 
     const opgeslagenGekozenPeriodeId = localStorage.getItem('gekozenPeriode');
     const opgeslagenGekozenPeriode = opgeslagenGekozenPeriodeId
-      ? (opgeslagenActieveHulpvrager?.periodes as Periode[])?.find(
+      ? (opgeslagenActieveAdministratie?.periodes as Periode[])?.find(
           (periode) => periode.id === Number(opgeslagenGekozenPeriodeId),
         )
       : undefined;
 
-    let nieuweActieveHulpvrager, nieuweGekozenPeriode;
-    if (opgeslagenActieveHulpvrager) {
-      nieuweActieveHulpvrager = opgeslagenActieveHulpvrager;
-      if (opgeslagenGekozenPeriode) {
+    let nieuweActieveAdministratie, nieuweGekozenPeriode;
+    if (opgeslagenActieveAdministratie) {
+      nieuweActieveAdministratie = opgeslagenActieveAdministratie;
+      if (opgeslagenGekozenPeriode && opgeslagenGekozenPeriode.periodeStartDatum !== opgeslagenGekozenPeriode.periodeEindDatum) {
         nieuweGekozenPeriode = opgeslagenGekozenPeriode;
       } else {
         const huidigePeriode = (
-          opgeslagenActieveHulpvrager.periodes as Periode[]
+          opgeslagenActieveAdministratie.periodes as Periode[]
         ).find((periode) => periode.periodeStatus === 'HUIDIG');
         nieuweGekozenPeriode = huidigePeriode;
       }
     } else if (
-      dataGebruiker.gebruiker.roles.includes('ROLE_VRIJWILLIGER') &&
-      dataGebruiker.hulpvragers.length > 0
+      dataGebruiker.roles.includes('ROLE_VRIJWILLIGER') &&
+      dataGebruiker.administraties.length > 0
     ) {
-      nieuweActieveHulpvrager = dataGebruiker.hulpvragers[0];
-      nieuweGekozenPeriode = dataGebruiker.hulpvragers[0].periodes[0];
+      nieuweActieveAdministratie = dataGebruiker.administraties[0];
+      nieuweGekozenPeriode = nieuweActieveAdministratie.periodes[1];
     } else {
-      nieuweActieveHulpvrager = dataGebruiker.gebruiker;
-      nieuweGekozenPeriode = dataGebruiker.gebruiker.periodes[0];
+      nieuweActieveAdministratie = dataGebruiker.administraties[0];
+      nieuweGekozenPeriode = nieuweActieveAdministratie?.periodes[1];
     }
 
-    setActieveHulpvrager(nieuweActieveHulpvrager);
+    setActieveAdministratie(nieuweActieveAdministratie);
     setGekozenPeriode(nieuweGekozenPeriode);
     localStorage.setItem('gekozenPeriode', nieuweGekozenPeriode?.id + '');
 
     if (nieuweGekozenPeriode) {
-      await fetchRekeningen(nieuweActieveHulpvrager, nieuweGekozenPeriode);
+      await fetchRekeningen(nieuweActieveAdministratie, nieuweGekozenPeriode);
     }
   }, [
     getGebruikerZelf,
     setGebruiker,
-    setHulpvragers,
-    setActieveHulpvrager,
+    setAdministraties,
+    setActieveAdministratie,
     setGekozenPeriode,
     fetchRekeningen,
   ]);
@@ -221,25 +222,25 @@ function Header() {
   useEffect(() => {
     if (state.isAuthenticated) {
       determineSessionExpiry();
-      fetchGebruikerMetHulpvragers();
+      fetchGebruikerMetAdministraties();
     }
   }, [
     state.isAuthenticated,
-    fetchGebruikerMetHulpvragers,
+    fetchGebruikerMetAdministraties,
     determineSessionExpiry,
   ]);
 
   useEffect(() => {
     const fetchSaldi = async () => {
-      if (actieveHulpvrager && gekozenPeriode) {
+      if (actieveAdministratie && gekozenPeriode) {
         const vandaag = dayjs().format('YYYY-MM-DD');
         const datum =
           gekozenPeriode.periodeEindDatum > vandaag
             ? vandaag
             : gekozenPeriode.periodeEindDatum;
         try {
-          const stand = await getStandVoorHulpvragerEnDatum(
-            actieveHulpvrager,
+          const stand = await getStandVooradministratieEnDatum(
+            actieveAdministratie,
             datum,
           );
 
@@ -252,8 +253,8 @@ function Header() {
     };
     fetchSaldi();
   }, [
-    actieveHulpvrager,
-    getStandVoorHulpvragerEnDatum,
+    actieveAdministratie,
+    getStandVooradministratieEnDatum,
     gekozenPeriode,
     isStandDirty,
     setIsStandDirty,
@@ -347,7 +348,7 @@ function Header() {
                       currentPage.toLowerCase() === 'profiel' ? 'selected' : ''
                     }
                   >
-                    {actieveHulpvrager?.bijnaam}
+                    {actieveAdministratie?.naam}
                   </Typography>
                 </Box>
                 <Box sx={{ flexDirection: 'row' }}>
@@ -387,31 +388,20 @@ function Header() {
                     open={Boolean(anchorElGebruiker)}
                     onClose={handleCloseGebruikerMenu}
                   >
-                    <MenuItem
-                      key={'profile'}
-                      onClick={() =>
-                        handleActieveHulpvragerChange(gebruiker!.id)
-                      }
-                    >
-                      <Typography sx={{ textAlign: 'center' }}>
-                        {actieveHulpvrager?.id === gebruiker?.id ? '> ' : ''}
-                        {gebruiker?.bijnaam}
-                      </Typography>
-                    </MenuItem>
-                    {hulpvragers
-                      .sort((a, b) => a.bijnaam.localeCompare(b.bijnaam))
-                      .map((hulpvrager) => (
+                    {administraties
+                      .sort((a, b) => a.naam.localeCompare(b.naam))
+                      .map((administratie) => (
                         <MenuItem
-                          key={hulpvrager.id}
+                          key={administratie.id}
                           onClick={() =>
-                            handleActieveHulpvragerChange(hulpvrager.id)
+                            handleActieveAdministratieChange(administratie.id)
                           }
                         >
                           <Typography sx={{ textAlign: 'center' }}>
-                            {hulpvrager.id === actieveHulpvrager?.id
+                            {administratie.id === actieveAdministratie?.id
                               ? '> '
                               : ''}
-                            {hulpvrager.bijnaam}
+                            {administratie.naam}
                           </Typography>
                         </MenuItem>
                       ))}
