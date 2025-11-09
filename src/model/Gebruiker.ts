@@ -1,12 +1,10 @@
-import { Periode } from './Periode';
+import { Administratie } from './Administratie';
 
 export type Gebruiker = {
   id: number;
+  subject: string;
   email: string;
   bijnaam: string;
-  periodeDag: number;
   roles: string[];
-  vrijwilligerEmail: string | undefined;
-  vrijwilligerBijnaam: string | undefined;
-  periodes: Periode[];
+  administraties: Administratie[];
 };

@@ -21,7 +21,7 @@ import { BetalingsSoort } from '../model/Betaling';
 
 export default function Aflossen() {
   const {
-    actieveHulpvrager,
+    actieveAdministratie,
     gekozenPeriode,
     stand,
     rekeningGroepPerBetalingsSoort,
@@ -51,7 +51,7 @@ export default function Aflossen() {
         <>
           <Typography variant="h4">Aflossen</Typography>
           <Typography variant="body2">
-            {actieveHulpvrager?.bijnaam} heeft op{' '}
+            {actieveAdministratie?.bijnaam} heeft op{' '}
             {gekozenPeriode?.periodeStartDatum} geen aflossingen ingericht.
           </Typography>
           <PeriodeSelect isAflossing />

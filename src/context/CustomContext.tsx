@@ -10,14 +10,15 @@ import { RekeningGroepPerBetalingsSoort } from '../model/RekeningGroep';
 import { Periode } from '../model/Periode';
 import { SnackbarMessage } from '../components/StyledSnackbar';
 import { Stand } from '../model/Saldo';
+import { Administratie } from '../model/Administratie';
 
 interface CustomContextType {
   gebruiker: Gebruiker | undefined;
   setGebruiker: (gebruiker: Gebruiker | undefined) => void;
-  actieveHulpvrager: Gebruiker | undefined;
-  setActieveHulpvrager: (actieveHulpvrager: Gebruiker | undefined) => void;
-  hulpvragers: Array<Gebruiker>;
-  setHulpvragers: (hulpvragers: Array<Gebruiker>) => void;
+  actieveAdministratie: Administratie | undefined;
+  setActieveAdministratie: (actieveAdministratie: Administratie | undefined) => void;
+  administraties: Array<Administratie>;
+  setAdministraties: (administraties: Array<Administratie>) => void;
   periodes: Array<Periode>;
   setPeriodes: (periodes: Array<Periode>) => void;
   gekozenPeriode: Periode | undefined;
@@ -51,10 +52,8 @@ interface CustomProviderProps {
 
 export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
   const [gebruiker, setGebruiker] = useState<Gebruiker | undefined>(undefined);
-  const [actieveHulpvrager, setActieveHulpvrager] = useState<
-    Gebruiker | undefined
-  >(undefined);
-  const [hulpvragers, setHulpvragers] = useState<Array<Gebruiker>>([]);
+  const [actieveAdministratie, setActieveAdministratie] = useState<Administratie | undefined>(undefined);
+  const [administraties, setAdministraties] = useState<Array<Administratie>>([]);
   const [periodes, setPeriodes] = useState<Array<Periode>>([]);
   const [gekozenPeriode, setGekozenPeriode] = useState<Periode | undefined>(
     undefined,
@@ -69,21 +68,21 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
   });
 
   useEffect(() => {
-    if (!actieveHulpvrager) return;
-    setActieveHulpvrager(actieveHulpvrager);
-    setPeriodes(actieveHulpvrager.periodes);
-    localStorage.setItem('actieveHulpvrager', actieveHulpvrager.id + '');
-  }, [actieveHulpvrager]);
+    if (!actieveAdministratie) return;
+    setActieveAdministratie(actieveAdministratie);
+    setPeriodes(actieveAdministratie.periodes);
+    localStorage.setItem('actieveAdministratie', actieveAdministratie.id + '');
+  }, [actieveAdministratie]);
 
   return (
     <CustomContext.Provider
       value={{
         gebruiker,
         setGebruiker,
-        actieveHulpvrager,
-        setActieveHulpvrager,
-        hulpvragers,
-        setHulpvragers,
+        actieveAdministratie,
+        setActieveAdministratie,
+        administraties,
+        setAdministraties,
         periodes,
         setPeriodes,
         gekozenPeriode,
@@ -99,7 +98,7 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
       }}
     >
       {children}
-      {/* {JSON.stringify(actieveHulpvrager)} */}
+      {/* {JSON.stringify(actieveAdministratie)} */}
     </CustomContext.Provider>
   );
 };

@@ -10,13 +10,13 @@ type WijzigPeriodeDialoogProps = {
   periode: Periode;
   editMode?: boolean;
   onWijzigPeriodeClose: () => void;
-  actieveHulpvrager: Gebruiker | undefined;
+  actieveAdministratie: Administratie | undefined;
 };
 export default function WijzigPeriodeDialoog({
   periode,
   editMode,
   onWijzigPeriodeClose,
-  actieveHulpvrager,
+  actieveAdministratie,
 }: WijzigPeriodeDialoogProps) {
   const { getPeriodeOpening } = usePlusminApi();
 
@@ -28,19 +28,19 @@ export default function WijzigPeriodeDialoog({
 
   useEffect(() => {
     const fetchOpening = async () => {
-      if (actieveHulpvrager) {
+      if (actieveAdministratie) {
         try {
-          const saldi: SaldoDTO[] = await getPeriodeOpening(actieveHulpvrager, periode);
+          const saldi: SaldoDTO[] = await getPeriodeOpening(actieveAdministratie, periode);
           setOpeningsBalansSaldi(saldi);
         } catch (error) {
           console.error('Error getting periode opening', error);
         }
       }
     };
-    if (actieveHulpvrager) {
+    if (actieveAdministratie) {
       fetchOpening();
     }
-  }, [actieveHulpvrager, getPeriodeOpening, periode]);
+  }, [actieveAdministratie, getPeriodeOpening, periode]);
 
   return (
     <>

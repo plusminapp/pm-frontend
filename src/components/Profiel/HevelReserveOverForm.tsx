@@ -63,9 +63,9 @@ export function HevelReserveOverForm({
   onHevelReserveOverClose,
   resultaatOpDatum: resultaatOpDatum,
 }: HevelReserveOverFormProps) {
-  const { actieveHulpvrager, setSnackbarMessage, setIsStandDirty } =
+  const { actieveAdministratie, setSnackbarMessage, setIsStandDirty } =
     useCustomContext();
-  const { postBetalingVoorHulpvrager } = usePlusminApi();
+  const { postBetalingVooradministratie } = usePlusminApi();
   const [open, setOpen] = useState<boolean>(true);
 
   const selecteerbareBonnen = resultaatOpDatum
@@ -126,12 +126,12 @@ export function HevelReserveOverForm({
   const saveWijzigingen = async (
     formReservering: FormValues['formReservering'],
   ) => {
-    if (actieveHulpvrager) {
+    if (actieveAdministratie) {
       const betalingsSoort = `${bepaalPotjeSoort(formReservering.bron)}2${bepaalPotjeSoort(formReservering.bestemming)}`;
       const waarschuwing = bepaalPotjeSoort(formReservering.bron) !== bepaalPotjeSoort(formReservering.bestemming);
       console.log('Saving wijzigingen', formReservering, betalingsSoort);
       try {
-        await postBetalingVoorHulpvrager(actieveHulpvrager, {
+        await postBetalingVooradministratie(actieveAdministratie, {
           ...(formReservering as unknown as BetalingDTO),
           betalingsSoort: betalingsSoort as BetalingsSoort,
           bedrag: Number(formReservering.bedrag),
@@ -150,7 +150,7 @@ export function HevelReserveOverForm({
       } catch (error) {
         console.error('Error saving wijzigingen', error);
         setSnackbarMessage({
-          message: `De configuratie voor ${actieveHulpvrager!.bijnaam} is niet correct.`,
+          message: `De configuratie voor ${actieveAdministratie!.bijnaam} is niet correct.`,
           type: 'warning',
         });
       }

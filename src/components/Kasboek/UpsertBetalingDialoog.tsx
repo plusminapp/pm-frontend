@@ -61,14 +61,14 @@ export default function UpsertBetalingDialoog(
   props: UpsertBetalingDialoogProps,
 ) {
   const {
-    actieveHulpvrager,
+    actieveAdministratie,
     gebruiker,
     periodes,
     gekozenPeriode,
     setSnackbarMessage,
     setIsStandDirty,
   } = useCustomContext();
-  const { postBetalingVoorHulpvrager, putBetaling, deleteBetaling } =
+  const { postBetalingVooradministratie, putBetaling, deleteBetaling } =
     usePlusminApi();
 
   const boekingsDatum =
@@ -281,10 +281,10 @@ export default function UpsertBetalingDialoog(
             : betalingDTO.bedrag,
       };
       try {
-        const hulpvrager = actieveHulpvrager ?? gebruiker;
-        if (!betalingDTO.id && hulpvrager) {
-          const bijgewerkteBetaling = await postBetalingVoorHulpvrager(
-            hulpvrager,
+        const administratie = actieveAdministratie ?? gebruiker;
+        if (!betalingDTO.id && administratie) {
+          const bijgewerkteBetaling = await postBetalingVooradministratie(
+            administratie,
             betaling,
           );
           props.onBetalingBewaardChange(

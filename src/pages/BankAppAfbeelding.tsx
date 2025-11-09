@@ -58,7 +58,7 @@ const BankAppAfbeelding: React.FC = () => {
   const aantalBetalingen = validatedData.betalingen.length;
 
   const { getIDToken } = useAuthContext();
-  const { actieveHulpvrager, setSnackbarMessage } = useCustomContext();
+  const { actieveAdministratie, setSnackbarMessage } = useCustomContext();
   const navigate = useNavigate();
   const { putBetalingValidatie } = usePlusminApi();
 
@@ -142,7 +142,7 @@ const BankAppAfbeelding: React.FC = () => {
         navigate('/login');
       }
       if (
-        actieveHulpvrager &&
+        actieveAdministratie &&
         ocrBankRekening &&
         token &&
         parsedData.length > 0
@@ -161,7 +161,7 @@ const BankAppAfbeelding: React.FC = () => {
           }));
         try {
           const response = await putBetalingValidatie(
-            actieveHulpvrager,
+            actieveAdministratie,
             saldoOpLaatsteBetalingDatum,
             betalingen,
           );
@@ -179,7 +179,7 @@ const BankAppAfbeelding: React.FC = () => {
         } catch (error) {
           console.error('Failed to fetch data', error);
           setSnackbarMessage({
-            message: `De configuratie voor ${actieveHulpvrager.bijnaam} is niet correct.`,
+            message: `De configuratie voor ${actieveAdministratie.bijnaam} is niet correct.`,
             type: 'warning',
           });
         }
@@ -189,7 +189,7 @@ const BankAppAfbeelding: React.FC = () => {
   }, [
     ocrBankRekening,
     parsedData,
-    actieveHulpvrager,
+    actieveAdministratie,
     navigate,
     setSnackbarMessage,
     getIDToken,
@@ -448,7 +448,7 @@ const BankAppAfbeelding: React.FC = () => {
           ? `OCR vertrouwen: ${confidence.toFixed(2)}%`
           : ''}
         {/* GroupedData: {JSON.stringify(groupedData)} */}
-        {/* ParsedDate: {JSON.stringify(parsedData)} */}
+        ParsedDate: {JSON.stringify(parsedData)}
       </Typography>
     </Box>
   );

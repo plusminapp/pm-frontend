@@ -18,7 +18,7 @@ import { RekeningGroepSoort } from '../model/RekeningGroep';
 import { berekenRekeningGroepIcoon } from '../components/Stand/BerekenStandKleurEnTekst';
 
 export default function Sparen() {
-  const { actieveHulpvrager, gekozenPeriode, stand } = useCustomContext();
+  const { actieveAdministratie, gekozenPeriode, stand } = useCustomContext();
 
   const [sparenSaldi, setSparenSaldi] = useState<SaldoDTO[]>([]);
 
@@ -39,7 +39,7 @@ export default function Sparen() {
         <>
           <Typography variant="h4">Sparen</Typography>
           <Typography variant="body2">
-            {actieveHulpvrager?.bijnaam} heeft op{' '}
+            {actieveAdministratie?.bijnaam} heeft op{' '}
             {gekozenPeriode?.periodeStartDatum} geen spaartegoed ingericht.
           </Typography>
           <PeriodeSelect />

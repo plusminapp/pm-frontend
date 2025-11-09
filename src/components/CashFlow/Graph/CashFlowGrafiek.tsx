@@ -7,27 +7,27 @@ import dayjs from 'dayjs';
 import { usePlusminApi } from '../../../api/plusminApi';
 
 export const CashFlowGrafiek = () => {
-  const { actieveHulpvrager, gekozenPeriode } = useCustomContext();
-  const { getCashFlowVoorHulpvragerEnPeriode } = usePlusminApi();
+  const { actieveAdministratie, gekozenPeriode } = useCustomContext();
+  const { getCashFlowVooradministratieEnPeriode } = usePlusminApi();
 
   const [cashFlow, setCashFlow] = useState<CashFlow[]>([]);
 
   const fetchCashFlow = useCallback(async () => {
-    if (!actieveHulpvrager || !gekozenPeriode) {
+    if (!actieveAdministratie || !gekozenPeriode) {
       return;
     }
-    const cashflowData = await getCashFlowVoorHulpvragerEnPeriode(
-      actieveHulpvrager,
+    const cashflowData = await getCashFlowVooradministratieEnPeriode(
+      actieveAdministratie,
       gekozenPeriode,
     );
     setCashFlow(cashflowData);
-  }, [actieveHulpvrager, gekozenPeriode, getCashFlowVoorHulpvragerEnPeriode]);
+  }, [actieveAdministratie, gekozenPeriode, getCashFlowVooradministratieEnPeriode]);
 
   useEffect(() => {
-    if (actieveHulpvrager && gekozenPeriode) {
+    if (actieveAdministratie && gekozenPeriode) {
       void fetchCashFlow();
     }
-  }, [actieveHulpvrager, fetchCashFlow, gekozenPeriode]);
+  }, [actieveAdministratie, fetchCashFlow, gekozenPeriode]);
 
   const options = useMemo<AgChartOptions>(
     () => ({
