@@ -34,7 +34,7 @@ import RekeningResultaat from '../components/Stand/RekeningResultaat';
 
 export default function Stand() {
   const {
-    actieveAdministratie,
+    gebruiker,
     gekozenPeriode,
     rekeningGroepPerBetalingsSoort,
     stand,
@@ -100,7 +100,7 @@ export default function Stand() {
       {stand !== undefined && (
         <>
           <Typography variant="h4" sx={{ mb: 2 }}>
-            Hi {actieveAdministratie?.naam}, hoe is 't?
+            Hi {gebruiker?.bijnaam}, hoe is 't?
           </Typography>
           <Grid
             container

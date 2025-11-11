@@ -2,6 +2,8 @@ import React, { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import MenuIcon from '@mui/icons-material/Menu';
+import PersonIcon from '@mui/icons-material/Person';
+import LogoutIcon from '@mui/icons-material/Logout';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -46,7 +48,8 @@ function Header() {
 
   const {
     getGebruikerZelf,
-    getRekeningenVooradministratieEnPeriode: getRekeningenVoorAdministratieEnPeriode,
+    getRekeningenVooradministratieEnPeriode:
+      getRekeningenVoorAdministratieEnPeriode,
     getStandVooradministratieEnDatum,
   } = usePlusminApi();
 
@@ -137,10 +140,13 @@ function Header() {
         dataRekening as RekeningGroepPerBetalingsSoort[],
       );
     },
-    [getRekeningenVoorAdministratieEnPeriode, setRekeningGroepPerBetalingsSoort],
+    [
+      getRekeningenVoorAdministratieEnPeriode,
+      setRekeningGroepPerBetalingsSoort,
+    ],
   );
 
-  const determineSessionExpiry = useCallback(async () => {
+  const determineSessionInfo = useCallback(async () => {
     let token;
     try {
       token = await getIDToken();
@@ -149,12 +155,7 @@ function Header() {
         return;
       }
       const payload = JSON.parse(atob(token.split('.')[1]));
-      const exp = payload.exp;
-      if (!exp) {
-        setExpiry(null);
-        return;
-      }
-      setExpiry(new Date(exp * 1000));
+      setExpiry(new Date(payload.exp * 1000));
     } catch (error) {
       console.error('Error getting ID token:', error);
     }
@@ -165,14 +166,15 @@ function Header() {
     setGebruiker(dataGebruiker);
     setAdministraties(dataGebruiker.administraties as Administratie[]);
 
-    const opgeslagenActieveAdministratieId =
-      localStorage.getItem('actieveAdministratie');
+    const opgeslagenActieveAdministratieId = localStorage.getItem(
+      'actieveAdministratie',
+    );
     const opgeslagenActieveAdministratie =
-      (opgeslagenActieveAdministratieId === undefined)
+      opgeslagenActieveAdministratieId === undefined
         ? dataGebruiker?.administraties[0]
-          : (dataGebruiker.administraties as Administratie[]).find(
-              (hv) => Number(hv.id) === Number(opgeslagenActieveAdministratieId),
-            );
+        : (dataGebruiker.administraties as Administratie[]).find(
+            (hv) => Number(hv.id) === Number(opgeslagenActieveAdministratieId),
+          );
 
     const opgeslagenGekozenPeriodeId = localStorage.getItem('gekozenPeriode');
     const opgeslagenGekozenPeriode = opgeslagenGekozenPeriodeId
@@ -184,7 +186,11 @@ function Header() {
     let nieuweActieveAdministratie, nieuweGekozenPeriode;
     if (opgeslagenActieveAdministratie) {
       nieuweActieveAdministratie = opgeslagenActieveAdministratie;
-      if (opgeslagenGekozenPeriode && opgeslagenGekozenPeriode.periodeStartDatum !== opgeslagenGekozenPeriode.periodeEindDatum) {
+      if (
+        opgeslagenGekozenPeriode &&
+        opgeslagenGekozenPeriode.periodeStartDatum !==
+          opgeslagenGekozenPeriode.periodeEindDatum
+      ) {
         nieuweGekozenPeriode = opgeslagenGekozenPeriode;
       } else {
         const huidigePeriode = (
@@ -221,13 +227,13 @@ function Header() {
 
   useEffect(() => {
     if (state.isAuthenticated) {
-      determineSessionExpiry();
+      determineSessionInfo();
       fetchGebruikerMetAdministraties();
     }
   }, [
     state.isAuthenticated,
     fetchGebruikerMetAdministraties,
-    determineSessionExpiry,
+    determineSessionInfo,
   ]);
 
   useEffect(() => {
@@ -281,11 +287,15 @@ function Header() {
     }
   };
 
-  const pages = ['Stand', 'Kasboek'];
+  const pages =
+    gebruiker && gebruiker.administraties.length > 0
+      ? ['Stand', 'Kasboek']
+      : [];
   const heeftAflossing = rekeningGroepen.some(
     (rekeningGroep) => rekeningGroep.rekeningGroepSoort === 'AFLOSSING',
   );
   if (heeftAflossing) pages.push('Aflossen');
+
   const heeftSparen = rekeningGroepen.some(
     (rekeningGroep) => rekeningGroep.rekeningGroepSoort === 'SPAARREKENING',
   );
@@ -304,7 +314,7 @@ function Header() {
         }}
       >
         <Toolbar disableGutters>
-          <IconButton onClick={() => handleNavigation('/visualisatie')}>
+          <IconButton onClick={() => handleNavigation('/')}>
             <PlusMinLogo />
           </IconButton>
 
@@ -345,10 +355,16 @@ function Header() {
                   <Typography
                     sx={{ p: '6px', my: 'auto', mr: { xs: '3px', md: '10px' } }}
                     className={
-                      currentPage.toLowerCase() === 'profiel' ? 'selected' : ''
+                      currentPage.toLowerCase() === 'profiel' ||
+                      currentPage.toLowerCase() === 'gebruikersprofiel'
+                        ? 'selected'
+                        : ''
                     }
                   >
-                    {actieveAdministratie?.naam}
+                    {gebruiker &&
+                    currentPage.toLowerCase() === 'gebruikersprofiel'
+                      ? gebruiker.bijnaam
+                      : actieveAdministratie?.naam}
                   </Typography>
                 </Box>
                 <Box sx={{ flexDirection: 'row' }}>
@@ -388,6 +404,28 @@ function Header() {
                     open={Boolean(anchorElGebruiker)}
                     onClose={handleCloseGebruikerMenu}
                   >
+                    {gebruiker && (
+                      <MenuItem
+                        key={gebruiker.id}
+                        onClick={() => {
+                          navigate('/gebruikersprofiel');
+                          handleCloseGebruikerMenu();
+                        }}
+                      >
+                        <Typography
+                          sx={{
+                            textAlign: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                          }}
+                        >
+                          <PersonIcon />
+                          {gebruiker.bijnaam}
+                        </Typography>
+                      </MenuItem>
+                    )}
+
                     {administraties
                       .sort((a, b) => a.naam.localeCompare(b.naam))
                       .map((administratie) => (
@@ -406,7 +444,15 @@ function Header() {
                         </MenuItem>
                       ))}
                     <MenuItem key={'logout'} onClick={handleLogout}>
-                      <Typography sx={{ textAlign: 'center' }}>
+                      <Typography
+                        sx={{
+                          textAlign: 'center',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                        }}
+                      >
+                        <LogoutIcon />
                         Uitloggen
                       </Typography>
                     </MenuItem>

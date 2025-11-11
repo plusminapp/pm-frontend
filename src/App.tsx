@@ -22,6 +22,7 @@ import BankAppAfbeelding from './pages/BankAppAfbeelding';
 import { GridExample } from './pages/Experiment';
 import './App.css';
 import './i18n';
+import GebruikersProfiel from './pages/GebruikersProfiel';
 
 const ProtectedRoute: React.FC<{ element: JSX.Element }> = ({ element }) => {
   const { state } = useAuthContext();
@@ -62,6 +63,10 @@ const App: React.FC = () => {
             <Route
               path="/profiel"
               element={<ProtectedRoute element={<Profiel />} />}
+            />
+            <Route
+              path="/gebruikersprofiel"
+              element={<ProtectedRoute element={<GebruikersProfiel />} />}
             />
             <Route path="/experiment" element={<GridExample />} />
 

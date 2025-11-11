@@ -1,3 +1,4 @@
+import { Gebruiker } from './Gebruiker';
 import { Periode } from './Periode';
 
 export type Administratie = {
@@ -7,4 +8,5 @@ export type Administratie = {
   eigenaarNaam: string;
   eigenaarSubject: string;
   periodes: Periode[];
+  gebruikers: Gebruiker[];
 };
