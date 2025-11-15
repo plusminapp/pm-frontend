@@ -76,7 +76,7 @@
 //   // const [errors, setErrors] = useState<{ omschrijving?: string; bedrag?: string }>({});
 //   const [isValid, setIsValid] = useState<boolean>(false);
 
-//   const { getIDToken } = useAuthContext();
+//   const { getAccessToken } = useAuthContext();
 //   const { actieveAdministratie, setActieveAdministratie, gebruiker, rekeningen, setRekeningen, setBetalingsSoorten2Rekeningen, setSnackbarMessage } = useCustomContext();
 
 //   const handleClickOpen = () => {
@@ -123,7 +123,7 @@
 //       try {
 //         let token
 //         try {
-//           token = await getIDToken();
+//           token = await getAccessToken();
 //         } catch (error) {
 //           console.error('Error getting ID token:', error);
 //           navigate('/login');

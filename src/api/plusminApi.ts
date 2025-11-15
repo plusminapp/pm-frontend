@@ -29,41 +29,41 @@ async function fetchData<T>(
 }
 
 function usePlusminApi() {
-  const { getIDToken } = useAuthContext();
+  const { getAccessToken } = useAuthContext();
 
   /* Gebruiker */
   const getGebruikerZelf = useCallback(async () => {
-    const token = await getIDToken();
+    const token = await getAccessToken();
     return fetchData<Gebruiker>('/api/v1/gebruikers/zelf', token);
-  }, [getIDToken]);
+  }, [getAccessToken]);
 
   /* Rekening */
   const getRekeningenVooradministratieEnPeriode = useCallback(
     async (administratie: Administratie, periode: Periode) => {
-      const token = await getIDToken();
+      const token = await getAccessToken();
       return fetchData<RekeningGroepPerBetalingsSoort[]>(
         `/api/v1/rekeningen/administratie/${administratie.id}/periode/${periode.id}`,
         token,
       );
     },
-    [getIDToken],
+    [getAccessToken],
   );
 
   const getCashFlowVooradministratieEnPeriode = useCallback(
     async (administratie: Administratie, periode: Periode) => {
-      const token = await getIDToken();
+      const token = await getAccessToken();
       return fetchData<CashFlow[]>(
         `/api/v1/rekeningen/administratie/${administratie.id}/periode/${periode.id}/cashflow`,
         token,
       );
     },
-    [getIDToken],
+    [getAccessToken],
   );
 
   /* Betaling  */
   const getBetalingenVooradministratieVoorPeriode = useCallback(
     async (administratie: Administratie, periode: Periode) => {
-      const token = await getIDToken();
+      const token = await getAccessToken();
       return fetchData<{
         data: { content: BetalingDTO[] };
         gebruikersId: string;
@@ -74,23 +74,23 @@ function usePlusminApi() {
         token,
       );
     },
-    [getIDToken],
+    [getAccessToken],
   );
 
   const getOngeldigeBetalingenVooradministratie = useCallback(
     async (administratie: Administratie) => {
-      const token = await getIDToken();
+      const token = await getAccessToken();
       return fetchData<Betaling[]>(
         `/api/v1/betalingen/administratie/${administratie.id}/valideer-betalingen`,
         token,
       );
     },
-    [getIDToken],
+    [getAccessToken],
   );
 
   const postBetalingVooradministratie = useCallback(
     async (administratie: Administratie, betaling: BetalingDTO) => {
-      const token = await getIDToken();
+      const token = await getAccessToken();
       return fetchData<Betaling>(
         `/api/v1/betalingen/administratie/${administratie.id}`,
         token,
@@ -98,12 +98,12 @@ function usePlusminApi() {
         betaling,
       );
     },
-    [getIDToken],
+    [getAccessToken],
   );
 
   const putBetaling = useCallback(
     async (betaling: BetalingDTO) => {
-      const token = await getIDToken();
+      const token = await getAccessToken();
       return fetchData<Betaling>(
         `/api/v1/betalingen/${betaling.id}`,
         token,
@@ -111,19 +111,19 @@ function usePlusminApi() {
         betaling,
       );
     },
-    [getIDToken],
+    [getAccessToken],
   );
 
   const deleteBetaling = useCallback(
     async (betaling: BetalingDTO) => {
-      const token = await getIDToken();
+      const token = await getAccessToken();
       return fetchData<Betaling>(
         `/api/v1/betalingen/${betaling.id}`,
         token,
         'DELETE',
       );
     },
-    [getIDToken],
+    [getAccessToken],
   );
 
   const putBetalingValidatie = useCallback(
@@ -132,7 +132,7 @@ function usePlusminApi() {
       saldoOpLaatsteBetalingDatum: SaldoDTO,
       betalingen: BetalingDTO[],
     ) => {
-      const token = await getIDToken();
+      const token = await getAccessToken();
       return fetchData<{
         laatsteBetalingDatum: string;
         saldoOpLaatsteBetalingDatum: SaldoDTO;
@@ -144,19 +144,19 @@ function usePlusminApi() {
         { saldoOpLaatsteBetalingDatum, betalingen },
       );
     },
-    [getIDToken],
+    [getAccessToken],
   );
 
   /* Stand */
   const getStandVooradministratieEnDatum = useCallback(
     async (administratie: Administratie, datum: string) => {
-      const token = await getIDToken();
+      const token = await getAccessToken();
       return fetchData<Stand>(
         `/api/v1/stand/administratie/${administratie.id}/datum/${datum}`,
         token,
       );
     },
-    [getIDToken],
+    [getAccessToken],
   );
 
   /* Periode */
@@ -166,7 +166,7 @@ function usePlusminApi() {
       actie: 'heropenen' | 'sluiten' | 'opruimen',
       periode: Periode,
     ) => {
-      const token = await getIDToken();
+      const token = await getAccessToken();
       return fetchData(
         `/api/v1/periodes/administratie/${administratie.id}/${actie}/${periode.id}`,
         token,
@@ -174,12 +174,12 @@ function usePlusminApi() {
         [],
       );
     },
-    [getIDToken],
+    [getAccessToken],
   );
 
   const putPeriodeOpeningWijziging = useCallback(
     async (administratie: Administratie, periode: Periode, saldos: SaldoDTO[]) => {
-      const token = await getIDToken();
+      const token = await getAccessToken();
       return fetchData(
         `/api/v1/periodes/administratie/${administratie.id}/wijzig-periode-opening/${periode.id}`,
         token,
@@ -187,19 +187,19 @@ function usePlusminApi() {
         saldos,
       );
     },
-    [getIDToken],
+    [getAccessToken],
   );
 
   const getPeriodeOpening = useCallback(
     async (administratie: Administratie, periode: Periode) => {
-      const token = await getIDToken();
+      const token = await getAccessToken();
       return fetchData<SaldoDTO[]>(
         `/api/v1/stand/administratie/${administratie.id}/periode/${periode.id}/openingsbalans`,
         token,
         'GET',
       );
     },
-    [getIDToken],
+    [getAccessToken],
   );
 
   return {

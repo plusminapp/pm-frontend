@@ -37,7 +37,7 @@ function Header() {
     setAnchorElNav(null);
     navigate(page);
   };
-  const { state, signIn, getIDToken, signOut, revokeAccessToken } =
+  const { state, signIn, getAccessToken, signOut, revokeAccessToken } =
     useAuthContext();
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
     null,
@@ -149,7 +149,7 @@ function Header() {
   const determineSessionInfo = useCallback(async () => {
     let token;
     try {
-      token = await getIDToken();
+      token = await getAccessToken();
       if (!token) {
         setExpiry(null);
         return;
@@ -159,7 +159,7 @@ function Header() {
     } catch (error) {
       console.error('Error getting ID token:', error);
     }
-  }, [getIDToken]);
+  }, [getAccessToken]);
 
   const fetchGebruikerMetAdministraties = useCallback(async () => {
     const dataGebruiker = await getGebruikerZelf();
