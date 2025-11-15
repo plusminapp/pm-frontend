@@ -1,10 +1,19 @@
 import { Typography } from '@mui/material';
+import { useCustomContext } from '../context/CustomContext';
+
 
 export default function Home() {
+
+    const {
+      gebruiker,
+    } = useCustomContext();
+  
   return (
     <>
       <Typography variant="h4">
-        Dit is de App van de PlusMin gereedschapskist.
+        {gebruiker && gebruiker.administraties.length === 0 ? 
+        `Gebruiker ${gebruiker.bijnaam} heeft nog geen administratie.` :
+        `Dit is de App van de PlusMin gereedschapskist.` }
       </Typography>
       <Typography sx={{ my: '25px' }}>
         Deze App is een demo app en dus NIET de uiteindelijke app voor de

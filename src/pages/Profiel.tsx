@@ -42,9 +42,11 @@ import { CashFlowGrafiek } from '../components/CashFlow/Graph/CashFlowGrafiek';
 import { usePlusminApi } from '../api/plusminApi';
 import Resultaat from '../components/Stand/Resultaat';
 import { ReserveringTabel } from '../components/Profiel/ReserveringTabel';
+import { useNavigate } from 'react-router-dom';
 
 const Profiel: React.FC = () => {
   const { state } = useAuthContext();
+  const navigate = useNavigate();
 
   const {
     gebruiker,
@@ -325,8 +327,7 @@ const Profiel: React.FC = () => {
                     &nbsp; + openingsReservePotjesVoorNuSaldo:{' '}
                     {formatAmount(openingsReservePotjesVoorNuSaldo ?? 0)}
                     <br />
-                    Actuele stand{' '}
-                    {formatAmount(actueleStand)}
+                    Actuele stand {formatAmount(actueleStand)}
                     &nbsp; = openingssaldo buffer:{' '}
                     {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}
                     &nbsp; + inkomsten - reservering:{' '}
@@ -335,9 +336,12 @@ const Profiel: React.FC = () => {
                     {formatAmount(reserveringsSaldoPotjesVanNu ?? 0)}
                     <br />
                     Verwachte eindstand{' '}
-                    {formatAmount(actueleStand + (verwachteInkomsten ?? 0) - (verwachteUitgaven ?? 0))}
-                    &nbsp; = actuele stand:{' '}
-                    {formatAmount(actueleStand ?? 0)}
+                    {formatAmount(
+                      actueleStand +
+                        (verwachteInkomsten ?? 0) -
+                        (verwachteUitgaven ?? 0),
+                    )}
+                    &nbsp; = actuele stand: {formatAmount(actueleStand ?? 0)}
                     &nbsp; + verwachte inkomsten:{' '}
                     {formatAmount(verwachteInkomsten ?? 0)}
                     &nbsp; - verwachte uitgaven:{' '}
@@ -520,28 +524,6 @@ const Profiel: React.FC = () => {
             )}
           </Accordion>
 
-          <Accordion>
-            <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
-              <Typography>Nieuwsgierig naar meer info over jezelf?</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography sx={{ my: '5px' }}>
-                Je bent ingelogd met email "{state.username}".
-                <br />
-                Je hebt "{gebruiker?.bijnaam}" als bijnaam gekozen.
-                <br />
-                Je{' '}
-                {gebruiker?.roles.length && gebruiker?.roles.length > 1
-                  ? ' rollen zijn '
-                  : ' rol is '}
-                "
-                {gebruiker?.roles
-                  .map((x) => x.split('_')[1].toLowerCase())
-                  .join('", "')}
-                ".
-              </Typography>
-            </AccordionDetails>
-          </Accordion>
         </>
       )}
       <>
@@ -666,6 +648,15 @@ const Profiel: React.FC = () => {
               </AccordionDetails>
             </Accordion>
           )}
+                    <Typography
+            sx={{ m: 2, cursor: 'pointer' }}
+            onClick={() => {
+              navigate('/gebruikersprofiel');
+            }}
+          >
+            Nieuwsgierig naar meer info over jezelf?
+          </Typography>
+
         </>
       </>
       {/* {JSON.stringify(rekeningGroepPerBetalingsSoort)} */}

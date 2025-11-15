@@ -57,7 +57,7 @@ const BankAppAfbeelding: React.FC = () => {
 
   const aantalBetalingen = validatedData.betalingen.length;
 
-  const { getIDToken } = useAuthContext();
+  const { getAccessToken } = useAuthContext();
   const { actieveAdministratie, setSnackbarMessage } = useCustomContext();
   const navigate = useNavigate();
   const { putBetalingValidatie } = usePlusminApi();
@@ -137,7 +137,7 @@ const BankAppAfbeelding: React.FC = () => {
     const valideerBetalingen = async () => {
       let token = '';
       try {
-        token = await getIDToken();
+        token = await getAccessToken();
       } catch {
         navigate('/login');
       }
@@ -192,7 +192,7 @@ const BankAppAfbeelding: React.FC = () => {
     actieveAdministratie,
     navigate,
     setSnackbarMessage,
-    getIDToken,
+    getAccessToken,
     putBetalingValidatie,
   ]);
 
