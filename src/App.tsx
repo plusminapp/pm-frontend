@@ -5,7 +5,7 @@ import {
   Route,
   Navigate,
 } from 'react-router-dom';
-import { useAuthContext } from '@asgardeo/auth-react';
+import { useAsgardeo } from '@asgardeo/react';
 
 import Profiel from './pages/Profiel';
 import Stand from './pages/Stand';
@@ -25,8 +25,8 @@ import './i18n';
 import GebruikersProfiel from './pages/GebruikersProfiel';
 
 const ProtectedRoute: React.FC<{ element: JSX.Element }> = ({ element }) => {
-  const { state } = useAuthContext();
-  return state.isAuthenticated ? element : <Navigate to="/login" />;
+  const { isSignedIn } = useAsgardeo();
+  return isSignedIn ? element : <Navigate to="/login" />;
 };
 
 const App: React.FC = () => {

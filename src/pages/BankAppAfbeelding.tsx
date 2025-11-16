@@ -19,7 +19,7 @@ import { BetalingDTO, BetalingvalidatieWrapper } from '../model/Betaling';
 import { updateAfbeelding } from '../components/Kasboek/Ocr/UpdateAfbeelding';
 import { parseText } from '../components/Kasboek/Ocr/ParseTekst';
 import { RekeningSelect } from '../components/Rekening/RekeningSelect';
-import { useAuthContext } from '@asgardeo/auth-react';
+import { useAsgardeo } from '@asgardeo/react';
 import { useCustomContext } from '../context/CustomContext';
 import { useNavigate } from 'react-router-dom';
 import { SaldoDTO } from '../model/Saldo';
@@ -57,7 +57,7 @@ const BankAppAfbeelding: React.FC = () => {
 
   const aantalBetalingen = validatedData.betalingen.length;
 
-  const { getAccessToken } = useAuthContext();
+  const { getAccessToken } = useAsgardeo();
   const { actieveAdministratie, setSnackbarMessage } = useCustomContext();
   const navigate = useNavigate();
   const { putBetalingValidatie } = usePlusminApi();

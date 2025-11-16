@@ -14,7 +14,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
-import { useAuthContext } from '@asgardeo/auth-react';
+import { useAsgardeo } from '@asgardeo/react';
 
 import dayjs from 'dayjs';
 import { usePlusminApi } from '../../api/plusminApi';
@@ -37,8 +37,8 @@ function Header() {
     setAnchorElNav(null);
     navigate(page);
   };
-  const { state, signIn, getAccessToken, signOut, revokeAccessToken } =
-    useAuthContext();
+  const { isSignedIn, signIn, getAccessToken, signOut } =
+    useAsgardeo();
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
     null,
   );
@@ -226,12 +226,12 @@ function Header() {
   ]);
 
   useEffect(() => {
-    if (state.isAuthenticated) {
+    if (isSignedIn) {
       determineSessionInfo();
       fetchGebruikerMetAdministraties();
     }
   }, [
-    state.isAuthenticated,
+    isSignedIn,
     fetchGebruikerMetAdministraties,
     determineSessionInfo,
   ]);
@@ -278,7 +278,6 @@ function Header() {
 
   const handleLogin = async () => {
     try {
-      if (state.isAuthenticated) await revokeAccessToken();
       await signIn();
       navigate('/profiel');
     } catch (error) {
@@ -318,7 +317,7 @@ function Header() {
             <PlusMinLogo />
           </IconButton>
 
-          {state.isAuthenticated && (
+          {isSignedIn && (
             <>
               {/* menuitems bij md+ */}
               <Box sx={{ my: 2, display: { xs: 'none', md: 'flex' } }}>
@@ -513,7 +512,7 @@ function Header() {
             </>
           )}
 
-          {!state.isAuthenticated && (
+          {!isSignedIn && (
             <Button
               variant="contained"
               sx={{ ml: 'auto' }}

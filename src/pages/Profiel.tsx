@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 
-import { useAuthContext } from '@asgardeo/auth-react';
+import { useAsgardeo } from '@asgardeo/react';
 
 import { useCustomContext } from '../context/CustomContext';
 import {
@@ -45,7 +45,7 @@ import { ReserveringTabel } from '../components/Profiel/ReserveringTabel';
 import { useNavigate } from 'react-router-dom';
 
 const Profiel: React.FC = () => {
-  const { state } = useAuthContext();
+  const { isSignedIn } = useAsgardeo();
   const navigate = useNavigate();
 
   const {
@@ -227,12 +227,12 @@ const Profiel: React.FC = () => {
 
   return (
     <>
-      {!state.isAuthenticated && (
+      {!isSignedIn && (
         <Typography variant="h4" sx={{ mb: '25px' }}>
           Je moet eerst inloggen ...
         </Typography>
       )}
-      {state.isAuthenticated && (
+      {isSignedIn && (
         <>
           {/* periodes */}
           <PeriodeSelect />

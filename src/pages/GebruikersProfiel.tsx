@@ -1,10 +1,10 @@
 import React from 'react';
 import { Typography } from '@mui/material';
-import { useAuthContext } from '@asgardeo/auth-react';
+import { useAsgardeo } from '@asgardeo/react';
 import { useCustomContext } from '../context/CustomContext';
 
 const GebruikersProfiel: React.FC = () => {
-  const { state } = useAuthContext();
+  const { isSignedIn, user } = useAsgardeo();
 
   const { gebruiker, actieveAdministratie } = useCustomContext();
 
@@ -12,14 +12,14 @@ const GebruikersProfiel: React.FC = () => {
     <>
       <Typography variant="h4">{gebruiker?.bijnaam}'s profiel</Typography>
 
-      {!state.isAuthenticated && (
+      {!isSignedIn && (
         <Typography variant="h4" sx={{ mb: '25px' }}>
           Je moet eerst inloggen ...
         </Typography>
       )}
-      {state.isAuthenticated && (
+      {isSignedIn && (
         <Typography sx={{ my: '5px' }}>
-          Je bent ingelogd met email "{state.username}".
+          Je bent ingelogd met email "{user.email}".
           <br />
           Je hebt "{gebruiker?.bijnaam}" als bijnaam gekozen.
           <br />

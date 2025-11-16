@@ -15,7 +15,8 @@
     "clean": "rm -rf node_modules/.vite"
   },
   "dependencies": {
-    "@asgardeo/auth-react": "^5.2.3",
+    "@asgardeo/react": "^0.6.6",
+    "@asgardeo/react-router": "^1.0.6",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "11.14.0",
     "@fontsource/roboto": "5.2.5",

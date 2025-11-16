@@ -3,7 +3,7 @@ import { Gebruiker } from '../model/Gebruiker';
 import { Periode } from '../model/Periode';
 import { RekeningGroepPerBetalingsSoort } from '../model/RekeningGroep';
 import { SaldoDTO, Stand } from '../model/Saldo';
-import { useAuthContext } from '@asgardeo/auth-react';
+import { useAsgardeo } from '@asgardeo/react';
 import { CashFlow } from '../model/CashFlow';
 import { Betaling, BetalingDTO } from '../model/Betaling';
 import { Administratie } from '../model/Administratie';
@@ -29,7 +29,7 @@ async function fetchData<T>(
 }
 
 function usePlusminApi() {
-  const { getAccessToken } = useAuthContext();
+  const { getAccessToken } = useAsgardeo();
 
   /* Gebruiker */
   const getGebruikerZelf = useCallback(async () => {
