@@ -36,14 +36,14 @@ export const ReserveringTabel: React.FC = () => {
     setOverTeHevelenReserve(rekeningNaam);
   };
   const formatAmount = (amount: number): string => {
-    if (!!!amount) amount = 0;
+    if (!amount) amount = 0;
     return amount.toLocaleString('nl-NL', {
       style: 'currency',
       currency: 'EUR',
     });
   };
 
-  var isHuidigePeriode = gekozenPeriode?.periodeStatus === 'HUIDIG';
+  const isHuidigePeriode = gekozenPeriode?.periodeStatus === 'HUIDIG';
 
   const isSpaarpot = (saldo: SaldoDTO) =>
     saldo.budgetType === BudgetType.sparen;
