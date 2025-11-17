@@ -17,10 +17,8 @@ import { UitgavenIcon } from '../../icons/Uitgaven';
 import {
   RekeningGroepDTO,
   RekeningGroepPerBetalingsSoort,
-  RekeningGroepSoort,
 } from '../../model/RekeningGroep';
 import { RekeningDTO } from '../../model/Rekening';
-import { SaldoDTO } from '../../model/Saldo';
 
 type BetalingsSoortSelectProps = {
   betaling: BetalingDTO | undefined;
@@ -49,18 +47,6 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
   const [selectedBetaalMethode, setSelectedBetaalMethode] = useState<
     RekeningDTO | undefined
   >(undefined);
-
-  const [sparenSaldi, setSparenSaldi] = useState<SaldoDTO[]>([]);
-
-  useEffect(() => {
-    if (stand) {
-      setSparenSaldi(
-        stand.resultaatOpDatum.filter(
-          (r) => r.rekeningGroepSoort === RekeningGroepSoort.spaarrekening,
-        ),
-      );
-    }
-  }, [stand]);
 
   useEffect(() => {
     if (props.betaling) {
@@ -342,19 +328,19 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                           onClick={() => handleRekeningClick(rekening.naam)}
                         >
                           {rekening.naam}{' '}
-                          {rgpb.betalingsSoort === BetalingsSoort.besteden ? (
+                          {selectedCategorie === 'UITGAVEN' ? (
                             <>
                               <br />
-                              {sparenSaldi
+                              {stand && stand.resultaatOpDatum
                                 .filter((s) => s.rekeningNaam === rekening.naam)
-                                ?.map((s) => s.openingsBalansSaldo + s.betaling)
+                                ?.map((s) => s.openingsReserveSaldo + s.reservering - s.betaling)
                                 .reduce((a, b) => a + b, 0)
                                 .toLocaleString('nl-NL', {
                                   style: 'currency',
                                   currency: 'EUR',
                                 }) || ''}
                             </>
-                          ) : null}
+                          ) : null} 
                         </Button>
                       )),
                   )}
@@ -569,12 +555,12 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                                 }
                               >
                                 {rekening.naam} <br />
-                                {sparenSaldi
+                                {stand && stand.resultaatOpDatum
                                   .filter(
                                     (s) => s.rekeningNaam === rekening.naam,
                                   )
                                   ?.map(
-                                    (s) => s.openingsBalansSaldo + s.betaling,
+                                    (s) => s.openingsReserveSaldo + s.reservering - s.betaling,
                                   )
                                   .reduce((a, b) => a + b, 0)
                                   .toLocaleString('nl-NL', {
