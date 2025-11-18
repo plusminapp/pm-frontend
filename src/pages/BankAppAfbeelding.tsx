@@ -17,7 +17,8 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 import { BetalingDTO, BetalingvalidatieWrapper } from '../model/Betaling';
 import { updateAfbeelding } from '../components/Kasboek/Ocr/UpdateAfbeelding';
-import { parseText } from '../components/Kasboek/Ocr/ParseTekst';
+import { parseTekst } from '../components/Kasboek/Ocr/ParseTekst';
+import { parseTekstCR } from '../components/Kasboek/Ocr/ParseTekstCR';
 import { RekeningSelect } from '../components/Rekening/RekeningSelect';
 import { useAuthContext } from '@asgardeo/auth-react';
 import { useCustomContext } from '../context/CustomContext';
@@ -117,12 +118,17 @@ const BankAppAfbeelding: React.FC = () => {
     )
       .then(({ data: { text, confidence } }) => {
         const filteredText = text.replace(/^\d{2}:\d{2}.*\n/, '').trim();
-        setOcdData(text + ' <<>> ' + filteredText);
+        setOcdData(filteredText);
         setConfidence(confidence);
-        const parsedData = parseText(filteredText).map((betaling) => ({
+        const parsedData = ocrBankRekening?.bankNaam === 'CR'
+        ? parseTekstCR(filteredText).map((betaling: BetalingDTO) => ({
           ...betaling,
           bedrag: Math.abs(betaling.bedrag),
-        }));
+        }))
+        : parseTekst(filteredText).map((betaling: BetalingDTO) => ({
+          ...betaling,
+          bedrag: Math.abs(betaling.bedrag),
+        }));;
         setParsedData(parsedData);
         setIsLoading(false);
       })
@@ -419,36 +425,12 @@ const BankAppAfbeelding: React.FC = () => {
           </Grid>
         )}
       </Grid>
-      {/* {ocrData &&
-        <Accordion >
-          <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
-            <Typography variant="caption">OCR ruwe data</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography variant="caption">
-              {ocrData}
-            </Typography>
-          </AccordionDetails>
-        </Accordion>}
-      {validatedData &&
-        <Accordion >
-          <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
-            <Typography variant="caption">ValidatedData</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            {validatedData.betalingen.map((betaling, index) => (
-              <Box key={index} sx={{ mb: 2 }}>
-                <Typography variant="caption">{betaling.boekingsdatum.format('D MMMM')} {betaling.ocrOmschrijving} {betaling.bedrag} {betaling.bestaatAl ? `bestaat al met omschrijving ${betaling.omschrijving}` : 'bestaat nog niet'}  </Typography>
-              </Box>
-            ))}
-          </AccordionDetails>
-        </Accordion>} */}
       <Typography variant="body2" sx={{ mt: 1 }}>
         {confidence && toonAfbeelding
           ? `OCR vertrouwen: ${confidence.toFixed(2)}%`
           : ''}
         {/* GroupedData: {JSON.stringify(groupedData)} */}
-        ParsedDate: {JSON.stringify(parsedData)}
+        {/*ParsedDate: {JSON.stringify(parsedData)}*/}
       </Typography>
     </Box>
   );
