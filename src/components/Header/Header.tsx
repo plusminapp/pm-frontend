@@ -2,7 +2,7 @@ import React, { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import MenuIcon from '@mui/icons-material/Menu';
-import PersonIcon from '@mui/icons-material/Person';
+import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -420,7 +420,7 @@ function Header() {
                             gap: 1,
                           }}
                         >
-                          <PersonIcon />
+                          <PersonOutlineOutlinedIcon />
                           {gebruiker.bijnaam}
                         </Typography>
                       </MenuItem>

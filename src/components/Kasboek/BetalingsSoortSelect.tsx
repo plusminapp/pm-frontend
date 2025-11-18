@@ -17,6 +17,7 @@ import { UitgavenIcon } from '../../icons/Uitgaven';
 import {
   RekeningGroepDTO,
   RekeningGroepPerBetalingsSoort,
+  RekeningGroepSoort,
 } from '../../model/RekeningGroep';
 import { RekeningDTO } from '../../model/Rekening';
 
@@ -148,11 +149,11 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
       props.onBetalingsChange(undefined, undefined, undefined);
     } else {
       const newBetalingsSoort = betalingsSoort;
-      const newRekeningGroep = rekeningGroepPerBetalingsSoort.filter(
+      const newRekeningGroep = rekeningGroepPerBetalingsSoort?.filter(
         (rgpb) => rgpb.betalingsSoort === newBetalingsSoort,
-      )[0].rekeningGroepen[0];
-      const newRekening = newRekeningGroep.rekeningen[0];
-      const newBetaalMethode = newRekening.betaalMethoden
+      )[0]?.rekeningGroepen[0];
+      const newRekening = newRekeningGroep?.rekeningen[0];
+      const newBetaalMethode = newRekening?.betaalMethoden
         ? newRekening.betaalMethoden[0]
         : undefined;
 
@@ -331,14 +332,45 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                           {selectedCategorie === 'UITGAVEN' ? (
                             <>
                               <br />
-                              {stand && stand.resultaatOpDatum
-                                .filter((s) => s.rekeningNaam === rekening.naam)
-                                ?.map((s) => s.openingsReserveSaldo + s.reservering - s.betaling)
-                                .reduce((a, b) => a + b, 0)
-                                .toLocaleString('nl-NL', {
-                                  style: 'currency',
-                                  currency: 'EUR',
-                                }) || ''}
+                              {stand &&
+                                stand.resultaatOpDatum
+                                  .filter(
+                                    (s) => s.rekeningNaam === rekening.naam,
+                                  )
+                                  ?.map(
+                                    (s) =>
+                                      s.openingsReserveSaldo +
+                                      s.reservering -
+                                      s.betaling,
+                                  )
+                                  .reduce((a, b) => a + b, 0)
+                                  .toLocaleString('nl-NL', {
+                                    style: 'currency',
+                                    currency: 'EUR',
+                                  }) ||
+                                ''}
+                              {selectedRekeningGroep?.rekeningGroepSoort ===
+                              RekeningGroepSoort.spaarpot ? (
+                                <>
+                                  <br />
+                                  {(stand &&
+                                    stand.resultaatOpDatum
+                                      .filter(
+                                        (s) => s.rekeningNaam === rekening.naam,
+                                      )
+                                      ?.map(
+                                        (s) =>
+                                          s.openingsOpgenomenSaldo +
+                                          s.opgenomenSaldo,
+                                      )
+                                      .reduce((a, b) => a + b, 0)
+                                      .toLocaleString('nl-NL', {
+                                        style: 'currency',
+                                        currency: 'EUR',
+                                      })) ||
+                                    ''}
+                                </>
+                              ) : null}
                             </>
                           ) : null} 
                         </Button>
@@ -555,18 +587,40 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                                 }
                               >
                                 {rekening.naam} <br />
-                                {stand && stand.resultaatOpDatum
-                                  .filter(
-                                    (s) => s.rekeningNaam === rekening.naam,
-                                  )
-                                  ?.map(
-                                    (s) => s.openingsReserveSaldo + s.reservering - s.betaling,
-                                  )
-                                  .reduce((a, b) => a + b, 0)
-                                  .toLocaleString('nl-NL', {
-                                    style: 'currency',
-                                    currency: 'EUR',
-                                  }) || ''}
+                                {stand &&
+                                  stand.resultaatOpDatum
+                                    .filter(
+                                      (s) => s.rekeningNaam === rekening.naam,
+                                    )
+                                    ?.map(
+                                      (s) =>
+                                        s.openingsReserveSaldo +
+                                        s.reservering -
+                                        s.betaling,
+                                    )
+                                    .reduce((a, b) => a + b, 0)
+                                    .toLocaleString('nl-NL', {
+                                      style: 'currency',
+                                      currency: 'EUR',
+                                    }) ||
+                                  ''}
+                                <br />
+                                {(stand &&
+                                  stand.resultaatOpDatum
+                                    .filter(
+                                      (s) => s.rekeningNaam === rekening.naam,
+                                    )
+                                    ?.map(
+                                      (s) =>
+                                        s.openingsOpgenomenSaldo +
+                                        s.opgenomenSaldo,
+                                    )
+                                    .reduce((a, b) => a + b, 0)
+                                    .toLocaleString('nl-NL', {
+                                      style: 'currency',
+                                      currency: 'EUR',
+                                    })) ||
+                                  ''}
                               </Button>
                             )),
                         )}
@@ -606,8 +660,8 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
             {creeerBronBestemmingTekst()}
           </Typography>
         )}
-      {/* {JSON.stringify(props.betaling)}<br /><br />
-      {JSON.stringify(rekeningGroepPerBetalingsSoort.find(rgpb => rgpb.betalingsSoort === props.betaling?.betalingsSoort))} */}
+      {/* {JSON.stringify(props.betaling)}<br /><br /> */}
+      {/* {JSON.stringify(rekeningGroepPerBetalingsSoort)} */}
     </div>
   );
 };

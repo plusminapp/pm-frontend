@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import { BetalingDTO } from '../../../model/Betaling';
 import { DateFormats } from '../../../util/date-formats';
 
-export const parseText = (text: string): BetalingDTO[] => {
+export const parseTekst = (text: string): BetalingDTO[] => {
   const dateRegex =
     /((vandaag|gisteren)?( - )?\d{1,2} (januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december|jan|feb|mrt|apr|mei|jun|jul|aug|sep|okt|nov|dec)( \d{4})?|(vandaag|gisteren)( - )?)/i;
   const currentYear = dayjs().year();
