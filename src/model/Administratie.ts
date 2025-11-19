@@ -5,6 +5,7 @@ export type Administratie = {
   id: number;
   naam: string;
   periodeDag: number;
+  vandaag: string;
   eigenaarNaam: string;
   eigenaarSubject: string;
   periodes: Periode[];

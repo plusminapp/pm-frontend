@@ -59,7 +59,7 @@ const BankAppAfbeelding: React.FC = () => {
   const aantalBetalingen = validatedData.betalingen.length;
 
   const { getAccessToken } = useAuthContext();
-  const { actieveAdministratie, setSnackbarMessage } = useCustomContext();
+  const { actieveAdministratie, setSnackbarMessage , vandaag} = useCustomContext();
   const navigate = useNavigate();
   const { putBetalingValidatie } = usePlusminApi();
 
@@ -121,11 +121,11 @@ const BankAppAfbeelding: React.FC = () => {
         setOcdData(filteredText);
         setConfidence(confidence);
         const parsedData = ocrBankRekening?.bankNaam === 'CR'
-        ? parseTekstCR(filteredText).map((betaling: BetalingDTO) => ({
+        ? parseTekstCR(filteredText, vandaag).map((betaling: BetalingDTO) => ({
           ...betaling,
           bedrag: Math.abs(betaling.bedrag),
         }))
-        : parseTekst(filteredText).map((betaling: BetalingDTO) => ({
+        : parseTekst(filteredText, vandaag).map((betaling: BetalingDTO) => ({
           ...betaling,
           bedrag: Math.abs(betaling.bedrag),
         }));;

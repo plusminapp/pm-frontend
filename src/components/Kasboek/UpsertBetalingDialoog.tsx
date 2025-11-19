@@ -67,15 +67,16 @@ export default function UpsertBetalingDialoog(
     gekozenPeriode,
     setSnackbarMessage,
     setIsStandDirty,
+    vandaag,
   } = useCustomContext();
   const { postBetalingVooradministratie, putBetaling, deleteBetaling } =
     usePlusminApi();
 
   const boekingsDatum =
     gekozenPeriode?.periodeEindDatum &&
-    dayjs().toISOString().slice(0, 10) > gekozenPeriode?.periodeEindDatum
+    dayjs(vandaag).toISOString().slice(0, 10) > gekozenPeriode?.periodeEindDatum
       ? dayjs(gekozenPeriode?.periodeEindDatum).format(DateFormats.YYYY_MM_DD)
-      : dayjs().format(DateFormats.YYYY_MM_DD);
+      : dayjs(vandaag).format(DateFormats.YYYY_MM_DD);
 
   const initialBetalingDTO = useMemo(
     () => ({
@@ -531,7 +532,7 @@ export default function UpsertBetalingDialoog(
                     'boekingsdatum',
                     newvalue
                       ? newvalue.format(DateFormats.YYYY_MM_DD)
-                      : dayjs().format(DateFormats.YYYY_MM_DD),
+                      : dayjs(vandaag).format(DateFormats.YYYY_MM_DD),
                   )
                 }
               />

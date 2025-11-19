@@ -2,16 +2,16 @@ import dayjs from 'dayjs';
 import { BetalingDTO } from '../../../model/Betaling';
 import { DateFormats } from '../../../util/date-formats';
 
-export const parseTekst = (text: string): BetalingDTO[] => {
+export const parseTekst = (text: string, vandaag: string | null): BetalingDTO[] => {
   const dateRegex =
     /((vandaag|gisteren)?( - )?\d{1,2} (januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december|jan|feb|mrt|apr|mei|jun|jul|aug|sep|okt|nov|dec)( \d{4})?|(vandaag|gisteren)( - )?)/i;
-  const currentYear = dayjs().year();
+  const currentYear = dayjs(vandaag).year();
   const previousYear = currentYear - 1;
   const amountRegex = new RegExp(
     `[+-]?[0-9.,]+(?<!${currentYear}|${previousYear})$`,
   );
 
-  let currentDate = dayjs();
+  let currentDate = dayjs(vandaag);
   let sortOrderBase = 900;
   const parsed = text.split('\n').reduce((acc: BetalingDTO[], line) => {
     const dateMatch = line.match(dateRegex);
@@ -43,11 +43,11 @@ export const parseTekst = (text: string): BetalingDTO[] => {
         dateStr = dateStr.split('-')[1].trim();
       }
       const yearMatch = dateStr.match(/\d{4}/);
-      const year = yearMatch ? '' : dayjs().year();
+      const year = yearMatch ? '' : dayjs(vandaag).year();
       if (dateStr === 'vandaag') {
-        currentDate = dayjs();
+        currentDate = dayjs(vandaag);
       } else if (dateStr === 'gisteren') {
-        currentDate = dayjs().subtract(1, 'day');
+        currentDate = dayjs(vandaag).subtract(1, 'day');
       } else if (
         /\d{1,2} (januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)/.test(
           dateStr,
@@ -63,7 +63,7 @@ export const parseTekst = (text: string): BetalingDTO[] => {
       } else if (/\d{1,2}-\d{1,2}/.test(dateStr)) {
         currentDate = dayjs(`${dateStr}-${year}`, 'D-MM-YYYY');
       } else {
-        currentDate = dayjs();
+        currentDate = dayjs(vandaag);
       }
       sortOrderBase = 900; // Reset sortOrderBase for a new date
     }

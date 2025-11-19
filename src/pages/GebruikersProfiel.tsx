@@ -5,6 +5,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { useAuthContext } from '@asgardeo/auth-react';
 import { useCustomContext } from '../context/CustomContext';
 import { usePlusminApi } from '../api/plusminApi';
+import dayjs from 'dayjs';
 
 interface BijnaamFormData {
   bijnaam: string;
@@ -143,7 +144,7 @@ const GebruikersProfiel: React.FC = () => {
       )}
       {isSignedIn && (
         <Typography sx={{ my: '5px' }}>
-          Je bent ingelogd met email "{gebruiker?.subject}" en je hebt "{gebruiker?.subject}" als identificatie code.
+          Je bent ingelogd met email "{state.email}" en je hebt "{gebruiker?.subject}" als identificatie code.
           <br />
           Je hebt "{gebruiker?.bijnaam}" als bijnaam gekozen.
           <br />
@@ -173,6 +174,13 @@ const GebruikersProfiel: React.FC = () => {
           <li key={admin.id}>
             {admin.naam}: eigenaar is {admin.eigenaarNaam}, gebruikers met toegang zijn:{' '}
             {admin.gebruikers.map((gebruiker) => gebruiker.bijnaam).join(', ')}
+                      {admin.vandaag && (
+            <Typography>
+              {admin.vandaag && `De administratie is in spelmodus: het is vandaag ${admin.vandaag}. `}
+              {!admin.vandaag && `De administratie is niet in spelmodus. het is vandaag ${dayjs().format('YYYY-MM-DD')}. `}
+            </Typography>
+          )}
+
           </li>
         ))}
       </ul>

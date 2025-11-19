@@ -107,7 +107,7 @@
 //                     {filteredBetalingen[date].map((item) => (
 //                       <TableRow key={item.sortOrder}>
 //                           <TableCell sx={{ padding: '5px' }} onClick={() => handleEditClick(item.sortOrder)}>
-//                             {dayjs(date).year() === dayjs().year() ? dayjs(date).format('D MMMM') : dayjs(date).format('D MMMM YYYY')}
+//                             {dayjs(date).year() === dayjs(vandaag).year() ? dayjs(date).format('D MMMM') : dayjs(date).format('D MMMM YYYY')}
 //                           </TableCell>
 //                         <TableCell sx={{ padding: '5px', color:  'lightgrey' }}
 //                           onClick={() => handleEditClick(item.sortOrder)}>

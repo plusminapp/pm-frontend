@@ -38,6 +38,7 @@ export default function Stand() {
     gekozenPeriode,
     rekeningGroepPerBetalingsSoort,
     stand,
+    vandaag
   } = useCustomContext();
 
   const [toonDebug, setToonDebug] = useState(
@@ -50,7 +51,7 @@ export default function Stand() {
 
   const periodeIsVoorbij =
     (gekozenPeriode &&
-      dayjs(gekozenPeriode.periodeEindDatum).endOf('day').isBefore(dayjs())) ??
+      dayjs(gekozenPeriode.periodeEindDatum).endOf('day').isBefore(dayjs(vandaag))) ??
     true;
 
   const [detailsVisible, setDetailsVisible] = useState<string | null>(
@@ -66,7 +67,7 @@ export default function Stand() {
 
   const berekenPeriodeNaam = () => {
     if (gekozenPeriode?.periodeStatus.toLowerCase() === 'huidig') {
-      const dagenGeleden = dayjs().diff(
+      const dagenGeleden = dayjs(vandaag).diff(
         dayjs(stand?.datumLaatsteBetaling),
         'day',
       );
@@ -93,7 +94,7 @@ export default function Stand() {
     return `periode ${maandStart}/${maandEinde}`;
   };
   const aantalDagenResterend =
-    dayjs(gekozenPeriode?.periodeEindDatum).diff(dayjs(), 'day') + 1;
+    dayjs(gekozenPeriode?.periodeEindDatum).diff(dayjs(vandaag), 'day') + 1;
 
   return (
     <>
@@ -195,8 +196,8 @@ export default function Stand() {
                         >
                           <StandGrafiek
                             peilDatum={
-                              dayjs(stand.peilDatum).isAfter(dayjs())
-                                ? dayjs()
+                              dayjs(stand.peilDatum).isAfter(dayjs(vandaag))
+                                ? dayjs(vandaag)
                                 : dayjs(stand.peilDatum)
                             }
                             periode={gekozenPeriode}
@@ -240,8 +241,8 @@ export default function Stand() {
                         >
                           <SpaarGrafiek
                             peilDatum={
-                              dayjs(stand.peilDatum).isAfter(dayjs())
-                                ? dayjs()
+                              dayjs(stand.peilDatum).isAfter(dayjs(vandaag))
+                                ? dayjs(vandaag)
                                 : dayjs(stand.peilDatum)
                             }
                             periode={gekozenPeriode}

@@ -48,7 +48,7 @@
 //   const initialAflossing = useMemo(() => ({
 //     id: 0,
 //     RekeningGroep: initialRekening,
-//     startDatum: dayjs(),
+//     startDatum: dayjs(vandaag),
 //     eindDatum: undefined,
 //     eindBedrag: 0,
 //     aflossingsBedrag: 0,
@@ -95,7 +95,7 @@
 //   // const berekenEindDatum = (startDatum: dayjs.Dayjs | undefined, eindBedrag: number | undefined, aflossingsBedrag: number | undefined, betaalDag: number) => {
 //   //   if (!startDatum || !eindBedrag || !aflossingsBedrag) return undefined
 //   //   const eindDatum = startDatum.add(Math.ceil(eindBedrag / aflossingsBedrag), 'month').date(betaalDag);
-//   //   return dayjs().date() <= betaalDag ? eindDatum.subtract(1, 'month') : eindDatum
+//   //   return dayjs(vandaag).date() <= betaalDag ? eindDatum.subtract(1, 'month') : eindDatum
 //   // }
 
 //   const handleInputAflossingWijziging = <K extends keyof AflossingDTO>(key: K, value: AflossingDTO[K]) => {
