@@ -1,25 +1,149 @@
-import React from 'react';
-import { Typography } from '@mui/material';
+import React, { useState } from 'react';
+import { Typography, IconButton, TextField, Box } from '@mui/material';
+import { Edit as EditIcon, Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
+import { useForm, Controller } from 'react-hook-form';
 import { useAuthContext } from '@asgardeo/auth-react';
 import { useCustomContext } from '../context/CustomContext';
+import { usePlusminApi } from '../api/plusminApi';
+
+interface BijnaamFormData {
+  bijnaam: string;
+}
 
 const GebruikersProfiel: React.FC = () => {
   const { state } = useAuthContext();
+  const isSignedIn = state?.isAuthenticated || false;
+  const { gebruiker, setGebruiker, actieveAdministratie } = useCustomContext();
+  const { updateBijnaam } = usePlusminApi();
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { gebruiker, actieveAdministratie } = useCustomContext();
+  const { control, handleSubmit, reset, formState: { errors } } = useForm<BijnaamFormData>({
+    defaultValues: {
+      bijnaam: gebruiker?.bijnaam || '',
+    },
+  });
+
+  const handleEditClick = () => {
+    reset({ bijnaam: gebruiker?.bijnaam || '' });
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    reset({ bijnaam: gebruiker?.bijnaam || '' });
+  };
+
+  const onSubmit = async (data: BijnaamFormData) => {
+    if (!gebruiker) return;
+
+    try {
+      setIsSubmitting(true);
+      await updateBijnaam(data.bijnaam.trim());
+      
+      // Update de gebruiker in de context
+      setGebruiker({
+        ...gebruiker,
+        bijnaam: data.bijnaam.trim(),
+      });
+
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Fout bij het bijwerken van de bijnaam:', error);
+      // Hier zou je een snackbar of toast kunnen tonen
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <>
-      <Typography variant="h4">{gebruiker?.bijnaam}'s profiel</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+        {!isEditing ? (
+          <>
+            <Typography variant="h4">
+              {gebruiker?.bijnaam}'s profiel
+            </Typography>
+            <IconButton 
+              onClick={handleEditClick}
+              size="small"
+              sx={{ ml: 1 }}
+              aria-label="Bijnaam bewerken"
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </>
+        ) : (
+          <Box 
+            component="form" 
+            onSubmit={handleSubmit(onSubmit)}
+            sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}
+          >
+            <Controller
+              name="bijnaam"
+              control={control}
+              rules={{
+                required: 'Bijnaam is verplicht',
+                minLength: {
+                  value: 2,
+                  message: 'Bijnaam moet minimaal 2 karakters bevatten',
+                },
+                maxLength: {
+                  value: 50,
+                  message: 'Bijnaam mag maximaal 50 karakters bevatten',
+                },
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  variant="outlined"
+                  size="small"
+                  error={!!errors.bijnaam}
+                  helperText={errors.bijnaam?.message}
+                  autoFocus
+                  disabled={isSubmitting}
+                  sx={{ 
+                    '& .MuiOutlinedInput-root': {
+                      fontSize: '2.125rem', // h4 font size
+                      fontWeight: 400,
+                    }
+                  }}
+                />
+              )}
+            />
+            <Typography variant="h4" sx={{ ml: 1 }}>
+              's profiel
+            </Typography>
+            <IconButton 
+              type="submit"
+              size="small"
+              disabled={isSubmitting}
+              color="primary"
+              aria-label="Opslaan"
+            >
+              <CheckIcon fontSize="small" />
+            </IconButton>
+            <IconButton 
+              onClick={handleCancel}
+              size="small"
+              disabled={isSubmitting}
+              color="secondary"
+              aria-label="Annuleren"
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        )}
+      </Box>
 
-      {!state.isAuthenticated && (
+      {!isSignedIn && (
         <Typography variant="h4" sx={{ mb: '25px' }}>
           Je moet eerst inloggen ...
         </Typography>
       )}
-      {state.isAuthenticated && (
+      {isSignedIn && (
         <Typography sx={{ my: '5px' }}>
-          Je bent ingelogd met email "{state.username}".
+          Je bent ingelogd met email "{gebruiker?.subject}" en je hebt "{gebruiker?.subject}" als identificatie code.
           <br />
           Je hebt "{gebruiker?.bijnaam}" als bijnaam gekozen.
           <br />
@@ -44,16 +168,14 @@ const GebruikersProfiel: React.FC = () => {
       <Typography sx={{ my: '0px' }}>
         De administraties waar je toegang tot hebt zijn:
       </Typography>
-      <ul >
+      <ul>
         {gebruiker?.administraties.map((admin) => (
           <li key={admin.id}>
             {admin.naam}: eigenaar is {admin.eigenaarNaam}, gebruikers met toegang zijn:{' '}
             {admin.gebruikers.map((gebruiker) => gebruiker.bijnaam).join(', ')}
-            </li>
+          </li>
         ))}
       </ul>
-
-      {/* {JSON.stringify(rekeningGroepPerBetalingsSoort)} */}
     </>
   );
 };
