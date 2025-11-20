@@ -46,6 +46,7 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
     gekozenPeriode,
     setSnackbarMessage,
     rekeningGroepPerBetalingsSoort,
+    vandaag
   } = useCustomContext();
   const betalingen = props.betalingen;
   const [actueleRekeningGroep, setActueleRekeningGroep] = useState<
@@ -182,7 +183,7 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
                           colSpan={3}
                           sx={{ fontWeight: '900', padding: '5px' }}
                         >
-                          {dayjs(date).year() === dayjs().year()
+                          {dayjs(date).year() === dayjs(vandaag).year()
                             ? dayjs(date).format('D MMMM')
                             : dayjs(date).format('D MMMM YYYY')}
                         </TableCell>
@@ -195,7 +196,7 @@ export default function InkomstenUitgavenTabel(props: InUitTabelProps) {
                             sx={{ padding: '5px' }}
                             onClick={() => handleEditClick(item.sortOrder)}
                           >
-                            {dayjs(date).year() === dayjs().year()
+                            {dayjs(date).year() === dayjs(vandaag).year()
                               ? dayjs(date).format('D MMMM')
                               : dayjs(date).format('D MMMM YYYY')}
                           </TableCell>

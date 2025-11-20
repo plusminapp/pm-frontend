@@ -70,6 +70,7 @@ function Header() {
     rekeningGroepPerBetalingsSoort,
     setRekeningGroepPerBetalingsSoort,
     setPeriodes,
+    vandaag,
   } = useCustomContext();
 
   const { pathname } = useLocation();
@@ -239,10 +240,10 @@ function Header() {
   useEffect(() => {
     const fetchSaldi = async () => {
       if (actieveAdministratie && gekozenPeriode) {
-        const vandaag = dayjs().format('YYYY-MM-DD');
         const datum =
-          gekozenPeriode.periodeEindDatum > vandaag
-            ? vandaag
+          gekozenPeriode.periodeEindDatum >
+          (actieveAdministratie.vandaag ?? dayjs().format('YYYY-MM-DD'))
+            ? (actieveAdministratie.vandaag ?? dayjs().format('YYYY-MM-DD'))
             : gekozenPeriode.periodeEindDatum;
         try {
           const stand = await getStandVooradministratieEnDatum(
@@ -265,6 +266,7 @@ function Header() {
     isStandDirty,
     setIsStandDirty,
     setStand,
+    vandaag,
   ]);
 
   const handleLogout = async () => {
@@ -336,8 +338,11 @@ function Header() {
 
               {expiry && (
                 <Typography sx={{ ml: 2, color: 'gray', fontSize: 12 }}>
-                  Sessie tot {expiry.getHours().toString().padStart(2, '0')}:
-                  {expiry.getMinutes().toString().padStart(2, '0')}
+                  {actieveAdministratie?.vandaag &&
+                    `Het is vandaag ${actieveAdministratie?.vandaag}. `}
+                  De huidige sessie eindigt om{' '}
+                  {expiry.getHours().toString().padStart(2, '0')}:
+                  {expiry.getMinutes().toString().padStart(2, '0')}.
                 </Typography>
               )}
 

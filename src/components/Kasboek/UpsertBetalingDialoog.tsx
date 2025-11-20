@@ -67,15 +67,16 @@ export default function UpsertBetalingDialoog(
     gekozenPeriode,
     setSnackbarMessage,
     setIsStandDirty,
+    vandaag,
   } = useCustomContext();
   const { postBetalingVooradministratie, putBetaling, deleteBetaling } =
     usePlusminApi();
 
   const boekingsDatum =
     gekozenPeriode?.periodeEindDatum &&
-    dayjs().toISOString().slice(0, 10) > gekozenPeriode?.periodeEindDatum
+    dayjs(vandaag).toISOString().slice(0, 10) > gekozenPeriode?.periodeEindDatum
       ? dayjs(gekozenPeriode?.periodeEindDatum).format(DateFormats.YYYY_MM_DD)
-      : dayjs().format(DateFormats.YYYY_MM_DD);
+      : dayjs(vandaag).format(DateFormats.YYYY_MM_DD);
 
   const initialBetalingDTO = useMemo(
     () => ({
@@ -522,7 +523,7 @@ export default function UpsertBetalingDialoog(
               <DatePicker
                 sx={{ color: 'success.main' }}
                 minDate={dayjs(eersteOpenPeriode?.periodeStartDatum)}
-                maxDate={dayjs(laatstePeriode?.periodeEindDatum)}
+                maxDate={dayjs(actieveAdministratie?.vandaag)}
                 slotProps={{ textField: { variant: 'standard' } }}
                 label="Wanneer was de betaling?"
                 value={dayjs(betalingDTO.boekingsdatum)}
@@ -531,7 +532,7 @@ export default function UpsertBetalingDialoog(
                     'boekingsdatum',
                     newvalue
                       ? newvalue.format(DateFormats.YYYY_MM_DD)
-                      : dayjs().format(DateFormats.YYYY_MM_DD),
+                      : dayjs(vandaag).format(DateFormats.YYYY_MM_DD),
                   )
                 }
               />

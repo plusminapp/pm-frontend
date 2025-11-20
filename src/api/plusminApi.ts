@@ -4,6 +4,7 @@ import { Periode } from '../model/Periode';
 import { RekeningGroepPerBetalingsSoort } from '../model/RekeningGroep';
 import { SaldoDTO, Stand } from '../model/Saldo';
 import { useAuthContext } from '@asgardeo/auth-react';
+import { useCustomContext } from '../context/CustomContext';
 import { CashFlow } from '../model/CashFlow';
 import { Betaling, BetalingDTO } from '../model/Betaling';
 import { Administratie } from '../model/Administratie';
@@ -30,12 +31,28 @@ async function fetchData<T>(
 
 function usePlusminApi() {
   const { getAccessToken } = useAuthContext();
+  const { gebruiker } = useCustomContext();
 
+  
   /* Gebruiker */
   const getGebruikerZelf = useCallback(async () => {
     const token = await getAccessToken();
     return fetchData<Gebruiker>('/api/v1/gebruikers/zelf', token);
   }, [getAccessToken]);
+
+  const updateBijnaam = useCallback(
+    async (bijnaam: string) => {
+      const token = await getAccessToken();
+      const nieuweGebruiker = {...gebruiker, bijnaam};
+      return fetchData<Gebruiker>(
+        '/api/v1/gebruikers/zelf',
+        token,
+        'PUT',
+        nieuweGebruiker,
+      );
+    },
+    [gebruiker, getAccessToken],
+  );
 
   /* Rekening */
   const getRekeningenVooradministratieEnPeriode = useCallback(
@@ -201,9 +218,21 @@ function usePlusminApi() {
     },
     [getAccessToken],
   );
+    const putVandaag = useCallback(
+    async (administratie: Administratie, vandaag: string) => {
+      const token = await getAccessToken();
+      return fetchData(
+        `/api/v1/demo/administratie/${administratie.id}/vandaag/${vandaag}`,
+        token,
+        'PUT',
+      );
+    },
+    [getAccessToken],
+  );
 
   return {
     getGebruikerZelf,
+    updateBijnaam,
     getRekeningenVooradministratieEnPeriode,
     getStandVooradministratieEnDatum,
     getCashFlowVooradministratieEnPeriode,
@@ -216,6 +245,7 @@ function usePlusminApi() {
     putPeriodeOpeningWijziging,
     getPeriodeOpening,
     putBetalingValidatie,
+    putVandaag,
   };
 }
 

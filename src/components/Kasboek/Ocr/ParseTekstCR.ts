@@ -3,9 +3,9 @@ import { BetalingDTO } from '../../../model/Betaling';
 import { DateFormats } from '../../../util/date-formats';
 
 // Functie om tekst van Caja Rural bankafschriften te parsen
-export const parseTekstCR = (text: string): BetalingDTO[] => {
+export const parseTekstCR = (text: string, vandaag: string | null): BetalingDTO[] => {
   const lines = text.split('\n').filter(line => line.trim().length > 0);
-  let currentDate = dayjs();
+  let currentDate = dayjs(vandaag);
   let sortOrderBase = 900;
   const parsed: BetalingDTO[] = [];
 
@@ -24,8 +24,8 @@ export const parseTekstCR = (text: string): BetalingDTO[] => {
       const day = dateMatch[1];
       const month = 'nov'; // Alle voorbeelden zijn november
       
-      const currentYear = dayjs().year();
-      currentDate = dayjs()
+      const currentYear = dayjs(vandaag).year();
+      currentDate = dayjs(vandaag)
         .year(currentYear)
         .month(monthMap[month])
         .date(parseInt(day, 10));

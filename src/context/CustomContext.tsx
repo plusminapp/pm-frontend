@@ -11,12 +11,15 @@ import { Periode } from '../model/Periode';
 import { SnackbarMessage } from '../components/StyledSnackbar';
 import { Stand } from '../model/Saldo';
 import { Administratie } from '../model/Administratie';
+import dayjs from 'dayjs';
 
 interface CustomContextType {
   gebruiker: Gebruiker | undefined;
   setGebruiker: (gebruiker: Gebruiker | undefined) => void;
   actieveAdministratie: Administratie | undefined;
-  setActieveAdministratie: (actieveAdministratie: Administratie | undefined) => void;
+  setActieveAdministratie: (
+    actieveAdministratie: Administratie | undefined,
+  ) => void;
   administraties: Array<Administratie>;
   setAdministraties: (administraties: Array<Administratie>) => void;
   periodes: Array<Periode>;
@@ -33,6 +36,8 @@ interface CustomContextType {
   ) => void;
   snackbarMessage: SnackbarMessage;
   setSnackbarMessage: (snackbarMessage: SnackbarMessage) => void;
+  vandaag: string | null;
+  setVandaag: (vandaag: string | null) => void;
 }
 
 const CustomContext = createContext<CustomContextType | undefined>(undefined);
@@ -52,8 +57,12 @@ interface CustomProviderProps {
 
 export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
   const [gebruiker, setGebruiker] = useState<Gebruiker | undefined>(undefined);
-  const [actieveAdministratie, setActieveAdministratie] = useState<Administratie | undefined>(undefined);
-  const [administraties, setAdministraties] = useState<Array<Administratie>>([]);
+  const [actieveAdministratie, setActieveAdministratie] = useState<
+    Administratie | undefined
+  >(undefined);
+  const [administraties, setAdministraties] = useState<Array<Administratie>>(
+    [],
+  );
   const [periodes, setPeriodes] = useState<Array<Periode>>([]);
   const [gekozenPeriode, setGekozenPeriode] = useState<Periode | undefined>(
     undefined,
@@ -66,10 +75,12 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
     message: undefined,
     type: undefined,
   });
+  const [vandaag, setVandaag] = useState<string | null>(null);
 
   useEffect(() => {
     if (!actieveAdministratie) return;
     setActieveAdministratie(actieveAdministratie);
+    setVandaag(dayjs(actieveAdministratie.vandaag).format('YYYY-MM-DD'));
     setPeriodes(actieveAdministratie.periodes);
     localStorage.setItem('actieveAdministratie', actieveAdministratie.id + '');
   }, [actieveAdministratie]);
@@ -95,6 +106,8 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
         setRekeningGroepPerBetalingsSoort,
         snackbarMessage,
         setSnackbarMessage,
+        vandaag,
+        setVandaag,
       }}
     >
       {children}
