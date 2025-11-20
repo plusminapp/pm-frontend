@@ -242,8 +242,8 @@ function Header() {
       if (actieveAdministratie && gekozenPeriode) {
         const datum =
           gekozenPeriode.periodeEindDatum >
-          (vandaag ?? dayjs().format('YYYY-MM-DD'))
-            ? (vandaag ?? dayjs().format('YYYY-MM-DD'))
+          (actieveAdministratie.vandaag ?? dayjs().format('YYYY-MM-DD'))
+            ? (actieveAdministratie.vandaag ?? dayjs().format('YYYY-MM-DD'))
             : gekozenPeriode.periodeEindDatum;
         try {
           const stand = await getStandVooradministratieEnDatum(

@@ -523,7 +523,7 @@ export default function UpsertBetalingDialoog(
               <DatePicker
                 sx={{ color: 'success.main' }}
                 minDate={dayjs(eersteOpenPeriode?.periodeStartDatum)}
-                maxDate={dayjs(laatstePeriode?.periodeEindDatum)}
+                maxDate={dayjs(actieveAdministratie?.vandaag)}
                 slotProps={{ textField: { variant: 'standard' } }}
                 label="Wanneer was de betaling?"
                 value={dayjs(betalingDTO.boekingsdatum)}

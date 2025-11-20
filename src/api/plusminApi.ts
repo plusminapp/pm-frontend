@@ -218,6 +218,17 @@ function usePlusminApi() {
     },
     [getAccessToken],
   );
+    const putVandaag = useCallback(
+    async (administratie: Administratie, vandaag: string) => {
+      const token = await getAccessToken();
+      return fetchData(
+        `/api/v1/demo/administratie/${administratie.id}/vandaag/${vandaag}`,
+        token,
+        'PUT',
+      );
+    },
+    [getAccessToken],
+  );
 
   return {
     getGebruikerZelf,
@@ -234,6 +245,7 @@ function usePlusminApi() {
     putPeriodeOpeningWijziging,
     getPeriodeOpening,
     putBetalingValidatie,
+    putVandaag,
   };
 }
 
