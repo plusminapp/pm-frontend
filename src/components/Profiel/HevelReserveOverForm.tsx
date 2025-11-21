@@ -42,6 +42,7 @@ import {
   RekeningGroepSoort,
   reserverenRekeningGroepSoorten,
 } from '../../model/RekeningGroep';
+import dayjs from 'dayjs';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -63,7 +64,7 @@ export function HevelReserveOverForm({
   onHevelReserveOverClose,
   resultaatOpDatum: resultaatOpDatum,
 }: HevelReserveOverFormProps) {
-  const { actieveAdministratie, setSnackbarMessage, setIsStandDirty } =
+  const { actieveAdministratie, setSnackbarMessage, setIsStandDirty, vandaag } =
     useCustomContext();
   const { postBetalingVooradministratie } = usePlusminApi();
   const [open, setOpen] = useState<boolean>(true);
@@ -135,7 +136,7 @@ export function HevelReserveOverForm({
           ...(formReservering as unknown as BetalingDTO),
           betalingsSoort: betalingsSoort as BetalingsSoort,
           bedrag: Number(formReservering.bedrag),
-          boekingsdatum: new Date().toISOString().split('T')[0],
+          boekingsdatum: vandaag ?? dayjs().toISOString().substring(0, 10),
           omschrijving:
             formReservering.omschrijving &&
             formReservering.omschrijving?.length > 0
