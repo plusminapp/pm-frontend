@@ -3,16 +3,16 @@ import Snackbar from '@mui/material/Snackbar';
 import { Alert, AlertColor } from '@mui/material';
 
 const StyledSnackbar = ({
-  message = '',
+  message = undefined,
   type = 'info' as AlertColor,
   onClose,
 }: {
-  message: string | undefined;
+  message: JSX.Element |string | undefined;
   type: AlertColor | undefined;
   onClose: () => void;
 }) => {
   const [show, setShow] = useState(false);
-  const resetMessage = () => (message = '');
+  const resetMessage = () => (message = undefined);
   const close = () => {
     setShow(false);
     setTimeout(() => {
@@ -22,7 +22,7 @@ const StyledSnackbar = ({
   };
 
   useEffect(() => {
-    if (message.length > 0) {
+    if (message) {
       setShow(true);
     } else {
       setShow(false);
@@ -53,6 +53,6 @@ const StyledSnackbar = ({
 export default StyledSnackbar;
 
 export type SnackbarMessage = {
-  message?: string | undefined;
+  message?: JSX.Element |string | undefined;
   type?: AlertColor | undefined;
 };

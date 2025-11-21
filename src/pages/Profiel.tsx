@@ -4,6 +4,7 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Box,
   Paper,
   Table,
   TableBody,
@@ -43,6 +44,7 @@ import { usePlusminApi } from '../api/plusminApi';
 import Resultaat from '../components/Stand/Resultaat';
 import { ReserveringTabel } from '../components/Profiel/ReserveringTabel';
 import { useNavigate } from 'react-router-dom';
+import { InfoIcon } from '../icons/Info';
 
 const Profiel: React.FC = () => {
   const { state } = useAuthContext();
@@ -54,6 +56,7 @@ const Profiel: React.FC = () => {
     rekeningGroepPerBetalingsSoort,
     gekozenPeriode,
     stand,
+    setSnackbarMessage,
   } = useCustomContext();
   const { getOngeldigeBetalingenVooradministratie } = usePlusminApi();
 
@@ -186,7 +189,7 @@ const Profiel: React.FC = () => {
   const creeerReserveringsHorizonTekst = () => {
     return (
       <>
-        De potjes zijn gevuld tot en met{' '}
+        De <strong>potjes</strong> zijn gevuld tot en met{' '}
         {dayjs(stand?.reserveringsHorizon).format('D MMMM')}.
         {dayjs(stand?.reserveringsHorizon).isBefore(dayjs(stand?.budgetHorizon))
           ? ` Ze kunnen worden gevuld tot en met ${dayjs(stand?.budgetHorizon).format('D MMMM')}.`
@@ -224,6 +227,38 @@ const Profiel: React.FC = () => {
       : '';
     return `${variabiliteit}${betalingWordtVerwacht}`;
   };
+
+  const potjesSamenvatting = (
+    <Typography>
+      <strong>Potjes</strong> <br />
+      Openingsstand:{' '}
+      {formatAmount(
+        (reserveringBuffer?.openingsReserveSaldo ?? 0) +
+          (openingsReservePotjesVoorNuSaldo ?? 0),
+      )}
+      &nbsp; = openingssaldo buffer:{' '}
+      {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}
+      &nbsp; + openingsReservePotjesVoorNuSaldo:{' '}
+      {formatAmount(openingsReservePotjesVoorNuSaldo ?? 0)}
+      <br />
+      Actuele stand {formatAmount(actueleStand)}
+      &nbsp; = openingssaldo buffer:{' '}
+      {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}
+      &nbsp; + inkomsten - reservering:{' '}
+      {formatAmount(reserveringBuffer?.reservering ?? 0)}&nbsp; + huidige
+      reserve in potjes voor nu:{' '}
+      {formatAmount(reserveringsSaldoPotjesVanNu ?? 0)}
+      <br />
+      Verwachte eindstand{' '}
+      {formatAmount(
+        actueleStand + (verwachteInkomsten ?? 0) - (verwachteUitgaven ?? 0),
+      )}
+      &nbsp; = actuele stand: {formatAmount(actueleStand ?? 0)}
+      &nbsp; + verwachte inkomsten: {formatAmount(verwachteInkomsten ?? 0)}
+      &nbsp; - verwachte uitgaven: {formatAmount(verwachteUitgaven ?? 0)}
+      
+    </Typography>
+  );
 
   return (
     <>
@@ -310,53 +345,36 @@ const Profiel: React.FC = () => {
             </Accordion>
           )}
 
+          {gekozenPeriode && actieveAdministratie && <CashFlowGrafiek />}
+
           {/* de potjes obv de stand*/}
           {rekeningGroepPerBetalingsSoort &&
             rekeningGroepPerBetalingsSoort.length >= 0 && (
               <Accordion>
                 <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
-                  <Typography>
-                    <strong>Potjes</strong> <br />
-                    Openingsstand:{' '}
-                    {formatAmount(
-                      (reserveringBuffer?.openingsReserveSaldo ?? 0) +
-                        (openingsReservePotjesVoorNuSaldo ?? 0),
-                    )}
-                    &nbsp; = openingssaldo buffer:{' '}
-                    {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}
-                    &nbsp; + openingsReservePotjesVoorNuSaldo:{' '}
-                    {formatAmount(openingsReservePotjesVoorNuSaldo ?? 0)}
-                    <br />
-                    Actuele stand {formatAmount(actueleStand)}
-                    &nbsp; = openingssaldo buffer:{' '}
-                    {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}
-                    &nbsp; + inkomsten - reservering:{' '}
-                    {formatAmount(reserveringBuffer?.reservering ?? 0)}&nbsp; +
-                    huidige reserve in potjes voor nu:{' '}
-                    {formatAmount(reserveringsSaldoPotjesVanNu ?? 0)}
-                    <br />
-                    Verwachte eindstand{' '}
-                    {formatAmount(
-                      actueleStand +
-                        (verwachteInkomsten ?? 0) -
-                        (verwachteUitgaven ?? 0),
-                    )}
-                    &nbsp; = actuele stand: {formatAmount(actueleStand ?? 0)}
-                    &nbsp; + verwachte inkomsten:{' '}
-                    {formatAmount(verwachteInkomsten ?? 0)}
-                    &nbsp; - verwachte uitgaven:{' '}
-                    {formatAmount(verwachteUitgaven ?? 0)}
-                    <br />
-                    {creeerReserveringsHorizonTekst()}
-                  </Typography>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Typography>
+                      {creeerReserveringsHorizonTekst()}
+                    </Typography>
+                    <Box
+                      sx={{ cursor: 'pointer' }}
+                      onClick={(event) => {
+                        event.stopPropagation(); // Voorkomt dat accordion open/dicht gaat
+                        setSnackbarMessage({
+                          message: potjesSamenvatting,
+                          type: 'info',
+                        });
+                      }}
+                    >
+                      <InfoIcon height="16" />
+                    </Box>
+                  </Box>
                 </AccordionSummary>
                 <AccordionDetails>
                   <ReserveringTabel />
                 </AccordionDetails>
               </Accordion>
             )}
-
-          {gekozenPeriode && actieveAdministratie && <CashFlowGrafiek />}
 
           <Accordion>
             <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
@@ -523,7 +541,6 @@ const Profiel: React.FC = () => {
               </AccordionDetails>
             )}
           </Accordion>
-
         </>
       )}
       <>
@@ -648,7 +665,7 @@ const Profiel: React.FC = () => {
               </AccordionDetails>
             </Accordion>
           )}
-                    <Typography
+          <Typography
             sx={{ m: 2, cursor: 'pointer' }}
             onClick={() => {
               navigate('/gebruikersprofiel');
@@ -656,7 +673,6 @@ const Profiel: React.FC = () => {
           >
             Nieuwsgierig naar meer info over jezelf?
           </Typography>
-
         </>
       </>
       {/* {JSON.stringify(rekeningGroepPerBetalingsSoort)} */}

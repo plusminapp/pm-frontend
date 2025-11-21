@@ -15,26 +15,54 @@ import {
   BudgetType,
 } from '../../model/RekeningGroep';
 import { useCustomContext } from '../../context/CustomContext';
+import { usePlusminApi } from '../../api/plusminApi';
 import { SaldoDTO } from '../../model/Saldo';
 import { useState } from 'react';
 import { HevelReserveOverForm } from './HevelReserveOverForm';
 
 export const ReserveringTabel: React.FC = () => {
-  const { rekeningGroepPerBetalingsSoort, stand, gekozenPeriode } =
-    useCustomContext();
+  const {
+    rekeningGroepPerBetalingsSoort,
+    stand,
+    setIsStandDirty,
+    gekozenPeriode,
+    actieveAdministratie,
+    setSnackbarMessage
+  } = useCustomContext();
+  const { putReserveringen } = usePlusminApi();
 
   const [overTeHevelenReserve, setOverTeHevelenReserve] = useState<
     string | undefined
   >(undefined);
+  const [isReservering, setIsReservering] = useState(false);
 
   const handleHevelReserveOverClick = (rekeningNaam: string) => {
     console.log(
       'handleHevelReserveOverClick',
       rekeningNaam,
-      stand?.resultaatOpDatum.find((item) => item.rekeningGroepNaam === rekeningNaam),
+      stand?.resultaatOpDatum.find(
+        (item) => item.rekeningGroepNaam === rekeningNaam,
+      ),
     );
     setOverTeHevelenReserve(rekeningNaam);
   };
+
+  const handleReserveerClick = async () => {
+    if (!actieveAdministratie) return;
+
+    try {
+      setIsReservering(true);
+      await putReserveringen(actieveAdministratie);
+      setIsStandDirty(true);
+      setSnackbarMessage({ message: 'Reserveringen zijn succesvol uitgevoerd.', type: 'success' });
+    } catch (error) {
+      setSnackbarMessage({ message: 'Fout bij het uitvoeren van reserveringen.', type: 'error' });
+      console.error('Fout bij het uitvoeren van reserveringen:', error);
+    } finally {
+      setIsReservering(false);
+    }
+  };
+
   const formatAmount = (amount: number): string => {
     if (!amount) amount = 0;
     return amount.toLocaleString('nl-NL', {
@@ -159,7 +187,9 @@ export const ReserveringTabel: React.FC = () => {
                               {isHuidigePeriode ? (
                                 <Button
                                   onClick={() =>
-                                    handleHevelReserveOverClick(saldo.rekeningNaam)
+                                    handleHevelReserveOverClick(
+                                      saldo.rekeningNaam,
+                                    )
                                   }
                                   sx={{
                                     minWidth: '24px',
@@ -191,6 +221,24 @@ export const ReserveringTabel: React.FC = () => {
                       { rows: [], lastGroep: undefined },
                     ).rows}
               </>
+              <TableRow>
+                <TableCell
+                  colSpan={10}
+                  sx={{ textAlign: 'right', padding: '10px' }}
+                >
+                  {isHuidigePeriode && (
+                    <Button
+                      variant="contained"
+                      color="success"
+                      onClick={handleReserveerClick}
+                      disabled={isReservering}
+                      sx={{ fontSize: '0.875rem' }}
+                    >
+                      {isReservering ? 'Bezig...' : 'Reserveer'}
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
             </TableBody>
           </Table>
         </TableContainer>

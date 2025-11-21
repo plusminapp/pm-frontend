@@ -26,7 +26,8 @@ async function fetchData<T>(
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
-  return response.json() as T;
+  const text = await response.text();
+  return text ? JSON.parse(text) as T : undefined as T;
 }
 
 function usePlusminApi() {
@@ -176,6 +177,19 @@ function usePlusminApi() {
     [getAccessToken],
   );
 
+  /* Reserveren */
+  const putReserveringen = useCallback(
+    async (administratie: Administratie) => {
+      const token = await getAccessToken();
+      return fetchData<void>(
+        `/api/v1/reserveringen/administratie/${administratie.id}`,
+        token,
+        'PUT',
+      );
+    },
+    [getAccessToken],
+  );
+
   /* Periode */
   const putPeriodeActie = useCallback(
     async (
@@ -241,6 +255,7 @@ function usePlusminApi() {
     postBetalingVooradministratie,
     putBetaling,
     deleteBetaling,
+    putReserveringen,
     putPeriodeActie,
     putPeriodeOpeningWijziging,
     getPeriodeOpening,
