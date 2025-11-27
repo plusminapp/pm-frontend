@@ -25,8 +25,13 @@ interface VandaagFormData {
 const GebruikersProfiel: React.FC = () => {
   const { state } = useAuthContext();
   const isSignedIn = state?.isAuthenticated || false;
-  const { gebruiker, setGebruiker, actieveAdministratie, setVandaag, setSnackbarMessage } =
-    useCustomContext();
+  const {
+    gebruiker,
+    setGebruiker,
+    actieveAdministratie,
+    setVandaag,
+    setSnackbarMessage,
+  } = useCustomContext();
   const { updateBijnaam, putVandaag, resetSpel } = usePlusminApi();
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -82,7 +87,7 @@ const GebruikersProfiel: React.FC = () => {
       setResettingAdminId(admin.id.toString());
       await resetSpel(admin);
       console.log('Spel gereset voor administratie:', admin.naam);
-      setSnackbarMessage({message:`Spel is gereset`, type:'success'});
+      setSnackbarMessage({ message: `Spel is gereset`, type: 'success' });
     } catch (error) {
       console.error('Fout bij het resetten van het spel:', error);
     } finally {
@@ -117,7 +122,8 @@ const GebruikersProfiel: React.FC = () => {
     try {
       setSubmittingVandaagAdminId(admin.id.toString());
       await putVandaag(admin, data.vandaag, false);
-      setVandaag(data.vandaag);
+      const currentDate = data.vandaag || dayjs().format('YYYY-MM-DD');
+      setVandaag(currentDate);
       setEditingVandaagAdminId(null);
     } catch (error) {
       console.error('Fout bij het bijwerken van vandaag:', error);
@@ -216,7 +222,7 @@ const GebruikersProfiel: React.FC = () => {
       )}
       {isSignedIn && (
         <Typography sx={{ my: '5px' }}>
-          Je bent ingelogd met email "{state.email}" en je hebt "
+          Je bent ingelogd met email "{state.username}" en je hebt "
           {gebruiker?.subject}" als identificatie code.
           <br />
           Je hebt "{gebruiker?.bijnaam}" als bijnaam gekozen.

@@ -74,28 +74,6 @@ function Header() {
     vandaag,
   } = useCustomContext();
 
-  useEffect(() => {
-    if (!state.isAuthenticated) {
-      // Clear user data when not authenticated
-      setGebruiker(undefined);
-      setAdministraties([]);
-      setActieveAdministratie(undefined);
-      setGekozenPeriode(undefined);
-      setRekeningGroepPerBetalingsSoort([]);
-      setPeriodes([]);
-      setStand(undefined);
-    }
-  }, [
-    state.isAuthenticated,
-    setGebruiker,
-    setAdministraties,
-    setActieveAdministratie,
-    setGekozenPeriode,
-    setRekeningGroepPerBetalingsSoort,
-    setPeriodes,
-    setStand,
-  ]);
-
   const { pathname } = useLocation();
   const currentPage = (() => {
     const first = pathname.indexOf('/', 1);
@@ -129,27 +107,27 @@ function Header() {
   };
 
   const handleActieveAdministratieChange = async (id: number) => {
-    let ahv = administraties.find((hv) => hv.id === id);
-    ahv = ahv ? ahv : undefined;
-    setActieveAdministratie(ahv);
+    let actieveAdmin = administraties.find((admin) => admin.id === id);
+    actieveAdmin = actieveAdmin ? actieveAdmin : undefined;
+    setActieveAdministratie(actieveAdmin);
     setPeriodes(
-      ahv!.periodes.sort((a, b) =>
+      actieveAdmin!.periodes.sort((a, b) =>
         dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum)),
       ),
     );
     let nieuweGekozenPeriode = gekozenPeriode;
     if (
       !gekozenPeriode ||
-      !ahv!.periodes.includes(gekozenPeriode) ||
+      !actieveAdmin!.periodes.includes(gekozenPeriode) ||
       gekozenPeriode.periodeStartDatum === gekozenPeriode.periodeEindDatum
     ) {
-      nieuweGekozenPeriode = ahv!.periodes.find(
+      nieuweGekozenPeriode = actieveAdmin!.periodes.find(
         (periode) => periode.periodeStatus === 'HUIDIG',
       );
       setGekozenPeriode(nieuweGekozenPeriode);
       localStorage.setItem('gekozenPeriode', nieuweGekozenPeriode?.id + '');
     }
-    await fetchRekeningen(ahv!, nieuweGekozenPeriode!);
+    await fetchRekeningen(actieveAdmin!, nieuweGekozenPeriode!);
     setAnchorElGebruiker(null);
     navigate('/profiel');
   };
@@ -258,6 +236,7 @@ function Header() {
     state.isAuthenticated,
     fetchGebruikerMetAdministraties,
     determineSessionInfo,
+    isStandDirty
   ]);
 
   useEffect(() => {
@@ -362,7 +341,7 @@ function Header() {
 
               {expiry && (
                 <>
-                  <Typography sx={{ mx: 2, color: 'gray', fontSize: 12 }}>
+                  <Typography sx={{ mx: 2, color: 'gray', fontSize: 12, display: { xs: 'none', md: 'block' } }}>
                     {actieveAdministratie?.vandaag && (
                       <>
                         <strong>Spelmodus:</strong> het is{' '}

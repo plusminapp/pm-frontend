@@ -7,7 +7,7 @@ import { useCustomContext } from '../../context/CustomContext';
 
 const CreeerAdministratie: React.FC = () => {
   const { uploadSpel } = usePlusminApi();
-  const { setSnackbarMessage } = useCustomContext();
+  const { setSnackbarMessage, setIsStandDirty } = useCustomContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +45,7 @@ const CreeerAdministratie: React.FC = () => {
         message: 'Spel succesvol geüpload',
         type: 'success',
       });
-
+      setIsStandDirty(true);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
