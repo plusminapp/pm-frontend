@@ -26,6 +26,7 @@ import StyledSnackbar from '../StyledSnackbar';
 import { useTranslation } from 'react-i18next';
 import { TaalKeuzes } from './TaalKeuzes';
 import { Administratie } from '../../model/Administratie';
+import NaarMorgen from './NaarMorgen';
 
 const I18N_KEY = 'components.header';
 
@@ -72,6 +73,28 @@ function Header() {
     setPeriodes,
     vandaag,
   } = useCustomContext();
+
+  useEffect(() => {
+    if (!state.isAuthenticated) {
+      // Clear user data when not authenticated
+      setGebruiker(undefined);
+      setAdministraties([]);
+      setActieveAdministratie(undefined);
+      setGekozenPeriode(undefined);
+      setRekeningGroepPerBetalingsSoort([]);
+      setPeriodes([]);
+      setStand(undefined);
+    }
+  }, [
+    state.isAuthenticated,
+    setGebruiker,
+    setAdministraties,
+    setActieveAdministratie,
+    setGekozenPeriode,
+    setRekeningGroepPerBetalingsSoort,
+    setPeriodes,
+    setStand,
+  ]);
 
   const { pathname } = useLocation();
   const currentPage = (() => {
@@ -306,6 +329,7 @@ function Header() {
   return (
     <>
       <AppBar
+        key={`auth-${state.isAuthenticated}`}
         sx={{
           position: 'sticky',
           top: 0,
@@ -337,13 +361,21 @@ function Header() {
               </Box>
 
               {expiry && (
-                <Typography sx={{ ml: 2, color: 'gray', fontSize: 12 }}>
-                  {actieveAdministratie?.vandaag &&
-                    `Het is vandaag ${actieveAdministratie?.vandaag}. `}
-                  De huidige sessie eindigt om{' '}
-                  {expiry.getHours().toString().padStart(2, '0')}:
-                  {expiry.getMinutes().toString().padStart(2, '0')}.
-                </Typography>
+                <>
+                  <Typography sx={{ mx: 2, color: 'gray', fontSize: 12 }}>
+                    {actieveAdministratie?.vandaag && (
+                      <>
+                        <strong>Spelmodus:</strong> het is{' '}
+                        {actieveAdministratie?.vandaag}.
+                      </>
+                    )}
+                    <br />
+                    De huidige sessie eindigt om{' '}
+                    {expiry.getHours().toString().padStart(2, '0')}:
+                    {expiry.getMinutes().toString().padStart(2, '0')}.
+                  </Typography>
+                  <NaarMorgen />
+                </>
               )}
 
               {/* profiel & settings */}

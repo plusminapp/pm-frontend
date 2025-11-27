@@ -54,6 +54,13 @@ export const formateerNlDatum = (datum: string): string => {
     month: 'long',
   });
 };
+
+export const formateerNlPeriode = (periode: Periode): string => {
+  const startDatum = dayjs(periode.periodeStartDatum).format('MMMM');
+  const eindDatum = dayjs(periode.periodeEindDatum).format('MMMM');
+  return startDatum === eindDatum ? startDatum : `${startDatum} - ${eindDatum}`;
+};
+
 export const formateerNlVolgendeDag = (datum: string): string => {
   const date = new Date(datum);
   date.setDate(date.getDate() + 1);

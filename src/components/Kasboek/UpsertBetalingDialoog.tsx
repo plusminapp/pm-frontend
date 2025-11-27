@@ -73,7 +73,7 @@ export default function UpsertBetalingDialoog(
     usePlusminApi();
 
   const boekingsDatum =
-    gekozenPeriode?.periodeEindDatum &&
+    gekozenPeriode?.periodeEindDatum && vandaag &&
     dayjs(vandaag).toISOString().slice(0, 10) > gekozenPeriode?.periodeEindDatum
       ? dayjs(gekozenPeriode?.periodeEindDatum).format(DateFormats.YYYY_MM_DD)
       : dayjs(vandaag).format(DateFormats.YYYY_MM_DD);
@@ -282,7 +282,8 @@ export default function UpsertBetalingDialoog(
             : betalingDTO.bedrag,
       };
       try {
-        const administratie = actieveAdministratie ?? gebruiker?.administraties[0] ;
+        const administratie =
+          actieveAdministratie ?? gebruiker?.administraties[0];
         if (!betalingDTO.id && administratie) {
           const bijgewerkteBetaling = await postBetalingVooradministratie(
             administratie,

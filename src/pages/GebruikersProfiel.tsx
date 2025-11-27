@@ -4,6 +4,7 @@ import {
   Edit as EditIcon,
   Check as CheckIcon,
   Close as CloseIcon,
+  RestartAlt as RestartAltIcon,
 } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
 import { useAuthContext } from '@asgardeo/auth-react';
@@ -11,6 +12,7 @@ import { useCustomContext } from '../context/CustomContext';
 import { usePlusminApi } from '../api/plusminApi';
 import dayjs from 'dayjs';
 import { Administratie } from '../model/Administratie';
+import CreeerAdministratie from '../components/Administratie/CreeerAdministratie';
 
 interface BijnaamFormData {
   bijnaam: string;
@@ -23,9 +25,9 @@ interface VandaagFormData {
 const GebruikersProfiel: React.FC = () => {
   const { state } = useAuthContext();
   const isSignedIn = state?.isAuthenticated || false;
-  const { gebruiker, setGebruiker, actieveAdministratie, setVandaag } =
+  const { gebruiker, setGebruiker, actieveAdministratie, setVandaag, setSnackbarMessage } =
     useCustomContext();
-  const { updateBijnaam, putVandaag } = usePlusminApi();
+  const { updateBijnaam, putVandaag, resetSpel } = usePlusminApi();
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingVandaagAdminId, setEditingVandaagAdminId] = useState<
@@ -34,6 +36,7 @@ const GebruikersProfiel: React.FC = () => {
   const [submittingVandaagAdminId, setSubmittingVandaagAdminId] = useState<
     string | null
   >(null);
+  const [resettingAdminId, setResettingAdminId] = useState<string | null>(null);
 
   const {
     control,
@@ -74,6 +77,19 @@ const GebruikersProfiel: React.FC = () => {
     resetVandaag();
   };
 
+  const handleResetSpel = async (admin: Administratie) => {
+    try {
+      setResettingAdminId(admin.id.toString());
+      await resetSpel(admin);
+      console.log('Spel gereset voor administratie:', admin.naam);
+      setSnackbarMessage({message:`Spel is gereset`, type:'success'});
+    } catch (error) {
+      console.error('Fout bij het resetten van het spel:', error);
+    } finally {
+      setResettingAdminId(null);
+    }
+  };
+
   const onSubmit = async (data: BijnaamFormData) => {
     if (!gebruiker) return;
 
@@ -100,7 +116,7 @@ const GebruikersProfiel: React.FC = () => {
   ) => {
     try {
       setSubmittingVandaagAdminId(admin.id.toString());
-      await putVandaag(admin, data.vandaag);
+      await putVandaag(admin, data.vandaag, false);
       setVandaag(data.vandaag);
       setEditingVandaagAdminId(null);
     } catch (error) {
@@ -244,7 +260,7 @@ const GebruikersProfiel: React.FC = () => {
                     )}
                     sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                   >
-                    <Typography >
+                    <Typography>
                       De administratie is in spelmodus: het is vandaag
                     </Typography>
                     <Controller
@@ -304,10 +320,10 @@ const GebruikersProfiel: React.FC = () => {
                   </Box>
                 ) : (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography >
+                    <Typography>
                       {admin.vandaag
                         ? `De administratie is in spelmodus: het is vandaag ${admin.vandaag}`
-                        : `De administratie is niet in spelmodus. het is vandaag ${dayjs().format('YYYY-MM-DD')}`}
+                        : 'De administratie is niet in spelmodus'}
                     </Typography>
                     <IconButton
                       onClick={() => handleVandaagEditClick(admin)}
@@ -316,6 +332,16 @@ const GebruikersProfiel: React.FC = () => {
                     >
                       <EditIcon fontSize="small" />
                     </IconButton>
+                    {admin.vandaag && (
+                      <IconButton
+                        onClick={() => handleResetSpel(admin)}
+                        size="small"
+                        disabled={resettingAdminId === admin.id.toString()}
+                        aria-label="Spel resetten"
+                      >
+                        <RestartAltIcon fontSize="small" />
+                      </IconButton>
+                    )}
                   </Box>
                 )}
               </Box>
@@ -323,6 +349,7 @@ const GebruikersProfiel: React.FC = () => {
           </li>
         ))}
       </ul>
+      <CreeerAdministratie />
     </>
   );
 };

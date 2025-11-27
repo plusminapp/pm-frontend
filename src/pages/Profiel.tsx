@@ -136,7 +136,11 @@ const Profiel: React.FC = () => {
       .filter((rg) => rg.budgetType === 'SPAREN')
       .flatMap((rg) => rg.rekeningen)
       .reduce((acc, b) => acc + Number(b.budgetMaandBedrag), 0);
-    const budgetTekst = `In: ${currencyFormatter.format(inkomsten)}, Uit: ${currencyFormatter.format(uitgaven)}, Aflossen: ${currencyFormatter.format(aflossen)}, Sparen: ${currencyFormatter.format(sparen)}, Over: ${currencyFormatter.format(inkomsten - uitgaven - aflossen - sparen)} per maand. `;
+    const budgetTekst = `In: ${currencyFormatter.format(inkomsten)}, 
+          Uit: ${currencyFormatter.format(uitgaven)}, 
+          ${aflossen > 0 ? `Aflossen: ${currencyFormatter.format(aflossen)}, ` : ''}
+          ${sparen && sparen > 0 ? `Sparen: ${currencyFormatter.format(sparen)}, ` : ''}
+          Over: ${currencyFormatter.format(inkomsten - uitgaven - aflossen - sparen)} per maand. `;
     return budgetTekst;
   };
 
@@ -256,7 +260,6 @@ const Profiel: React.FC = () => {
       &nbsp; = actuele stand: {formatAmount(actueleStand ?? 0)}
       &nbsp; + verwachte inkomsten: {formatAmount(verwachteInkomsten ?? 0)}
       &nbsp; - verwachte uitgaven: {formatAmount(verwachteUitgaven ?? 0)}
-      
     </Typography>
   );
 
@@ -353,9 +356,7 @@ const Profiel: React.FC = () => {
               <Accordion>
                 <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
                   <Box display="flex" alignItems="center" gap={1}>
-                    <Typography>
-                      {creeerReserveringsHorizonTekst()}
-                    </Typography>
+                    <Typography>{creeerReserveringsHorizonTekst()}</Typography>
                     <Box
                       sx={{ cursor: 'pointer' }}
                       onClick={(event) => {
