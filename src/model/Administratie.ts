@@ -10,6 +10,7 @@ export type Administratie = {
   vandaag: string | null;
   eigenaarNaam: string;
   eigenaarSubject: string;
+  isInDemoModus: boolean;
   periodes: Periode[];
   gebruikers: Gebruiker[];
 };

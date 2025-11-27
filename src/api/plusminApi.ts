@@ -276,6 +276,18 @@ function usePlusminApi() {
     [safeGetAccessToken],
   );
 
+  const zetSpelInDemoModus = useCallback(
+    async (administratie: Administratie) => {
+      const token = await safeGetAccessToken();
+      return fetchData(
+        `/api/v1/demo/administratie/${administratie.id}/configureer`,
+        token,
+        'PUT',
+      );
+    },
+    [safeGetAccessToken],
+  );
+
   const uploadSpel = useCallback(
     async (administratieWrapper: AdministratieWrapper) => {
       const token = await safeGetAccessToken();
@@ -307,6 +319,7 @@ function usePlusminApi() {
     putBetalingValidatie,
     putVandaag,
     resetSpel,
+    zetSpelInDemoModus,
     uploadSpel
   };
 }
