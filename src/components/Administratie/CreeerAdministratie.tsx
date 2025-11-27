@@ -95,13 +95,17 @@ const CreeerAdministratie: React.FC = () => {
       sx={{
         display: 'flex',
         flexDirection: 'row',
+        alignItems: 'center',
         gap: 1,
       }}
     >
       <Typography>
         {isUploading
-          ? 'Uploaden...'
-          : 'Klik om een JSON administratie bestand te uploaden'}
+          ? 'Aan het uploaden...'
+          : <>
+              Je kunt een administratie aanmaken of vervangen door een JSON{' '}
+              <em>administratie-wrapper</em> te uploaden.
+            </>}
       </Typography>
       <input
         type="file"
