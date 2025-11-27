@@ -26,6 +26,7 @@ import StyledSnackbar from '../StyledSnackbar';
 import { useTranslation } from 'react-i18next';
 import { TaalKeuzes } from './TaalKeuzes';
 import { Administratie } from '../../model/Administratie';
+import NaarMorgen from './NaarMorgen';
 
 const I18N_KEY = 'components.header';
 
@@ -106,27 +107,27 @@ function Header() {
   };
 
   const handleActieveAdministratieChange = async (id: number) => {
-    let ahv = administraties.find((hv) => hv.id === id);
-    ahv = ahv ? ahv : undefined;
-    setActieveAdministratie(ahv);
+    let actieveAdmin = administraties.find((admin) => admin.id === id);
+    actieveAdmin = actieveAdmin ? actieveAdmin : undefined;
+    setActieveAdministratie(actieveAdmin);
     setPeriodes(
-      ahv!.periodes.sort((a, b) =>
+      actieveAdmin!.periodes.sort((a, b) =>
         dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum)),
       ),
     );
     let nieuweGekozenPeriode = gekozenPeriode;
     if (
       !gekozenPeriode ||
-      !ahv!.periodes.includes(gekozenPeriode) ||
+      !actieveAdmin!.periodes.includes(gekozenPeriode) ||
       gekozenPeriode.periodeStartDatum === gekozenPeriode.periodeEindDatum
     ) {
-      nieuweGekozenPeriode = ahv!.periodes.find(
+      nieuweGekozenPeriode = actieveAdmin!.periodes.find(
         (periode) => periode.periodeStatus === 'HUIDIG',
       );
       setGekozenPeriode(nieuweGekozenPeriode);
       localStorage.setItem('gekozenPeriode', nieuweGekozenPeriode?.id + '');
     }
-    await fetchRekeningen(ahv!, nieuweGekozenPeriode!);
+    await fetchRekeningen(actieveAdmin!, nieuweGekozenPeriode!);
     setAnchorElGebruiker(null);
     navigate('/profiel');
   };
@@ -235,6 +236,7 @@ function Header() {
     state.isAuthenticated,
     fetchGebruikerMetAdministraties,
     determineSessionInfo,
+    isStandDirty
   ]);
 
   useEffect(() => {
@@ -306,6 +308,7 @@ function Header() {
   return (
     <>
       <AppBar
+        key={`auth-${state.isAuthenticated}`}
         sx={{
           position: 'sticky',
           top: 0,
@@ -337,13 +340,21 @@ function Header() {
               </Box>
 
               {expiry && (
-                <Typography sx={{ ml: 2, color: 'gray', fontSize: 12 }}>
-                  {actieveAdministratie?.vandaag &&
-                    `Het is vandaag ${actieveAdministratie?.vandaag}. `}
-                  De huidige sessie eindigt om{' '}
-                  {expiry.getHours().toString().padStart(2, '0')}:
-                  {expiry.getMinutes().toString().padStart(2, '0')}.
-                </Typography>
+                <>
+                  <Typography sx={{ mx: 2, color: 'gray', fontSize: 12, display: { xs: 'none', md: 'block' } }}>
+                    {actieveAdministratie?.vandaag && (
+                      <>
+                        <strong>Spelmodus:</strong> het is{' '}
+                        {actieveAdministratie?.vandaag}.
+                      </>
+                    )}
+                    <br />
+                    De huidige sessie eindigt om{' '}
+                    {expiry.getHours().toString().padStart(2, '0')}:
+                    {expiry.getMinutes().toString().padStart(2, '0')}.
+                  </Typography>
+                  <NaarMorgen />
+                </>
               )}
 
               {/* profiel & settings */}

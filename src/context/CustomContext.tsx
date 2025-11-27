@@ -68,7 +68,7 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
     undefined,
   );
   const [stand, setStand] = useState<Stand | undefined>(undefined);
-  const [isStandDirty, setIsStandDirty] = useState<boolean>(true);
+  const [isStandDirty, setIsStandDirty] = useState<boolean>(false);
   const [rekeningGroepPerBetalingsSoort, setRekeningGroepPerBetalingsSoort] =
     useState<Array<RekeningGroepPerBetalingsSoort>>([]);
   const [snackbarMessage, setSnackbarMessage] = useState<SnackbarMessage>({
@@ -80,7 +80,8 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
   useEffect(() => {
     if (!actieveAdministratie) return;
     setActieveAdministratie(actieveAdministratie);
-    setVandaag(dayjs(actieveAdministratie.vandaag).format('YYYY-MM-DD'));
+    const currentDate = actieveAdministratie.vandaag || dayjs().format('YYYY-MM-DD');
+    setVandaag(currentDate);
     setPeriodes(actieveAdministratie.periodes);
     localStorage.setItem('actieveAdministratie', actieveAdministratie.id + '');
   }, [actieveAdministratie]);

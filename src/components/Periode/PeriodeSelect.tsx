@@ -22,6 +22,7 @@ import { BetalingsSoort } from '../../model/Betaling.ts';
 import {
   eersteOpenPeriode,
   formateerNlDatum,
+  formateerNlPeriode,
   laatsteGeslotenPeriode,
   Periode,
 } from '../../model/Periode';
@@ -181,8 +182,7 @@ export function PeriodeSelect({
       {!isProfiel && selecteerbarePeriodes.length === 1 && gekozenPeriode && (
         <Box sx={{ mt: '37px', maxWidth: '340px' }}>
           <Typography>
-            Periode: {dayjs(gekozenPeriode.periodeStartDatum).format('MMMM')} -{' '}
-            {dayjs(gekozenPeriode.periodeEindDatum).format('MMMM')} (
+            Periode: {formateerNlPeriode(gekozenPeriode)} (
             {gekozenPeriode.periodeStatus.toLocaleLowerCase()})
           </Typography>
         </Box>

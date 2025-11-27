@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Gebruiker } from '../model/Gebruiker';
 import { Periode } from '../model/Periode';
 import { RekeningGroepPerBetalingsSoort } from '../model/RekeningGroep';
@@ -7,7 +8,7 @@ import { useAuthContext } from '@asgardeo/auth-react';
 import { useCustomContext } from '../context/CustomContext';
 import { CashFlow } from '../model/CashFlow';
 import { Betaling, BetalingDTO } from '../model/Betaling';
-import { Administratie } from '../model/Administratie';
+import { Administratie, AdministratieWrapper } from '../model/Administratie';
 
 async function fetchData<T>(
   endpoint: string,
@@ -24,7 +25,12 @@ async function fetchData<T>(
     body: body ? JSON.stringify(body) : undefined,
   });
   if (!response.ok) {
-    throw new Error('Network response was not ok');
+    const body = await response.clone().text();
+    const message = body ? `${response.status} ${response.statusText}: ${body}` : `${response.status} ${response.statusText}`;
+    const error = new Error(message);
+    (error as any).status = response.status;
+    (error as any).body = body;
+    throw error;
   }
   const text = await response.text();
   return text ? JSON.parse(text) as T : undefined as T;
@@ -33,18 +39,30 @@ async function fetchData<T>(
 function usePlusminApi() {
   const { getAccessToken } = useAuthContext();
   const { gebruiker } = useCustomContext();
+  const navigate = useNavigate();
 
-  
+  // Helper function to safely get access token with redirect on failure
+  const safeGetAccessToken = useCallback(async (): Promise<string> => {
+    try {
+      return await getAccessToken();
+    } catch (error) {
+      console.error('Failed to get access token:', error);
+      navigate('/login');
+      throw error; // Re-throw to prevent further execution
+    }
+  }, [getAccessToken, navigate]);
+
+
   /* Gebruiker */
   const getGebruikerZelf = useCallback(async () => {
-    const token = await getAccessToken();
+    const token = await safeGetAccessToken();
     return fetchData<Gebruiker>('/api/v1/gebruikers/zelf', token);
-  }, [getAccessToken]);
+  }, [safeGetAccessToken]);
 
   const updateBijnaam = useCallback(
     async (bijnaam: string) => {
-      const token = await getAccessToken();
-      const nieuweGebruiker = {...gebruiker, bijnaam};
+      const token = await safeGetAccessToken();
+      const nieuweGebruiker = { ...gebruiker, bijnaam };
       return fetchData<Gebruiker>(
         '/api/v1/gebruikers/zelf',
         token,
@@ -52,36 +70,36 @@ function usePlusminApi() {
         nieuweGebruiker,
       );
     },
-    [gebruiker, getAccessToken],
+    [gebruiker, safeGetAccessToken],
   );
 
   /* Rekening */
   const getRekeningenVooradministratieEnPeriode = useCallback(
     async (administratie: Administratie, periode: Periode) => {
-      const token = await getAccessToken();
+      const token = await safeGetAccessToken();
       return fetchData<RekeningGroepPerBetalingsSoort[]>(
         `/api/v1/rekeningen/administratie/${administratie.id}/periode/${periode.id}`,
         token,
       );
     },
-    [getAccessToken],
+    [safeGetAccessToken],
   );
 
   const getCashFlowVooradministratieEnPeriode = useCallback(
     async (administratie: Administratie, periode: Periode) => {
-      const token = await getAccessToken();
+      const token = await safeGetAccessToken();
       return fetchData<CashFlow[]>(
         `/api/v1/rekeningen/administratie/${administratie.id}/periode/${periode.id}/cashflow`,
         token,
       );
     },
-    [getAccessToken],
+    [safeGetAccessToken],
   );
 
   /* Betaling  */
   const getBetalingenVooradministratieVoorPeriode = useCallback(
     async (administratie: Administratie, periode: Periode) => {
-      const token = await getAccessToken();
+      const token = await safeGetAccessToken();
       return fetchData<{
         data: { content: BetalingDTO[] };
         gebruikersId: string;
@@ -92,23 +110,23 @@ function usePlusminApi() {
         token,
       );
     },
-    [getAccessToken],
+    [safeGetAccessToken],
   );
 
   const getOngeldigeBetalingenVooradministratie = useCallback(
     async (administratie: Administratie) => {
-      const token = await getAccessToken();
+      const token = await safeGetAccessToken();
       return fetchData<Betaling[]>(
         `/api/v1/betalingen/administratie/${administratie.id}/valideer-betalingen`,
         token,
       );
     },
-    [getAccessToken],
+    [safeGetAccessToken],
   );
 
   const postBetalingVooradministratie = useCallback(
     async (administratie: Administratie, betaling: BetalingDTO) => {
-      const token = await getAccessToken();
+      const token = await safeGetAccessToken();
       return fetchData<Betaling>(
         `/api/v1/betalingen/administratie/${administratie.id}`,
         token,
@@ -116,12 +134,12 @@ function usePlusminApi() {
         betaling,
       );
     },
-    [getAccessToken],
+    [safeGetAccessToken],
   );
 
   const putBetaling = useCallback(
     async (betaling: BetalingDTO) => {
-      const token = await getAccessToken();
+      const token = await safeGetAccessToken();
       return fetchData<Betaling>(
         `/api/v1/betalingen/${betaling.id}`,
         token,
@@ -129,19 +147,19 @@ function usePlusminApi() {
         betaling,
       );
     },
-    [getAccessToken],
+    [safeGetAccessToken],
   );
 
   const deleteBetaling = useCallback(
     async (betaling: BetalingDTO) => {
-      const token = await getAccessToken();
+      const token = await safeGetAccessToken();
       return fetchData<Betaling>(
         `/api/v1/betalingen/${betaling.id}`,
         token,
         'DELETE',
       );
     },
-    [getAccessToken],
+    [safeGetAccessToken],
   );
 
   const putBetalingValidatie = useCallback(
@@ -150,7 +168,7 @@ function usePlusminApi() {
       saldoOpLaatsteBetalingDatum: SaldoDTO,
       betalingen: BetalingDTO[],
     ) => {
-      const token = await getAccessToken();
+      const token = await safeGetAccessToken();
       return fetchData<{
         laatsteBetalingDatum: string;
         saldoOpLaatsteBetalingDatum: SaldoDTO;
@@ -162,32 +180,32 @@ function usePlusminApi() {
         { saldoOpLaatsteBetalingDatum, betalingen },
       );
     },
-    [getAccessToken],
+    [safeGetAccessToken],
   );
 
   /* Stand */
   const getStandVooradministratieEnDatum = useCallback(
     async (administratie: Administratie, datum: string) => {
-      const token = await getAccessToken();
+      const token = await safeGetAccessToken();
       return fetchData<Stand>(
         `/api/v1/stand/administratie/${administratie.id}/datum/${datum}`,
         token,
       );
     },
-    [getAccessToken],
+    [safeGetAccessToken],
   );
 
   /* Reserveren */
   const putReserveringen = useCallback(
     async (administratie: Administratie) => {
-      const token = await getAccessToken();
+      const token = await safeGetAccessToken();
       return fetchData<void>(
         `/api/v1/reserveringen/administratie/${administratie.id}`,
         token,
         'PUT',
       );
     },
-    [getAccessToken],
+    [safeGetAccessToken],
   );
 
   /* Periode */
@@ -197,7 +215,7 @@ function usePlusminApi() {
       actie: 'heropenen' | 'sluiten' | 'opruimen',
       periode: Periode,
     ) => {
-      const token = await getAccessToken();
+      const token = await safeGetAccessToken();
       return fetchData(
         `/api/v1/periodes/administratie/${administratie.id}/${actie}/${periode.id}`,
         token,
@@ -205,12 +223,12 @@ function usePlusminApi() {
         [],
       );
     },
-    [getAccessToken],
+    [safeGetAccessToken],
   );
 
   const putPeriodeOpeningWijziging = useCallback(
     async (administratie: Administratie, periode: Periode, saldos: SaldoDTO[]) => {
-      const token = await getAccessToken();
+      const token = await safeGetAccessToken();
       return fetchData(
         `/api/v1/periodes/administratie/${administratie.id}/wijzig-periode-opening/${periode.id}`,
         token,
@@ -218,30 +236,69 @@ function usePlusminApi() {
         saldos,
       );
     },
-    [getAccessToken],
+    [safeGetAccessToken],
   );
 
   const getPeriodeOpening = useCallback(
     async (administratie: Administratie, periode: Periode) => {
-      const token = await getAccessToken();
+      const token = await safeGetAccessToken();
       return fetchData<SaldoDTO[]>(
         `/api/v1/stand/administratie/${administratie.id}/periode/${periode.id}/openingsbalans`,
         token,
         'GET',
       );
     },
-    [getAccessToken],
+    [safeGetAccessToken],
   );
-    const putVandaag = useCallback(
-    async (administratie: Administratie, vandaag: string) => {
-      const token = await getAccessToken();
+
+  /* Demo */
+  const putVandaag = useCallback(
+    async (administratie: Administratie, vandaag: string, toonBetalingen: boolean) => {
+      const token = await safeGetAccessToken();
       return fetchData(
-        `/api/v1/demo/administratie/${administratie.id}/vandaag/${vandaag}`,
+        `/api/v1/demo/administratie/${administratie.id}/vandaag/${vandaag}/betalingen/${toonBetalingen}`,
         token,
         'PUT',
       );
     },
-    [getAccessToken],
+    [safeGetAccessToken],
+  );
+
+  const resetSpel = useCallback(
+    async (administratie: Administratie) => {
+      const token = await safeGetAccessToken();
+      return fetchData(
+        `/api/v1/demo/administratie/${administratie.id}/reset`,
+        token,
+        'PUT',
+      );
+    },
+    [safeGetAccessToken],
+  );
+
+  const zetSpelInDemoModus = useCallback(
+    async (administratie: Administratie) => {
+      const token = await safeGetAccessToken();
+      return fetchData(
+        `/api/v1/demo/administratie/${administratie.id}/configureer`,
+        token,
+        'PUT',
+      );
+    },
+    [safeGetAccessToken],
+  );
+
+  const uploadSpel = useCallback(
+    async (administratieWrapper: AdministratieWrapper) => {
+      const token = await safeGetAccessToken();
+      return fetchData(
+        `/api/v1/demo/administratie/upload`,
+        token,
+        'PUT',
+        administratieWrapper,
+      );
+    },
+    [safeGetAccessToken],
   );
 
   return {
@@ -261,6 +318,9 @@ function usePlusminApi() {
     getPeriodeOpening,
     putBetalingValidatie,
     putVandaag,
+    resetSpel,
+    zetSpelInDemoModus,
+    uploadSpel
   };
 }
 
