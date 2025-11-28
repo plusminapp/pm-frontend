@@ -92,6 +92,7 @@ const GebruikersProfiel: React.FC = () => {
       setResettingAdminId(admin.id.toString());
       await resetSpel(admin);
       console.log('Spel gereset voor administratie:', admin.naam);
+      setIsStandDirty(true);
       setSnackbarMessage({ message: `Spel is gereset`, type: 'success' });
     } catch (error) {
       console.error('Fout bij het resetten van het spel:', error);
@@ -121,7 +122,7 @@ const GebruikersProfiel: React.FC = () => {
     try {
       setIsSubmitting(true);
       await updateBijnaam(data.bijnaam.trim());
-
+      setIsStandDirty(true);
       setGebruiker({
         ...gebruiker,
         bijnaam: data.bijnaam.trim(),

@@ -1,5 +1,5 @@
 import { AgCharts } from 'ag-charts-react';
-import { AgAreaSeriesOptions, AgChartOptions } from 'ag-charts-community';
+import { AgChartOptions } from 'ag-charts-community';
 import { getData, getSeries } from './AflossingGrafiekData';
 import { useCustomContext } from '../../../context/CustomContext';
 import dayjs from 'dayjs';
@@ -21,7 +21,11 @@ export const AflossingenAfbouwGrafiek = (
 
   const chartOptions: AgChartOptions = {
     data: Object.values(getData(props.aflossingSaldi)),
-    series: getSeries(props.aflossingSaldi) as AgAreaSeriesOptions[],
+    series: getSeries(props.aflossingSaldi).map(series => ({
+      ...series,
+      type: 'area',
+      stacked: true,
+    })),
     axes: [
       {
         type: 'category',
@@ -59,8 +63,8 @@ export const AflossingenAfbouwGrafiek = (
     <>
       <AgCharts options={chartOptions} />
       {/* {JSON.stringify(props.aflossingSaldi)}
-    <hr/>
-    {JSON.stringify(getData(props.aflossingSaldi))} */}
+      <hr />
+      {JSON.stringify(getData(props.aflossingSaldi))} */}
     </>
   );
 };

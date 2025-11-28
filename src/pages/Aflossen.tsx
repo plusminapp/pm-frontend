@@ -70,48 +70,56 @@ export default function Aflossen() {
               <PeriodeSelect isAflossing />
             </Grid>
           </Grid>
-          <Accordion elevation={2}>
+            <Accordion elevation={2} defaultExpanded>
             <AccordionSummary
               expandIcon={<ArrowDropDownIcon />}
               aria-controls={'afbouwgrafiek'}
               id={'afbouwgrafiek'}
             >
               <Typography sx={{ color: 'FFF' }} component="span">
-                Verwachte afbouw van de schulden/aflossingen
+              Verwachte afbouw van de schulden/aflossingen
               </Typography>
             </AccordionSummary>
             <AccordionDetails sx={{ p: 0 }}>
               <AflossingenAfbouwGrafiek
-                aflossingen={aflossing}
-                aflossingSaldi={aflossingSaldi}
+              aflossingen={aflossing}
+              aflossingSaldi={aflossingSaldi}
               />
             </AccordionDetails>
-          </Accordion>
+            </Accordion>
+
+          <Grid container spacing={2} columns={{ xs: 1, lg: 2 }}>
+            {aflossingSaldi.map((saldoDTO) => (
+              <Grid 
+                key={saldoDTO.rekeningNaam} 
+                size={{ xs: 1, md: 1, lg: 1 }}
+              >
+                <Accordion elevation={2}>
+                  <AccordionSummary
+                    expandIcon={<ArrowDropDownIcon />}
+                    aria-controls={saldoDTO.rekeningNaam}
+                    id={saldoDTO.rekeningNaam}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      {berekenRekeningGroepIcoon(22, saldoDTO)}
+                      <Typography
+                        sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
+                        component="span"
+                        align="left"
+                      >
+                        {saldoDTO.rekeningNaam}
+                      </Typography>
+                    </Box>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ p: 0 }}>
+                    <AflossingTabel aflossingSaldo={saldoDTO} />
+                  </AccordionDetails>
+                </Accordion>
+              </Grid>
+            ))}
+          </Grid>
         </>
       )}
-      {aflossingSaldi.map((saldoDTO) => (
-        <Accordion key={saldoDTO.rekeningNaam} elevation={2}>
-          <AccordionSummary
-            expandIcon={<ArrowDropDownIcon />}
-            aria-controls={saldoDTO.rekeningNaam}
-            id={saldoDTO.rekeningNaam}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              {berekenRekeningGroepIcoon(22, saldoDTO)}
-              <Typography
-                sx={{ color: 'FFF', ml: 1, whiteSpace: 'nowrap' }}
-                component="span"
-                align="left"
-              >
-                {saldoDTO.rekeningNaam}
-              </Typography>
-            </Box>
-          </AccordionSummary>
-          <AccordionDetails sx={{ p: 0 }}>
-            <AflossingTabel aflossingSaldo={saldoDTO} />
-          </AccordionDetails>
-        </Accordion>
-      ))}
     </>
   );
 }
