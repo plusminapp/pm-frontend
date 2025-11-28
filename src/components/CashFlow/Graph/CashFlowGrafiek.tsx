@@ -5,10 +5,12 @@ import { useCustomContext } from '../../../context/CustomContext';
 import { CashFlow } from '../../../model/CashFlow';
 import dayjs from 'dayjs';
 import { usePlusminApi } from '../../../api/plusminApi';
+import { useTheme } from '@mui/material/styles';
 
 export const CashFlowGrafiek = () => {
   const { actieveAdministratie, gekozenPeriode } = useCustomContext();
   const { getCashFlowVooradministratieEnPeriode } = usePlusminApi();
+  const theme = useTheme();
 
   const [cashFlow, setCashFlow] = useState<CashFlow[]>([]);
 
@@ -33,6 +35,9 @@ export const CashFlowGrafiek = () => {
     () => ({
       title: {
         text: 'Periode cashflow',
+        fontFamily: theme.typography.fontFamily,
+        color: theme.palette.text.primary,
+        fontSize: 16,
       },
       data: cashFlow,
       series: [
@@ -110,7 +115,7 @@ export const CashFlowGrafiek = () => {
         },
       ],
     }),
-    [cashFlow],
+    [cashFlow, theme],
   );
   return <AgCharts options={options} style={{ height: '500px' }} />;
 };

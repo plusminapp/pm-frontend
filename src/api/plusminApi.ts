@@ -9,6 +9,7 @@ import { useCustomContext } from '../context/CustomContext';
 import { CashFlow } from '../model/CashFlow';
 import { Betaling, BetalingDTO } from '../model/Betaling';
 import { Administratie, AdministratieWrapper } from '../model/Administratie';
+import { AflossingDTO } from '../model/Aflossing';
 
 async function fetchData<T>(
   endpoint: string,
@@ -264,6 +265,20 @@ function usePlusminApi() {
     [safeGetAccessToken],
   );
 
+  /* Aflossing */
+  const putAflossing = useCallback(
+    async (aflossing: AflossingDTO) => {
+      const token = await safeGetAccessToken();
+      return fetchData(
+        `/api/v1/aflossingen/${aflossing.id}`,
+        token,
+        'PUT',
+        aflossing
+      );
+    },
+    [safeGetAccessToken],
+  );
+
   const resetSpel = useCallback(
     async (administratie: Administratie) => {
       const token = await safeGetAccessToken();
@@ -317,6 +332,7 @@ function usePlusminApi() {
     putPeriodeOpeningWijziging,
     getPeriodeOpening,
     putBetalingValidatie,
+    putAflossing,
     putVandaag,
     resetSpel,
     zetSpelInDemoModus,

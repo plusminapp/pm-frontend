@@ -1,17 +1,9 @@
 import dayjs from 'dayjs';
 
 export type AflossingDTO = {
+  id: string;
   startDatum: dayjs.Dayjs;
-  eindDatum: dayjs.Dayjs | undefined;
-  eindBedrag: number;
-  aflossingsBedrag: number;
-  betaalDag: number;
+  schuldOpStartDatum: number;
   dossierNummer: string;
   notities: string;
-};
-
-export type AflossingSamenvattingDTO = {
-  aflossingNaam: string;
-  aflossingsBedrag: number;
-  betaalDag: number;
 };

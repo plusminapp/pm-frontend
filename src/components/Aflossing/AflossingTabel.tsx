@@ -3,13 +3,16 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableRow from '@mui/material/TableRow';
-// import Paper from '@mui/material/Paper';
+import { IconButton, Box } from '@mui/material';
+import { Edit as EditIcon } from '@mui/icons-material';
+import { useState } from 'react';
 
 import { currencyFormatter } from '../../model/Betaling';
 import { SaldoDTO } from '../../model/Saldo';
 import dayjs from 'dayjs';
 import { Typography } from '@mui/material';
 import { useCustomContext } from '../../context/CustomContext';
+import { AflossingForm } from './AflossingForm';
 
 interface AflossingProps {
   aflossingSaldo: SaldoDTO;
@@ -17,16 +20,41 @@ interface AflossingProps {
 
 export default function AflossingTabel(props: AflossingProps) {
   const { gekozenPeriode } = useCustomContext();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [lokaleAflossingSaldo, setLokaleAflossingSaldo] = useState(
+    props.aflossingSaldo,
+  );
 
   const actueleStand =
-    (props.aflossingSaldo?.openingsBalansSaldo ?? 0) +
-    (props.aflossingSaldo?.betaling ?? 0);
+    (lokaleAflossingSaldo?.openingsBalansSaldo ?? 0) +
+    (lokaleAflossingSaldo?.betaling ?? 0);
   const maandenTeGaan =
-    (props.aflossingSaldo?.openingsBalansSaldo ?? 0) === 0
+    (lokaleAflossingSaldo?.openingsBalansSaldo ?? 0) === 0
       ? 0
       : Math.ceil(
-          -(actueleStand / (props.aflossingSaldo?.budgetMaandBedrag ?? 1)),
+          -(actueleStand / (lokaleAflossingSaldo?.budgetMaandBedrag ?? 1)),
         );
+
+  const handleEditClick = () => {
+    setDialogOpen(true);
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+  };
+
+  const handleAflossingUpdate = (dossierNummer: string, notities: string) => {
+    setLokaleAflossingSaldo((prev) => ({
+      ...prev,
+      aflossing: prev.aflossing
+        ? {
+            ...prev.aflossing,
+            dossierNummer,
+            notities,
+          }
+        : undefined,
+    }));
+  };
 
   return (
     <>
@@ -35,16 +63,8 @@ export default function AflossingTabel(props: AflossingProps) {
           <TableBody>
             <TableRow>
               <TableCell align="left" size="small" sx={{ fontWeight: '500' }}>
-                Dossiernummer
-              </TableCell>
-              <TableCell align="right" size="small">
-                {props.aflossingSaldo?.aflossing?.dossierNummer}
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell align="left" size="small" sx={{ fontWeight: '500' }}>
                 Stand op{' '}
-                {dayjs(props.aflossingSaldo?.budgetPeilDatum).format(
+                {dayjs(lokaleAflossingSaldo?.budgetPeilDatum).format(
                   'D MMMM YYYY',
                 )}
               </TableCell>
@@ -58,7 +78,7 @@ export default function AflossingTabel(props: AflossingProps) {
               </TableCell>
               <TableCell align="right" size="small">
                 {currencyFormatter.format(
-                  props.aflossingSaldo?.achterstand ?? 0,
+                  lokaleAflossingSaldo?.achterstand ?? 0,
                 )}
               </TableCell>
             </TableRow>
@@ -68,8 +88,8 @@ export default function AflossingTabel(props: AflossingProps) {
               </TableCell>
               <TableCell align="right" size="small">
                 {currencyFormatter.format(
-                  (props.aflossingSaldo?.budgetMaandBedrag ?? 0) +
-                    (props.aflossingSaldo?.achterstand ?? 0),
+                  (lokaleAflossingSaldo?.budgetMaandBedrag ?? 0) +
+                    (lokaleAflossingSaldo?.achterstand ?? 0),
                 )}
               </TableCell>
             </TableRow>
@@ -79,7 +99,7 @@ export default function AflossingTabel(props: AflossingProps) {
               </TableCell>
               <TableCell align="right" size="small">
                 {currencyFormatter.format(
-                  props.aflossingSaldo?.budgetMaandBedrag ?? 0,
+                  lokaleAflossingSaldo?.budgetMaandBedrag ?? 0,
                 )}
               </TableCell>
             </TableRow>
@@ -89,7 +109,7 @@ export default function AflossingTabel(props: AflossingProps) {
               </TableCell>
               <TableCell align="right" size="small">
                 {currencyFormatter.format(
-                  Math.abs(props.aflossingSaldo?.betaling ?? 0),
+                  Math.abs(lokaleAflossingSaldo?.betaling ?? 0),
                 )}
               </TableCell>
             </TableRow>
@@ -99,8 +119,8 @@ export default function AflossingTabel(props: AflossingProps) {
               </TableCell>
               <TableCell align="right" size="small">
                 {currencyFormatter.format(
-                  (props.aflossingSaldo?.betaling ?? 0) -
-                    (props.aflossingSaldo?.budgetMaandBedrag ?? 0),
+                  (lokaleAflossingSaldo?.betaling ?? 0) -
+                    (lokaleAflossingSaldo?.budgetMaandBedrag ?? 0),
                 )}
               </TableCell>
             </TableRow>
@@ -109,7 +129,7 @@ export default function AflossingTabel(props: AflossingProps) {
                 Betaaldag
               </TableCell>
               <TableCell align="right" size="small">
-                {props.aflossingSaldo?.budgetBetaalDag}e
+                {lokaleAflossingSaldo?.budgetBetaalDag}e
               </TableCell>
             </TableRow>
             <TableRow>
@@ -118,7 +138,7 @@ export default function AflossingTabel(props: AflossingProps) {
               </TableCell>
               <TableCell align="right" size="small">
                 {currencyFormatter.format(
-                  props.aflossingSaldo?.aflossing?.eindBedrag ?? 0,
+                  lokaleAflossingSaldo?.aflossing?.schuldOpStartDatum ?? 0,
                 )}
               </TableCell>
             </TableRow>
@@ -132,28 +152,114 @@ export default function AflossingTabel(props: AflossingProps) {
             </TableRow>
             <TableRow>
               <TableCell align="left" size="small" sx={{ fontWeight: '500' }}>
+                Startdatum
+              </TableCell>
+              <TableCell align="right" size="small">
+                {lokaleAflossingSaldo?.aflossing?.startDatum
+                  ? dayjs(lokaleAflossingSaldo.aflossing.startDatum).format(
+                      'D-M-YYYY',
+                    )
+                  : ''}{' '}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell align="left" size="small" sx={{ fontWeight: '500' }}>
                 Verwachte einddatum
               </TableCell>
               <TableCell align="right" size="small">
                 {dayjs(gekozenPeriode?.periodeEindDatum)
-                  .add(props.aflossingSaldo ? maandenTeGaan - 1 : 0, 'month')
-                  .set('date', props.aflossingSaldo?.budgetBetaalDag ?? 1)
+                  .add(lokaleAflossingSaldo ? maandenTeGaan - 1 : 0, 'month')
+                  .set('date', lokaleAflossingSaldo?.budgetBetaalDag ?? 1)
                   .format('D-M-YYYY')}
               </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={2} align="left" size="small">
-                <Typography sx={{ fontSize: '0.85rem', fontWeight: '500' }}>
-                  Notitie
-                </Typography>
-                <Typography sx={{ fontSize: '0.85rem' }}>
-                  {props.aflossingSaldo?.aflossing?.notities}
+              <TableCell align="left" size="small" sx={{ fontWeight: '500' }}>
+                Dossiernummer
+              </TableCell>
+              <TableCell
+                align="right"
+                size="small"
+                sx={{
+                  position: 'relative',
+                  pr: 0,
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'flex-end',
+                    pr: 1,
+                  }}
+                >
+                  <Typography
+                    component="span"
+                    sx={{
+                      mr: 1,
+                      textAlign: 'right',
+                      fontSize: 'inherit',
+                    }}
+                  >
+                    {lokaleAflossingSaldo?.aflossing?.dossierNummer ??
+                      'onbekend'}
+                  </Typography>
+                  <IconButton
+                    onClick={handleEditClick}
+                    size="small"
+                    aria-label="Bewerk dossiernummer en notities"
+                    sx={{ p: 0.5 }}
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              </TableCell>
+            </TableRow>{' '}
+            <TableRow>
+              <TableCell
+                colSpan={2}
+                align="left"
+                size="small"
+                sx={{ pl: 2, pr: 0 }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                  }}
+                >
+                  <Typography sx={{ fontSize: '0.85rem', fontWeight: '500' }}>
+                    Notitie
+                  </Typography>
+                  <IconButton
+                    onClick={handleEditClick}
+                    size="small"
+                    aria-label="Bewerk dossiernummer en notities"
+                    sx={{
+                      p: 0.5,
+                      mr: 1,
+                    }}
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+                <Typography sx={{ fontSize: '0.85rem', pr: 1}}>
+                  {lokaleAflossingSaldo?.aflossing?.notities}
                 </Typography>
               </TableCell>
-            </TableRow>
+            </TableRow>{' '}
           </TableBody>
         </Table>
       </TableContainer>
+
+      <AflossingForm
+        aflossingSaldo={lokaleAflossingSaldo}
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        onSuccess={handleAflossingUpdate}
+      />
     </>
   );
 }

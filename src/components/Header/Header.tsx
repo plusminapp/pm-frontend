@@ -360,7 +360,7 @@ function Header() {
               {/* profiel & settings */}
               <Box sx={{ ml: 'auto', display: 'flex' }}>
                 <Box
-                  onClick={() => navigate('/profiel')}
+                  onClick={() => currentPage.toLowerCase() !== 'gebruikersprofiel' && navigate('/profiel')}
                   sx={{
                     cursor: 'pointer',
                     display: 'flex',

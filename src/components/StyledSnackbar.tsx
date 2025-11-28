@@ -7,16 +7,15 @@ const StyledSnackbar = ({
   type = 'info' as AlertColor,
   onClose,
 }: {
-  message: JSX.Element |string | undefined;
+  message: JSX.Element | string | undefined;
   type: AlertColor | undefined;
   onClose: () => void;
 }) => {
   const [show, setShow] = useState(false);
-  const resetMessage = () => (message = undefined);
+  
   const close = () => {
     setShow(false);
     setTimeout(() => {
-      resetMessage();
       onClose();
     }, 10);
   };
@@ -34,7 +33,7 @@ const StyledSnackbar = ({
       open={show}
       anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       autoHideDuration={
-        type === 'error' ? 40000 : type === 'warning' ? 30000 : 25000
+        type === 'error' ? 40000 : type === 'warning' ? 10000 : 5000
       }
       onClose={close}
     >
@@ -53,6 +52,6 @@ const StyledSnackbar = ({
 export default StyledSnackbar;
 
 export type SnackbarMessage = {
-  message?: JSX.Element |string | undefined;
+  message?: JSX.Element | string | undefined;
   type?: AlertColor | undefined;
 };

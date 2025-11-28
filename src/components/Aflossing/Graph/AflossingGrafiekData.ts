@@ -39,7 +39,7 @@ const genereerAflossingSaldi = (
 ): AflossingGrafiekData[] => {
   const formatter = 'YYYY-MM';
   const aflossingGrafiekDataLijst: AflossingGrafiekData[] = [];
-  let huidigeBedrag = Number(aflossingSaldoDTO.aflossing?.eindBedrag ?? 0);
+  let huidigeBedrag = Number(aflossingSaldoDTO.aflossing?.schuldOpStartDatum ?? 0);
   const startAflossing = dayjs(aflossingSaldoDTO.aflossing?.startDatum).startOf(
     'month',
   );
