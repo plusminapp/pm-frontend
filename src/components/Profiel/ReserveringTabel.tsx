@@ -165,24 +165,24 @@ export const ReserveringTabel: React.FC = () => {
                               {formatAmount(saldo.openingsReserveSaldo)}
                             </TableCell>
                             <TableCell sx={{ padding: '5px' }} align="right">
-                              {formatAmount(saldo.reservering)}
+                              {formatAmount(saldo.periodeReservering)}
                             </TableCell>
                             <TableCell sx={{ padding: '5px' }} align="right">
                               {isSpaarpot(saldo)
                                 ? formatAmount(
                                     saldo.openingsOpgenomenSaldo +
-                                      saldo.opgenomenSaldo,
+                                      saldo.periodeOpgenomenSaldo,
                                   )
                                 : null}
                             </TableCell>
                             <TableCell sx={{ padding: '5px' }} align="right">
-                              {formatAmount(saldo.betaling)}
+                              {formatAmount(saldo.periodeBetaling)}
                             </TableCell>
                             <TableCell sx={{ padding: '5px' }} align="right">
                               {formatAmount(
                                 saldo.openingsReserveSaldo +
-                                  saldo.reservering -
-                                  saldo.betaling,
+                                  saldo.periodeReservering -
+                                  saldo.periodeBetaling,
                               )}
                               {isHuidigePeriode ? (
                                 <Button
@@ -209,8 +209,8 @@ export const ReserveringTabel: React.FC = () => {
                             <TableCell sx={{ padding: '5px' }} align="right">
                               {formatAmount(
                                 saldo.openingsReserveSaldo +
-                                  saldo.reservering -
-                                  saldo.betaling -
+                                  saldo.periodeReservering -
+                                  saldo.periodeBetaling -
                                   saldo.restMaandBudget,
                               )}
                             </TableCell>

@@ -57,7 +57,7 @@ const genereerAflossingSaldi = (
     });
     huidigeBedrag -=
       (aflossingSaldoDTO.budgetMaandBedrag ?? 0) +
-      (aflossingSaldoDTO.achterstand ?? 0);
+      (aflossingSaldoDTO.openingsAchterstand ?? 0);
     peilMaand = peilMaand.add(1, 'month');
   }
 
@@ -74,7 +74,7 @@ const genereerAflossingSaldi = (
   });
 
   peilMaand = peilMaand.add(1, 'month');
-  huidigeBedrag -= aflossingSaldoDTO.betaling ?? 0;
+  huidigeBedrag -= aflossingSaldoDTO.periodeBetaling ?? 0;
 
   while (huidigeBedrag > 0) {
     aflossingGrafiekDataLijst.push({
@@ -84,7 +84,7 @@ const genereerAflossingSaldi = (
     });
     huidigeBedrag -=
       (aflossingSaldoDTO.budgetMaandBedrag ?? 0) +
-      (aflossingSaldoDTO.achterstand ?? 0);
+      (aflossingSaldoDTO.openingsAchterstand ?? 0);
     peilMaand = peilMaand.add(1, 'month');
   }
   return aflossingGrafiekDataLijst;

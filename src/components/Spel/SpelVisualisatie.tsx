@@ -288,8 +288,8 @@ export const SpelVisualisatie: React.FC = () => {
                   {groep.saldi.map((saldo) => {
                     const reserveNu =
                       saldo.openingsReserveSaldo +
-                      saldo.reservering -
-                      saldo.betaling;
+                      saldo.periodeReservering -
+                      saldo.periodeBetaling;
                     const eindReserve = reserveNu - saldo.restMaandBudget;
                     const lineColor = eindReserve >= 0 ? '#4caf50' : '#f44336';
                     const fillColor =

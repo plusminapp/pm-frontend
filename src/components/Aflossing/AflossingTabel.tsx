@@ -27,7 +27,7 @@ export default function AflossingTabel(props: AflossingProps) {
 
   const actueleStand =
     (lokaleAflossingSaldo?.openingsBalansSaldo ?? 0) +
-    (lokaleAflossingSaldo?.betaling ?? 0);
+    (lokaleAflossingSaldo?.periodeBetaling ?? 0);
   const maandenTeGaan =
     (lokaleAflossingSaldo?.openingsBalansSaldo ?? 0) === 0
       ? 0
@@ -78,7 +78,7 @@ export default function AflossingTabel(props: AflossingProps) {
               </TableCell>
               <TableCell align="right" size="small">
                 {currencyFormatter.format(
-                  lokaleAflossingSaldo?.achterstand ?? 0,
+                  lokaleAflossingSaldo?.openingsAchterstand ?? 0,
                 )}
               </TableCell>
             </TableRow>
@@ -89,7 +89,7 @@ export default function AflossingTabel(props: AflossingProps) {
               <TableCell align="right" size="small">
                 {currencyFormatter.format(
                   (lokaleAflossingSaldo?.budgetMaandBedrag ?? 0) +
-                    (lokaleAflossingSaldo?.achterstand ?? 0),
+                    (lokaleAflossingSaldo?.openingsAchterstand ?? 0),
                 )}
               </TableCell>
             </TableRow>
@@ -109,7 +109,7 @@ export default function AflossingTabel(props: AflossingProps) {
               </TableCell>
               <TableCell align="right" size="small">
                 {currencyFormatter.format(
-                  Math.abs(lokaleAflossingSaldo?.betaling ?? 0),
+                  Math.abs(lokaleAflossingSaldo?.periodeBetaling ?? 0),
                 )}
               </TableCell>
             </TableRow>
@@ -119,7 +119,7 @@ export default function AflossingTabel(props: AflossingProps) {
               </TableCell>
               <TableCell align="right" size="small">
                 {currencyFormatter.format(
-                  (lokaleAflossingSaldo?.betaling ?? 0) -
+                  (lokaleAflossingSaldo?.periodeBetaling ?? 0) -
                     (lokaleAflossingSaldo?.budgetMaandBedrag ?? 0),
                 )}
               </TableCell>

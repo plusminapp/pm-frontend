@@ -30,7 +30,7 @@ export const ReserveDetailsForm: React.FC<ReserveDetailsFormProps> = ({
   };
 
   const reserveNu =
-    saldo.openingsReserveSaldo + saldo.reservering - saldo.betaling;
+    saldo.openingsReserveSaldo + saldo.periodeReservering - saldo.periodeBetaling;
   const eindReserve = reserveNu - saldo.restMaandBudget;
 
   return (
@@ -79,19 +79,19 @@ export const ReserveDetailsForm: React.FC<ReserveDetailsFormProps> = ({
 
             <TableRow>
               <TableCell sx={{ fontWeight: 'bold' }}>Reservering</TableCell>
-              <TableCell>{formatAmount(saldo.reservering)}</TableCell>
+              <TableCell>{formatAmount(saldo.periodeReservering)}</TableCell>
             </TableRow>
 
-            {saldo.opgenomenSaldo !== 0 && (
+            {saldo.periodeOpgenomenSaldo !== 0 && (
               <TableRow>
                 <TableCell sx={{ fontWeight: 'bold' }}>Opgenomen</TableCell>
-                <TableCell>{formatAmount(saldo.opgenomenSaldo)}</TableCell>
+                <TableCell>{formatAmount(saldo.periodeOpgenomenSaldo)}</TableCell>
               </TableRow>
             )}
 
             <TableRow>
               <TableCell sx={{ fontWeight: 'bold' }}>Betalingen</TableCell>
-              <TableCell>{formatAmount(saldo.betaling)}</TableCell>
+              <TableCell>{formatAmount(saldo.periodeBetaling)}</TableCell>
             </TableRow>
 
             <TableRow sx={{ backgroundColor: '#f5f5f5' }}>

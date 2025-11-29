@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 import { PlusIcon } from '../../icons/Plus';
 
 const NaarMorgen: React.FC = () => {
-  const { actieveAdministratie, setActieveAdministratie, gebruiker, setGebruiker, setIsStandDirty } = useCustomContext();
+  const { actieveAdministratie, setActieveAdministratie, gebruiker, setGebruiker, setIsStandDirty, setSnackbarMessage } = useCustomContext();
   const { putVandaag } = usePlusminApi();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -44,6 +44,7 @@ const NaarMorgen: React.FC = () => {
 
       console.log(`Naar morgen ${toonBetalingen ? 'met' : 'zonder'} betalingen:`, morgen);
     } catch (error) {
+      setSnackbarMessage({message: 'Fout bij het verplaatsen naar morgen.', type: 'error'});
       console.error('Fout bij naar morgen:', error);
     } finally {
       setIsLoading(false);

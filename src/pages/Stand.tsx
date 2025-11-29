@@ -290,7 +290,7 @@ export default function Stand() {
                   .sort((a, b) => a.sortOrder - b.sortOrder)
                   .map((saldo) => ({
                     ...saldo,
-                    bedrag: saldo.openingsBalansSaldo + saldo.betaling,
+                    bedrag: saldo.openingsBalansSaldo + saldo.periodeBetaling,
                   }))}
               />
               <Resultaat
@@ -307,8 +307,8 @@ export default function Stand() {
                     ...saldo,
                     bedrag:
                       saldo.openingsReserveSaldo +
-                      saldo.reservering -
-                      saldo.betaling,
+                      saldo.periodeReservering -
+                      saldo.periodeBetaling,
                   }))}
               />
             </Grid>
@@ -355,7 +355,7 @@ export default function Stand() {
                           ),
                         )
                         .sort((a, b) => a.sortOrder - b.sortOrder)
-                        .map((saldo) => ({ ...saldo, bedrag: saldo.betaling }))}
+                        .map((saldo) => ({ ...saldo, bedrag: saldo.periodeBetaling }))}
                     />
                   </Grid>
                   <Grid size={1}>
@@ -371,7 +371,7 @@ export default function Stand() {
                         .sort((a, b) => a.sortOrder - b.sortOrder)
                         .map((saldo) => ({
                           ...saldo,
-                          bedrag: saldo.openingsBalansSaldo + saldo.betaling,
+                          bedrag: saldo.openingsBalansSaldo + saldo.periodeBetaling,
                         }))}
                     />
                   </Grid>
@@ -394,7 +394,7 @@ export default function Stand() {
                         .sort((a, b) => a.sortOrder - b.sortOrder)
                         .map((saldo) => ({
                           ...saldo,
-                          bedrag: -saldo.betaling,
+                          bedrag: -saldo.periodeBetaling,
                         }))}
                     />
                   </Grid>
@@ -430,7 +430,7 @@ export default function Stand() {
                         .sort((a, b) => a.sortOrder - b.sortOrder)
                         .map((saldo) => ({
                           ...saldo,
-                          bedrag: saldo.reservering - saldo.betaling,
+                          bedrag: saldo.periodeReservering - saldo.periodeBetaling,
                         }))}
                     />
                   </Grid>
@@ -447,8 +447,8 @@ export default function Stand() {
                           ...saldo,
                           bedrag:
                             saldo.openingsReserveSaldo +
-                            saldo.reservering -
-                            saldo.betaling,
+                            saldo.periodeReservering -
+                            saldo.periodeBetaling,
                         }))}
                     />
                   </Grid>

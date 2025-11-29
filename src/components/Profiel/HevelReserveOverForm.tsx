@@ -271,8 +271,8 @@ export function HevelReserveOverForm({
                             .map((saldo) => {
                               const beschikbareBedrag =
                                 saldo.openingsReserveSaldo +
-                                saldo.reservering -
-                                saldo.betaling;
+                                saldo.periodeReservering -
+                                saldo.periodeBetaling;
                               const gewenstBedrag = Number(watchedBedrag) || 0;
 
                               return (

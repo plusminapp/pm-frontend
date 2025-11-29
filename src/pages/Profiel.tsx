@@ -79,12 +79,12 @@ const Profiel: React.FC = () => {
     )
     .reduce(
       (acc, saldo) =>
-        acc + saldo.openingsReserveSaldo + saldo.reservering - saldo.betaling,
+        acc + saldo.openingsReserveSaldo + saldo.periodeReservering - saldo.periodeBetaling,
       0,
     );
   const actueleStand =
     (reserveringBuffer?.openingsReserveSaldo ?? 0) +
-    (reserveringBuffer?.reservering ?? 0) +
+    (reserveringBuffer?.periodeReservering ?? 0) +
     (reserveringsSaldoPotjesVanNu ?? 0);
   const verwachteInkomsten = stand?.geaggregeerdResultaatOpDatum
     .filter((saldo) => saldo.rekeningGroepSoort === 'INKOMSTEN')
@@ -249,7 +249,7 @@ const Profiel: React.FC = () => {
       &nbsp; = openingssaldo buffer:{' '}
       {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}
       &nbsp; + inkomsten - reservering:{' '}
-      {formatAmount(reserveringBuffer?.reservering ?? 0)}&nbsp; + huidige
+      {formatAmount(reserveringBuffer?.periodeReservering ?? 0)}&nbsp; + huidige
       reserve in potjes voor nu:{' '}
       {formatAmount(reserveringsSaldoPotjesVanNu ?? 0)}
       <br />
@@ -320,7 +320,7 @@ const Profiel: React.FC = () => {
                           .sort((a, b) => a.sortOrder - b.sortOrder)
                           .map((saldo) => ({
                             ...saldo,
-                            bedrag: saldo.betaling,
+                            bedrag: saldo.periodeBetaling,
                           }))}
                       />
                     </Grid>
@@ -337,7 +337,7 @@ const Profiel: React.FC = () => {
                           .sort((a, b) => a.sortOrder - b.sortOrder)
                           .map((saldo) => ({
                             ...saldo,
-                            bedrag: saldo.openingsBalansSaldo + saldo.betaling,
+                            bedrag: saldo.openingsBalansSaldo + saldo.periodeBetaling,
                           }))}
                       />
                     </Grid>

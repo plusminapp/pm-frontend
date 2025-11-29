@@ -340,8 +340,8 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                                   ?.map(
                                     (s) =>
                                       s.openingsReserveSaldo +
-                                      s.reservering -
-                                      s.betaling,
+                                      s.periodeReservering -
+                                      s.periodeBetaling,
                                   )
                                   .reduce((a, b) => a + b, 0)
                                   .toLocaleString('nl-NL', {
@@ -361,7 +361,7 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                                       ?.map(
                                         (s) =>
                                           s.openingsOpgenomenSaldo +
-                                          s.opgenomenSaldo,
+                                          s.periodeOpgenomenSaldo,
                                       )
                                       .reduce((a, b) => a + b, 0)
                                       .toLocaleString('nl-NL', {
@@ -595,8 +595,8 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                                     ?.map(
                                       (s) =>
                                         s.openingsReserveSaldo +
-                                        s.reservering -
-                                        s.betaling,
+                                        s.periodeReservering -
+                                        s.periodeBetaling,
                                     )
                                     .reduce((a, b) => a + b, 0)
                                     .toLocaleString('nl-NL', {
@@ -613,7 +613,7 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                                     ?.map(
                                       (s) =>
                                         s.openingsOpgenomenSaldo +
-                                        s.opgenomenSaldo,
+                                        s.periodeOpgenomenSaldo,
                                     )
                                     .reduce((a, b) => a + b, 0)
                                     .toLocaleString('nl-NL', {
