@@ -88,7 +88,7 @@ const Profiel: React.FC = () => {
     (reserveringsSaldoPotjesVanNu ?? 0);
   const verwachteInkomsten = stand?.geaggregeerdResultaatOpDatum
     .filter((saldo) => saldo.rekeningGroepSoort === 'INKOMSTEN')
-    .reduce((acc, saldo) => acc + saldo.restMaandBudget, 0);
+    .reduce((acc, saldo) => acc + saldo.komtNogNodig, 0);
   const verwachteUitgaven = stand?.geaggregeerdResultaatOpDatum
     .filter(
       (saldo) =>
@@ -96,7 +96,7 @@ const Profiel: React.FC = () => {
           saldo.budgetType !== BudgetType.sparen) ||
         saldo.rekeningGroepSoort === 'AFLOSSING',
     )
-    .reduce((acc, saldo) => acc + saldo.restMaandBudget, 0);
+    .reduce((acc, saldo) => acc + saldo.komtNogNodig, 0);
 
   const fetchfetchOngeldigeBetalingen = useCallback(async () => {
     if (!actieveAdministratie) {

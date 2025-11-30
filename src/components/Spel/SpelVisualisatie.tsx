@@ -290,7 +290,7 @@ export const SpelVisualisatie: React.FC = () => {
                       saldo.openingsReserveSaldo +
                       saldo.periodeReservering -
                       saldo.periodeBetaling;
-                    const eindReserve = reserveNu - saldo.restMaandBudget;
+                    const eindReserve = reserveNu - saldo.komtNogNodig;
                     const lineColor = eindReserve >= 0 ? '#4caf50' : '#f44336';
                     const fillColor =
                       eindReserve >= 0 ? '#e8f5e9' : '#ffebee';

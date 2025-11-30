@@ -204,14 +204,14 @@ export const ReserveringTabel: React.FC = () => {
                               )}
                             </TableCell>
                             <TableCell sx={{ padding: '5px' }} align="right">
-                              {formatAmount(saldo.restMaandBudget)}
+                              {formatAmount(saldo.komtNogNodig)}
                             </TableCell>
                             <TableCell sx={{ padding: '5px' }} align="right">
                               {formatAmount(
                                 saldo.openingsReserveSaldo +
                                   saldo.periodeReservering -
                                   saldo.periodeBetaling -
-                                  saldo.restMaandBudget,
+                                  saldo.komtNogNodig,
                               )}
                             </TableCell>
                           </TableRow>,

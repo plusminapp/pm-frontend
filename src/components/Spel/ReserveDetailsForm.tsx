@@ -31,7 +31,7 @@ export const ReserveDetailsForm: React.FC<ReserveDetailsFormProps> = ({
 
   const reserveNu =
     saldo.openingsReserveSaldo + saldo.periodeReservering - saldo.periodeBetaling;
-  const eindReserve = reserveNu - saldo.restMaandBudget;
+  const eindReserve = reserveNu - saldo.komtNogNodig;
 
   return (
     <Dialog open={true} onClose={onClose} maxWidth="sm" fullWidth>
@@ -103,7 +103,7 @@ export const ReserveDetailsForm: React.FC<ReserveDetailsFormProps> = ({
 
             <TableRow>
               <TableCell sx={{ fontWeight: 'bold' }}>Nog nodig</TableCell>
-              <TableCell>{formatAmount(saldo.restMaandBudget)}</TableCell>
+              <TableCell>{formatAmount(saldo.komtNogNodig)}</TableCell>
             </TableRow>
 
             <TableRow

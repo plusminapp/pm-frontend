@@ -52,7 +52,7 @@ export const StandGrafiek = ({
   const betaaldBinnenBudget =
     geaggregeerdResultaatOpDatum?.betaaldBinnenBudget ?? 0;
   const maandBudget = geaggregeerdResultaatOpDatum?.budgetMaandBedrag ?? 0;
-  const restMaandBudget = geaggregeerdResultaatOpDatum?.restMaandBudget ?? 0;
+  const restMaandBudget = geaggregeerdResultaatOpDatum?.komtNogNodig ?? 0;
   const meerDanBudget = geaggregeerdResultaatOpDatum?.meerDanBudget ?? 0;
   const minderDanBudget = geaggregeerdResultaatOpDatum?.minderDanBudget ?? 0;
   const meerDanMaandBudget =
@@ -384,7 +384,7 @@ export const StandGrafiek = ({
                   restMaandBudget $
                   {formatAmount(
                     (
-                      geaggregeerdResultaatOpDatum.restMaandBudget ?? 0
+                      geaggregeerdResultaatOpDatum.komtNogNodig ?? 0
                     ).toString(),
                   )}
                   ,<br />
@@ -437,7 +437,7 @@ export const StandGrafiek = ({
                   {formatAmount((saldo.meerDanMaandBudget ?? 0).toString())},
                   <br />
                   restMaandBudget $
-                  {formatAmount((saldo.restMaandBudget ?? 0).toString())},<br />
+                  {formatAmount((saldo.komtNogNodig ?? 0).toString())},<br />
                   achterstandOpPeilDatum $
                   {formatAmount((saldo.periodeAchterstand ?? 0).toString())}
                   ,

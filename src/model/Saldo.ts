@@ -40,7 +40,7 @@ export type SaldoDTO = {
   minderDanBudget: number;
   meerDanBudget: number;
   meerDanMaandBudget: number;
-  restMaandBudget: number;
+  komtNogNodig: number;
   bedrag: number;
 };
 
