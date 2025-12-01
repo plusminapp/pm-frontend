@@ -12,7 +12,7 @@ const StyledSnackbar = ({
   onClose: () => void;
 }) => {
   const [show, setShow] = useState(false);
-  
+
   const close = () => {
     setShow(false);
     setTimeout(() => {
@@ -33,7 +33,13 @@ const StyledSnackbar = ({
       open={show}
       anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       autoHideDuration={
-        type === 'error' ? 40000 : type === 'warning' ? 10000 : 5000
+        type === 'error'
+          ? 40000
+          : type === 'warning'
+            ? 10000
+            : type === 'success'
+              ? 5000
+              : 50000
       }
       onClose={close}
     >
