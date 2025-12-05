@@ -39,6 +39,7 @@ export enum BetalingsCategorie {
 export enum BetalingsSoort {
   // Inkomsten
   inkomsten = 'INKOMSTEN',
+  rente = 'RENTE',
   // Uitgaven
   uitgaven = 'UITGAVEN',
   aflossen = 'AFLOSSEN',
@@ -59,12 +60,14 @@ export enum BetalingsSoort {
 
 export const bestemmingBetalingsSoorten = [
   BetalingsSoort.inkomsten,
+  BetalingsSoort.rente,
   BetalingsSoort.storten_contant,
   BetalingsSoort.opnemen,
 ];
 
 export const ontdubbelBetalingsSoorten = [
   BetalingsSoort.inkomsten,
+  BetalingsSoort.rente,
   BetalingsSoort.uitgaven,
   BetalingsSoort.aflossen,
   BetalingsSoort.incasso_creditcard,
@@ -90,7 +93,10 @@ export const currencyFormatter = new Intl.NumberFormat('nl-NL', {
   currency: 'EUR',
 });
 
-export const inkomstenBetalingsSoorten = [BetalingsSoort.inkomsten];
+export const inkomstenBetalingsSoorten = [
+  BetalingsSoort.inkomsten,
+  BetalingsSoort.rente,
+];
 export const uitgavenBetalingsSoorten = [
   BetalingsSoort.uitgaven,
   BetalingsSoort.aflossen,

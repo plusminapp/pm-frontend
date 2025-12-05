@@ -13,6 +13,7 @@ export type RekeningGroepDTO = {
 
 export enum RekeningGroepSoort {
   inkomsten = 'INKOMSTEN',
+  rente = 'RENTE',
   uitgaven = 'UITGAVEN',
   betaalmethode = 'BETAALMETHODE',
   betaalrekening = 'BETAALREKENING',
@@ -49,6 +50,7 @@ export const resultaatRekeningGroepSoorten = [
 
 export const betaalTabelRekeningGroepSoorten = [
   RekeningGroepSoort.inkomsten,
+  // RekeningGroepSoort.rente,
   RekeningGroepSoort.uitgaven,
   RekeningGroepSoort.spaarpot,
   RekeningGroepSoort.aflossing,
