@@ -7,6 +7,7 @@ import {
   TableCell,
   TableBody,
   Button,
+  ButtonGroup,
 } from '@mui/material';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import {
@@ -29,7 +30,7 @@ export const ReserveringTabel: React.FC = () => {
     actieveAdministratie,
     setSnackbarMessage
   } = useCustomContext();
-  const { putReserveringen } = usePlusminApi();
+  const { putReserveringen, putAlleReserveringen } = usePlusminApi();
 
   const [overTeHevelenReserve, setOverTeHevelenReserve] = useState<
     string | undefined
@@ -47,23 +48,49 @@ export const ReserveringTabel: React.FC = () => {
     setOverTeHevelenReserve(rekeningNaam);
   };
 
-  const handleReserveerClick = async () => {
-    if (!actieveAdministratie) return;
-
-    try {
-      setIsReservering(true);
-      await putReserveringen(actieveAdministratie);
-      setIsStandDirty(true);
-      setSnackbarMessage({ message: 'Reserveringen zijn succesvol uitgevoerd.', type: 'success' });
-    } catch (error) {
-      setSnackbarMessage({ message: 'Fout bij het uitvoeren van reserveringen.', type: 'error' });
-      console.error('Fout bij het uitvoeren van reserveringen:', error);
-    } finally {
-      setIsReservering(false);
+const handleReserveerClick = async () => {
+  if (!actieveAdministratie) return;
+  try {
+    setIsReservering(true);
+    await putReserveringen(actieveAdministratie);
+    setIsStandDirty(true);
+    setSnackbarMessage({ message: 'Reserveringen zijn succesvol uitgevoerd.', type: 'success' });
+  } catch (error) {
+    console.error('Fout bij het uitvoeren van reserveringen:', error);
+    
+    let errorMessage = 'Fout bij het uitvoeren van reserveringen.';
+    
+    if (error instanceof Error && error.plusMinError) {
+      errorMessage = error.plusMinError.message;
     }
-  };
+    
+    setSnackbarMessage({ message: errorMessage, type: 'error' });
+  } finally {
+    setIsReservering(false);
+  }
+};
 
-  const formatAmount = (amount: number): string => {
+const handleReserveerAlleClick = async () => {
+  if (!actieveAdministratie) return;
+  try {
+    setIsReservering(true);
+    await putAlleReserveringen(actieveAdministratie);
+    setIsStandDirty(true);
+    setSnackbarMessage({ message: 'Reserveringen zijn succesvol uitgevoerd.', type: 'success' });
+  } catch (error) {
+    console.error('Fout bij het uitvoeren van reserveringen:', error);
+    
+    let errorMessage = 'Fout bij het uitvoeren van alle reserveringen.';
+    
+    if (error instanceof Error && error.plusMinError) {
+      errorMessage = error.plusMinError.message;
+    }
+    
+    setSnackbarMessage({ message: errorMessage, type: 'error' });
+  } finally {
+    setIsReservering(false);
+  }
+};  const formatAmount = (amount: number): string => {
     if (!amount) amount = 0;
     return amount.toLocaleString('nl-NL', {
       style: 'currency',
@@ -226,17 +253,20 @@ export const ReserveringTabel: React.FC = () => {
                   colSpan={10}
                   sx={{ textAlign: 'right', padding: '10px' }}
                 >
-                  {isHuidigePeriode && (
-                    <Button
-                      variant="contained"
-                      color="success"
-                      onClick={handleReserveerClick}
-                      disabled={isReservering}
-                      sx={{ fontSize: '0.875rem' }}
-                    >
-                      {isReservering ? 'Bezig...' : 'Reserveer'}
-                    </Button>
-                  )}
+                      <ButtonGroup variant="contained" color="success" disabled={isReservering}>
+                      <Button
+                        onClick={handleReserveerClick}
+                        sx={{ fontSize: '0.875rem' }}
+                      >
+                        {isReservering ? 'Bezig...' : 'Reserveer'}
+                      </Button>
+                      <Button
+                        onClick={handleReserveerAlleClick}
+                        sx={{ fontSize: '0.875rem' }}
+                      >
+                        {isReservering ? 'Bezig...' : 'Reserveer Alle'}
+                      </Button>
+                      </ButtonGroup>
                 </TableCell>
               </TableRow>
             </TableBody>
