@@ -20,7 +20,7 @@ export default function SparenTabel(props: SparenProps) {
 
   const actueleStand =
     (props.sparenSaldo?.openingsBalansSaldo ?? 0) +
-    (props.sparenSaldo?.betaling ?? 0);
+    (props.sparenSaldo?.periodeBetaling ?? 0);
   const maandenTeGaan =
     (props.sparenSaldo?.openingsBalansSaldo ?? 0) >=
     (props.sparenSaldo.spaartegoed?.eindBedrag ?? 0)
@@ -53,7 +53,7 @@ export default function SparenTabel(props: SparenProps) {
               <TableCell align="right" size="small">
                 {currencyFormatter.format(
                   (props.sparenSaldo?.budgetMaandBedrag ?? 0) +
-                    (props.sparenSaldo?.achterstand ?? 0),
+                    (props.sparenSaldo?.openingsAchterstand ?? 0),
                 )}
               </TableCell>
             </TableRow>
@@ -73,7 +73,7 @@ export default function SparenTabel(props: SparenProps) {
               </TableCell>
               <TableCell align="right" size="small">
                 {currencyFormatter.format(
-                  Math.abs(props.sparenSaldo?.betaling ?? 0),
+                  Math.abs(props.sparenSaldo?.periodeBetaling ?? 0),
                 )}
               </TableCell>
             </TableRow>

@@ -230,7 +230,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
                     }}
                     align="right"
                   >
-                    {formatter.format(saldo.betaling)}
+                    {formatter.format(saldo.periodeBetaling)}
                   </TableCell>
                 ))}
               {gekozenPeriode && isPeriodeOpen(gekozenPeriode) && (
@@ -269,7 +269,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
                     align="right"
                   >
                     {formatter.format(
-                      saldo.budgetOpPeilDatum - saldo.achterstand,
+                      saldo.budgetOpPeilDatum - saldo.openingsAchterstand,
                     )}
                   </TableCell>
                 ))}
@@ -296,8 +296,8 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
                   >
                     {berekenRekeningGroepIcoon(12, saldo)}{' '}
                     {formatter.format(
-                      saldo.betaling +
-                        saldo.achterstand +
+                      saldo.periodeBetaling +
+                        saldo.openingsAchterstand +
                         (saldo.budgetType && saldo.budgetType === 'INKOMSTEN'
                           ? saldo.budgetOpPeilDatum
                           : -saldo.budgetOpPeilDatum),

@@ -10,6 +10,7 @@ import { CashFlow } from '../model/CashFlow';
 import { Betaling, BetalingDTO } from '../model/Betaling';
 import { Administratie, AdministratieWrapper } from '../model/Administratie';
 import { AflossingDTO } from '../model/Aflossing';
+import { PlusMinErrorResponse } from '../model/PlusMinError';
 
 async function fetchData<T>(
   endpoint: string,
@@ -25,18 +26,33 @@ async function fetchData<T>(
     },
     body: body ? JSON.stringify(body) : undefined,
   });
+  
   if (!response.ok) {
-    const body = await response.clone().text();
-    const message = body ? `${response.status} ${response.statusText}: ${body}` : `${response.status} ${response.statusText}`;
+    const responseBody = await response.clone().text();
+    const message = responseBody ? `${response.status} ${response.statusText}: ${responseBody}` : `${response.status} ${response.statusText}`;
     const error = new Error(message);
-    (error as any).status = response.status;
-    (error as any).body = body;
-    throw error;
+    
+    // Set properties type-safe
+    error.status = response.status;
+    error.body = responseBody;
+    
+    // Parse PlusMinError if possible
+    try {
+      if (responseBody) {
+        const parsedError = JSON.parse(responseBody) as PlusMinErrorResponse;
+        if (parsedError.errorCode && parsedError.message) {
+          error.plusMinError = parsedError;
+        }
+      }
+    } catch {
+      // Ignore parse errors, continue with basic error
+    }
+        throw error;
   }
+  
   const text = await response.text();
   return text ? JSON.parse(text) as T : undefined as T;
 }
-
 function usePlusminApi() {
   const { getAccessToken } = useAuthContext();
   const { gebruiker } = useCustomContext();
@@ -209,6 +225,18 @@ function usePlusminApi() {
     [safeGetAccessToken],
   );
 
+  const putAlleReserveringen = useCallback(
+    async (administratie: Administratie) => {
+      const token = await safeGetAccessToken();
+      return fetchData<void>(
+        `/api/v1/reserveringen/administratie/${administratie.id}/alle`,
+        token,
+        'PUT',
+      );
+    },
+    [safeGetAccessToken],
+  );
+
   /* Periode */
   const putPeriodeActie = useCallback(
     async (
@@ -328,6 +356,7 @@ function usePlusminApi() {
     putBetaling,
     deleteBetaling,
     putReserveringen,
+    putAlleReserveringen,
     putPeriodeActie,
     putPeriodeOpeningWijziging,
     getPeriodeOpening,

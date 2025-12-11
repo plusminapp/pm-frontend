@@ -19,19 +19,19 @@ export type SaldoDTO = {
   rekeningGroepSoort: string;
   budgetType: string | undefined;
   rekeningNaam: string;
+  budgetBetaalDag: number;
   aflossing: AflossingDTO | undefined;
   spaartegoed: SpaartegoedDTO | undefined;
   sortOrder: number;
   openingsBalansSaldo: number;
   openingsReserveSaldo: number;
   openingsOpgenomenSaldo: number;
-  achterstand: number;
-  achterstandOpPeilDatum: number;
+  openingsAchterstand: number;
   budgetMaandBedrag: number;
-  budgetBetaalDag: number;
-  betaling: number;
-  reservering: number;
-  opgenomenSaldo: number;
+  periodeBetaling: number;
+  periodeReservering: number;
+  periodeOpgenomenSaldo: number;
+  periodeAchterstand: number;
   correctieBoeking: number;
   periode: Periode;
   budgetPeilDatum: string;
@@ -40,7 +40,7 @@ export type SaldoDTO = {
   minderDanBudget: number;
   meerDanBudget: number;
   meerDanMaandBudget: number;
-  restMaandBudget: number;
+  komtNogNodig: number;
   bedrag: number;
 };
 

@@ -46,7 +46,7 @@ export const SpaarGrafiek = ({
   const betaaldBinnenBudget =
     geaggregeerdResultaatOpDatum?.betaaldBinnenBudget ?? 0;
   const maandBudget = geaggregeerdResultaatOpDatum?.budgetMaandBedrag ?? 0;
-  const restMaandBudget = geaggregeerdResultaatOpDatum?.restMaandBudget ?? 0;
+  const restMaandBudget = geaggregeerdResultaatOpDatum?.komtNogNodig ?? 0;
   const meerDanBudget = geaggregeerdResultaatOpDatum?.meerDanBudget ?? 0;
   const minderDanBudget = geaggregeerdResultaatOpDatum?.minderDanBudget ?? 0;
   const meerDanMaandBudget =
@@ -214,12 +214,12 @@ export const SpaarGrafiek = ({
                 <br />
                 achterstand $
                 {formatAmount(
-                  (geaggregeerdResultaatOpDatum.achterstand ?? 0).toString(),
+                  (geaggregeerdResultaatOpDatum.openingsAchterstand ?? 0).toString(),
                 )}
                 ,<br />
                 betaald{' '}
                 {formatAmount(
-                  geaggregeerdResultaatOpDatum.betaling?.toString() ?? 'nvt',
+                  geaggregeerdResultaatOpDatum.periodeBetaling?.toString() ?? 'nvt',
                 )}
                 , <br />
                 betaaldBinnenBudget{' '}
@@ -250,14 +250,14 @@ export const SpaarGrafiek = ({
                 restMaandBudget $
                 {formatAmount(
                   (
-                    geaggregeerdResultaatOpDatum.restMaandBudget ?? 0
+                    geaggregeerdResultaatOpDatum.komtNogNodig ?? 0
                   ).toString(),
                 )}
                 ,<br />
                 achterstandOpPeilDatum $
                 {formatAmount(
                   (
-                    geaggregeerdResultaatOpDatum.achterstandOpPeilDatum ?? 0
+                    geaggregeerdResultaatOpDatum.periodeAchterstand ?? 0
                   ).toString(),
                 )}
                 ,
@@ -281,10 +281,10 @@ export const SpaarGrafiek = ({
                 budgetOpPeilDatum:{' '}
                 {formatAmount((saldo.budgetOpPeilDatum ?? 0).toString())}
                 <br />
-                achterstand ${formatAmount((saldo.achterstand ?? 0).toString())}
+                achterstand ${formatAmount((saldo.openingsAchterstand ?? 0).toString())}
                 ,<br />
                 betaald {formatAmount(
-                  saldo.betaling?.toString() ?? 'nvt',
+                  saldo.periodeBetaling?.toString() ?? 'nvt',
                 )}, <br />
                 betaaldBinnenBudget{' '}
                 {formatAmount(
@@ -298,9 +298,9 @@ export const SpaarGrafiek = ({
                 {formatAmount((saldo.meerDanMaandBudget ?? 0).toString())},
                 <br />
                 restMaandBudget $
-                {formatAmount((saldo.restMaandBudget ?? 0).toString())},<br />
+                {formatAmount((saldo.komtNogNodig ?? 0).toString())},<br />
                 achterstandOpPeilDatum $
-                {formatAmount((saldo.achterstandOpPeilDatum ?? 0).toString())},
+                {formatAmount((saldo.periodeAchterstand ?? 0).toString())},
               </Typography>
             </Box>
           ))}

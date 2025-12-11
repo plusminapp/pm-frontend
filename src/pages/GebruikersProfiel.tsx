@@ -284,7 +284,6 @@ const GebruikersProfiel: React.FC = () => {
                     <Typography component="span">
                       <strong>{admin.naam}</strong>
                     </Typography>
-                    {admin.vandaag === null && (
                       <IconButton
                         onClick={() => handleDemoModus(admin)}
                         size="small"
@@ -297,7 +296,6 @@ const GebruikersProfiel: React.FC = () => {
                           <ScienceOutlinedIcon fontSize="small" />
                         )}
                       </IconButton>
-                    )}{' '}
                   </Box>
                   Eigenaar is {admin.eigenaarNaam}, <br />
                   Gebruikers met toegang zijn:{' '}

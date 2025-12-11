@@ -7,6 +7,7 @@ import {
   BetalingsSoort,
   betalingsSoort2Categorie,
   betalingsSoortFormatter,
+  inkomstenBetalingsSoorten,
   internBetalingsSoorten,
   uitgavenBetalingsSoorten,
 } from '../../model/Betaling';
@@ -187,6 +188,17 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
       ? newRekening.betaalMethoden[0]
       : undefined;
 
+    console.log(
+      'handleRekeningGroepClick',
+      JSON.stringify({
+        rekeningGroepNaam,
+        newBetalingsSoort,
+        newRekeningGroep,
+        newRekening,
+        newBetaalMethode,
+      }),
+    );
+
     const newBron =
       selectedBetalingsSoort &&
       bestemmingBetalingsSoorten.includes(selectedBetalingsSoort)
@@ -293,7 +305,7 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                 }
                 onClick={() => handleRekeningGroepClick(rekeningGroep.naam)}
               >
-                {rekeningGroep.naam}
+                {rekeningGroep.naam} blaat
               </Button>
             ))}
         </Grid>
@@ -332,7 +344,7 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                           {selectedCategorie === 'UITGAVEN' ? (
                             <>
                               <br />
-                              {stand &&
+                              {(stand &&
                                 stand.resultaatOpDatum
                                   .filter(
                                     (s) => s.rekeningNaam === rekening.naam,
@@ -340,14 +352,14 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                                   ?.map(
                                     (s) =>
                                       s.openingsReserveSaldo +
-                                      s.reservering -
-                                      s.betaling,
+                                      s.periodeReservering -
+                                      s.periodeBetaling,
                                   )
                                   .reduce((a, b) => a + b, 0)
                                   .toLocaleString('nl-NL', {
                                     style: 'currency',
                                     currency: 'EUR',
-                                  }) ||
+                                  })) ||
                                 ''}
                               {selectedRekeningGroep?.rekeningGroepSoort ===
                               RekeningGroepSoort.spaarpot ? (
@@ -361,7 +373,7 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                                       ?.map(
                                         (s) =>
                                           s.openingsOpgenomenSaldo +
-                                          s.opgenomenSaldo,
+                                          s.periodeOpgenomenSaldo,
                                       )
                                       .reduce((a, b) => a + b, 0)
                                       .toLocaleString('nl-NL', {
@@ -372,7 +384,7 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                                 </>
                               ) : null}
                             </>
-                          ) : null} 
+                          ) : null}
                         </Button>
                       )),
                   )}
@@ -508,7 +520,7 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
       {selectedCategorie === 'INKOMSTEN' &&
         renderBetaalSelectBlok({
           filterFn: (rgpb) =>
-            rgpb.betalingsSoort.toString().toLowerCase() === 'inkomsten',
+            inkomstenBetalingsSoorten.includes(rgpb.betalingsSoort),
         })}
 
       {selectedCategorie === 'UITGAVEN' &&
@@ -587,7 +599,7 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                                 }
                               >
                                 {rekening.naam} <br />
-                                {stand &&
+                                {(stand &&
                                   stand.resultaatOpDatum
                                     .filter(
                                       (s) => s.rekeningNaam === rekening.naam,
@@ -595,14 +607,14 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                                     ?.map(
                                       (s) =>
                                         s.openingsReserveSaldo +
-                                        s.reservering -
-                                        s.betaling,
+                                        s.periodeReservering -
+                                        s.periodeBetaling,
                                     )
                                     .reduce((a, b) => a + b, 0)
                                     .toLocaleString('nl-NL', {
                                       style: 'currency',
                                       currency: 'EUR',
-                                    }) ||
+                                    })) ||
                                   ''}
                                 <br />
                                 {(stand &&
@@ -613,7 +625,7 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                                     ?.map(
                                       (s) =>
                                         s.openingsOpgenomenSaldo +
-                                        s.opgenomenSaldo,
+                                        s.periodeOpgenomenSaldo,
                                     )
                                     .reduce((a, b) => a + b, 0)
                                     .toLocaleString('nl-NL', {
@@ -643,7 +655,7 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
           >
             {selectedRekeningGroep?.naam}:&nbsp;
             {selectedRekening?.naam} betaald{' '}
-            {selectedBetalingsSoort === 'INKOMSTEN' ? ' naar ' : ' met '}
+            {selectedCategorie === 'INKOMSTEN' ? ' naar ' : ' met '}
             {selectedBetaalMethode?.naam}
           </Typography>
         )}
@@ -662,6 +674,7 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
         )}
       {/* {JSON.stringify(props.betaling)}<br /><br /> */}
       {/* {JSON.stringify(rekeningGroepPerBetalingsSoort)} */}
+      {/* {JSON.stringify(selectedRekeningGroep)} */}
     </div>
   );
 };
