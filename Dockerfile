@@ -1,17 +1,15 @@
-# Stap 1: Bouwen van de app
-FROM node:18-alpine AS builder
+# Stap 1: Bouwen van de app - gebruik builder image
+FROM plusmin/pm-frontend-builder:latest AS builder
 
-# Werkdirectory instellen
-WORKDIR /app
-
+# Werkdirectory is al /app in de builder image
 ARG STAGE
 ENV STAGE=$STAGE
 
-# Dependencies installeren en build uitvoeren
-COPY package*.json ./
+# Kopieer environment file en app code
 COPY $STAGE.env ./.env
-RUN npm install
 COPY . .
+
+# Dependencies zijn al geïnstalleerd in de builder image, alleen build uitvoeren
 RUN npm run build
 
 # Stap 2: Nginx gebruiken om de statische bestanden te serveren

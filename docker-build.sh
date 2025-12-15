@@ -11,6 +11,14 @@ pushd ${PROJECT_FOLDER}/pm-frontend
 export DOCKER_BUILDKIT=1
 export BUILDKIT_PROGRESS=plain
 
+# Check if builder image exists, if not build it
+if [[ "$(docker images -q plusmin/pm-frontend-builder:latest 2> /dev/null)" == "" ]]; then
+    echo "Builder image not found, building pm-frontend-builder..."
+    ./build-builder.sh
+else
+    echo "Builder image found, using existing pm-frontend-builder..."
+fi
+
 docker build \
      --no-cache \
      --platform=$PLATFORM \
