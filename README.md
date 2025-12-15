@@ -1,16 +1,18 @@
 # pm-frontend (react)
 
-De pm-frontend repo bevat de React sourcecode.
+De pm-frontend repo bevat de React sourcecode. Informatie over het project kan worden gelezen op https://plusmingereedschapskist.nl 
 
 ## Randvoorwaarden
 
+- git
 - VS Code
 - Docker Desktop of Rancher Desktop
 
 ## Start pm-backend incl database
 
-`git clone` de code repositories:
+`git clone` de code repositories samen in 1 folder:
 
+- plusminapp/pm-frontend (deze repo)
 - plusminapp/pm-backend
 - plusminapp/pm-database
 - plusminapp/pm-deploy
