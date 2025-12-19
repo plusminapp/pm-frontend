@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 echo pm-frontend version: ${VERSION}
+echo lcl_platform: ${LCL_PLATFORM}
 echo platform: ${PLATFORM}
 echo PORT: ${PORT}
 echo STAGE: ${STAGE}
