@@ -23,6 +23,7 @@ fi
 docker build \
      --no-cache \
      --platform=$PLATFORM \
+     --build-arg LCL_PLATFORM=${LCL_PLATFORM} \
      --build-arg PORT=${PORT} \
      --build-arg STAGE=${STAGE} \
      --build-arg NPM_CONFIG_UNSAFE_PERM=true \
