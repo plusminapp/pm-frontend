@@ -2,4 +2,5 @@
 
 # Build de builder image voor pm-frontend
 echo "Building pm-frontend-builder image..."
-docker build -f Dockerfile.builder -t plusmin/pm-frontend-builder:latest .
+echo "Using LCL_PLATFORM: ${LCL_PLATFORM}"
+docker build --platform=$LCL_PLATFORM -f Dockerfile.builder -t plusmin/pm-frontend-builder:latest . 
