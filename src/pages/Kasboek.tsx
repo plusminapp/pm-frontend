@@ -179,27 +179,6 @@ export default function Kasboek() {
           </AccordionDetails>
         </Accordion>
       </Grid>
-      {/* <Grid container spacing={{ xs: 1, md: 3 }} columns={{ xs: 1, lg: 12 }}>
-        <Grid size={{ xs: 1, lg: 4 }}>
-          <Accordion expanded={expanded === 'RekeningGroep'} onChange={handleChange('RekeningGroep')}>
-            <AccordionSummary
-              expandIcon={<ArrowDropDownIcon />}
-              aria-controls="blaat"
-              id={"blaat"}>
-              <Typography sx={{ fontSize: '15px' }} >Betalingen per RekeningGroep
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails sx={{ p: 0 }}>
-              <BetalingTabel
-                // isFilterSelectable={true}
-                // actueleRekeningGroep={undefined}
-                onBetalingBewaardChange={(betalingDTO) => onBetalingBewaardChange(betalingDTO)}
-                onBetalingVerwijderdChange={(betalingDTO) => onBetalingVerwijderdChange(betalingDTO.sortOrder)}
-                betalingen={betalingen} geaggregeerdResultaatOpDatum={[]} />
-            </AccordionDetails>
-          </Accordion>
-        </Grid>
-      </Grid> */}
       {/* {JSON.stringify(stand?.geaggregeerdResultaatOpDatum)} */}
     </>
   );

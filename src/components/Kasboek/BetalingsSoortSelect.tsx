@@ -305,7 +305,7 @@ const BetalingsSoortSelect = (props: BetalingsSoortSelectProps) => {
                 }
                 onClick={() => handleRekeningGroepClick(rekeningGroep.naam)}
               >
-                {rekeningGroep.naam} blaat
+                {rekeningGroep.naam}
               </Button>
             ))}
         </Grid>

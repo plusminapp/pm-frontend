@@ -82,13 +82,6 @@ export const reserveRekeningGroepSoorten = [
   RekeningGroepSoort.aflossing,
 ];
 
-export const blaatRekeningGroepSoorten = [
-  RekeningGroepSoort.reserveringBuffer,
-  RekeningGroepSoort.inkomsten,
-  RekeningGroepSoort.uitgaven,
-  RekeningGroepSoort.aflossing,
-];
-
 export const betaalmethodeRekeningGroepSoorten = [
   RekeningGroepSoort.betaalrekening,
   RekeningGroepSoort.spaarrekening,
