@@ -39,40 +39,24 @@ export enum BetalingsCategorie {
 export enum BetalingsSoort {
   // Inkomsten
   inkomsten = 'INKOMSTEN',
-  rente = 'RENTE',
   // Uitgaven
   uitgaven = 'UITGAVEN',
   aflossen = 'AFLOSSEN',
   besteden = 'BESTEDEN',
   // Intern
-  // lenen = 'LENEN',
-  sparen = 'SPAREN',
-  opnemen = 'OPNEMEN',
-  terugstorten = 'TERUGSTORTEN',
-  opnemen_contant = 'OPNEMEN_CONTANT',
-  storten_contant = 'STORTEN_CONTANT',
-  incasso_creditcard = 'INCASSO_CREDITCARD',
-  potje2potje = 'P2P',
-  spaarpotje2spaarpotje = 'SP2SP',
-  potje2spaarpotje = 'P2SP',
-  spaarpotje2potje = 'SP2P',
+  intern = 'INTERN',
+  //Reserveren
+  reserveren = 'RESERVEREN',
 }
 
 export const bestemmingBetalingsSoorten = [
   BetalingsSoort.inkomsten,
-  BetalingsSoort.rente,
-  BetalingsSoort.storten_contant,
-  BetalingsSoort.opnemen,
 ];
 
 export const ontdubbelBetalingsSoorten = [
   BetalingsSoort.inkomsten,
-  BetalingsSoort.rente,
   BetalingsSoort.uitgaven,
   BetalingsSoort.aflossen,
-  BetalingsSoort.incasso_creditcard,
-  BetalingsSoort.sparen,
-  BetalingsSoort.opnemen_contant,
 ];
 
 export const aflossenBetalingsSoorten = [
@@ -95,7 +79,6 @@ export const currencyFormatter = new Intl.NumberFormat('nl-NL', {
 
 export const inkomstenBetalingsSoorten = [
   BetalingsSoort.inkomsten,
-  BetalingsSoort.rente,
 ];
 export const uitgavenBetalingsSoorten = [
   BetalingsSoort.uitgaven,
@@ -103,12 +86,7 @@ export const uitgavenBetalingsSoorten = [
   BetalingsSoort.besteden,
 ];
 export const internBetalingsSoorten = [
-  BetalingsSoort.incasso_creditcard,
-  BetalingsSoort.sparen,
-  BetalingsSoort.opnemen,
-  BetalingsSoort.terugstorten,
-  BetalingsSoort.opnemen_contant,
-  BetalingsSoort.storten_contant,
+  BetalingsSoort.intern,
 ];
 
 export const betalingsSoort2Categorie = (
