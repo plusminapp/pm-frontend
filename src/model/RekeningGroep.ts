@@ -16,10 +16,7 @@ export enum RekeningGroepSoort {
   rente = 'RENTE',
   uitgaven = 'UITGAVEN',
   betaalmethode = 'BETAALMETHODE',
-  betaalrekening = 'BETAALREKENING',
-  spaarrekening = 'SPAARREKENING',
-  contant = 'CONTANT',
-  creditcard = 'CREDITCARD',
+  betaalmiddel = 'BETAALMIDDEL',
   aflossing = 'AFLOSSING',
   spaarpot = 'SPAARPOT',
   reserveringBuffer = 'RESERVERING_BUFFER',
@@ -36,10 +33,7 @@ export type RekeningGroepPerBetalingsSoort = {
 };
 
 export const balansRekeningGroepSoorten: RekeningGroepSoort[] = [
-  RekeningGroepSoort.betaalrekening,
-  RekeningGroepSoort.spaarrekening,
-  RekeningGroepSoort.contant,
-  RekeningGroepSoort.creditcard,
+  RekeningGroepSoort.betaalmiddel,
   RekeningGroepSoort.aflossing,
 ];
 
@@ -64,7 +58,6 @@ export const profielRekeningGroepSoorten = [
 ];
 
 export const aflossenRekeningGroepSoorten = [
-  RekeningGroepSoort.creditcard,
   RekeningGroepSoort.aflossing,
 ];
 
@@ -83,16 +76,11 @@ export const reserveRekeningGroepSoorten = [
 ];
 
 export const betaalmethodeRekeningGroepSoorten = [
-  RekeningGroepSoort.betaalrekening,
-  RekeningGroepSoort.spaarrekening,
-  RekeningGroepSoort.contant,
-  RekeningGroepSoort.creditcard,
+  RekeningGroepSoort.betaalmiddel,
 ];
 
 export const bankRekeningGroepSoorten = [
-  RekeningGroepSoort.betaalrekening,
-  RekeningGroepSoort.spaarrekening,
-  RekeningGroepSoort.creditcard,
+  RekeningGroepSoort.betaalmiddel,
 ];
 
 export const inkomstenRekeningGroepSoorten = [RekeningGroepSoort.inkomsten];
@@ -103,16 +91,11 @@ export const uitgavenRekeningGroepSoorten = [
 ];
 
 export const interneRekeningGroepSoorten = [
-  RekeningGroepSoort.spaarrekening,
-  RekeningGroepSoort.contant,
-  RekeningGroepSoort.creditcard,
-];
+  RekeningGroepSoort.betaalmiddel,
+  ];
 
 export const cashflowRekeningGroepSoorten = [
-  RekeningGroepSoort.betaalrekening,
-  RekeningGroepSoort.spaarrekening,
-  RekeningGroepSoort.contant,
-  RekeningGroepSoort.creditcard,
+  RekeningGroepSoort.betaalmiddel,
 ];
 
 export const berekenBedragVoorRekenining = (

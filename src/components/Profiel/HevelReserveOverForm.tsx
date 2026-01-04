@@ -128,7 +128,7 @@ export function HevelReserveOverForm({
     formReservering: FormValues['formReservering'],
   ) => {
     if (actieveAdministratie) {
-      const betalingsSoort = `${bepaalPotjeSoort(formReservering.bron)}2${bepaalPotjeSoort(formReservering.bestemming)}`;
+      const betalingsSoort = BetalingsSoort.reserveren;
       const waarschuwing = bepaalPotjeSoort(formReservering.bron) !== bepaalPotjeSoort(formReservering.bestemming);
       console.log('Saving wijzigingen', formReservering, betalingsSoort);
       try {

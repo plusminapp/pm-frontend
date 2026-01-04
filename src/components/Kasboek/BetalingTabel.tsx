@@ -17,7 +17,6 @@ import {
   bestemmingBetalingsSoorten as bronBetalingsSoorten,
   BetalingDTO,
   internBetalingsSoorten,
-  BetalingsSoort,
 } from '../../model/Betaling';
 import { RekeningGroepDTO } from '../../model/RekeningGroep';
 import dayjs from 'dayjs';
@@ -134,7 +133,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
     .flatMap((r) => r.rekeningGroepen)
     .filter(
       (r) =>
-        r.rekeningGroepSoort === RekeningGroepSoort.betaalrekening ||
+        r.rekeningGroepSoort === RekeningGroepSoort.betaalmiddel ||
         interneRekeningGroepSoorten.includes(r.rekeningGroepSoort),
     )
     .map((r) => r.naam)
@@ -399,12 +398,6 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
           <TableBody>
             <>
               {props.betalingen
-                .filter(
-                  (betaling) =>
-                    betaling.betalingsSoort !== BetalingsSoort.potje2potje &&
-                    betaling.betalingsSoort !==
-                      BetalingsSoort.spaarpotje2spaarpotje,
-                )
                 .filter(
                   (betaling) =>
                     !props.rekeningGroep ||
