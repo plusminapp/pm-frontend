@@ -20,6 +20,7 @@ const config = {
     'http://localhost:5173/login',
   scope: ['openid', 'profile'],
   periodicTokenRefresh: true,
+  resourceServerURLs: ['http://localhost:5173/api/v1'],
 };
 
 createRoot(document.getElementById('root')!).render(

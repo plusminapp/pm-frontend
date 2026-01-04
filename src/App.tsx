@@ -23,6 +23,7 @@ import './App.css';
 import './i18n';
 import GebruikersProfiel from './pages/GebruikersProfiel';
 import Spel from './pages/Spel';
+import { HttpRequestExample } from './pages/Experiment';
 
 const ProtectedRoute: React.FC<{ element: JSX.Element }> = ({ element }) => {
   const { state } = useAuthContext();
@@ -71,6 +72,10 @@ const App: React.FC = () => {
             <Route
               path="/spel"
               element={<ProtectedRoute element={<Spel />} />}
+            />
+            <Route
+              path="/blaat"
+              element={<ProtectedRoute element={<HttpRequestExample />} />}
             />
 
             <Route path="*" element={<NotFound />} />

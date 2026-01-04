@@ -1,44 +1,84 @@
-import {
-  AllCommunityModule,
-  ModuleRegistry,
-  RowDragModule,
-} from 'ag-grid-community';
+import React, { useState } from 'react';
+import { AsgardeoSPAClient } from '@asgardeo/auth-react';
+import { HttpRequestConfig } from '@asgardeo/auth-spa';
+import { AxiosResponse } from 'axios';
 
-ModuleRegistry.registerModules([AllCommunityModule, RowDragModule]);
-import { AgGridReact } from 'ag-grid-react';
-import type { ColDef } from 'ag-grid-community';
-import Weegschaal from '../components/experiment/Weegeschaal';
+export const HttpRequestExample: React.FC = () => {
+  const [response, setResponse] = useState<
+    AxiosResponse<unknown, unknown> | undefined
+  >(undefined);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-export const GridExample = () => {
-  // Row Data: The data to be displayed.
-  const rowData = [
-    { make: 'Tesla', model: 'Model Y', price: 64950, electric: true },
-    { make: 'Ford', model: 'F-Series', price: 33850, electric: false },
-    { make: 'Toyota', model: 'Corolla', price: 29600, electric: false },
-  ];
+  const makeRequest = async () => {
+    const auth = AsgardeoSPAClient.getInstance();
 
-  // Column Definitions: Defines the columns to be displayed.
+    if (!auth) {
+      setError('Authentication client not initialized');
+      return;
+    }
 
-  const colDefs: ColDef[] = [
-    { field: 'make', rowDrag: true },
-    { field: 'model' },
-    { field: 'price' },
-    { field: 'electric' },
-  ];
+    const requestConfig: HttpRequestConfig = {
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/scim+json',
+      },
+      method: 'GET' as const,
+      url: 'http://localhost:5173/api/v1/gebruikers/zelf',
+    };
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      auth.refreshAccessToken()
+        .then((response: unknown) => {
+          console.log(`response`, response);
+        })
+        .catch((error: unknown) => {
+          console.error(error);
+        });
+
+      const result = await auth.httpRequest(requestConfig);
+      setResponse(result);
+      console.log(result);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(errorMessage);
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    // Data Grid will fill the size of the parent container
-    <div style={{ height: 500 }}>
-      <AgGridReact
-        rowData={rowData}
-        columnDefs={colDefs}
-        rowDragManaged={true}
-      />
-      <Weegschaal
-        leftWeights={[10.3, 5, 2]}
-        rightWeights={[10, 38]}
-        scale={3}
-      />
+    <div>
+      <h2>HTTP Request Test</h2>
+      <button onClick={makeRequest} disabled={loading}>
+        {loading ? 'Loading...' : 'Make Request'}
+      </button>
+
+      {error && (
+        <div style={{ color: 'red', marginTop: '10px' }}>
+          <strong>Error:</strong> {error}
+        </div>
+      )}
+
+      {response && (
+        <div style={{ marginTop: '10px' }}>
+          <strong>Response:</strong>
+          <pre
+            style={{
+              backgroundColor: '#f5f5f5',
+              padding: '10px',
+              marginTop: '5px',
+            }}
+          >
+            {JSON.stringify(response, null, 2) as string}
+          </pre>
+        </div>
+      )}
     </div>
   );
 };
