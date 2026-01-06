@@ -31,9 +31,9 @@ export const Potje: React.FC<PotjeProps> = ({
       onClick={onClick}
       sx={{
         position: 'relative',
-        width: '140px',
-        height: '196px',
-        margin: '20px auto',
+        width: '92.4px',
+        height: '129.36px',
+        margin: '13.2px auto',
         cursor: onClick ? 'pointer' : 'default',
         transition: 'transform 0.2s',
         '&:hover': onClick
@@ -46,16 +46,16 @@ export const Potje: React.FC<PotjeProps> = ({
     >
       {/* SVG voor de trapezium vorm met stroke */}
       <svg
-        width="140"
-        height="196"
-        viewBox="0 0 140 196"
+        width="92.4"
+        height="129.36"
+        viewBox="0 0 92.4 129.36"
         style={{ position: 'absolute', top: 0, left: 0, overflow: 'visible' }}
       >
         <polygon
-          points="2,2 138,2 115.5,194 24.5,194"
+          points="1.32,1.32 91.08,1.32 76.23,128.04 16.17,128.04"
           fill={fillColor}
           stroke={lineColor}
-          strokeWidth="4"
+          strokeWidth="2.64"
           strokeLinejoin="miter"
           vectorEffect="non-scaling-stroke"
         />
@@ -65,7 +65,7 @@ export const Potje: React.FC<PotjeProps> = ({
       <Box
         sx={{
           position: 'absolute',
-          top: '15px',
+          top: '9.9px',
           left: '50%',
           transform: 'translateX(-50%)',
           width: '90%',
@@ -78,7 +78,7 @@ export const Potje: React.FC<PotjeProps> = ({
           sx={{
             color: '#333',
             fontWeight: 'bold',
-            fontSize: '1rem',
+            fontSize: '0.8rem',
             textAlign: 'center',
             fontFamily: 'Roboto',
             lineHeight: 1,
@@ -100,7 +100,7 @@ export const Potje: React.FC<PotjeProps> = ({
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          gap: '8px',
+          gap: '5.28px',
           zIndex: 1,
         }}
       >
@@ -111,7 +111,7 @@ export const Potje: React.FC<PotjeProps> = ({
               fontSize: '0.8rem',
               fontFamily: 'Roboto',
               lineHeight: 1,
-              mb: '2px',
+              mb: '1.32px',
             }}
           >
             Reserve nu
@@ -120,7 +120,7 @@ export const Potje: React.FC<PotjeProps> = ({
             sx={{
               color: '#333',
               fontWeight: 'bold',
-              fontSize: '1.1rem',
+              fontSize: '0.8rem',
               fontFamily: 'Roboto',
               lineHeight: 1,
             }}
@@ -136,16 +136,16 @@ export const Potje: React.FC<PotjeProps> = ({
               fontSize: '0.8rem',
               fontFamily: 'Roboto',
               lineHeight: 1,
-              mb: '2px',
+              mb: '1.32px',
             }}
           >
-            Eindreserve
+            Eind
           </Typography>
           <Typography
             sx={{
               color: '#333',
               fontWeight: 'bold',
-              fontSize: '1.1rem',
+              fontSize: '0.8rem',
               fontFamily: 'Roboto',
               lineHeight: 1,
             }}

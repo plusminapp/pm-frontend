@@ -40,7 +40,7 @@ import { RekeningDTO } from '../model/Rekening';
 import { isPeriodeOpen } from '../model/Periode';
 import { CashFlowGrafiek } from '../components/CashFlow/Graph/CashFlowGrafiek';
 import { usePlusminApi } from '../api/plusminApi';
-import { ReserveringTabel } from '../components/Profiel/ReserveringTabel';
+import { PotjesTabel } from '../components/Potjes/PotjesTabel';
 import { useNavigate } from 'react-router-dom';
 import { InfoIcon } from '../icons/Info';
 import RekeningResultaat from '../components/Stand/RekeningResultaat';
@@ -365,7 +365,7 @@ const Profiel: React.FC = () => {
                   </Box>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <ReserveringTabel />
+                  <PotjesTabel />
                 </AccordionDetails>
               </Accordion>
             )}

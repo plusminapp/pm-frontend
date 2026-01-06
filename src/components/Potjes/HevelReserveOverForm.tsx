@@ -37,7 +37,7 @@ import {
   formSchema,
   FormValues,
   formatAmount,
-} from './HevelReserveOverFormUtil';
+} from '../Potjes/HevelReserveOverFormUtil';
 import {
   RekeningGroepSoort,
   reserverenRekeningGroepSoorten,
