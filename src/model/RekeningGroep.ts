@@ -15,7 +15,6 @@ export enum RekeningGroepSoort {
   inkomsten = 'INKOMSTEN',
   rente = 'RENTE',
   uitgaven = 'UITGAVEN',
-  betaalmethode = 'BETAALMETHODE',
   betaalmiddel = 'BETAALMIDDEL',
   aflossing = 'AFLOSSING',
   spaarpot = 'SPAARPOT',

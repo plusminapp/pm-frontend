@@ -494,7 +494,7 @@ const Profiel: React.FC = () => {
                                                   .map((r) =>
                                                     r.betaalMethoden &&
                                                     r.betaalMethoden?.length > 0
-                                                      ? `${r.betaalMethoden.map((m) => m.naam).join(', ')}`
+                                                      ? `${r.betaalMethoden.map((m) => m).join(', ')}`
                                                       : `geen betaalmethoden`,
                                                   )
                                                   .join('<br />') +
@@ -639,9 +639,7 @@ const Profiel: React.FC = () => {
                                       rgpb.betalingsSoort,
                                     )
                                       ? rekening.naam
-                                      : rekening.betaalMethoden
-                                          ?.map((rekening) => rekening.naam)
-                                          .join(', ')}
+                                      : rekening.betaalMethoden?.join(', ')}
                                   </TableCell>
                                   <TableCell
                                     align="left"
@@ -652,9 +650,7 @@ const Profiel: React.FC = () => {
                                       rgpb.betalingsSoort,
                                     )
                                       ? rekening.naam
-                                      : rekening.betaalMethoden
-                                          ?.map((rekening) => rekening.naam)
-                                          .join(', ')}
+                                      : rekening.betaalMethoden?.join(', ')}
                                   </TableCell>
                                 </TableRow>
                               )),

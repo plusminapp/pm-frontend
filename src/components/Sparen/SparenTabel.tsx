@@ -23,10 +23,10 @@ export default function SparenTabel(props: SparenProps) {
     (props.sparenSaldo?.periodeBetaling ?? 0);
   const maandenTeGaan =
     (props.sparenSaldo?.openingsBalansSaldo ?? 0) >=
-    (props.sparenSaldo.spaartegoed?.eindBedrag ?? 0)
+    (props.sparenSaldo.spaarpot?.doelBedrag ?? 0)
       ? 0
       : Math.ceil(
-          ((props.sparenSaldo.spaartegoed?.eindBedrag ?? 0) - actueleStand) /
+          ((props.sparenSaldo.spaarpot?.doelBedrag ?? 0) - actueleStand) /
             (props.sparenSaldo?.budgetMaandBedrag ?? 1),
         );
 
@@ -90,14 +90,14 @@ export default function SparenTabel(props: SparenProps) {
                 Spaardoel
               </TableCell>
               <TableCell align="right" size="small">
-                {props.sparenSaldo?.spaartegoed?.eindBedrag
+                {props.sparenSaldo?.spaarpot?.doelBedrag
                   ? currencyFormatter.format(
-                      props.sparenSaldo?.spaartegoed?.eindBedrag ?? 0,
+                      props.sparenSaldo?.spaarpot?.doelBedrag ?? 0,
                     )
                   : 'Geen bedrag ingesteld.'}
               </TableCell>
             </TableRow>
-            {props.sparenSaldo?.spaartegoed?.eindBedrag && (
+            {props.sparenSaldo?.spaarpot?.doelBedrag && (
               <TableRow>
                 <TableCell align="left" size="small" sx={{ fontWeight: '500' }}>
                   Maanden nog te gaan
@@ -107,7 +107,7 @@ export default function SparenTabel(props: SparenProps) {
                 </TableCell>
               </TableRow>
             )}
-            {props.sparenSaldo?.spaartegoed?.eindBedrag && (
+            {props.sparenSaldo?.spaarpot?.doelBedrag && (
               <TableRow>
                 <TableCell align="left" size="small" sx={{ fontWeight: '500' }}>
                   Verwachte einddatum
@@ -120,13 +120,25 @@ export default function SparenTabel(props: SparenProps) {
                 </TableCell>
               </TableRow>
             )}
+            {props.sparenSaldo?.spaarpot?.doelBedrag && (
+              <TableRow>
+                <TableCell align="left" size="small" sx={{ fontWeight: '500' }}>
+                  Doel einddatum
+                </TableCell>
+                <TableCell align="right" size="small">
+                {props.sparenSaldo?.spaarpot?.doelDatum
+                  ? dayjs(props.sparenSaldo?.spaarpot?.doelDatum).format('D-M-YYYY')
+                  : 'Geen datum ingesteld.'}
+                </TableCell>
+              </TableRow>
+            )}
             <TableRow>
               <TableCell colSpan={2} align="left" size="small">
                 <Typography sx={{ fontSize: '0.85rem', fontWeight: '500' }}>
                   Notitie
                 </Typography>
                 <Typography sx={{ fontSize: '0.85rem' }}>
-                  {props.sparenSaldo?.spaartegoed?.notities}
+                  {props.sparenSaldo?.spaarpot?.notities}
                 </Typography>
               </TableCell>
             </TableRow>

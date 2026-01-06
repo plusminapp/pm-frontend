@@ -74,7 +74,7 @@ export const SpaarGrafiek = ({
             )}
             percentageFill={percentagePeriodeVoorbij}
             headerText={'Spaarpotten'}
-            rekeningIconNaam="spaartegoed"
+            rekeningIconNaam="spaarpot"
             bodyText={'Je spaarpotten zijn helemaal bij!'}
             cfaText={''}
           />

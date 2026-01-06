@@ -10,7 +10,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import {
   aflossenBetalingsSoorten,
   BetalingDTO,
-  BetalingsSoort,
 } from '../../model/Betaling';
 import { Fragment, useState } from 'react';
 
@@ -103,9 +102,8 @@ export default function AflossingReserveringTabel(
                           {dateFormatter(betaling['boekingsdatum']?.toString())}
                         </TableCell>
                         <TableCell align="right" size="small" sx={{ p: '5px' }}>
-                          {betaling.betalingsSoort === BetalingsSoort.sparen
-                            ? currencyFormatter.format(betaling.bedrag)
-                            : currencyFormatter.format(-betaling.bedrag)}
+                          // TODO teken coorrect???
+                          {currencyFormatter.format(betaling.bedrag)}
                         </TableCell>
                         <TableCell align="left" size="small" sx={{ p: '5px' }}>
                           {betaling['omschrijving']}

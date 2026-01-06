@@ -293,7 +293,7 @@ function Header() {
 
   const pages =
     gebruiker && gebruiker.administraties.length > 0
-      ? ['Stand', 'Kasboek']
+      ? ['Stand', 'Kasboek', 'Potjes']
       : [];
   const heeftAflossing = rekeningGroepen.some(
     (rekeningGroep) => rekeningGroep.rekeningGroepSoort === 'AFLOSSING',
@@ -301,7 +301,7 @@ function Header() {
   if (heeftAflossing) pages.push('Aflossen');
 
   const heeftSparen = rekeningGroepen.some(
-    (rekeningGroep) => rekeningGroep.rekeningGroepSoort === 'SPAARREKENING',
+    (rekeningGroep) => rekeningGroep.rekeningGroepSoort === 'SPAARPOT',
   );
   if (heeftSparen) pages.push('Sparen');
 

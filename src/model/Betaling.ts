@@ -51,6 +51,7 @@ export enum BetalingsSoort {
 
 export const bestemmingBetalingsSoorten = [
   BetalingsSoort.inkomsten,
+  BetalingsSoort.intern,
 ];
 
 export const ontdubbelBetalingsSoorten = [

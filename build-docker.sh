@@ -9,8 +9,8 @@ echo STAGE: ${STAGE}
 pushd ${PROJECT_FOLDER}/pm-frontend
 
 # Set Docker BuildKit with plain output
-export DOCKER_BUILDKIT=1
-export BUILDKIT_PROGRESS=plain
+#export DOCKER_BUILDKIT=1
+#export BUILDKIT_PROGRESS=plain
 
 # Check if builder image exists, if not build it
 if [[ "$(docker images -q plusmin/pm-frontend-builder:latest 2> /dev/null)" == "" ]]; then
@@ -27,7 +27,6 @@ docker build \
      --build-arg PORT=${PORT} \
      --build-arg STAGE=${STAGE} \
      --build-arg NPM_CONFIG_UNSAFE_PERM=true \
-     --progress=plain \
      -t plusmin/pm-frontend:${VERSION} .
 
 popd

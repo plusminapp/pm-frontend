@@ -1,19 +1,19 @@
 import React from 'react';
 
 import { useCustomContext } from '../context/CustomContext';
-import { SpelVisualisatie } from '../components/Spel/SpelVisualisatie';
+import { PotjesVisualisatie } from '../components/Potjes/PotjesVisualisatie';
 
-const Spel: React.FC = () => {
+const Potjes: React.FC = () => {
   const { rekeningGroepPerBetalingsSoort } = useCustomContext();
 
   return (
     <>
       {rekeningGroepPerBetalingsSoort &&
         rekeningGroepPerBetalingsSoort.length >= 0 && (
-              <SpelVisualisatie />
+              <PotjesVisualisatie />
         )}
     </>
   );
 };
 
-export default Spel;
+export default Potjes;

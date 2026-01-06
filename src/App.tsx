@@ -22,7 +22,7 @@ import BankAppAfbeelding from './pages/BankAppAfbeelding';
 import './App.css';
 import './i18n';
 import GebruikersProfiel from './pages/GebruikersProfiel';
-import Spel from './pages/Spel';
+import Potjes from './pages/Potjes';
 
 const ProtectedRoute: React.FC<{ element: JSX.Element }> = ({ element }) => {
   const { state } = useAuthContext();
@@ -69,8 +69,8 @@ const App: React.FC = () => {
               element={<ProtectedRoute element={<GebruikersProfiel />} />}
             />
             <Route
-              path="/spel"
-              element={<ProtectedRoute element={<Spel />} />}
+              path="/potjes"
+              element={<ProtectedRoute element={<Potjes />} />}
             />
 
             <Route path="*" element={<NotFound />} />

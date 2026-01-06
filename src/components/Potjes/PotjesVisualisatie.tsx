@@ -52,7 +52,7 @@ interface KolomData {
   groepen: GroepData[];
 }
 
-export const SpelVisualisatie: React.FC = () => {
+export const PotjesVisualisatie: React.FC = () => {
   const {
     stand,
     setIsStandDirty,

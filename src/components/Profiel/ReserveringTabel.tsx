@@ -13,11 +13,9 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import {
   reserverenRekeningGroepSoorten,
   RekeningGroepSoort,
-  BudgetType,
 } from '../../model/RekeningGroep';
 import { useCustomContext } from '../../context/CustomContext';
 import { usePlusminApi } from '../../api/plusminApi';
-import { SaldoDTO } from '../../model/Saldo';
 import { useState } from 'react';
 import { HevelReserveOverForm } from './HevelReserveOverForm';
 
@@ -100,9 +98,6 @@ const handleReserveerAlleClick = async () => {
 
   const isHuidigePeriode = gekozenPeriode?.periodeStatus === 'HUIDIG';
 
-  const isSpaarpot = (saldo: SaldoDTO) =>
-    saldo.budgetType === BudgetType.sparen;
-
   return (
     <>
       {rekeningGroepPerBetalingsSoort.length > 0 && (
@@ -125,9 +120,6 @@ const handleReserveerAlleClick = async () => {
                 </TableCell>
                 <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>
                   reservering
-                </TableCell>
-                <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>
-                  opgenomen
                 </TableCell>
                 <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>
                   betalingen
@@ -193,14 +185,6 @@ const handleReserveerAlleClick = async () => {
                             </TableCell>
                             <TableCell sx={{ padding: '5px' }} align="right">
                               {formatAmount(saldo.periodeReservering)}
-                            </TableCell>
-                            <TableCell sx={{ padding: '5px' }} align="right">
-                              {isSpaarpot(saldo)
-                                ? formatAmount(
-                                    saldo.openingsOpgenomenSaldo +
-                                      saldo.periodeOpgenomenSaldo,
-                                  )
-                                : null}
                             </TableCell>
                             <TableCell sx={{ padding: '5px' }} align="right">
                               {formatAmount(saldo.periodeBetaling)}

@@ -587,6 +587,7 @@ export default function UpsertBetalingDialoog(
             BEWAAR
           </Button>
         </DialogActions>
+      {/* {JSON.stringify(betalingDTO)} */}
       </BootstrapDialog>
     </React.Fragment>
   );
