@@ -30,7 +30,6 @@ import {
   BudgetType,
   profielRekeningGroepSoorten,
   RekeningGroepSoort,
-  balansRekeningGroepSoorten,
 } from '../model/RekeningGroep';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers';
 import { InkomstenIcon } from '../icons/Inkomsten';
@@ -41,10 +40,10 @@ import { RekeningDTO } from '../model/Rekening';
 import { isPeriodeOpen } from '../model/Periode';
 import { CashFlowGrafiek } from '../components/CashFlow/Graph/CashFlowGrafiek';
 import { usePlusminApi } from '../api/plusminApi';
-import Resultaat from '../components/Stand/Resultaat';
 import { ReserveringTabel } from '../components/Profiel/ReserveringTabel';
 import { useNavigate } from 'react-router-dom';
 import { InfoIcon } from '../icons/Info';
+import RekeningResultaat from '../components/Stand/RekeningResultaat';
 
 const Profiel: React.FC = () => {
   const { state } = useAuthContext();
@@ -284,63 +283,57 @@ const Profiel: React.FC = () => {
                 </Typography>
               </AccordionSummary>
               <AccordionDetails>
-                <Grid sx={{ flexGrow: 1 }}>
-                  <Grid
-                    container
-                    spacing={{ xs: 2, md: 3 }}
-                    columns={{ xs: 1, md: 3 }}
-                  >
-                    <Grid size={1}>
-                      <Resultaat
-                        title={'Opening'}
-                        datum={stand.periodeStartDatum}
-                        saldi={stand.geaggregeerdResultaatOpDatum
-                          .filter((saldo) =>
-                            balansRekeningGroepSoorten.includes(
-                              saldo.rekeningGroepSoort as RekeningGroepSoort,
-                            ),
-                          )
-                          .sort((a, b) => a.sortOrder - b.sortOrder)
-                          .map((saldo) => ({
-                            ...saldo,
-                            bedrag: saldo.openingsBalansSaldo,
-                          }))}
-                      />
-                    </Grid>
-                    <Grid size={1}>
-                      <Resultaat
-                        title={'Mutaties per'}
-                        datum={stand.peilDatum}
-                        saldi={stand.geaggregeerdResultaatOpDatum
-                          .filter((saldo) =>
-                            balansRekeningGroepSoorten.includes(
-                              saldo.rekeningGroepSoort as RekeningGroepSoort,
-                            ),
-                          )
-                          .sort((a, b) => a.sortOrder - b.sortOrder)
-                          .map((saldo) => ({
-                            ...saldo,
-                            bedrag: saldo.periodeBetaling,
-                          }))}
-                      />
-                    </Grid>
-                    <Grid size={1}>
-                      <Resultaat
-                        title={'Stand'}
-                        datum={stand.peilDatum}
-                        saldi={stand.geaggregeerdResultaatOpDatum
-                          .filter((saldo) =>
-                            balansRekeningGroepSoorten.includes(
-                              saldo.rekeningGroepSoort as RekeningGroepSoort,
-                            ),
-                          )
-                          .sort((a, b) => a.sortOrder - b.sortOrder)
-                          .map((saldo) => ({
-                            ...saldo,
-                            bedrag: saldo.openingsBalansSaldo + saldo.periodeBetaling,
-                          }))}
-                      />
-                    </Grid>
+                <Grid
+                  container
+                  spacing={{ xs: 2, md: 3 }}
+                  columns={{ xs: 1, md: 3 }}
+                >
+                  <Grid size={1}>
+                    <RekeningResultaat
+                      title={'Betaalmiddelen opening'}
+                      datum={stand.periodeStartDatum}
+                      saldi={stand.resultaatOpDatum
+                        .filter(
+                          (saldo) => saldo.rekeningGroepSoort === RekeningGroepSoort.betaalmiddel,
+                        )
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map((saldo) => ({
+                          ...saldo,
+                          bedrag: saldo.openingsBalansSaldo,
+                        }))}
+                    />
+                  </Grid>
+                  <Grid size={1}>
+                    <RekeningResultaat
+                      title={'Mutaties per'}
+                      datum={stand.peilDatum}
+                      saldi={stand.resultaatOpDatum
+                        .filter(
+                          (saldo) => saldo.rekeningGroepSoort === RekeningGroepSoort.betaalmiddel,
+                        )
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map((saldo) => ({
+                          ...saldo,
+                          bedrag: saldo.periodeBetaling,
+                        }))}
+                    />
+                  </Grid>
+                  <Grid size={1}>
+                    <RekeningResultaat
+                      title={'Stand'}
+                      datum={stand.peilDatum}
+                      saldi={stand.resultaatOpDatum
+                        .filter(
+                          (saldo) => saldo.rekeningGroepSoort === RekeningGroepSoort.betaalmiddel,
+                        )
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map((saldo) => ({
+                          ...saldo,
+                          bedrag:
+                            saldo.openingsBalansSaldo +
+                            saldo.periodeBetaling,
+                        }))}
+                    />
                   </Grid>
                 </Grid>
                 {/* {JSON.stringify(stand.balansOpDatum)} */}
