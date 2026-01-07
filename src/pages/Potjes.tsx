@@ -1,24 +1,32 @@
 import React, { useState } from 'react';
-import { ToggleButton, ToggleButtonGroup, Box, Button, ButtonGroup } from '@mui/material';
+import { Box, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import { useCustomContext } from '../context/CustomContext';
 import { PotjesVisualisatie } from '../components/Potjes/PotjesVisualisatie';
 import { PotjesTabel } from '../components/Potjes/PotjesTabel';
 import { usePlusminApi } from '../api/plusminApi';
-import { PeriodeSelect } from '../components/Periode/PeriodeSelect';
+import { PotjesActies } from '../components/Potjes/PotjesActies';
 
 const Potjes: React.FC = () => {
-  const { rekeningGroepPerBetalingsSoort, gekozenPeriode, actieveAdministratie, setIsStandDirty, setSnackbarMessage } = useCustomContext();
+  const { rekeningGroepPerBetalingsSoort, actieveAdministratie, setIsStandDirty, setSnackbarMessage } = useCustomContext();
   const { putReserveringen, putAlleReserveringen } = usePlusminApi();
-  const [view, setView] = useState<'visualisatie' | 'tabel'>('visualisatie');
+  
+  const getInitialView = (): 'potjes' | 'tabel' => {
+    const saved = localStorage.getItem('potjesVisualisatieVoorkeur');
+    return (saved === 'potjes' || saved === 'tabel') ? saved : 'potjes';
+  };
+  
+  const [view, setView] = useState<'potjes' | 'tabel'>(getInitialView);
   const [isReservering, setIsReservering] = useState(false);
 
   const handleViewChange = (
     _event: React.MouseEvent<HTMLElement>,
-    newView: 'visualisatie' | 'tabel' | null,
+    newView: 'potjes' | 'tabel' | null,
   ) => {
     if (newView !== null) {
       setView(newView);
+      localStorage.setItem('potjesVisualisatieVoorkeur', newView);
     }
   };
 
@@ -79,47 +87,88 @@ const Potjes: React.FC = () => {
       setIsReservering(false);
     }
   };
+    // const creeerReserveringsHorizonTekst = () => {
+    //   return (
+    //     <>
+    //       De <strong>potjes</strong> zijn gevuld tot en met{' '}
+    //       {dayjs(stand?.reserveringsHorizon).format('D MMMM')}.
+    //       {dayjs(stand?.reserveringsHorizon).isBefore(dayjs(stand?.budgetHorizon))
+    //         ? ` Ze kunnen worden gevuld tot en met ${dayjs(stand?.budgetHorizon).format('D MMMM')}.`
+    //         : ''}
+    //     </>
+    //   );
+    // };
+  //   const potjesSamenvatting = (
+  //   <Typography>
+  //     <strong>Potjes</strong> <br />
+  //     Openingsstand:{' '}
+  //     {formatAmount(
+  //       (reserveringBuffer?.openingsReserveSaldo ?? 0) +
+  //         (openingsReservePotjesVoorNuSaldo ?? 0),
+  //     )}
+  //     &nbsp; = openingssaldo buffer:{' '}
+  //     {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}
+  //     &nbsp; + openingsReservePotjesVoorNuSaldo:{' '}
+  //     {formatAmount(openingsReservePotjesVoorNuSaldo ?? 0)}
+  //     <br />
+  //     Actuele stand {formatAmount(actueleStand)}
+  //     &nbsp; = openingssaldo buffer:{' '}
+  //     {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}
+  //     &nbsp; + inkomsten - reservering:{' '}
+  //     {formatAmount(reserveringBuffer?.periodeReservering ?? 0)}&nbsp; + huidige
+  //     reserve in potjes voor nu:{' '}
+  //     {formatAmount(reserveringsSaldoPotjesVanNu ?? 0)}
+  //     <br />
+  //     Verwachte eindstand{' '}
+  //     {formatAmount(
+  //       actueleStand + (verwachteInkomsten ?? 0) - (verwachteUitgaven ?? 0),
+  //     )}
+  //     &nbsp; = actuele stand: {formatAmount(actueleStand ?? 0)}
+  //     &nbsp; + verwachte inkomsten: {formatAmount(verwachteInkomsten ?? 0)}
+  //     &nbsp; - verwachte uitgaven: {formatAmount(verwachteUitgaven ?? 0)}
+  //   </Typography>
+  // );
 
-  const isHuidigePeriode = gekozenPeriode?.periodeStatus === 'HUIDIG';
+
 
   return (
     <>
       {rekeningGroepPerBetalingsSoort &&
         rekeningGroepPerBetalingsSoort.length >= 0 && (
           <>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} px={2}>
-              <PeriodeSelect />
-              <ToggleButtonGroup
-                value={view}
-                exclusive
-                onChange={handleViewChange}
-                aria-label="weergave selectie"
+            {/* Accordion voor mobiel (xs en sm) */}
+            <Accordion sx={{ display: { xs: 'block', sm: 'block', md: 'none' }, mb: 2 }}>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="acties-content"
+                id="acties-header"
               >
-                <ToggleButton value="visualisatie" aria-label="potjes visualisatie">
-                  Potjes
-                </ToggleButton>
-                <ToggleButton value="tabel" aria-label="reservering tabel">
-                  Tabel
-                </ToggleButton>
-              </ToggleButtonGroup>
-              {isHuidigePeriode && (
-                <ButtonGroup variant="contained" color="success" disabled={isReservering}>
-                  <Button
-                    onClick={handleReserveerClick}
-                    sx={{ fontSize: '0.875rem' }}
-                  >
-                    {isReservering ? 'Bezig...' : 'Reserveer'}
-                  </Button>
-                  <Button
-                    onClick={handleReserveerAlleClick}
-                    sx={{ fontSize: '0.875rem' }}
-                  >
-                    {isReservering ? 'Bezig...' : 'Reserveer Alle'}
-                  </Button>
-                </ButtonGroup>
-              )}
+                <Typography>Acties</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <PotjesActies
+                  view={view}
+                  handleViewChange={handleViewChange}
+                  isReservering={isReservering}
+                  handleReserveerClick={handleReserveerClick}
+                  handleReserveerAlleClick={handleReserveerAlleClick}
+                  layout="vertical"
+                />
+              </AccordionDetails>
+            </Accordion>
+
+            {/* Normale weergave voor tablet en desktop (md en groter) */}
+            <Box display={{ xs: 'none', sm: 'none', md: 'flex' }} mb={2} px={2}>
+              <PotjesActies
+                view={view}
+                handleViewChange={handleViewChange}
+                isReservering={isReservering}
+                handleReserveerClick={handleReserveerClick}
+                handleReserveerAlleClick={handleReserveerAlleClick}
+                layout="horizontal"
+              />
             </Box>
-            {view === 'visualisatie' ? <PotjesVisualisatie /> : <PotjesTabel />}
+            {view === 'potjes' ? <PotjesVisualisatie /> : <PotjesTabel />}
           </>
         )}
     </>
