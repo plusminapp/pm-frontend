@@ -1,5 +1,4 @@
 #root {
-  max-width: 1280px;
   margin: 0 auto;
   font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
 }
@@ -22,8 +21,7 @@
   margin-bottom: 15px;
 }
 svg.languageFlag {
-    height: 25px;
-    margin-top: 10px;
-    margin-right: 15px;
+  height: 25px;
+  margin-top: 10px;
+  margin-right: 15px;
 }
-

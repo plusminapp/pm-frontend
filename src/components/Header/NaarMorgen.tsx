@@ -7,7 +7,14 @@ import dayjs from 'dayjs';
 import { PlusIcon } from '../../icons/Plus';
 
 const NaarMorgen: React.FC = () => {
-  const { actieveAdministratie, setActieveAdministratie, gebruiker, setGebruiker, setIsStandDirty, setSnackbarMessage } = useCustomContext();
+  const {
+    actieveAdministratie,
+    setActieveAdministratie,
+    gebruiker,
+    setGebruiker,
+    setIsStandDirty,
+    setSnackbarMessage,
+  } = useCustomContext();
   const { putVandaag } = usePlusminApi();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -20,31 +27,37 @@ const NaarMorgen: React.FC = () => {
       setIsLoading(true);
       const morgen = dayjs(vandaag).add(1, 'day').format('YYYY-MM-DD');
       await putVandaag(actieveAdministratie, morgen, toonBetalingen);
-      
+
       // Update lokale state in plaats van reload
       const updatedAdministratie = {
         ...actieveAdministratie,
-        vandaag: morgen
+        vandaag: morgen,
       };
       setActieveAdministratie(updatedAdministratie);
 
       // Update ook in gebruiker administraties array
       if (gebruiker) {
-        const updatedAdministraties = gebruiker.administraties.map(admin => 
-          admin.id === actieveAdministratie.id 
+        const updatedAdministraties = gebruiker.administraties.map((admin) =>
+          admin.id === actieveAdministratie.id
             ? { ...admin, vandaag: morgen }
-            : admin
+            : admin,
         );
         setGebruiker({
           ...gebruiker,
-          administraties: updatedAdministraties
+          administraties: updatedAdministraties,
         });
         setIsStandDirty(true);
       }
 
-      console.log(`Naar morgen ${toonBetalingen ? 'met' : 'zonder'} betalingen:`, morgen);
+      console.log(
+        `Naar morgen ${toonBetalingen ? 'met' : 'zonder'} betalingen:`,
+        morgen,
+      );
     } catch (error) {
-      setSnackbarMessage({message: 'Fout bij het verplaatsen naar morgen.', type: 'error'});
+      setSnackbarMessage({
+        message: 'Fout bij het verplaatsen naar morgen.',
+        type: 'error',
+      });
       console.error('Fout bij naar morgen:', error);
     } finally {
       setIsLoading(false);
@@ -55,11 +68,12 @@ const NaarMorgen: React.FC = () => {
   if (!vandaag) return null;
 
   return (
-    <Box sx={{ display: 'flex', gap: 1 }}>
+    <Box className="flex gap-1 justify-center w-full">
       <Button
         variant="contained"
-        color='success'
+        color="success"
         size="small"
+        className="flex-1"
         onClick={() => handleNaarMorgen(false)}
         disabled={isLoading}
         startIcon={<PlayArrowIcon />}
@@ -67,8 +81,9 @@ const NaarMorgen: React.FC = () => {
       />
       <Button
         variant="contained"
-        color='success'
+        color="success"
         size="small"
+        className="flex-1"
         onClick={() => handleNaarMorgen(true)}
         disabled={isLoading}
         startIcon={<PlayArrowIcon />}

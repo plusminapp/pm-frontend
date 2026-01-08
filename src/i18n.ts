@@ -23,6 +23,8 @@ const resources = {
           aflossen: 'Aflossen',
           sparen: 'Sparen',
           potjes: 'Potjes',
+          profiel: 'Profiel',
+          uitloggen: 'Uitloggen',
         },
       },
     },

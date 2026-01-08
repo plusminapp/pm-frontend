@@ -236,7 +236,7 @@ function Header() {
     state.isAuthenticated,
     fetchGebruikerMetAdministraties,
     determineSessionInfo,
-    isStandDirty
+    isStandDirty,
   ]);
 
   useEffect(() => {
@@ -341,7 +341,14 @@ function Header() {
 
               {expiry && (
                 <>
-                  <Typography sx={{ mx: 2, color: 'gray', fontSize: 12, display: { xs: 'none', md: 'block' } }}>
+                  <Typography
+                    sx={{
+                      mx: 2,
+                      color: 'gray',
+                      fontSize: 12,
+                      display: { xs: 'none', md: 'block' },
+                    }}
+                  >
                     {actieveAdministratie?.vandaag && (
                       <>
                         <strong>Spelmodus:</strong> het is{' '}
@@ -360,7 +367,10 @@ function Header() {
               {/* profiel & settings */}
               <Box sx={{ ml: 'auto', display: 'flex' }}>
                 <Box
-                  onClick={() => currentPage.toLowerCase() !== 'gebruikersprofiel' && navigate('/profiel')}
+                  onClick={() =>
+                    currentPage.toLowerCase() !== 'gebruikersprofiel' &&
+                    navigate('/profiel')
+                  }
                   sx={{
                     cursor: 'pointer',
                     display: 'flex',
