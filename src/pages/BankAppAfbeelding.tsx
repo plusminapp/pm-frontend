@@ -128,7 +128,7 @@ const BankAppAfbeelding: React.FC = () => {
         : parseTekst(filteredText, vandaag).map((betaling: BetalingDTO) => ({
           ...betaling,
           bedrag: Math.abs(betaling.bedrag),
-        }));;
+        }));
         setParsedData(parsedData);
         setIsLoading(false);
       })
@@ -430,7 +430,7 @@ const BankAppAfbeelding: React.FC = () => {
           ? `OCR vertrouwen: ${confidence.toFixed(2)}%`
           : ''}
         {/* GroupedData: {JSON.stringify(groupedData)} */}
-        {/*ParsedDate: {JSON.stringify(parsedData)}*/}
+        ParsedDate: {JSON.stringify(parsedData)}
       </Typography>
     </Box>
   );

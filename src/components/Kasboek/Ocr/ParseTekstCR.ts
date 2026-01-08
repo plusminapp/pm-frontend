@@ -18,11 +18,25 @@ export const parseTekstCR = (text: string, vandaag: string | null): BetalingDTO[
   for (let i = 0; i < lines.length; i++) {
     const trimmedLine = lines[i].trim();
     
-    // Verbeterde datum regex die meer OCR fouten herkent
-    const dateMatch = trimmedLine.match(/^(\d{1,2})[:/\s]*([nN][oO0][vV]|nov)/i);
+    // Verbeterde datum regex die meer OCR fouten herkent voor alle maanden
+    const dateMatch = trimmedLine.match(/^(\d{1,2})[:/\s]*(ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic|[eE][nN][eE]|[fF][eE][bB]|[mM][aA][rR]|[aA][bB][rR]|[mM][aA][yY]|[jJ][uU][nN]|[jJ][uU][lL]|[aA][gG][oO]|[sS][eE][pP]|[oO][cC][tT]|[nN][oO0][vV]|[dD][iI][cC])/i);
     if (dateMatch) {
       const day = dateMatch[1];
-      const month = 'nov'; // Alle voorbeelden zijn november
+      let month = dateMatch[2].toLowerCase();
+      
+      // Normalize OCR variations
+      if (month.match(/^[nN][oO0][vV]$/)) month = 'nov';
+      if (month.match(/^[eE][nN][eE]$/)) month = 'ene';
+      if (month.match(/^[fF][eE][bB]$/)) month = 'feb';
+      if (month.match(/^[mM][aA][rR]$/)) month = 'mar';
+      if (month.match(/^[aA][bB][rR]$/)) month = 'abr';
+      if (month.match(/^[mM][aA][yY]$/)) month = 'may';
+      if (month.match(/^[jJ][uU][nN]$/)) month = 'jun';
+      if (month.match(/^[jJ][uU][lL]$/)) month = 'jul';
+      if (month.match(/^[aA][gG][oO]$/)) month = 'ago';
+      if (month.match(/^[sS][eE][pP]$/)) month = 'sep';
+      if (month.match(/^[oO][cC][tT]$/)) month = 'oct';
+      if (month.match(/^[dD][iI][cC]$/)) month = 'dic';
       
       const currentYear = dayjs(vandaag).year();
       currentDate = dayjs(vandaag)
@@ -155,10 +169,26 @@ export const extractSimpleTransactionsCR = (text: string) => {
   for (const line of lines) {
     const trimmedLine = line.trim();
     
-    // Check voor datum (inclusief OCR fouten)
-    const dateMatch = trimmedLine.match(/^(\d{1,2})[:/\s]*([nN][oO0][vV]|nov)/i);
+    // Check voor datum (inclusief OCR fouten) voor alle maanden
+    const dateMatch = trimmedLine.match(/^(\d{1,2})[:/\s]*(ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic|[eE][nN][eE]|[fF][eE][bB]|[mM][aA][rR]|[aA][bB][rR]|[mM][aA][yY]|[jJ][uU][nN]|[jJ][uU][lL]|[aA][gG][oO]|[sS][eE][pP]|[oO][cC][tT]|[nN][oO0][vV]|[dD][iI][cC])/i);
     if (dateMatch) {
-      currentDate = `${dateMatch[1]} nov`;
+      let month = dateMatch[2].toLowerCase();
+      
+      // Normalize OCR variations
+      if (month.match(/^[nN][oO0][vV]$/)) month = 'nov';
+      if (month.match(/^[eE][nN][eE]$/)) month = 'ene';
+      if (month.match(/^[fF][eE][bB]$/)) month = 'feb';
+      if (month.match(/^[mM][aA][rR]$/)) month = 'mar';
+      if (month.match(/^[aA][bB][rR]$/)) month = 'abr';
+      if (month.match(/^[mM][aA][yY]$/)) month = 'may';
+      if (month.match(/^[jJ][uU][nN]$/)) month = 'jun';
+      if (month.match(/^[jJ][uU][lL]$/)) month = 'jul';
+      if (month.match(/^[aA][gG][oO]$/)) month = 'ago';
+      if (month.match(/^[sS][eE][pP]$/)) month = 'sep';
+      if (month.match(/^[oO][cC][tT]$/)) month = 'oct';
+      if (month.match(/^[dD][iI][cC]$/)) month = 'dic';
+      
+      currentDate = `${dateMatch[1]} ${month}`;
       continue;
     }
 
