@@ -14,9 +14,10 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import {
-  bestemmingBetalingsSoorten as bronBetalingsSoorten,
   BetalingDTO,
   internBetalingsSoorten,
+  BetalingsSoort,
+  bestemmingBetalingsSoorten,
 } from '../../model/Betaling';
 import { RekeningGroepDTO } from '../../model/RekeningGroep';
 import dayjs from 'dayjs';
@@ -59,6 +60,9 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
   const [toonIntern, setToonIntern] = useState<boolean>(
     localStorage.getItem('toonIntern') === 'true',
   );
+  const [toonReserveringen, setToonReserveringen] = useState<boolean>(
+    localStorage.getItem('toonReserveringen') === 'true',
+  );
 
   useEffect(() => {
     setBetaalTabelSaldi(
@@ -86,7 +90,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
   const getFormattedBedrag = (betaling: BetalingDTO) => {
     const bedrag =
       betaling.betalingsSoort &&
-      bronBetalingsSoorten.includes(betaling.betalingsSoort)
+      bestemmingBetalingsSoorten.includes(betaling.betalingsSoort)
         ? betaling.bedrag
         : -betaling.bedrag;
     return formatter.format(bedrag);
@@ -116,6 +120,14 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
     localStorage.setItem('toonIntern', event.target.checked.toString());
     setToonIntern(event.target.checked);
   };
+
+  const handleToonReserveringenChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    localStorage.setItem('toonReserveringen', event.target.checked.toString());
+    setToonReserveringen(event.target.checked);
+  };
+
   const heeftIntern = rekeningGroepen.some(
     (RekeningGroep) =>
       RekeningGroep.rekeningGroepSoort &&
@@ -124,6 +136,9 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
   const isIntern = (betaling: BetalingDTO) =>
     betaling.betalingsSoort &&
     internBetalingsSoorten.includes(betaling.betalingsSoort);
+  const isReservering = (betaling: BetalingDTO) =>
+    betaling.betalingsSoort &&
+    betaling.betalingsSoort === BetalingsSoort.reserveren;
 
   const onUpsertBetalingClose = () => {
     setSelectedBetaling(undefined);
@@ -178,6 +193,26 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
             >
               <InfoIcon height="16" />
             </Box>
+          </Grid>
+          <Grid display="flex" flexDirection="row" alignItems={'center'}>
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Switch
+                    sx={{ transform: 'scale(0.6)' }}
+                    checked={toonReserveringen}
+                    onChange={handleToonReserveringenChange}
+                    slotProps={{ input: { 'aria-label': 'controlled' } }}
+                  />
+                }
+                sx={{ mr: 0 }}
+                label={
+                  <Box display="flex" fontSize={'0.875rem'}>
+                    Toon reserveringen
+                  </Box>
+                }
+              />
+            </FormGroup>
           </Grid>
         </>
       )}
@@ -411,6 +446,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
                 .sort((a, b) => (a.sortOrder > b.sortOrder ? -1 : 1))
                 .map(
                   (betaling) =>
+                    (!isReservering(betaling) || toonReserveringen) &&
                     (!isIntern(betaling) || toonIntern) && (
                       <TableRow key={betaling.id}>
                         <TableCell sx={{ padding: '5px' }}>
@@ -424,7 +460,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
                               : '(')}
                           {toonIntern &&
                             (betaling.betalingsSoort &&
-                            bronBetalingsSoorten.includes(
+                            bestemmingBetalingsSoorten.includes(
                               betaling.betalingsSoort,
                             )
                               ? `${betaling.bron})`
