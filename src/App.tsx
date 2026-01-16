@@ -13,7 +13,6 @@ import Home from './pages/Home';
 import Kasboek from './pages/Kasboek';
 import Aflossen from './pages/Aflossen';
 import Sparen from './pages/Sparen';
-import Header from './components/Header/Header';
 import LoginPagina from './pages/Login';
 
 import NotFound from './pages/NotFound';
@@ -56,11 +55,6 @@ const App: React.FC = () => {
             isMobileOpen={isMobileOpen}
             setIsMobileOpen={setIsMobileOpen}
           />
-
-          {/* Legacy Header - can be removed after testing */}
-          <div className="hidden">
-            <Header />
-          </div>
 
           {/* Page content */}
           <main className="flex-1 overflow-y-auto p-4 md:p-6">

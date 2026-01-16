@@ -30,7 +30,6 @@ import {
   TrendingDown,
   PieChart,
   X,
-  HomeIcon,
 } from 'lucide-react';
 
 const I18N_KEY = 'components.header';
@@ -51,7 +50,7 @@ export function AppSidebar({
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  const { state, signIn } = useAuthContext();
+  const { state, signIn, getAccessToken, revokeAccessToken } = useAuthContext();
   const [expiry, setExpiry] = React.useState<Date | null>(null);
 
   const {
@@ -139,7 +138,7 @@ export function AppSidebar({
   const determineSessionInfo = useCallback(async () => {
     let token;
     try {
-      token = await useAuthContext().getAccessToken();
+      token = await getAccessToken();
       if (!token) {
         setExpiry(null);
         return;
@@ -149,7 +148,7 @@ export function AppSidebar({
     } catch (error) {
       console.error('Error getting ID token:', error);
     }
-  }, []);
+  }, [getAccessToken]);
 
   const fetchGebruikerMetAdministraties = useCallback(async () => {
     const dataGebruiker = await getGebruikerZelf();
@@ -260,7 +259,7 @@ export function AppSidebar({
 
   const handleLogin = async () => {
     try {
-      if (state.isAuthenticated) await useAuthContext().revokeAccessToken();
+      if (state.isAuthenticated) await revokeAccessToken();
       await signIn();
       navigate('/profiel');
       setIsMobileOpen(false);
@@ -395,11 +394,14 @@ export function AppSidebar({
                     </div>
                   )}
                   {expiry && (
-                    <p className="text-xs text-muted-foreground">
-                      Sessie eindigt om{' '}
-                      {expiry.getHours().toString().padStart(2, '0')}:
-                      {expiry.getMinutes().toString().padStart(2, '0')}
-                    </p>
+                    <div className="flex items-start gap-2">
+                      <div className="h-2 w-2 rounded-full bg-blue-500 shrink-0 mt-1" />
+                      <p className="text-xs text-muted-foreground leading-tight">
+                        De huidige sessie eindigt om{' '}
+                        {expiry.getHours().toString().padStart(2, '0')}:
+                        {expiry.getMinutes().toString().padStart(2, '0')}
+                      </p>
+                    </div>
                   )}
                 </div>
               )}

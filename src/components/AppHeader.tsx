@@ -141,13 +141,6 @@ export function AppHeader({
                     <PersonOutlineOutlinedIcon className="mr-2 h-4 w-4" />
                     <span>{t(`${I18N_KEY}.profiel`)}</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="cursor-pointer"
-                    onClick={() => navigate('/profiel')}
-                  >
-                    <PersonOutlineOutlinedIcon className="mr-2 h-4 w-4" />
-                    <span>Administratie</span>
-                  </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
