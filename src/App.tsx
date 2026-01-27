@@ -21,6 +21,7 @@ import './App.css';
 import './i18n';
 import GebruikersProfiel from './pages/GebruikersProfiel';
 import Potjes from './pages/Potjes';
+import PotjesDemoWrapper from './pages/PotjesDemoWrapper';
 
 import { AppSidebar } from '@/components/AppSidebar';
 import { AppHeader } from '@/components/AppHeader';
@@ -92,6 +93,7 @@ const App: React.FC = () => {
                 path="/potjes"
                 element={<ProtectedRoute element={<Potjes />} />}
               />
+              <Route path="/potjesdemo" element={<PotjesDemoWrapper />} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
