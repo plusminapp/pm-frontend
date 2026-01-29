@@ -24,6 +24,9 @@ export default function Home() {
         </a>{' '}
         kun je meer informatie vinden.
       </Typography>
+      <Typography sx={{ my: '25px' }}>
+      Bezoek de demo van potjes op <a href="/potjesdemo">/potjesdemo</a>.
+      </Typography>
     </>
   );
 }
