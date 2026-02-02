@@ -19,6 +19,8 @@ import { BetalingDTO, BetalingvalidatieWrapper } from '../model/Betaling';
 import { updateAfbeelding } from '../components/Kasboek/Ocr/UpdateAfbeelding';
 import { parseTekst } from '../components/Kasboek/Ocr/ParseTekst';
 import { parseTekstCR } from '../components/Kasboek/Ocr/ParseTekstCR';
+import { parseTekstTrds } from '../components/Kasboek/Ocr/ParseTekstTrds';
+import { parseTekstN26 } from '../components/Kasboek/Ocr/ParseTekstN26';
 import { RekeningSelect } from '../components/Rekening/RekeningSelect';
 import { useAuthContext } from '@asgardeo/auth-react';
 import { useCustomContext } from '../context/CustomContext';
@@ -125,10 +127,20 @@ const BankAppAfbeelding: React.FC = () => {
           ...betaling,
           bedrag: Math.abs(betaling.bedrag),
         }))
+        : ocrBankRekening?.bankNaam === 'Triodos'
+        ? parseTekstTrds(filteredText, vandaag).map((betaling: BetalingDTO) => ({
+          ...betaling,
+          bedrag: Math.abs(betaling.bedrag),
+        }))
+        : ocrBankRekening?.bankNaam === 'N26'
+        ? parseTekstN26(filteredText, vandaag).map((betaling: BetalingDTO) => ({
+          ...betaling,
+          bedrag: Math.abs(betaling.bedrag),
+        }))
         : parseTekst(filteredText, vandaag).map((betaling: BetalingDTO) => ({
           ...betaling,
           bedrag: Math.abs(betaling.bedrag),
-        }));;
+        }));
         setParsedData(parsedData);
         setIsLoading(false);
       })
@@ -160,7 +172,7 @@ const BankAppAfbeelding: React.FC = () => {
           bedrag: 0,
         } as unknown as SaldoDTO;
         const betalingen = parsedData
-          .filter((betaling) => betaling.bedrag !== null)
+          .filter((betaling) => typeof betaling.bedrag === 'number' && !isNaN(betaling.bedrag))
           .map((betaling) => ({
             ...betaling,
             boekingsdatum: dayjs(betaling.boekingsdatum).format('YYYY-MM-DD'),
@@ -429,8 +441,8 @@ const BankAppAfbeelding: React.FC = () => {
         {confidence && toonAfbeelding
           ? `OCR vertrouwen: ${confidence.toFixed(2)}%`
           : ''}
-        {/* GroupedData: {JSON.stringify(groupedData)} */}
-        {/*ParsedDate: {JSON.stringify(parsedData)}*/}
+        GroupedData: {JSON.stringify(ocrData)}
+        ParsedDate: {JSON.stringify(parsedData)}
       </Typography>
     </Box>
   );

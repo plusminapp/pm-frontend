@@ -1,4 +1,4 @@
-import { Box, Button, Typography, styled } from '@mui/material';
+import { Box, Typography, styled } from '@mui/material';
 import UTurnRightOutlinedIcon from '@mui/icons-material/UTurnRightOutlined';
 import PointOfSaleOutlinedIcon from '@mui/icons-material/PointOfSaleOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
@@ -7,10 +7,9 @@ import {
   RekeningGroepSoort,
 } from '../../model/RekeningGroep';
 import { useCustomContext } from '../../context/CustomContext';
-import { usePlusminApi } from '../../api/plusminApi';
 import { SaldoDTO } from '../../model/Saldo';
 import { useState } from 'react';
-import { HevelReserveOverForm } from '../Profiel/HevelReserveOverForm';
+import { HevelReserveOverForm } from './HevelReserveOverForm';
 import { ReserveDetailsForm } from './ReserveDetailsForm';
 import { Potje } from './Potje';
 
@@ -52,15 +51,11 @@ interface KolomData {
   groepen: GroepData[];
 }
 
-export const SpelVisualisatie: React.FC = () => {
+export const PotjesVisualisatie: React.FC = () => {
   const {
     stand,
-    setIsStandDirty,
     gekozenPeriode,
-    actieveAdministratie,
-    setSnackbarMessage,
   } = useCustomContext();
-  const { putReserveringen } = usePlusminApi();
 
   const [overTeHevelenReserve, setOverTeHevelenReserve] = useState<
     string | undefined
@@ -68,7 +63,6 @@ export const SpelVisualisatie: React.FC = () => {
   const [detailsSaldo, setDetailsSaldo] = useState<SaldoDTO | undefined>(
     undefined,
   );
-  const [isReservering, setIsReservering] = useState(false);
 
   const handleHevelReserveOverClick = (rekeningNaam: string) => {
     setOverTeHevelenReserve(rekeningNaam);
@@ -76,28 +70,6 @@ export const SpelVisualisatie: React.FC = () => {
 
   const handleDetailsClick = (saldo: SaldoDTO) => {
     setDetailsSaldo(saldo);
-  };
-
-  const handleReserveerClick = async () => {
-    if (!actieveAdministratie) return;
-
-    try {
-      setIsReservering(true);
-      await putReserveringen(actieveAdministratie);
-      setIsStandDirty(true);
-      setSnackbarMessage({
-        message: 'Reserveringen zijn succesvol uitgevoerd.',
-        type: 'success',
-      });
-    } catch (error) {
-      setSnackbarMessage({
-        message: 'Fout bij het uitvoeren van reserveringen.',
-        type: 'error',
-      });
-      console.error('Fout bij het uitvoeren van reserveringen:', error);
-    } finally {
-      setIsReservering(false);
-    }
   };
 
   const isHuidigePeriode = gekozenPeriode?.periodeStatus === 'HUIDIG';
@@ -219,21 +191,6 @@ export const SpelVisualisatie: React.FC = () => {
           padding: '20px 0',
         }}
       >
-        {/* Reserveer button bovenaan */}
-        {isHuidigePeriode && (
-          <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <Button
-              variant="contained"
-              color="success"
-              onClick={handleReserveerClick}
-              disabled={isReservering}
-              sx={{ fontSize: '0.875rem' }}
-            >
-              {isReservering ? 'Bezig...' : 'Reserveer'}
-            </Button>
-          </Box>
-        )}
-
         {/* Responsive Grid met masonry-style flow */}
         <Box
           sx={{

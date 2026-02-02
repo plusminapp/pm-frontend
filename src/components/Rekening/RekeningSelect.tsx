@@ -16,18 +16,12 @@ interface RekeningSelectProps {
 }
 export function RekeningSelect(props: RekeningSelectProps) {
   const { rekeningGroepPerBetalingsSoort } = useCustomContext();
-  // Unieke rekeningen op basis van id
-  const bankRekeningen = Array.from(
-    new Map(
-      rekeningGroepPerBetalingsSoort
-        .flatMap((bs) => bs.rekeningGroepen)
-        .filter((rg) => rg.rekeningGroepSoort !== 'CONTANT')
-        .flatMap((rg) => rg.rekeningen)
-        .flatMap((r) => (r.betaalMethoden ? r.betaalMethoden : [r]))
-        .map((r) => [r.id, r]),
-    ).values(),
-  );
 
+  const bankRekeningen = rekeningGroepPerBetalingsSoort
+  .filter((bs) => bs.betalingsSoort === 'INTERN')
+  .flatMap((bs) => bs.rekeningGroepen)
+  .flatMap((rg) => rg.rekeningen);
+  
   const [gekozenRekening, setGekozenRekening] = useState<
     RekeningDTO | undefined
   >(undefined);

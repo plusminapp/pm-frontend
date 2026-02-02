@@ -260,18 +260,10 @@ export default function KolommenTabel(props: KolommenTabelProps) {
                 id={rekeningGroep.naam}
               >
                 {(rekeningGroep.rekeningGroepSoort ===
-                  RekeningGroepSoort.contant ||
-                  rekeningGroep.rekeningGroepSoort ===
-                    RekeningGroepSoort.spaarrekening) && (
+                  RekeningGroepSoort.betaalmiddel) && (
                   <Typography sx={{ fontSize: '15px' }} component="span">
                     {betalingsSoortFormatter(rekeningGroep.naam)}{' '}
-                    opname/storting
-                  </Typography>
-                )}
-                {rekeningGroep.rekeningGroepSoort ===
-                  RekeningGroepSoort.creditcard && (
-                  <Typography sx={{ fontSize: '15px' }} component="span">
-                    {betalingsSoortFormatter(rekeningGroep.naam)} incasso
+                    betaalmiddel Kolommentabel
                   </Typography>
                 )}
               </AccordionSummary>

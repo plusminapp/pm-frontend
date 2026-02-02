@@ -4,7 +4,6 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Box,
   Paper,
   Table,
   TableBody,
@@ -30,7 +29,6 @@ import {
   BudgetType,
   profielRekeningGroepSoorten,
   RekeningGroepSoort,
-  balansRekeningGroepSoorten,
 } from '../model/RekeningGroep';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers';
 import { InkomstenIcon } from '../icons/Inkomsten';
@@ -41,10 +39,8 @@ import { RekeningDTO } from '../model/Rekening';
 import { isPeriodeOpen } from '../model/Periode';
 import { CashFlowGrafiek } from '../components/CashFlow/Graph/CashFlowGrafiek';
 import { usePlusminApi } from '../api/plusminApi';
-import Resultaat from '../components/Stand/Resultaat';
-import { ReserveringTabel } from '../components/Profiel/ReserveringTabel';
 import { useNavigate } from 'react-router-dom';
-import { InfoIcon } from '../icons/Info';
+import RekeningResultaat from '../components/Stand/RekeningResultaat';
 
 const Profiel: React.FC = () => {
   const { state } = useAuthContext();
@@ -56,47 +52,12 @@ const Profiel: React.FC = () => {
     rekeningGroepPerBetalingsSoort,
     gekozenPeriode,
     stand,
-    setSnackbarMessage,
   } = useCustomContext();
   const { getOngeldigeBetalingenVooradministratie } = usePlusminApi();
 
   const [ongeldigeBetalingen, setOngeldigeBetalingen] = React.useState<
     Betaling[]
   >([]);
-
-  const reserveringBuffer = stand?.geaggregeerdResultaatOpDatum.find(
-    (saldo) => saldo.rekeningGroepSoort === 'RESERVERING_BUFFER',
-  );
-
-  const openingsReservePotjesVoorNuSaldo =
-    stand?.resultaatSamenvattingOpDatum.openingsReservePotjesVoorNuSaldo;
-  const reserveringsSaldoPotjesVanNu = stand?.geaggregeerdResultaatOpDatum
-    .filter(
-      (saldo) =>
-        (saldo.rekeningGroepSoort === 'UITGAVEN' &&
-          saldo.budgetType !== BudgetType.sparen) ||
-        saldo.rekeningGroepSoort === 'AFLOSSING',
-    )
-    .reduce(
-      (acc, saldo) =>
-        acc + saldo.openingsReserveSaldo + saldo.periodeReservering - saldo.periodeBetaling,
-      0,
-    );
-  const actueleStand =
-    (reserveringBuffer?.openingsReserveSaldo ?? 0) +
-    (reserveringBuffer?.periodeReservering ?? 0) +
-    (reserveringsSaldoPotjesVanNu ?? 0);
-  const verwachteInkomsten = stand?.geaggregeerdResultaatOpDatum
-    .filter((saldo) => saldo.rekeningGroepSoort === 'INKOMSTEN')
-    .reduce((acc, saldo) => acc + saldo.komtNogNodig, 0);
-  const verwachteUitgaven = stand?.geaggregeerdResultaatOpDatum
-    .filter(
-      (saldo) =>
-        (saldo.rekeningGroepSoort === 'UITGAVEN' &&
-          saldo.budgetType !== BudgetType.sparen) ||
-        saldo.rekeningGroepSoort === 'AFLOSSING',
-    )
-    .reduce((acc, saldo) => acc + saldo.komtNogNodig, 0);
 
   const fetchfetchOngeldigeBetalingen = useCallback(async () => {
     if (!actieveAdministratie) {
@@ -190,18 +151,6 @@ const Profiel: React.FC = () => {
     return `${formatAmount(betaling.bedrag)} met omschrijving ${betaling.omschrijving} op ${dayjs(betaling.boekingsdatum).format('D MMMM')} naar budget ${betaling.bron?.naam} dat geldig is ${geldigheid}.`;
   };
 
-  const creeerReserveringsHorizonTekst = () => {
-    return (
-      <>
-        De <strong>potjes</strong> zijn gevuld tot en met{' '}
-        {dayjs(stand?.reserveringsHorizon).format('D MMMM')}.
-        {dayjs(stand?.reserveringsHorizon).isBefore(dayjs(stand?.budgetHorizon))
-          ? ` Ze kunnen worden gevuld tot en met ${dayjs(stand?.budgetHorizon).format('D MMMM')}.`
-          : ''}
-      </>
-    );
-  };
-
   const berekenCategorieIcon = (categorie: string) => {
     switch (categorie) {
       case 'INKOMSTEN':
@@ -232,36 +181,6 @@ const Profiel: React.FC = () => {
     return `${variabiliteit}${betalingWordtVerwacht}`;
   };
 
-  const potjesSamenvatting = (
-    <Typography>
-      <strong>Potjes</strong> <br />
-      Openingsstand:{' '}
-      {formatAmount(
-        (reserveringBuffer?.openingsReserveSaldo ?? 0) +
-          (openingsReservePotjesVoorNuSaldo ?? 0),
-      )}
-      &nbsp; = openingssaldo buffer:{' '}
-      {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}
-      &nbsp; + openingsReservePotjesVoorNuSaldo:{' '}
-      {formatAmount(openingsReservePotjesVoorNuSaldo ?? 0)}
-      <br />
-      Actuele stand {formatAmount(actueleStand)}
-      &nbsp; = openingssaldo buffer:{' '}
-      {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}
-      &nbsp; + inkomsten - reservering:{' '}
-      {formatAmount(reserveringBuffer?.periodeReservering ?? 0)}&nbsp; + huidige
-      reserve in potjes voor nu:{' '}
-      {formatAmount(reserveringsSaldoPotjesVanNu ?? 0)}
-      <br />
-      Verwachte eindstand{' '}
-      {formatAmount(
-        actueleStand + (verwachteInkomsten ?? 0) - (verwachteUitgaven ?? 0),
-      )}
-      &nbsp; = actuele stand: {formatAmount(actueleStand ?? 0)}
-      &nbsp; + verwachte inkomsten: {formatAmount(verwachteInkomsten ?? 0)}
-      &nbsp; - verwachte uitgaven: {formatAmount(verwachteUitgaven ?? 0)}
-    </Typography>
-  );
 
   return (
     <>
@@ -284,63 +203,57 @@ const Profiel: React.FC = () => {
                 </Typography>
               </AccordionSummary>
               <AccordionDetails>
-                <Grid sx={{ flexGrow: 1 }}>
-                  <Grid
-                    container
-                    spacing={{ xs: 2, md: 3 }}
-                    columns={{ xs: 1, md: 3 }}
-                  >
-                    <Grid size={1}>
-                      <Resultaat
-                        title={'Opening'}
-                        datum={stand.periodeStartDatum}
-                        saldi={stand.geaggregeerdResultaatOpDatum
-                          .filter((saldo) =>
-                            balansRekeningGroepSoorten.includes(
-                              saldo.rekeningGroepSoort as RekeningGroepSoort,
-                            ),
-                          )
-                          .sort((a, b) => a.sortOrder - b.sortOrder)
-                          .map((saldo) => ({
-                            ...saldo,
-                            bedrag: saldo.openingsBalansSaldo,
-                          }))}
-                      />
-                    </Grid>
-                    <Grid size={1}>
-                      <Resultaat
-                        title={'Mutaties per'}
-                        datum={stand.peilDatum}
-                        saldi={stand.geaggregeerdResultaatOpDatum
-                          .filter((saldo) =>
-                            balansRekeningGroepSoorten.includes(
-                              saldo.rekeningGroepSoort as RekeningGroepSoort,
-                            ),
-                          )
-                          .sort((a, b) => a.sortOrder - b.sortOrder)
-                          .map((saldo) => ({
-                            ...saldo,
-                            bedrag: saldo.periodeBetaling,
-                          }))}
-                      />
-                    </Grid>
-                    <Grid size={1}>
-                      <Resultaat
-                        title={'Stand'}
-                        datum={stand.peilDatum}
-                        saldi={stand.geaggregeerdResultaatOpDatum
-                          .filter((saldo) =>
-                            balansRekeningGroepSoorten.includes(
-                              saldo.rekeningGroepSoort as RekeningGroepSoort,
-                            ),
-                          )
-                          .sort((a, b) => a.sortOrder - b.sortOrder)
-                          .map((saldo) => ({
-                            ...saldo,
-                            bedrag: saldo.openingsBalansSaldo + saldo.periodeBetaling,
-                          }))}
-                      />
-                    </Grid>
+                <Grid
+                  container
+                  spacing={{ xs: 2, md: 3 }}
+                  columns={{ xs: 1, md: 3 }}
+                >
+                  <Grid size={1}>
+                    <RekeningResultaat
+                      title={'Betaalmiddelen opening'}
+                      datum={stand.periodeStartDatum}
+                      saldi={stand.resultaatOpDatum
+                        .filter(
+                          (saldo) => saldo.rekeningGroepSoort === RekeningGroepSoort.betaalmiddel,
+                        )
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map((saldo) => ({
+                          ...saldo,
+                          bedrag: saldo.openingsBalansSaldo,
+                        }))}
+                    />
+                  </Grid>
+                  <Grid size={1}>
+                    <RekeningResultaat
+                      title={'Mutaties per'}
+                      datum={stand.peilDatum}
+                      saldi={stand.resultaatOpDatum
+                        .filter(
+                          (saldo) => saldo.rekeningGroepSoort === RekeningGroepSoort.betaalmiddel,
+                        )
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map((saldo) => ({
+                          ...saldo,
+                          bedrag: saldo.periodeBetaling,
+                        }))}
+                    />
+                  </Grid>
+                  <Grid size={1}>
+                    <RekeningResultaat
+                      title={'Stand'}
+                      datum={stand.peilDatum}
+                      saldi={stand.resultaatOpDatum
+                        .filter(
+                          (saldo) => saldo.rekeningGroepSoort === RekeningGroepSoort.betaalmiddel,
+                        )
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map((saldo) => ({
+                          ...saldo,
+                          bedrag:
+                            saldo.openingsBalansSaldo +
+                            saldo.periodeBetaling,
+                        }))}
+                    />
                   </Grid>
                 </Grid>
                 {/* {JSON.stringify(stand.balansOpDatum)} */}
@@ -349,33 +262,6 @@ const Profiel: React.FC = () => {
           )}
 
           {gekozenPeriode && actieveAdministratie && <CashFlowGrafiek />}
-
-          {/* de potjes obv de stand*/}
-          {rekeningGroepPerBetalingsSoort &&
-            rekeningGroepPerBetalingsSoort.length >= 0 && (
-              <Accordion>
-                <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <Typography>{creeerReserveringsHorizonTekst()}</Typography>
-                    <Box
-                      sx={{ cursor: 'pointer' }}
-                      onClick={(event) => {
-                        event.stopPropagation(); // Voorkomt dat accordion open/dicht gaat
-                        setSnackbarMessage({
-                          message: potjesSamenvatting,
-                          type: 'info',
-                        });
-                      }}
-                    >
-                      <InfoIcon height="16" />
-                    </Box>
-                  </Box>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <ReserveringTabel />
-                </AccordionDetails>
-              </Accordion>
-            )}
 
           <Accordion>
             <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
@@ -494,7 +380,7 @@ const Profiel: React.FC = () => {
                                                   .map((r) =>
                                                     r.betaalMethoden &&
                                                     r.betaalMethoden?.length > 0
-                                                      ? `${r.betaalMethoden.map((m) => m.naam).join(', ')}`
+                                                      ? `${r.betaalMethoden.map((m) => m).join(', ')}`
                                                       : `geen betaalmethoden`,
                                                   )
                                                   .join('<br />') +
@@ -639,9 +525,7 @@ const Profiel: React.FC = () => {
                                       rgpb.betalingsSoort,
                                     )
                                       ? rekening.naam
-                                      : rekening.betaalMethoden
-                                          ?.map((rekening) => rekening.naam)
-                                          .join(', ')}
+                                      : rekening.betaalMethoden?.join(', ')}
                                   </TableCell>
                                   <TableCell
                                     align="left"
@@ -652,9 +536,7 @@ const Profiel: React.FC = () => {
                                       rgpb.betalingsSoort,
                                     )
                                       ? rekening.naam
-                                      : rekening.betaalMethoden
-                                          ?.map((rekening) => rekening.naam)
-                                          .join(', ')}
+                                      : rekening.betaalMethoden?.join(', ')}
                                   </TableCell>
                                 </TableRow>
                               )),

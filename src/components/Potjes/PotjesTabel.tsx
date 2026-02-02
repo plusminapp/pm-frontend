@@ -7,35 +7,26 @@ import {
   TableCell,
   TableBody,
   Button,
-  ButtonGroup,
 } from '@mui/material';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import {
   reserverenRekeningGroepSoorten,
   RekeningGroepSoort,
-  BudgetType,
 } from '../../model/RekeningGroep';
 import { useCustomContext } from '../../context/CustomContext';
-import { usePlusminApi } from '../../api/plusminApi';
-import { SaldoDTO } from '../../model/Saldo';
 import { useState } from 'react';
 import { HevelReserveOverForm } from './HevelReserveOverForm';
 
-export const ReserveringTabel: React.FC = () => {
+export const PotjesTabel: React.FC = () => {
   const {
     rekeningGroepPerBetalingsSoort,
     stand,
-    setIsStandDirty,
     gekozenPeriode,
-    actieveAdministratie,
-    setSnackbarMessage
   } = useCustomContext();
-  const { putReserveringen, putAlleReserveringen } = usePlusminApi();
 
   const [overTeHevelenReserve, setOverTeHevelenReserve] = useState<
     string | undefined
   >(undefined);
-  const [isReservering, setIsReservering] = useState(false);
 
   const handleHevelReserveOverClick = (rekeningNaam: string) => {
     console.log(
@@ -48,49 +39,7 @@ export const ReserveringTabel: React.FC = () => {
     setOverTeHevelenReserve(rekeningNaam);
   };
 
-const handleReserveerClick = async () => {
-  if (!actieveAdministratie) return;
-  try {
-    setIsReservering(true);
-    await putReserveringen(actieveAdministratie);
-    setIsStandDirty(true);
-    setSnackbarMessage({ message: 'Reserveringen zijn succesvol uitgevoerd.', type: 'success' });
-  } catch (error) {
-    console.error('Fout bij het uitvoeren van reserveringen:', error);
-    
-    let errorMessage = 'Fout bij het uitvoeren van reserveringen.';
-    
-    if (error instanceof Error && error.plusMinError) {
-      errorMessage = error.plusMinError.message;
-    }
-    
-    setSnackbarMessage({ message: errorMessage, type: 'error' });
-  } finally {
-    setIsReservering(false);
-  }
-};
-
-const handleReserveerAlleClick = async () => {
-  if (!actieveAdministratie) return;
-  try {
-    setIsReservering(true);
-    await putAlleReserveringen(actieveAdministratie);
-    setIsStandDirty(true);
-    setSnackbarMessage({ message: 'Reserveringen zijn succesvol uitgevoerd.', type: 'success' });
-  } catch (error) {
-    console.error('Fout bij het uitvoeren van reserveringen:', error);
-    
-    let errorMessage = 'Fout bij het uitvoeren van alle reserveringen.';
-    
-    if (error instanceof Error && error.plusMinError) {
-      errorMessage = error.plusMinError.message;
-    }
-    
-    setSnackbarMessage({ message: errorMessage, type: 'error' });
-  } finally {
-    setIsReservering(false);
-  }
-};  const formatAmount = (amount: number): string => {
+  const formatAmount = (amount: number): string => {
     if (!amount) amount = 0;
     return amount.toLocaleString('nl-NL', {
       style: 'currency',
@@ -99,9 +48,6 @@ const handleReserveerAlleClick = async () => {
   };
 
   const isHuidigePeriode = gekozenPeriode?.periodeStatus === 'HUIDIG';
-
-  const isSpaarpot = (saldo: SaldoDTO) =>
-    saldo.budgetType === BudgetType.sparen;
 
   return (
     <>
@@ -125,9 +71,6 @@ const handleReserveerAlleClick = async () => {
                 </TableCell>
                 <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>
                   reservering
-                </TableCell>
-                <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>
-                  opgenomen
                 </TableCell>
                 <TableCell align="right" sx={{ color: '#fff', padding: '5px' }}>
                   betalingen
@@ -195,14 +138,6 @@ const handleReserveerAlleClick = async () => {
                               {formatAmount(saldo.periodeReservering)}
                             </TableCell>
                             <TableCell sx={{ padding: '5px' }} align="right">
-                              {isSpaarpot(saldo)
-                                ? formatAmount(
-                                    saldo.openingsOpgenomenSaldo +
-                                      saldo.periodeOpgenomenSaldo,
-                                  )
-                                : null}
-                            </TableCell>
-                            <TableCell sx={{ padding: '5px' }} align="right">
                               {formatAmount(saldo.periodeBetaling)}
                             </TableCell>
                             <TableCell sx={{ padding: '5px' }} align="right">
@@ -248,27 +183,6 @@ const handleReserveerAlleClick = async () => {
                       { rows: [], lastGroep: undefined },
                     ).rows}
               </>
-              <TableRow>
-                <TableCell
-                  colSpan={10}
-                  sx={{ textAlign: 'right', padding: '10px' }}
-                >
-                      <ButtonGroup variant="contained" color="success" disabled={isReservering}>
-                      <Button
-                        onClick={handleReserveerClick}
-                        sx={{ fontSize: '0.875rem' }}
-                      >
-                        {isReservering ? 'Bezig...' : 'Reserveer'}
-                      </Button>
-                      <Button
-                        onClick={handleReserveerAlleClick}
-                        sx={{ fontSize: '0.875rem' }}
-                      >
-                        {isReservering ? 'Bezig...' : 'Reserveer Alle'}
-                      </Button>
-                      </ButtonGroup>
-                </TableCell>
-              </TableRow>
             </TableBody>
           </Table>
         </TableContainer>

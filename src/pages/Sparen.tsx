@@ -27,7 +27,7 @@ export default function Sparen() {
       setSparenSaldi(
         stand.resultaatOpDatum.filter(
           (r: SaldoDTO) =>
-            r.rekeningGroepSoort === RekeningGroepSoort.spaarrekening,
+            r.rekeningGroepSoort === RekeningGroepSoort.spaarpot,
         ),
       );
     }
@@ -40,7 +40,7 @@ export default function Sparen() {
           <Typography variant="h4">Sparen</Typography>
           <Typography variant="body2">
             {actieveAdministratie?.naam} heeft op{' '}
-            {gekozenPeriode?.periodeStartDatum} geen spaartegoed ingericht.
+            {gekozenPeriode?.periodeStartDatum} geen spaarpot ingericht.
           </Typography>
           <PeriodeSelect />
         </>
@@ -58,17 +58,6 @@ export default function Sparen() {
               <PeriodeSelect />
             </Grid>
           </Grid>
-          <Accordion elevation={2}>
-            <AccordionSummary
-              expandIcon={<ArrowDropDownIcon />}
-              aria-controls={'afbouwgrafiek'}
-              id={'afbouwgrafiek'}
-            >
-              <Typography sx={{ color: 'FFF' }} component="span">
-                Verwachte opbouw van het spaartegoed
-              </Typography>
-            </AccordionSummary>
-          </Accordion>
         </>
       )}
       {sparenSaldi.map((saldoDTO) => (

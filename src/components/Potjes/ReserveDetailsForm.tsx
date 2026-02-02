@@ -22,11 +22,11 @@ export const ReserveDetailsForm: React.FC<ReserveDetailsFormProps> = ({
   saldo,
   onClose,
 }) => {
-  const formatAmount = (amount: number): string => {
-    return amount.toLocaleString('nl-NL', {
+  const formatAmount = (amount: number | undefined): string => {
+    return amount?.toLocaleString('nl-NL', {
       style: 'currency',
       currency: 'EUR',
-    });
+    }) ?? '€ undefined';
   };
 
   const reserveNu =
@@ -81,13 +81,6 @@ export const ReserveDetailsForm: React.FC<ReserveDetailsFormProps> = ({
               <TableCell sx={{ fontWeight: 'bold' }}>Reservering</TableCell>
               <TableCell>{formatAmount(saldo.periodeReservering)}</TableCell>
             </TableRow>
-
-            {saldo.periodeOpgenomenSaldo !== 0 && (
-              <TableRow>
-                <TableCell sx={{ fontWeight: 'bold' }}>Opgenomen</TableCell>
-                <TableCell>{formatAmount(saldo.periodeOpgenomenSaldo)}</TableCell>
-              </TableRow>
-            )}
 
             <TableRow>
               <TableCell sx={{ fontWeight: 'bold' }}>Betalingen</TableCell>
