@@ -53,7 +53,7 @@ export function PeriodeSelect({
 
   const [editMode, setEditMode] = useState<boolean>(false);
   const [formPeriodes, setFormPeriodes] = useState<Periode[]>(periodes);
-  const { getRekeningenVooradministratieEnPeriode } = usePlusminApi();
+  const { getRekeningenVoorAdministratieEnPeriode } = usePlusminApi();
 
   useEffect(() => {
     setFormPeriodes(periodes);
@@ -69,7 +69,7 @@ export function PeriodeSelect({
     localStorage.setItem('gekozenPeriode', periode?.id + '');
 
     if (actieveAdministratie && periode) {
-      const dataRekening = await getRekeningenVooradministratieEnPeriode(
+      const dataRekening = await getRekeningenVoorAdministratieEnPeriode(
         actieveAdministratie,
         periode,
       );

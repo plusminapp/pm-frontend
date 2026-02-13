@@ -12,13 +12,17 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { SaldoDTO } from '../../model/Saldo';
+import { BetalingDTO } from '@/model/Betaling';
+import BetalingTabel from '../Kasboek/BetalingTabel';
 
 interface ReserveDetailsFormProps {
+  betalingen: BetalingDTO[];
   saldo: SaldoDTO;
   onClose: () => void;
 }
 
 export const ReserveDetailsForm: React.FC<ReserveDetailsFormProps> = ({
+  betalingen,
   saldo,
   onClose,
 }) => {
@@ -84,7 +88,25 @@ export const ReserveDetailsForm: React.FC<ReserveDetailsFormProps> = ({
 
             <TableRow>
               <TableCell sx={{ fontWeight: 'bold' }}>Betalingen</TableCell>
-              <TableCell>{formatAmount(saldo.periodeBetaling)}</TableCell>
+              <TableCell>
+                {formatAmount(saldo.periodeBetaling)}<br />
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell colSpan={2} sx={{ fontWeight: 'bold' }}>
+                <BetalingTabel
+                  betalingen={betalingen}
+                  rekeningNaam={saldo.rekeningNaam}
+                  rekeningGroep={undefined}
+                  geaggregeerdResultaatOpDatum={[]}
+                  onBetalingBewaardChange={function (_: BetalingDTO): void {
+                    throw new Error('Function not implemented.');
+                  }}
+                  onBetalingVerwijderdChange={function (_: BetalingDTO): void {
+                    throw new Error('Function not implemented.');
+                  }} />
+
+              </TableCell>
             </TableRow>
 
             <TableRow sx={{ backgroundColor: '#f5f5f5' }}>

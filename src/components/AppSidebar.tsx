@@ -52,11 +52,12 @@ export function AppSidebar({
 
   const { state, signIn, getAccessToken, revokeAccessToken } = useAuthContext();
   const [expiry, setExpiry] = React.useState<Date | null>(null);
+  // const {  } = usePlusminApi();
 
   const {
     getGebruikerZelf,
-    getRekeningenVooradministratieEnPeriode:
-      getRekeningenVoorAdministratieEnPeriode,
+    getRekeningenVoorAdministratieEnPeriode,
+    getBetalingenVooradministratieVoorPeriode,
     getStandVooradministratieEnDatum,
   } = usePlusminApi();
 
@@ -71,6 +72,7 @@ export function AppSidebar({
     setSnackbarMessage,
     gekozenPeriode,
     setGekozenPeriode,
+    setBetalingen,
     setStand,
     isStandDirty,
     setIsStandDirty,
@@ -162,14 +164,14 @@ export function AppSidebar({
       opgeslagenActieveAdministratieId === undefined
         ? dataGebruiker?.administraties[0]
         : (dataGebruiker.administraties as Administratie[]).find(
-            (hv) => Number(hv.id) === Number(opgeslagenActieveAdministratieId),
-          );
+          (hv) => Number(hv.id) === Number(opgeslagenActieveAdministratieId),
+        );
 
     const opgeslagenGekozenPeriodeId = localStorage.getItem('gekozenPeriode');
     const opgeslagenGekozenPeriode = opgeslagenGekozenPeriodeId
       ? (opgeslagenActieveAdministratie?.periodes as Periode[])?.find(
-          (periode) => periode.id === Number(opgeslagenGekozenPeriodeId),
-        )
+        (periode) => periode.id === Number(opgeslagenGekozenPeriodeId),
+      )
       : undefined;
 
     let nieuweActieveAdministratie, nieuweGekozenPeriode;
@@ -178,7 +180,7 @@ export function AppSidebar({
       if (
         opgeslagenGekozenPeriode &&
         opgeslagenGekozenPeriode.periodeStartDatum !==
-          opgeslagenGekozenPeriode.periodeEindDatum
+        opgeslagenGekozenPeriode.periodeEindDatum
       ) {
         nieuweGekozenPeriode = opgeslagenGekozenPeriode;
       } else {
@@ -231,7 +233,7 @@ export function AppSidebar({
       if (actieveAdministratie && gekozenPeriode) {
         const datum =
           gekozenPeriode.periodeEindDatum >
-          (actieveAdministratie.vandaag ?? dayjs().format('YYYY-MM-DD'))
+            (actieveAdministratie.vandaag ?? dayjs().format('YYYY-MM-DD'))
             ? (actieveAdministratie.vandaag ?? dayjs().format('YYYY-MM-DD'))
             : gekozenPeriode.periodeEindDatum;
         try {
@@ -240,6 +242,11 @@ export function AppSidebar({
             datum,
           );
           setStand(stand);
+          const betalingen = await getBetalingenVooradministratieVoorPeriode(
+            actieveAdministratie,
+            gekozenPeriode,
+          );
+          setBetalingen(betalingen.data.content);
           setIsStandDirty(false);
         } catch (error) {
           console.error('Error fetching stand:', error);
@@ -254,6 +261,7 @@ export function AppSidebar({
     isStandDirty,
     setIsStandDirty,
     setStand,
+    setBetalingen,
     vandaag,
   ]);
 
@@ -272,10 +280,10 @@ export function AppSidebar({
   const pages =
     gebruiker && gebruiker.administraties.length > 0
       ? [
-          { name: 'Stand', icon: PieChart, path: '/stand' },
-          { name: 'Kasboek', icon: Wallet, path: '/kasboek' },
-          { name: 'Potjes', icon: PiggyBank, path: '/potjes' },
-        ]
+        { name: 'Stand', icon: PieChart, path: '/stand' },
+        { name: 'Kasboek', icon: Wallet, path: '/kasboek' },
+        { name: 'Potjes', icon: PiggyBank, path: '/potjes' },
+      ]
       : [];
 
   const heeftAflossing = rekeningGroepen.some(

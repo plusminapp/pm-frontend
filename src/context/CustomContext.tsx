@@ -12,6 +12,7 @@ import { SnackbarMessage } from '../components/StyledSnackbar';
 import { Stand } from '../model/Saldo';
 import { Administratie } from '../model/Administratie';
 import dayjs from 'dayjs';
+import { BetalingDTO } from '@/model/Betaling';
 
 interface CustomContextType {
   gebruiker: Gebruiker | undefined;
@@ -26,6 +27,8 @@ interface CustomContextType {
   setPeriodes: (periodes: Array<Periode>) => void;
   gekozenPeriode: Periode | undefined;
   setGekozenPeriode: (gekozenPeriode: Periode | undefined) => void;
+  betalingen: BetalingDTO[];
+  setBetalingen: (betalingen: BetalingDTO[]) => void;
   stand: Stand | undefined;
   setStand: (stand: Stand | undefined) => void;
   isStandDirty: boolean;
@@ -67,6 +70,7 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
   const [gekozenPeriode, setGekozenPeriode] = useState<Periode | undefined>(
     undefined,
   );
+  const [betalingen, setBetalingen] = useState<BetalingDTO[]>([]);
   const [stand, setStand] = useState<Stand | undefined>(undefined);
   const [isStandDirty, setIsStandDirty] = useState<boolean>(false);
   const [rekeningGroepPerBetalingsSoort, setRekeningGroepPerBetalingsSoort] =
@@ -99,6 +103,8 @@ export const CustomProvider: React.FC<CustomProviderProps> = ({ children }) => {
         setPeriodes,
         gekozenPeriode,
         setGekozenPeriode,
+        betalingen,
+        setBetalingen,
         stand,
         setStand,
         isStandDirty,

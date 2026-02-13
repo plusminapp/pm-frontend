@@ -37,6 +37,7 @@ import { berekenRekeningGroepIcoon } from '../Stand/BerekenStandKleurEnTekst';
 type BetalingTabelProps = {
   betalingen: BetalingDTO[];
   rekeningGroep: RekeningGroepDTO | undefined;
+  rekeningNaam: string | undefined;
   geaggregeerdResultaatOpDatum: SaldoDTO[];
   onBetalingBewaardChange: (betalingDTO: BetalingDTO) => void;
   onBetalingVerwijderdChange: (betalingDTO: BetalingDTO) => void;
@@ -90,7 +91,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
   const getFormattedBedrag = (betaling: BetalingDTO) => {
     const bedrag =
       betaling.betalingsSoort &&
-      bestemmingBetalingsSoorten.includes(betaling.betalingsSoort)
+        bestemmingBetalingsSoorten.includes(betaling.betalingsSoort)
         ? betaling.bedrag
         : -betaling.bedrag;
     return formatter.format(bedrag);
@@ -159,7 +160,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
 
   return (
     <>
-      {heeftIntern && !props.rekeningGroep && (
+      {heeftIntern && !props.rekeningGroep && !props.rekeningNaam && (
         <>
           <Grid display="flex" flexDirection="row" alignItems={'center'}>
             <FormGroup>
@@ -218,164 +219,177 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
       )}
       <TableContainer sx={{ maxHeight: '80vh', overflow: 'auto' }}>
         <Table stickyHeader>
-          <TableHead sx={{ position: 'sticky', top: 0, zIndex: 1 }}>
-            {/* Totalen */}
-            <TableRow
-              sx={{
-                borderTop: '2px solid grey',
-                borderBottom: '2px solid grey',
-              }}
-            >
-              <TableCell
+          {!props.rekeningNaam &&
+            <TableHead sx={{ position: 'sticky', top: 0, zIndex: 1 }}>
+              {/* Totalen */}
+              <TableRow
                 sx={{
                   borderTop: '2px solid grey',
                   borderBottom: '2px solid grey',
-                  padding: '5px',
-                }}
-              ></TableCell>
-              <TableCell
-                sx={{
-                  borderTop: '2px solid grey',
-                  borderBottom: '2px solid grey',
-                  padding: '5px',
-                  fontWeight: 'bold',
-                  maxWidth: '300px',
                 }}
               >
-                Totalen
-              </TableCell>
-              {betaalTabelSaldi
-                .filter(
-                  (saldo) =>
-                    saldo.rekeningGroepSoort &&
-                    betaalTabelRekeningGroepSoorten.includes(
-                      saldo.rekeningGroepSoort as RekeningGroepSoort,
-                    ),
-                )
-                .sort((a, b) => a.sortOrder - b.sortOrder)
-                .map((saldo) => (
+                <TableCell
+                  sx={{
+                    borderTop: '2px solid grey',
+                    borderBottom: '2px solid grey',
+                    padding: '5px',
+                  }}
+                ></TableCell>
+                <TableCell
+                  sx={{
+                    borderTop: '2px solid grey',
+                    borderBottom: '2px solid grey',
+                    padding: '5px',
+                    fontWeight: 'bold',
+                    maxWidth: '300px',
+                  }}
+                >
+                  Totalen
+                </TableCell>
+                {betaalTabelSaldi
+                  .filter(
+                    (saldo) =>
+                      saldo.rekeningGroepSoort &&
+                      betaalTabelRekeningGroepSoorten.includes(
+                        saldo.rekeningGroepSoort as RekeningGroepSoort,
+                      ),
+                  )
+                  .sort((a, b) => a.sortOrder - b.sortOrder)
+                  .map((saldo) => (
+                    <TableCell
+                      key={saldo.rekeningGroepNaam}
+                      sx={{
+                        borderTop: '2px solid grey',
+                        borderBottom: '2px solid grey',
+                        padding: '5px',
+                        fontWeight: 'bold',
+                      }}
+                      align="right"
+                    >
+                      {formatter.format(saldo.periodeBetaling)}
+                    </TableCell>
+                  ))}
+                {gekozenPeriode && isPeriodeOpen(gekozenPeriode) && (
                   <TableCell
-                    key={saldo.rekeningGroepNaam}
                     sx={{
                       borderTop: '2px solid grey',
                       borderBottom: '2px solid grey',
                       padding: '5px',
-                      fontWeight: 'bold',
                     }}
                     align="right"
-                  >
-                    {formatter.format(saldo.periodeBetaling)}
-                  </TableCell>
-                ))}
-              {gekozenPeriode && isPeriodeOpen(gekozenPeriode) && (
-                <TableCell
-                  sx={{
-                    borderTop: '2px solid grey',
-                    borderBottom: '2px solid grey',
-                    padding: '5px',
-                  }}
-                  align="right"
-                />
-              )}
-              {heeftIntern && toonIntern && (
-                <TableCell
-                  sx={{
-                    borderTop: '2px solid grey',
-                    borderBottom: '2px solid grey',
-                    padding: '5px',
-                  }}
-                  align="right"
-                />
-              )}
-            </TableRow>
-
-            <TableRow>
-              <TableCell sx={{ padding: '5px' }}></TableCell>
-              <TableCell sx={{ padding: '5px', maxWidth: '300px' }}>
-                Verwacht
-              </TableCell>
-              {betaalTabelSaldi
-                .sort((a, b) => a.sortOrder - b.sortOrder)
-                .map((saldo) => (
+                  />
+                )}
+                {heeftIntern && toonIntern && (
                   <TableCell
-                    key={saldo.rekeningGroepNaam}
-                    sx={{ padding: '5px' }}
+                    sx={{
+                      borderTop: '2px solid grey',
+                      borderBottom: '2px solid grey',
+                      padding: '5px',
+                    }}
                     align="right"
-                  >
-                    {formatter.format(
-                      saldo.budgetOpPeilDatum - saldo.openingsAchterstand,
-                    )}
-                  </TableCell>
-                ))}
-              {gekozenPeriode && isPeriodeOpen(gekozenPeriode) && (
-                <TableCell sx={{ padding: '5px' }} align="right" />
-              )}
-              {heeftIntern && toonIntern && (
-                <TableCell sx={{ padding: '5px' }} align="right" />
-              )}
-            </TableRow>
+                  />
+                )}
+              </TableRow>
 
-            <TableRow>
-              <TableCell sx={{ padding: '5px' }}></TableCell>
-              <TableCell sx={{ padding: '5px', maxWidth: '300px' }}>
-                Overschot/tekort
-              </TableCell>
-              {betaalTabelSaldi
-                .sort((a, b) => a.sortOrder - b.sortOrder)
-                .map((saldo) => (
-                  <TableCell
-                    key={saldo.rekeningGroepNaam}
-                    sx={{ padding: '5px' }}
-                    align="right"
-                  >
-                    {berekenRekeningGroepIcoon(12, saldo)}{' '}
-                    {formatter.format(
-                      saldo.periodeBetaling +
+              <TableRow>
+                <TableCell sx={{ padding: '5px' }}></TableCell>
+                <TableCell sx={{ padding: '5px', maxWidth: '300px' }}>
+                  Verwacht
+                </TableCell>
+                {betaalTabelSaldi
+                  .sort((a, b) => a.sortOrder - b.sortOrder)
+                  .map((saldo) => (
+                    <TableCell
+                      key={saldo.rekeningGroepNaam}
+                      sx={{ padding: '5px' }}
+                      align="right"
+                    >
+                      {formatter.format(
+                        saldo.budgetOpPeilDatum - saldo.openingsAchterstand,
+                      )}
+                    </TableCell>
+                  ))}
+                {gekozenPeriode && isPeriodeOpen(gekozenPeriode) && (
+                  <TableCell sx={{ padding: '5px' }} align="right" />
+                )}
+                {heeftIntern && toonIntern && (
+                  <TableCell sx={{ padding: '5px' }} align="right" />
+                )}
+              </TableRow>
+
+              <TableRow>
+                <TableCell sx={{ padding: '5px' }}></TableCell>
+                <TableCell sx={{ padding: '5px', maxWidth: '300px' }}>
+                  Overschot/tekort
+                </TableCell>
+                {betaalTabelSaldi
+                  .sort((a, b) => a.sortOrder - b.sortOrder)
+                  .map((saldo) => (
+                    <TableCell
+                      key={saldo.rekeningGroepNaam}
+                      sx={{ padding: '5px' }}
+                      align="right"
+                    >
+                      {berekenRekeningGroepIcoon(12, saldo)}{' '}
+                      {formatter.format(
+                        saldo.periodeBetaling +
                         saldo.openingsAchterstand +
                         (saldo.budgetType && saldo.budgetType === 'INKOMSTEN'
                           ? saldo.budgetOpPeilDatum
                           : -saldo.budgetOpPeilDatum),
-                    )}
-                  </TableCell>
-                ))}
-              {gekozenPeriode && isPeriodeOpen(gekozenPeriode) && (
-                <TableCell sx={{ padding: '5px' }} align="right" />
-              )}
-              {heeftIntern && toonIntern && (
-                <TableCell sx={{ padding: '5px' }} align="right" />
-              )}
-            </TableRow>
+                      )}
+                    </TableCell>
+                  ))}
+                {gekozenPeriode && isPeriodeOpen(gekozenPeriode) && (
+                  <TableCell sx={{ padding: '5px' }} align="right" />
+                )}
+                {heeftIntern && toonIntern && (
+                  <TableCell sx={{ padding: '5px' }} align="right" />
+                )}
+              </TableRow>
 
-            <TableRow
-              sx={{
-                borderTop: '2px solid grey',
-                borderBottom: '2px solid grey',
-              }}
-            >
-              <TableCell
+              <TableRow
                 sx={{
                   borderTop: '2px solid grey',
                   borderBottom: '2px solid grey',
-                  padding: '5px',
                 }}
               >
-                Datum
-              </TableCell>
-              <TableCell
-                sx={{
-                  borderTop: '2px solid grey',
-                  borderBottom: '2px solid grey',
-                  padding: '5px',
-                  maxWidth: '300px',
-                }}
-              >
-                Omschrijving
-              </TableCell>
-              {betaalTabelRekeningGroepen
-                .sort((a, b) => a.sortOrder - b.sortOrder)
-                .map((rekeningGroep) => (
+                <TableCell
+                  sx={{
+                    borderTop: '2px solid grey',
+                    borderBottom: '2px solid grey',
+                    padding: '5px',
+                  }}
+                >
+                  Datum
+                </TableCell>
+                <TableCell
+                  sx={{
+                    borderTop: '2px solid grey',
+                    borderBottom: '2px solid grey',
+                    padding: '5px',
+                    maxWidth: '300px',
+                  }}
+                >
+                  Omschrijving
+                </TableCell>
+                {betaalTabelRekeningGroepen
+                  .sort((a, b) => a.sortOrder - b.sortOrder)
+                  .map((rekeningGroep) => (
+                    <TableCell
+                      key={rekeningGroep.naam}
+                      sx={{
+                        borderTop: '2px solid grey',
+                        borderBottom: '2px solid grey',
+                        padding: '5px',
+                      }}
+                      align="right"
+                    >
+                      {rekeningGroep.naam}
+                    </TableCell>
+                  ))}
+                {!props.rekeningGroep && heeftIntern && toonIntern && (
                   <TableCell
-                    key={rekeningGroep.naam}
                     sx={{
                       borderTop: '2px solid grey',
                       borderBottom: '2px solid grey',
@@ -383,53 +397,41 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
                     }}
                     align="right"
                   >
-                    {rekeningGroep.naam}
-                  </TableCell>
-                ))}
-              {!props.rekeningGroep && heeftIntern && toonIntern && (
-                <TableCell
-                  sx={{
-                    borderTop: '2px solid grey',
-                    borderBottom: '2px solid grey',
-                    padding: '5px',
-                  }}
-                  align="right"
-                >
-                  <Grid
-                    display="flex"
-                    flexDirection="row"
-                    alignItems={'center'}
-                    justifyContent="flex-end"
-                  >
-                    Intern
-                    <Box
+                    <Grid
+                      display="flex"
+                      flexDirection="row"
                       alignItems={'center'}
-                      display={'flex'}
-                      sx={{ cursor: 'pointer', mr: 0, pr: 0 }}
-                      onClick={() =>
-                        setSnackbarMessage({
-                          message: interneBetalingKopMessage,
-                          type: 'info',
-                        })
-                      }
+                      justifyContent="flex-end"
                     >
-                      <InfoIcon height="16" />
-                    </Box>
-                  </Grid>
-                </TableCell>
-              )}
-              {gekozenPeriode && isPeriodeOpen(gekozenPeriode) && (
-                <TableCell
-                  sx={{
-                    borderTop: '2px solid grey',
-                    borderBottom: '2px solid grey',
-                    padding: '5px',
-                  }}
-                  align="right"
-                />
-              )}
-            </TableRow>
-          </TableHead>
+                      Intern
+                      <Box
+                        alignItems={'center'}
+                        display={'flex'}
+                        sx={{ cursor: 'pointer', mr: 0, pr: 0 }}
+                        onClick={() =>
+                          setSnackbarMessage({
+                            message: interneBetalingKopMessage,
+                            type: 'info',
+                          })
+                        }
+                      >
+                        <InfoIcon height="16" />
+                      </Box>
+                    </Grid>
+                  </TableCell>
+                )}
+                {gekozenPeriode && isPeriodeOpen(gekozenPeriode) && (
+                  <TableCell
+                    sx={{
+                      borderTop: '2px solid grey',
+                      borderBottom: '2px solid grey',
+                      padding: '5px',
+                    }}
+                    align="right"
+                  />
+                )}
+              </TableRow>
+            </TableHead>}
           <TableBody>
             <>
               {props.betalingen
@@ -450,19 +452,19 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
                     (!isIntern(betaling) || toonIntern) && (
                       <TableRow key={betaling.id}>
                         <TableCell sx={{ padding: '5px' }}>
-                          {dayjs(betaling.boekingsdatum).format('D MMMM')}
+                          {dayjs(betaling.boekingsdatum).format('D-M')}
                         </TableCell>
                         <TableCell sx={{ padding: '5px', maxWidth: '300px' }}>
                           {toonIntern &&
                             (isIntern(betaling)
                               ? betaling.betalingsSoort &&
-                                `(${betaling.betalingsSoort.charAt(0).toUpperCase()}${betaling.betalingsSoort.slice(1).toLowerCase()}: `
+                              `(${betaling.betalingsSoort.charAt(0).toUpperCase()}${betaling.betalingsSoort.slice(1).toLowerCase()}: `
                               : '(')}
                           {toonIntern &&
                             (betaling.betalingsSoort &&
-                            bestemmingBetalingsSoorten.includes(
-                              betaling.betalingsSoort,
-                            )
+                              bestemmingBetalingsSoorten.includes(
+                                betaling.betalingsSoort,
+                              )
                               ? `${betaling.bron})`
                               : `${betaling.bestemming})`)}{' '}
                           {betaling.omschrijving}
@@ -491,12 +493,13 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
                         )}
                         {gekozenPeriode && isPeriodeOpen(gekozenPeriode) && (
                           <TableCell size="small" sx={{ p: '5px' }}>
-                            <Button
+                            {!props.rekeningNaam && (
+                              <Button
                               onClick={() => handleEditClick(betaling)}
                               sx={{ minWidth: '24px', color: 'grey', p: '5px' }}
                             >
                               <EditIcon fontSize="small" />
-                            </Button>
+                            </Button>)}
                           </TableCell>
                         )}
                       </TableRow>

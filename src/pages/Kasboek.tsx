@@ -1,5 +1,5 @@
 import { BetalingDTO } from '../model/Betaling';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Accordion,
   AccordionDetails,
@@ -19,19 +19,14 @@ import PhotoCameraOutlinedIcon from '@mui/icons-material/PhotoCameraOutlined';
 import dayjs from 'dayjs';
 import BetalingTabel from '../components/Kasboek/BetalingTabel';
 import KolommenTabel from '../components/Kasboek/KolommenTabel';
-import { usePlusminApi } from '../api/plusminApi';
 
 export default function Kasboek() {
-  const { actieveAdministratie, gekozenPeriode, stand, setIsStandDirty } =
+  const { gekozenPeriode, betalingen, stand, setIsStandDirty } =
     useCustomContext();
-
-  const [betalingen, setBetalingen] = useState<BetalingDTO[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
   const theme = useTheme();
   const isMdOrLarger = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate();
-  const { getBetalingenVooradministratieVoorPeriode } = usePlusminApi();
 
   const [expanded, setExpanded] = useState<string | false>(
     isMdOrLarger ? 'tabel' : 'kolommen',
@@ -40,25 +35,6 @@ export default function Kasboek() {
     (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false);
     };
-
-  useEffect(() => {
-    if (actieveAdministratie && gekozenPeriode) {
-      setIsLoading(true);
-      getBetalingenVooradministratieVoorPeriode(actieveAdministratie, gekozenPeriode)
-        .then((response) => {
-          setBetalingen(response.data.content);
-        })
-        .catch((error) => {
-          console.error('Failed to fetch betalingen', error);
-          setBetalingen([]);
-        })
-        .finally(() => setIsLoading(false));
-    }
-  }, [
-    actieveAdministratie,
-    gekozenPeriode,
-    getBetalingenVooradministratieVoorPeriode,
-  ]);
 
   const onBetalingBewaardChange = (betaling: BetalingDTO): void => {
     const isBoekingInGekozenPeriode =
@@ -69,28 +45,16 @@ export default function Kasboek() {
         dayjs(gekozenPeriode?.periodeEindDatum).add(1, 'day'),
       );
     if (isBoekingInGekozenPeriode && betaling) {
-      setBetalingen([
-        ...betalingen.filter((b) => b.id !== betaling?.id),
-        betaling,
-      ]);
+      setIsStandDirty(true);
     }
     setIsStandDirty(true);
   };
-  const onBetalingVerwijderdChange = (sortOrder: string): void => {
-    setBetalingen(betalingen.filter((b) => b.sortOrder !== sortOrder));
+  const onBetalingVerwijderdChange = (): void => {
     setIsStandDirty(true);
   };
   const isPeriodeOpen =
     gekozenPeriode?.periodeStatus === 'OPEN' ||
     gekozenPeriode?.periodeStatus === 'HUIDIG';
-
-  if (isLoading) {
-    return (
-      <Typography sx={{ mb: '25px' }}>
-        De betalingen worden opgehaald.
-      </Typography>
-    );
-  }
 
   return (
     <>
@@ -125,20 +89,21 @@ export default function Kasboek() {
             <UpsertBetalingDialoog
               editMode={false}
               betaling={undefined}
-              onUpsertBetalingClose={() => {}}
+              onUpsertBetalingClose={() => { }}
               onBetalingBewaardChange={(betalingDTO) =>
                 onBetalingBewaardChange(betalingDTO)
               }
-              onBetalingVerwijderdChange={(betalingDTO) =>
-                onBetalingVerwijderdChange(betalingDTO.sortOrder)
+              onBetalingVerwijderdChange={() =>
+                onBetalingVerwijderdChange()
               }
             />
           </Grid>
         )}
       </Grid>
-      {isMdOrLarger && gekozenPeriode && stand && (
+      {isMdOrLarger && gekozenPeriode && betalingen && stand && (
         <BetalingTabel
           rekeningGroep={undefined}
+          rekeningNaam={undefined}
           betalingen={betalingen}
           geaggregeerdResultaatOpDatum={stand?.geaggregeerdResultaatOpDatum.sort(
             (a, b) => a.sortOrder - b.sortOrder,
@@ -146,8 +111,8 @@ export default function Kasboek() {
           onBetalingBewaardChange={(betalingDTO) =>
             onBetalingBewaardChange(betalingDTO)
           }
-          onBetalingVerwijderdChange={(betalingDTO) =>
-            onBetalingVerwijderdChange(betalingDTO.sortOrder)
+          onBetalingVerwijderdChange={() =>
+            onBetalingVerwijderdChange()
           }
         />
       )}
@@ -163,20 +128,21 @@ export default function Kasboek() {
           >
             <Typography component="span">Weergave per kolom</Typography>
           </AccordionSummary>
-          <AccordionDetails sx={{ p: 0 }}>
-            <KolommenTabel
-              betalingen={betalingen}
-              geaggregeerdResultaatOpDatum={
-                stand?.geaggregeerdResultaatOpDatum ?? []
-              }
-              onBetalingBewaardChange={(betalingDTO) =>
-                onBetalingBewaardChange(betalingDTO)
-              }
-              onBetalingVerwijderdChange={(betalingDTO) =>
-                onBetalingVerwijderdChange(betalingDTO.sortOrder)
-              }
-            />
-          </AccordionDetails>
+          {betalingen &&
+            <AccordionDetails sx={{ p: 0 }}>
+              <KolommenTabel
+                betalingen={betalingen}
+                geaggregeerdResultaatOpDatum={
+                  stand?.geaggregeerdResultaatOpDatum ?? []
+                }
+                onBetalingBewaardChange={(betalingDTO) =>
+                  onBetalingBewaardChange(betalingDTO)
+                }
+                onBetalingVerwijderdChange={() =>
+                  onBetalingVerwijderdChange()
+                }
+              />
+            </AccordionDetails>}
         </Accordion>
       </Grid>
       {/* {JSON.stringify(stand?.geaggregeerdResultaatOpDatum)} */}

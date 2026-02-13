@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { HevelReserveOverForm } from './HevelReserveOverForm';
 import { ReserveDetailsForm } from './ReserveDetailsForm';
 import { Potje } from './Potje';
+import { BetalingDTO, BetalingsSoort } from '@/model/Betaling';
 
 const IconButton = styled(Box)({
   width: '28px',
@@ -53,8 +54,8 @@ interface KolomData {
 
 export const PotjesVisualisatie: React.FC = () => {
   const {
+    betalingen,
     stand,
-    gekozenPeriode,
   } = useCustomContext();
 
   const [overTeHevelenReserve, setOverTeHevelenReserve] = useState<
@@ -63,6 +64,7 @@ export const PotjesVisualisatie: React.FC = () => {
   const [detailsSaldo, setDetailsSaldo] = useState<SaldoDTO | undefined>(
     undefined,
   );
+  const [detailsBetalingen, setDetailsBetalingen] = useState<BetalingDTO[]>([]);
 
   const handleHevelReserveOverClick = (rekeningNaam: string) => {
     setOverTeHevelenReserve(rekeningNaam);
@@ -70,9 +72,11 @@ export const PotjesVisualisatie: React.FC = () => {
 
   const handleDetailsClick = (saldo: SaldoDTO) => {
     setDetailsSaldo(saldo);
+    setDetailsBetalingen(betalingen.filter(
+      (betaling) =>
+        betaling.betalingsSoort !== BetalingsSoort.reserveren &&
+        (betaling.bron === saldo.rekeningNaam || betaling.bestemming === saldo.rekeningNaam)))
   };
-
-  const isHuidigePeriode = gekozenPeriode?.periodeStatus === 'HUIDIG';
 
   // Groepeer saldi per RekeningGroep
   const groepeerPerRekeningGroep = () => {
@@ -265,54 +269,52 @@ export const PotjesVisualisatie: React.FC = () => {
                           eindReserve={eindReserve}
                         />
 
-                        {isHuidigePeriode && (
-                          <IconContainer>
-                            {/* Bovenste icons */}
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '8px',
-                              }}
-                            >
-                              <IconButton
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  // Actie voor PointOfSale komt later
-                                }}
-                              >
-                                <PointOfSaleOutlinedIcon
-                                  sx={{ fontSize: '18px', color: '#666' }}
-                                />
-                              </IconButton>
-
-                              <IconButton
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDetailsClick(saldo);
-                                }}
-                              >
-                                <VisibilityOutlinedIcon
-                                  sx={{ fontSize: '18px', color: '#666' }}
-                                />
-                              </IconButton>
-                            </Box>
-
-                            {/* Onderste icon - UTurnRight */}
+                        <IconContainer>
+                          {/* Bovenste icons */}
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '8px',
+                            }}
+                          >
                             <IconButton
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleHevelReserveOverClick(
-                                  saldo.rekeningNaam,
-                                );
+                                // Actie voor PointOfSale komt later
                               }}
                             >
-                              <UTurnRightOutlinedIcon
+                              <PointOfSaleOutlinedIcon
                                 sx={{ fontSize: '18px', color: '#666' }}
                               />
                             </IconButton>
-                          </IconContainer>
-                        )}
+
+                            <IconButton
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDetailsClick(saldo);
+                              }}
+                            >
+                              <VisibilityOutlinedIcon
+                                sx={{ fontSize: '18px', color: '#666' }}
+                              />
+                            </IconButton>
+                          </Box>
+
+                          {/* Onderste icon - UTurnRight */}
+                          <IconButton
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleHevelReserveOverClick(
+                                saldo.rekeningNaam,
+                              );
+                            }}
+                          >
+                            <UTurnRightOutlinedIcon
+                              sx={{ fontSize: '18px', color: '#666' }}
+                            />
+                          </IconButton>
+                        </IconContainer>
                       </Box>
                     );
                   })}
@@ -333,6 +335,7 @@ export const PotjesVisualisatie: React.FC = () => {
 
       {detailsSaldo !== undefined && (
         <ReserveDetailsForm
+          betalingen={detailsBetalingen}
           saldo={detailsSaldo}
           onClose={() => setDetailsSaldo(undefined)}
         />
