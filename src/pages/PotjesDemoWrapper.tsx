@@ -3,11 +3,12 @@ import { Box, TextField, Typography, Tabs, Tab } from '@mui/material';
 import PotjesUitgave from '../components/Potjes/PotjesUitgave';
 import PotjesInkomstenDemo from '../components/Potjes/PotjesInkomstenDemo';
 import PotjesSparenDemo from '../components/Potjes/PotjesSparenDemo';
+import PotjesAggregaatDemo from '../components/Potjes/PotjesAggregaatDemo';
 
 const PotjesDemoWrapper: React.FC = () => {
   const [openingsReserveSaldo, setOpeningsReserveSaldo] = useState<number>(0);
   const [periodeReservering, setPeriodeReservering] = useState<number>(0);
-  const tabLabels = ['Leefgeld', 'Vast', 'Inkomsten', 'Sparen'];
+  const tabLabels = ['Leefgeld', 'Vast', 'Inkomsten', 'Sparen', 'Aggregaat'];
   const [naam, setNaam] = useState<string>(tabLabels[0]);
   const [isNaamDirty, setIsNaamDirty] = useState<boolean>(false);
   const [periodeBetaling, setPeriodeBetaling] = useState<number>(0);
@@ -25,11 +26,14 @@ const PotjesDemoWrapper: React.FC = () => {
   const [tabIndex, setTabIndex] = useState<number>(0);
   const [budgetMaandBedrag, setBudgetMaandBedrag] = useState<number>(100);
   const [bedragPerMaandTeGaan, setBedragPerMaandTeGaan] = useState<number>(0);
+  const [aantalPotjes, setAantalPotjes] = useState<number>(3);
+  const [aantalOranje, setAantalOranje] = useState<number>(0);
+  const [aantalRode, setAantalRode] = useState<number>(0);
 
   return (
     <Box sx={{ maxWidth: 720, mx: 'auto', p: 2 }}>
       <Typography variant="h5" sx={{ mb: 2 }}>
-        {`${['Leefgeld', 'Vast', 'Inkomsten', 'Sparen'][tabIndex]} Potjes Demo`}
+        {`${['Leefgeld', 'Vast', 'Inkomsten', 'Sparen', 'Aggregaat'][tabIndex]} Potjes Demo`}
       </Typography>
 
       <Box
@@ -54,92 +58,126 @@ const PotjesDemoWrapper: React.FC = () => {
           fullWidth
         />
 
-        <TextField
-          label="budgetMaandBedrag"
-          type="number"
-          value={budgetMaandBedrag}
-          onChange={(e) => setBudgetMaandBedrag(Number(e.target.value))}
-          size="small"
-          fullWidth
-        />
-
-        <TextField
-          label="openingsReserveSaldo"
-          type="number"
-          value={openingsReserveSaldo}
-          onChange={(e) => setOpeningsReserveSaldo(Number(e.target.value))}
-          size="small"
-          fullWidth
-        />
-
-        <TextField
-          label="periodeReservering"
-          type="number"
-          value={periodeReservering}
-          onChange={(e) => setPeriodeReservering(Number(e.target.value))}
-          size="small"
-          fullWidth
-        />
-
-        {/* date fields: show only for tabs Vast(1) and Inkomsten(2) */}
-        {tabIndex !== 0 && tabIndex !== 3 && (
+        {/* When Aggregaat tab is selected show only aggregaat-specific fields (name is always shown above) */}
+        {tabIndex === 4 ? (
           <>
             <TextField
-              label="peilDatum"
-              type="date"
-              value={peilDatum}
-              onChange={(e) => setpeilDatum(e.target.value)}
+              label="aantal potjes"
+              type="number"
+              value={aantalPotjes}
+              onChange={(e) => setAantalPotjes(Number(e.target.value))}
               size="small"
               fullWidth
-              slotProps={{ inputLabel: { shrink: true } }}
             />
+
             <TextField
-              label="budgetBetaalDatum"
-              type="date"
-              value={budgetBetaalDatum}
-              onChange={(e) => setBudgetBetaalDatum(e.target.value)}
+              label="aantal oranje"
+              type="number"
+              value={aantalOranje}
+              onChange={(e) => setAantalOranje(Number(e.target.value))}
               size="small"
               fullWidth
-              slotProps={{ inputLabel: { shrink: true } }}
+            />
+
+            <TextField
+              label="aantal rode"
+              type="number"
+              value={aantalRode}
+              onChange={(e) => setAantalRode(Number(e.target.value))}
+              size="small"
+              fullWidth
             />
           </>
-        )}
+        ) : (
+          <>
+            <TextField
+              label="budgetMaandBedrag"
+              type="number"
+              value={budgetMaandBedrag}
+              onChange={(e) => setBudgetMaandBedrag(Number(e.target.value))}
+              size="small"
+              fullWidth
+            />
 
-        <TextField
-          label="periodeBetaling"
-          type="number"
-          value={periodeBetaling}
-          onChange={(e) => setPeriodeBetaling(Number(e.target.value))}
-          size="small"
-          fullWidth
-        />
+            <TextField
+              label="openingsReserveSaldo"
+              type="number"
+              value={openingsReserveSaldo}
+              onChange={(e) => setOpeningsReserveSaldo(Number(e.target.value))}
+              size="small"
+              fullWidth
+            />
 
-        {(tabIndex === 0 || tabIndex === 1) && (
-          <TextField
-            label="nog nodig"
-            type="number"
-            value={nogNodig}
-            onChange={(e) => setNogNodig(Number(e.target.value))}
-            size="small"
-            fullWidth
-          />
-        )}
+            <TextField
+              label="periodeReservering"
+              type="number"
+              value={periodeReservering}
+              onChange={(e) => setPeriodeReservering(Number(e.target.value))}
+              size="small"
+              fullWidth
+            />
 
-        {/* Sparen-only input */}
-        {tabIndex === 3 && (
-          <TextField
-            label="bedragPerMaandTeGaan"
-            type="number"
-            value={bedragPerMaandTeGaan}
-            onChange={(e) => setBedragPerMaandTeGaan(Number(e.target.value))}
-            size="small"
-            fullWidth
-          />
+            {/* date fields: show only for tabs Vast(1) and Inkomsten(2) */}
+            {tabIndex !== 0 && tabIndex !== 3 && (
+              <>
+                <TextField
+                  label="peilDatum"
+                  type="date"
+                  value={peilDatum}
+                  onChange={(e) => setpeilDatum(e.target.value)}
+                  size="small"
+                  fullWidth
+                  slotProps={{ inputLabel: { shrink: true } }}
+                />
+                <TextField
+                  label="budgetBetaalDatum"
+                  type="date"
+                  value={budgetBetaalDatum}
+                  onChange={(e) => setBudgetBetaalDatum(e.target.value)}
+                  size="small"
+                  fullWidth
+                  slotProps={{ inputLabel: { shrink: true } }}
+                />
+              </>
+            )}
+
+            <TextField
+              label="periodeBetaling"
+              type="number"
+              value={periodeBetaling}
+              onChange={(e) => setPeriodeBetaling(Number(e.target.value))}
+              size="small"
+              fullWidth
+            />
+
+            {(tabIndex === 0 || tabIndex === 1) && (
+              <TextField
+                label="nog nodig"
+                type="number"
+                value={nogNodig}
+                onChange={(e) => setNogNodig(Number(e.target.value))}
+                size="small"
+                fullWidth
+              />
+            )}
+
+            {/* Sparen-only input */}
+            {tabIndex === 3 && (
+              <TextField
+                label="bedragPerMaandTeGaan"
+                type="number"
+                value={bedragPerMaandTeGaan}
+                onChange={(e) => setBedragPerMaandTeGaan(Number(e.target.value))}
+                size="small"
+                fullWidth
+              />
+            )}
+          </>
         )}
       </Box>
 
       <Box sx={{ mt: 2 }}>
-        <Tabs
+          <Tabs
           value={tabIndex}
           onChange={(_, v) => {
             setTabIndex(v);
@@ -153,6 +191,7 @@ const PotjesDemoWrapper: React.FC = () => {
           <Tab label="Vast" />
           <Tab label="Inkomsten" />
           <Tab label="Sparen" />
+          <Tab label="Aggregaat" />
         </Tabs>
 
         {/* Tab panels - render based on tabIndex */}
@@ -203,6 +242,15 @@ const PotjesDemoWrapper: React.FC = () => {
               nogNodig={nogNodig}
               budgetMaandBedrag={budgetMaandBedrag}
               bedragPerMaandTeGaan={bedragPerMaandTeGaan}
+            />
+          )}
+
+          {tabIndex === 4 && (
+            <PotjesAggregaatDemo
+              naam={naam}
+              aantal={aantalPotjes}
+              aantalOranje={aantalOranje}
+              aantalRood={aantalRode}
             />
           )}
         </Box>

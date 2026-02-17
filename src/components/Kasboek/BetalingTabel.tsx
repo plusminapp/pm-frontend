@@ -494,13 +494,14 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
                         )}
                         {gekozenPeriode && isPeriodeOpen(gekozenPeriode) && (
                           <TableCell size="small" sx={{ p: '5px' }}>
-                            {!props.rekeningNaam && (
+                            {betaling.betalingsSoort !== BetalingsSoort.reserveren && (
                               <Button
                                 onClick={() => handleEditClick(betaling)}
                                 sx={{ minWidth: '24px', color: 'grey', p: '5px' }}
                               >
                                 <EditIcon fontSize="small" />
-                              </Button>)}
+                              </Button>
+                            )}
                           </TableCell>
                         )}
                       </TableRow>

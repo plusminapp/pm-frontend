@@ -19,8 +19,8 @@ export default function Home() {
       </Typography>
       <Typography sx={{ my: '25px' }}>
         Op{' '}
-        <a href="https://plusmingereedschapskist.nl">
-          https://plusmingereedschapskist.nl
+        <a href="https://documentatie.plusmin.org" target="_blank" rel="noopener noreferrer">
+          https://documentatie.plusmin.org
         </a>{' '}
         kun je meer informatie vinden.
       </Typography>

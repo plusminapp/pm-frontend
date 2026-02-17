@@ -14,6 +14,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { SaldoDTO } from '../../model/Saldo';
 import { BetalingDTO, BetalingsSoort } from '@/model/Betaling';
 import BetalingTabel from '../Kasboek/BetalingTabel';
+import { useCustomContext } from '@/context/CustomContext';
 
 interface ReserveDetailsFormProps {
   betalingen: BetalingDTO[];
@@ -32,6 +33,10 @@ export const ReserveDetailsForm: React.FC<ReserveDetailsFormProps> = ({
       currency: 'EUR',
     }) ?? '€ undefined';
   };
+
+    const { setIsStandDirty } =
+      useCustomContext();
+  
 
   const reserveNu =
     saldo.openingsReserveSaldo + saldo.periodeReservering - saldo.periodeBetaling;
@@ -93,10 +98,10 @@ export const ReserveDetailsForm: React.FC<ReserveDetailsFormProps> = ({
                   rekeningGroep={undefined}
                   geaggregeerdResultaatOpDatum={[]}
                   onBetalingBewaardChange={function (_: BetalingDTO): void {
-                    throw new Error('Function not implemented.');
+                    setIsStandDirty(true);
                   }}
                   onBetalingVerwijderdChange={function (_: BetalingDTO): void {
-                    throw new Error('Function not implemented.');
+                    setIsStandDirty(true);
                   }} />
 
               </TableCell>
@@ -116,10 +121,10 @@ export const ReserveDetailsForm: React.FC<ReserveDetailsFormProps> = ({
                   rekeningGroep={undefined}
                   geaggregeerdResultaatOpDatum={[]}
                   onBetalingBewaardChange={function (_: BetalingDTO): void {
-                    throw new Error('Function not implemented.');
+                    setIsStandDirty(true);
                   }}
                   onBetalingVerwijderdChange={function (_: BetalingDTO): void {
-                    throw new Error('Function not implemented.');
+                    setIsStandDirty(true);
                   }} />
 
               </TableCell>

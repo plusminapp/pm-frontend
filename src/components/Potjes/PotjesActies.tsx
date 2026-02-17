@@ -58,7 +58,7 @@ export const PotjesActies: React.FC<PotjesActiesProps> = ({
     isHuidigePeriode
       ? <ButtonGroup variant="contained" color="success" disabled={isReservering}>
         <Button onClick={handleReserveerClick} sx={{ fontSize: '0.875rem' }}>
-          {isReservering ? 'Bezig...' : `Toewijsbaar: ${toewijsbaarFormatted ?? '—'}`}
+            {isReservering ? 'Bezig...' : `Toewijsbaar: ${toewijsbaarFormatted ?? '—'}`}
         </Button>
       </ButtonGroup>
       : <ButtonGroup variant="contained" color="success" disabled>
