@@ -45,7 +45,6 @@ const CreeerAdministratie: React.FC = () => {
         message: 'Spel succesvol geüpload',
         type: 'success',
       });
-      setIsStandDirty(true);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -86,6 +85,7 @@ const CreeerAdministratie: React.FC = () => {
 
       setError('Fout bij uploaden van het spel. Probeer opnieuw.');
     } finally {
+      setIsStandDirty(true);
       setIsUploading(false);
     }
   };
@@ -103,9 +103,10 @@ const CreeerAdministratie: React.FC = () => {
         {isUploading
           ? 'Aan het uploaden...'
           : <>
-              Je kunt een administratie aanmaken of vervangen door een JSON{' '}
-              <em>administratie-wrapper</em> te uploaden.
-            </>}
+            Je kunt een administratie aanmaken of vervangen door een JSON{' '}
+            <em>administratie-wrapper</em> te uploaden.
+
+          </>}
       </Typography>
       <input
         type="file"

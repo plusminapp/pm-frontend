@@ -31,6 +31,7 @@ import {
   PieChart,
   X,
 } from 'lucide-react';
+import { CupIcon } from '@/icons/Cup';
 
 const I18N_KEY = 'components.header';
 
@@ -282,7 +283,7 @@ export function AppSidebar({
       ? [
         { name: 'Stand', icon: PieChart, path: '/stand' },
         { name: 'Kasboek', icon: Wallet, path: '/kasboek' },
-        { name: 'Potjes', icon: PiggyBank, path: '/potjes' },
+        { name: 'Potjes', icon: CupIcon, path: '/potjes' },
       ]
       : [];
 

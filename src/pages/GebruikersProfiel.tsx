@@ -122,12 +122,10 @@ const GebruikersProfiel: React.FC = () => {
     try {
       setIsSubmitting(true);
       await updateBijnaam(data.bijnaam.trim());
-      setIsStandDirty(true);
       setGebruiker({
         ...gebruiker,
         bijnaam: data.bijnaam.trim(),
       });
-
       setIsEditing(false);
     } catch (error) {
       console.error('Fout bij het bijwerken van de bijnaam:', error);
@@ -146,6 +144,7 @@ const GebruikersProfiel: React.FC = () => {
       const currentDate = data.vandaag || dayjs().format('YYYY-MM-DD');
       setVandaag(currentDate);
       setEditingVandaagAdminId(null);
+      setIsStandDirty(true);
     } catch (error) {
       console.error('Fout bij het bijwerken van vandaag:', error);
     } finally {

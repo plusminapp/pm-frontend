@@ -64,7 +64,7 @@ export default function AflossingTabel(props: AflossingProps) {
             <TableRow>
               <TableCell align="left" size="small" sx={{ fontWeight: '500' }}>
                 Stand op{' '}
-                {dayjs(lokaleAflossingSaldo?.budgetPeilDatum).format(
+                {dayjs(lokaleAflossingSaldo?.peilDatum).format(
                   'D MMMM YYYY',
                 )}
               </TableCell>

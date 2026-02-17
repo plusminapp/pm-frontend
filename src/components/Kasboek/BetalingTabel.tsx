@@ -87,13 +87,14 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
   const handleEditClick = (betaling: BetalingDTO) => {
     setSelectedBetaling(betaling);
   };
-
   const getFormattedBedrag = (betaling: BetalingDTO) => {
     const bedrag =
       betaling.betalingsSoort &&
-        bestemmingBetalingsSoorten.includes(betaling.betalingsSoort)
-        ? betaling.bedrag
-        : -betaling.bedrag;
+        (!bestemmingBetalingsSoorten.includes(betaling.betalingsSoort) ||
+          // TODO lelijk ...
+          betaling.bestemming === 'Buffer IN')
+        ? -betaling.bedrag
+        : betaling.bedrag;
     return formatter.format(bedrag);
   };
 
@@ -495,11 +496,11 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
                           <TableCell size="small" sx={{ p: '5px' }}>
                             {!props.rekeningNaam && (
                               <Button
-                              onClick={() => handleEditClick(betaling)}
-                              sx={{ minWidth: '24px', color: 'grey', p: '5px' }}
-                            >
-                              <EditIcon fontSize="small" />
-                            </Button>)}
+                                onClick={() => handleEditClick(betaling)}
+                                sx={{ minWidth: '24px', color: 'grey', p: '5px' }}
+                              >
+                                <EditIcon fontSize="small" />
+                              </Button>)}
                           </TableCell>
                         )}
                       </TableRow>

@@ -38,7 +38,7 @@ export default function SparenTabel(props: SparenProps) {
             <TableRow>
               <TableCell align="left" size="small" sx={{ fontWeight: '500' }}>
                 Stand op{' '}
-                {dayjs(props.sparenSaldo?.budgetPeilDatum).format(
+                {dayjs(props.sparenSaldo?.peilDatum).format(
                   'D MMMM YYYY',
                 )}
               </TableCell>

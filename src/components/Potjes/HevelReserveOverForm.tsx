@@ -31,7 +31,7 @@ import { useForm } from 'react-hook-form';
 import { usePlusminApi } from '../../api/plusminApi';
 import { useCustomContext } from '../../context/CustomContext';
 import { BetalingDTO, BetalingsSoort } from '../../model/Betaling';
-import { SaldoDTO } from '../../model/Saldo';
+import { SaldoDTO, Stand } from '../../model/Saldo';
 import {
   defaultFormSaldos,
   formSchema,
@@ -54,22 +54,22 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 }));
 
 interface HevelReserveOverFormProps {
-  geselecteerdeBestemming: string;
+  stand: Stand;
+  saldo: SaldoDTO;
   onHevelReserveOverClose: () => void;
-  resultaatOpDatum: SaldoDTO[];
 }
 
 export function HevelReserveOverForm({
-  geselecteerdeBestemming,
+  stand,
+  saldo,
   onHevelReserveOverClose,
-  resultaatOpDatum: resultaatOpDatum,
 }: HevelReserveOverFormProps) {
-  const { actieveAdministratie, setSnackbarMessage, setIsStandDirty, vandaag } =
+  const { actieveAdministratie, setSnackbarMessage, setIsStandDirty } =
     useCustomContext();
   const { postBetalingVooradministratie } = usePlusminApi();
   const [open, setOpen] = useState<boolean>(true);
 
-  const selecteerbareBonnen = resultaatOpDatum
+  const selecteerbareBonnen = stand.resultaatOpDatum
     .filter((item) =>
       reserverenRekeningGroepSoorten.includes(
         item.rekeningGroepSoort as RekeningGroepSoort,
@@ -89,9 +89,9 @@ export function HevelReserveOverForm({
     defaultValues: {
       formReservering: {
         ...defaultFormSaldos(
-          resultaatOpDatum.find(
-            (item) => item.rekeningNaam === geselecteerdeBestemming,
-          ) ?? resultaatOpDatum[0],
+          stand.resultaatOpDatum.find(
+            (item) => item.rekeningNaam === saldo.rekeningNaam,
+          ) ?? stand.resultaatOpDatum[0],
         ),
         bron: selecteerbareBonnen[0]?.rekeningNaam || '',
       },
@@ -111,7 +111,7 @@ export function HevelReserveOverForm({
   };
 
   const bepaalPotjeSoort = (rekeningNaam: string) => {
-    const gevondenSaldo = resultaatOpDatum.find(
+    const gevondenSaldo = stand.resultaatOpDatum.find(
       (item) => item.rekeningNaam === rekeningNaam,
     )!;
     console.log(
@@ -136,7 +136,7 @@ export function HevelReserveOverForm({
           ...(formReservering as unknown as BetalingDTO),
           betalingsSoort: betalingsSoort as BetalingsSoort,
           bedrag: Number(formReservering.bedrag),
-          boekingsdatum: vandaag ?? dayjs().toISOString().substring(0, 10),
+          boekingsdatum: stand.periodeStartDatum ?? dayjs().toISOString().substring(0, 10),
           omschrijving:
             formReservering.omschrijving &&
             formReservering.omschrijving?.length > 0

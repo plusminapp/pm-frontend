@@ -1,6 +1,5 @@
 import React from 'react';
-import { Box, Typography, styled, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import { Box, Typography } from '@mui/material';
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 
 interface Props {
@@ -10,58 +9,37 @@ interface Props {
     periodeReservering: number;
     periodeBetaling: number;
     nogNodig: number;
-    budgetPeilDatum?: string;
+    peilDatum?: string;
     budgetBetaalDatum?: string;
 }
 
 const VIEW_W = 92.4;
 const VIEW_H = 129.36;
 
-const IconButton = styled(Box)({
-    width: '28px',
-    height: '28px',
-    borderRadius: '50%',
-    background: 'rgba(226, 226, 226, 0.7)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-});
 
-const IconContainer = styled(Box)({
-    position: 'absolute',
-    right: '-48px',
-    top: '50%',
-    transform: 'translateY(-50%)',
-});
-
-const PotjesUitgaveDemo: React.FC<Props> = ({
+const PotjesUitgave: React.FC<Props> = ({
     naam,
     budgetMaandBedrag,
     openingsReserveSaldo,
     periodeReservering,
     periodeBetaling,
     nogNodig,
-    budgetPeilDatum,
+    peilDatum,
     budgetBetaalDatum,
 }) => {
     const formatAmount = (amount: number) =>
         amount.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
 
-    const [open, setOpen] = React.useState(false);
-
-    const gereserveerd = Math.max(0, openingsReserveSaldo + periodeReservering);
-    const reservering = gereserveerd; // alias
+    const reservering = Math.max(0, openingsReserveSaldo + periodeReservering);
     const grootte = Math.max(budgetMaandBedrag && budgetMaandBedrag > 0 ? budgetMaandBedrag : 0, reservering);
-    const vulling = reservering - Math.max(0, periodeBetaling);
 
-    const isVast = Boolean(budgetPeilDatum || budgetBetaalDatum);
+    const isVast = Boolean(peilDatum || budgetBetaalDatum);
 
     // date comparison: if both present and peil > betaal => na-betaaldatum
     let naBetaalDatum = false;
-    if (budgetPeilDatum && budgetBetaalDatum) {
+    if (peilDatum && budgetBetaalDatum) {
         try {
-            naBetaalDatum = new Date(budgetPeilDatum) > new Date(budgetBetaalDatum);
+            naBetaalDatum = new Date(peilDatum) > new Date(budgetBetaalDatum);
         } catch (e) {
             naBetaalDatum = false;
         }
@@ -70,7 +48,7 @@ const PotjesUitgaveDemo: React.FC<Props> = ({
     // error condition
     const isError = Math.max(0, periodeBetaling) > reservering;
 
-    const shortage = openingsReserveSaldo - periodeReservering - periodeBetaling;
+    const shortage = openingsReserveSaldo + periodeReservering - periodeBetaling - nogNodig;
     const shortageText = (shortage < 0 ? '-' : '') + formatAmount(Math.abs(shortage));
 
     // helper to scale heights
@@ -216,9 +194,9 @@ const PotjesUitgaveDemo: React.FC<Props> = ({
     }
 
     return (
-        <Box sx={{ width: `${VIEW_W}px`, margin: '12px auto', position: 'relative' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1, gap: 1 }}>
-                <Typography sx={{ color: '#333', fontWeight: 'bold', fontSize: '0.9rem', fontFamily: 'Roboto' }}>{naam}</Typography>
+        <Box sx={{ width: `${VIEW_W}px`, margin: '12px auto', position: 'relative', overflow: 'visible' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1, gap: 1, overflow: 'visible' }}>
+                <Typography sx={{ color: '#333', fontWeight: 'bold', fontSize: '0.9rem', fontFamily: 'Roboto', whiteSpace: 'nowrap' }}>{naam}</Typography>
                 {showThumb && <ThumbUpOffAltIcon sx={{ fontSize: 16, color: '#2e7d32' }} />}
             </Box>
 
@@ -245,10 +223,9 @@ const PotjesUitgaveDemo: React.FC<Props> = ({
                         {/* external labels for small areas: render left of pot with connector */}
                         {adjustedLabels.map((lab) => (
                             <g key={lab.key}>
-                                <text x={-8} y={lab.y} textAnchor="end" dominantBaseline="middle" fontSize={12} fill={lab.color ?? '#000'} style={{ fontFamily: 'Roboto' }}>
+                                <text x={VIEW_W + 8} y={lab.y} textAnchor="start" dominantBaseline="middle" fontSize={12} fill={lab.color ?? '#000'} style={{ fontFamily: 'Roboto' }}>
                                     {formatAmount(lab.amount)}
                                 </text>
-                                <line x1={-4} x2={0} y1={lab.y} y2={lab.y} stroke={lab.color ?? '#000'} strokeWidth={1} />
                             </g>
                         ))}
                     </>
@@ -260,37 +237,8 @@ const PotjesUitgaveDemo: React.FC<Props> = ({
                     <Typography sx={{ color: '#d32f2f', fontWeight: '700', fontSize: '12px' }}>{shortageText}</Typography>
                 </Box>
             )}
-
-            <IconContainer>
-                <IconButton onClick={() => setOpen(true)}>
-                    <VisibilityOutlinedIcon sx={{ fontSize: '18px', color: '#666' }} />
-                </IconButton>
-            </IconContainer>
-
-            <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
-                <DialogTitle>Potje: {naam}</DialogTitle>
-                <DialogContent>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <Typography sx={{ fontWeight: 'bold' }}>gereserveerd</Typography>
-                            <Typography>{formatAmount(gereserveerd)}</Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <Typography sx={{ fontWeight: 'bold' }}>vulling</Typography>
-                            <Typography>{formatAmount(Math.max(0, vulling))}</Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <Typography sx={{ fontWeight: 'bold' }}>nogNodig</Typography>
-                            <Typography>{formatAmount(nogNodig)}</Typography>
-                        </Box>
-                    </Box>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpen(false)}>Sluiten</Button>
-                </DialogActions>
-            </Dialog>
         </Box>
     );
 };
 
-export default PotjesUitgaveDemo;
+export default PotjesUitgave;

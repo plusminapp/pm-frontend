@@ -9,7 +9,7 @@ interface PotjesDemoProps {
   periodeBetaling: number;
   nogNodig: number;
   budgetMaandBedrag?: number;
-  budgetPeilDatum?: string;
+  peilDatum?: string;
   budgetBetaalDatum?: string;
 }
 
@@ -49,7 +49,7 @@ export const PotjesInkomstenDemo: React.FC<PotjesDemoProps> = ({
   periodeBetaling,
   nogNodig,
   budgetMaandBedrag,
-  budgetPeilDatum,
+  peilDatum,
   budgetBetaalDatum,
 }) => {
   const formatAmount = (amount: number): string => {
@@ -64,9 +64,9 @@ export const PotjesInkomstenDemo: React.FC<PotjesDemoProps> = ({
 
   // determine before/after betaalDatum
   let voorBetaalDatum = true;
-  if (budgetPeilDatum && budgetBetaalDatum) {
+  if (peilDatum && budgetBetaalDatum) {
     try {
-      voorBetaalDatum = new Date(budgetPeilDatum) <= new Date(budgetBetaalDatum);
+      voorBetaalDatum = new Date(peilDatum) <= new Date(budgetBetaalDatum);
     } catch (e) {
       voorBetaalDatum = true;
     }
@@ -244,7 +244,7 @@ export const PotjesInkomstenDemo: React.FC<PotjesDemoProps> = ({
               periodeBetaling,
               nogNodig,
               budgetMaandBedrag,
-              budgetPeilDatum,
+              peilDatum,
               budgetBetaalDatum,
             });
             setOpen(true);

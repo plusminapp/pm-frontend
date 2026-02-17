@@ -94,23 +94,23 @@ export function PeriodeSelect({
 
   const selecteerbarePeriodes = isKasboek
     ? formPeriodes
-        .filter((periode) => periode.periodeStatus !== 'OPGERUIMD')
+      .filter((periode) => periode.periodeStatus !== 'OPGERUIMD')
+      .sort((a, b) =>
+        dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum)),
+      )
+    : isAflossing
+      ? formPeriodes
+        .filter((periode) => periodeHeeftAlossing(periode))
         .sort((a, b) =>
           dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum)),
         )
-    : isAflossing
-      ? formPeriodes
-          .filter((periode) => periodeHeeftAlossing(periode))
-          .sort((a, b) =>
-            dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum)),
-          )
       : formPeriodes
-          .filter(
-            (periode) => periode.periodeStartDatum !== periode.periodeEindDatum,
-          ) // eerste 'pseudo' periode
-          .sort((a, b) =>
-            dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum)),
-          );
+        .filter(
+          (periode) => periode.periodeStartDatum !== periode.periodeEindDatum,
+        ) // eerste 'pseudo' periode
+        .sort((a, b) =>
+          dayjs(b.periodeStartDatum).diff(dayjs(a.periodeStartDatum)),
+        );
 
   const [teWijzigenOpeningsSaldiPeriode, setTeWijzigenOpeningsSaldiPeriode] =
     useState<number | undefined>(undefined);
@@ -158,14 +158,14 @@ export function PeriodeSelect({
             p.id !== periode.id
               ? p
               : {
-                  ...p,
-                  periodeStatus:
-                    actie === 'heropenen'
-                      ? 'OPEN'
-                      : actie === 'sluiten'
-                        ? 'GESLOTEN'
-                        : 'OPGERUIMD',
-                },
+                ...p,
+                periodeStatus:
+                  actie === 'heropenen'
+                    ? 'OPEN'
+                    : actie === 'sluiten'
+                      ? 'GESLOTEN'
+                      : 'OPGERUIMD',
+              },
           ),
         );
         setSnackbarMessage({
@@ -181,8 +181,8 @@ export function PeriodeSelect({
     <>
       {!isProfiel && selecteerbarePeriodes.length === 1 && gekozenPeriode && (
         <Box sx={{ mt: '37px', maxWidth: '340px' }}>
-          <Typography>
-            Periode: {formateerNlPeriode(gekozenPeriode)} (
+          <Typography sx={{ fontSize: '0.875rem', pb: 2 }}>
+            {formateerNlPeriode(gekozenPeriode)} (
             {gekozenPeriode.periodeStatus.toLocaleLowerCase()})
           </Typography>
         </Box>

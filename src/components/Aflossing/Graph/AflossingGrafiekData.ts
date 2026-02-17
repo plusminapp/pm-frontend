@@ -43,7 +43,7 @@ const genereerAflossingSaldi = (
   const startAflossing = dayjs(aflossingSaldoDTO.aflossing?.startDatum).startOf(
     'month',
   );
-  const startPeilDatumPeriode = dayjs(aflossingSaldoDTO.budgetPeilDatum)
+  const startPeilDatumPeriode = dayjs(aflossingSaldoDTO.peilDatum)
     .subtract(1, 'month')
     .startOf('month');
 

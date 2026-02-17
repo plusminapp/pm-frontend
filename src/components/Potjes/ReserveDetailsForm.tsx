@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { SaldoDTO } from '../../model/Saldo';
-import { BetalingDTO } from '@/model/Betaling';
+import { BetalingDTO, BetalingsSoort } from '@/model/Betaling';
 import BetalingTabel from '../Kasboek/BetalingTabel';
 
 interface ReserveDetailsFormProps {
@@ -85,6 +85,22 @@ export const ReserveDetailsForm: React.FC<ReserveDetailsFormProps> = ({
               <TableCell sx={{ fontWeight: 'bold' }}>Reservering</TableCell>
               <TableCell>{formatAmount(saldo.periodeReservering)}</TableCell>
             </TableRow>
+            <TableRow>
+              <TableCell colSpan={2} sx={{ fontWeight: 'bold' }}>
+                <BetalingTabel
+                  betalingen={betalingen.filter(betaling => betaling.betalingsSoort === BetalingsSoort.reserveren)}
+                  rekeningNaam={saldo.rekeningNaam}
+                  rekeningGroep={undefined}
+                  geaggregeerdResultaatOpDatum={[]}
+                  onBetalingBewaardChange={function (_: BetalingDTO): void {
+                    throw new Error('Function not implemented.');
+                  }}
+                  onBetalingVerwijderdChange={function (_: BetalingDTO): void {
+                    throw new Error('Function not implemented.');
+                  }} />
+
+              </TableCell>
+            </TableRow>
 
             <TableRow>
               <TableCell sx={{ fontWeight: 'bold' }}>Betalingen</TableCell>
@@ -95,7 +111,7 @@ export const ReserveDetailsForm: React.FC<ReserveDetailsFormProps> = ({
             <TableRow>
               <TableCell colSpan={2} sx={{ fontWeight: 'bold' }}>
                 <BetalingTabel
-                  betalingen={betalingen}
+                  betalingen={betalingen.filter(betaling => betaling.betalingsSoort !== BetalingsSoort.reserveren)}
                   rekeningNaam={saldo.rekeningNaam}
                   rekeningGroep={undefined}
                   geaggregeerdResultaatOpDatum={[]}

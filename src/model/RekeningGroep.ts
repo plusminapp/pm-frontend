@@ -66,6 +66,11 @@ export const reserverenRekeningGroepSoorten = [
   RekeningGroepSoort.spaarpot,
   RekeningGroepSoort.aflossing,
 ];
+export const potjesRekeningGroepSoorten = [
+  RekeningGroepSoort.uitgaven,
+  RekeningGroepSoort.spaarpot,
+  RekeningGroepSoort.aflossing,
+];
 
 export const reserveRekeningGroepSoorten = [
   RekeningGroepSoort.reserveringBuffer,
