@@ -143,6 +143,7 @@ export default function KolommenTabel(props: KolommenTabelProps) {
               <AccordionDetails sx={{ p: 0 }}>
                 <BetalingTabel
                   rekeningGroep={rekeningGroep}
+                  rekeningNaam={undefined}
                   betalingen={props.betalingen.filter(
                     (betaling) =>
                       betaling.betalingsSoort &&
@@ -218,6 +219,7 @@ export default function KolommenTabel(props: KolommenTabelProps) {
               <AccordionDetails sx={{ p: 0 }}>
                 <BetalingTabel
                   rekeningGroep={rekeningGroep}
+                  rekeningNaam={undefined}
                   onBetalingBewaardChange={(betalingDTO) =>
                     props.onBetalingBewaardChange(betalingDTO)
                   }
@@ -270,6 +272,7 @@ export default function KolommenTabel(props: KolommenTabelProps) {
               <AccordionDetails sx={{ p: 0 }}>
                 <BetalingTabel
                   rekeningGroep={rekeningGroep}
+                  rekeningNaam={undefined}
                   onBetalingBewaardChange={(betalingDTO) =>
                     props.onBetalingBewaardChange(betalingDTO)
                   }

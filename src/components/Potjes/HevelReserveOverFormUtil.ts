@@ -13,11 +13,14 @@ export const formSchema = z.object({
 });
 export type FormValues = z.infer<typeof formSchema>;
 
-export const defaultFormSaldos = (saldo: SaldoDTO) => ({
-  bestemming: saldo.rekeningNaam,
-  bron: 'Kies een bron',
-  bedrag: "0",
-});
+export const defaultFormSaldos = (saldo: SaldoDTO) => {
+  const computed = saldo.periodeBetaling + saldo.komtNogNodig - saldo.openingsReserveSaldo - saldo.periodeReservering;
+  return {
+    bestemming: saldo.rekeningNaam,
+    bron: 'Kies een bron',
+    bedrag: Math.max(0, computed).toFixed(2).toString(),
+  };
+};
 
 export const formatAmount = (amount: number): string => {
   if (!amount) amount = 0;

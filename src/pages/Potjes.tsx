@@ -87,49 +87,6 @@ const Potjes: React.FC = () => {
       setIsReservering(false);
     }
   };
-    // const creeerReserveringsHorizonTekst = () => {
-    //   return (
-    //     <>
-    //       De <strong>potjes</strong> zijn gevuld tot en met{' '}
-    //       {dayjs(stand?.reserveringsHorizon).format('D MMMM')}.
-    //       {dayjs(stand?.reserveringsHorizon).isBefore(dayjs(stand?.budgetHorizon))
-    //         ? ` Ze kunnen worden gevuld tot en met ${dayjs(stand?.budgetHorizon).format('D MMMM')}.`
-    //         : ''}
-    //     </>
-    //   );
-    // };
-  //   const potjesSamenvatting = (
-  //   <Typography>
-  //     <strong>Potjes</strong> <br />
-  //     Openingsstand:{' '}
-  //     {formatAmount(
-  //       (reserveringBuffer?.openingsReserveSaldo ?? 0) +
-  //         (openingsReservePotjesVoorNuSaldo ?? 0),
-  //     )}
-  //     &nbsp; = openingssaldo buffer:{' '}
-  //     {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}
-  //     &nbsp; + openingsReservePotjesVoorNuSaldo:{' '}
-  //     {formatAmount(openingsReservePotjesVoorNuSaldo ?? 0)}
-  //     <br />
-  //     Actuele stand {formatAmount(actueleStand)}
-  //     &nbsp; = openingssaldo buffer:{' '}
-  //     {formatAmount(reserveringBuffer?.openingsReserveSaldo ?? 0)}
-  //     &nbsp; + inkomsten - reservering:{' '}
-  //     {formatAmount(reserveringBuffer?.periodeReservering ?? 0)}&nbsp; + huidige
-  //     reserve in potjes voor nu:{' '}
-  //     {formatAmount(reserveringsSaldoPotjesVanNu ?? 0)}
-  //     <br />
-  //     Verwachte eindstand{' '}
-  //     {formatAmount(
-  //       actueleStand + (verwachteInkomsten ?? 0) - (verwachteUitgaven ?? 0),
-  //     )}
-  //     &nbsp; = actuele stand: {formatAmount(actueleStand ?? 0)}
-  //     &nbsp; + verwachte inkomsten: {formatAmount(verwachteInkomsten ?? 0)}
-  //     &nbsp; - verwachte uitgaven: {formatAmount(verwachteUitgaven ?? 0)}
-  //   </Typography>
-  // );
-
-
 
   return (
     <>

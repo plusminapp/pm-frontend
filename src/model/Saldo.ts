@@ -19,7 +19,8 @@ export type SaldoDTO = {
   rekeningGroepSoort: string;
   budgetType: string | undefined;
   rekeningNaam: string;
-  budgetBetaalDag: number;
+  budgetBetaalDag: number | undefined;
+  budgetBetaalDatum: string | undefined;
   aflossing: AflossingDTO | undefined;
   spaarpot: SpaarpotDTO | undefined;
   sortOrder: number;
@@ -32,7 +33,7 @@ export type SaldoDTO = {
   periodeAchterstand: number;
   correctieBoeking: number;
   periode: Periode;
-  budgetPeilDatum: string;
+  peilDatum: string;
   budgetOpPeilDatum: number;
   betaaldBinnenBudget: number;
   minderDanBudget: number;

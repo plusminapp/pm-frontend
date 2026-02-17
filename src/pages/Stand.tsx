@@ -21,10 +21,8 @@ import SamenvattingGrafiek from '../components/Stand/SamenvattingGrafiek';
 import StandGrafiek from '../components/Stand/StandGrafiek';
 import {
   betaalTabelRekeningGroepSoorten,
-  BudgetType,
   RekeningGroepSoort,
   reserveRekeningGroepSoorten,
-  resultaatRekeningGroepSoorten,
 } from '../model/RekeningGroep';
 import SpaarGrafiek from '../components/Stand/SpaarGrafiek';
 import RekeningResultaat from '../components/Stand/RekeningResultaat';
@@ -386,7 +384,7 @@ export default function Stand() {
                       datum={stand.peilDatum}
                       saldi={stand.geaggregeerdResultaatOpDatum
                         .filter((saldo) =>
-                          resultaatRekeningGroepSoorten.includes(
+                          betaalTabelRekeningGroepSoorten.includes(
                             saldo.rekeningGroepSoort as RekeningGroepSoort,
                           ),
                         )
@@ -401,46 +399,71 @@ export default function Stand() {
                 <Grid
                   container
                   spacing={{ xs: 2, md: 3 }}
-                  columns={{ xs: 1, md: 3 }}
+                  columns={{ xs: 1, md: 4 }}
                 >
                   <Grid size={1}>
-                    <RekeningResultaat
-                      title={'Spaarpotten opening'}
+                    <Resultaat
+                      title={'Reserve opening'}
                       datum={stand.periodeStartDatum}
-                      saldi={stand.resultaatOpDatum
-                        .filter(
-                          (saldo) => saldo.budgetType === BudgetType.sparen,
-                        )
-                        .sort((a, b) => a.sortOrder - b.sortOrder)
-                        .map((saldo) => ({
-                          ...saldo,
-                          bedrag: saldo.openingsReserveSaldo,
-                        }))}
-                    />
-                  </Grid>
-                  <Grid size={1}>
-                    <RekeningResultaat
-                      title={'Mutaties per'}
-                      datum={stand.peilDatum}
-                      saldi={stand.resultaatOpDatum
-                        .filter(
-                          (saldo) => saldo.budgetType === BudgetType.sparen,
+                      saldi={stand.geaggregeerdResultaatOpDatum
+                        .filter((saldo) =>
+                          reserveRekeningGroepSoorten.includes(
+                            saldo.rekeningGroepSoort as RekeningGroepSoort,
+                          ),
                         )
                         .sort((a, b) => a.sortOrder - b.sortOrder)
                         .map((saldo) => ({
                           ...saldo,
                           bedrag:
-                            saldo.periodeReservering - saldo.periodeBetaling,
+                            saldo.openingsReserveSaldo
                         }))}
                     />
                   </Grid>
                   <Grid size={1}>
-                    <RekeningResultaat
-                      title={'Stand'}
+                    <Resultaat
+                      title={'Reserveringen'}
                       datum={stand.peilDatum}
-                      saldi={stand.resultaatOpDatum
-                        .filter(
-                          (saldo) => saldo.budgetType === BudgetType.sparen,
+                      saldi={stand.geaggregeerdResultaatOpDatum
+                        .filter((saldo) =>
+                          reserveRekeningGroepSoorten.includes(
+                            saldo.rekeningGroepSoort as RekeningGroepSoort,
+                          ),
+                        )
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map((saldo) => ({
+                          ...saldo,
+                          bedrag:
+                            saldo.periodeReservering,
+                        }))}
+                    />
+                  </Grid>
+                  <Grid size={1}>
+                    <Resultaat
+                      title={'Betalingen'}
+                      datum={stand.peilDatum}
+                      saldi={stand.geaggregeerdResultaatOpDatum
+                        .filter((saldo) =>
+                          reserveRekeningGroepSoorten.includes(
+                            saldo.rekeningGroepSoort as RekeningGroepSoort,
+                          ),
+                        )
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map((saldo) => ({
+                          ...saldo,
+                          bedrag:
+                            -saldo.periodeBetaling,
+                        }))}
+                    />
+                  </Grid>
+                  <Grid size={1}>
+                    <Resultaat
+                      title={'Reserve nu'}
+                      datum={stand.peilDatum}
+                      saldi={stand.geaggregeerdResultaatOpDatum
+                        .filter((saldo) =>
+                          reserveRekeningGroepSoorten.includes(
+                            saldo.rekeningGroepSoort as RekeningGroepSoort,
+                          ),
                         )
                         .sort((a, b) => a.sortOrder - b.sortOrder)
                         .map((saldo) => ({

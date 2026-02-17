@@ -9,7 +9,7 @@ interface PotjesDemoProps {
   periodeBetaling: number;
   nogNodig: number;
   budgetMaandBedrag?: number;
-  budgetPeilDatum?: string;
+  peilDatum?: string;
   budgetBetaalDatum?: string;
 }
 
@@ -49,7 +49,7 @@ export const PotjesInkomstenDemo: React.FC<PotjesDemoProps> = ({
   periodeBetaling,
   nogNodig,
   budgetMaandBedrag,
-  budgetPeilDatum,
+  peilDatum,
   budgetBetaalDatum,
 }) => {
   const formatAmount = (amount: number): string => {
@@ -64,9 +64,9 @@ export const PotjesInkomstenDemo: React.FC<PotjesDemoProps> = ({
 
   // determine before/after betaalDatum
   let voorBetaalDatum = true;
-  if (budgetPeilDatum && budgetBetaalDatum) {
+  if (peilDatum && budgetBetaalDatum) {
     try {
-      voorBetaalDatum = new Date(budgetPeilDatum) <= new Date(budgetBetaalDatum);
+      voorBetaalDatum = new Date(peilDatum) <= new Date(budgetBetaalDatum);
     } catch (e) {
       voorBetaalDatum = true;
     }
@@ -80,34 +80,6 @@ export const PotjesInkomstenDemo: React.FC<PotjesDemoProps> = ({
   const heightFor = (amount: number) => {
     if (base <= 0) return 0;
     return (amount / base) * VIEW_H;
-  };
-
-  // allocate heights for multiple areas ensuring minimum height and preventing overflow
-  const allocateHeights = (amounts: Array<{ key: string; amount: number }>, minPx = 18) => {
-    const raw: Record<string, number> = {};
-    for (const a of amounts) raw[a.key] = a.amount > 0 ? (a.amount / base) * VIEW_H : 0;
-    const heights: Record<string, number> = { ...raw };
-    for (let iter = 0; iter < 10; iter++) {
-      const keys = Object.keys(heights).filter(k => heights[k] > 0);
-      let total = keys.reduce((s, k) => s + heights[k], 0);
-      if (total <= VIEW_H) {
-        for (const k of keys) if (heights[k] > 0) heights[k] = Math.max(heights[k], Math.min(minPx, VIEW_H));
-        break;
-      }
-      const scale = VIEW_H / total;
-      let changed = false;
-      for (const k of keys) {
-        const newH = Math.max(minPx, heights[k] * scale);
-        if (Math.abs(newH - heights[k]) > 0.1) {
-          heights[k] = newH;
-          changed = true;
-        } else {
-          heights[k] = newH;
-        }
-      }
-      if (!changed) break;
-    }
-    return heights;
   };
 
   // decide rendering cases
@@ -126,29 +98,23 @@ export const PotjesInkomstenDemo: React.FC<PotjesDemoProps> = ({
   if (isPeriodeAtLeastMaand) {
     // pot height = periodeBetaling (base == periodeBetaling)
     borderColor = gray;
-    // allocate heights for fill, maand (budget), and extra above the dashed line
-    const extraAbove = Math.max(0, periodeBetaling - maandBedrag);
-    const alloc = allocateHeights([
-      { key: 'fill', amount: periodeBetaling },
-      { key: 'maand', amount: maandBedrag },
-      { key: 'extraAbove', amount: extraAbove },
-    ]);
-    const fillH = alloc['fill'] || 0;
-    const maandH = alloc['maand'] || 0;
-    const extraH = alloc['extraAbove'] || 0;
-
+    const fillH = heightFor(periodeBetaling);
     if (fillH > 0) {
       shapes.push(<rect key="fill" x="0" y={VIEW_H - fillH} width={VIEW_W} height={fillH} fill={gray} />);
     }
 
     // dashed line at budgetMaandBedrag (only if provided and >0)
     if (maandBedrag > 0) {
-      const lineY = VIEW_H - maandH;
+      const lineY = VIEW_H - heightFor(maandBedrag);
       shapes.push(<line key="dashed" x1="4" x2={VIEW_W - 4} y1={lineY} y2={lineY} stroke="#fff" strokeWidth={1} strokeDasharray="4 3" />);
 
-      // show amount above dashed line when space allows
+      // show amount above dashed line: periodeBetaling - maand when space allows
+      const extraAbove = Math.max(0, periodeBetaling - maandBedrag);
+      const extraH = heightFor(extraAbove);
       if (extraH >= 18) {
-        const y = VIEW_H - (fillH + maandH) / 2;
+        const topH = heightFor(periodeBetaling);
+        // center between top of fill and dashed line
+        const y = VIEW_H - (topH + heightFor(maandBedrag)) / 2;
         shapes.push(
           <text key="extraAboveAmt" x={VIEW_W / 2} y={y} textAnchor="middle" dominantBaseline="middle" fontSize={12} fill="#000" style={{ fontFamily: 'Roboto' }}>
             {formatAmount(extraAbove)}
@@ -168,6 +134,7 @@ export const PotjesInkomstenDemo: React.FC<PotjesDemoProps> = ({
 
     // budgetMaandBedrag label near dashed line if space
     if (maandBedrag > 0) {
+      const maandH = heightFor(maandBedrag);
       if (maandH >= 12) {
         const y = VIEW_H - maandH / 2;
         texts.push(
@@ -277,7 +244,7 @@ export const PotjesInkomstenDemo: React.FC<PotjesDemoProps> = ({
               periodeBetaling,
               nogNodig,
               budgetMaandBedrag,
-              budgetPeilDatum,
+              peilDatum,
               budgetBetaalDatum,
             });
             setOpen(true);

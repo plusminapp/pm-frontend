@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, TextField, Typography, Tabs, Tab } from '@mui/material';
-import PotjesUitgaveDemo from '../components/Potjes/PotjesUitgaveDemo';
+import PotjesUitgave from '../components/Potjes/PotjesUitgave';
 import PotjesInkomstenDemo from '../components/Potjes/PotjesInkomstenDemo';
 import PotjesSparenDemo from '../components/Potjes/PotjesSparenDemo';
 
@@ -21,7 +21,7 @@ const PotjesDemoWrapper: React.FC = () => {
   const defaultBetaal = toDateInput(dayAfterTomorrow);
 
   const [budgetBetaalDatum, setBudgetBetaalDatum] = useState<string>(defaultBetaal);
-  const [budgetPeilDatum, setBudgetPeilDatum] = useState<string>(defaultPeil);
+  const [peilDatum, setpeilDatum] = useState<string>(defaultPeil);
   const [tabIndex, setTabIndex] = useState<number>(0);
   const [budgetMaandBedrag, setBudgetMaandBedrag] = useState<number>(100);
   const [bedragPerMaandTeGaan, setBedragPerMaandTeGaan] = useState<number>(0);
@@ -85,10 +85,10 @@ const PotjesDemoWrapper: React.FC = () => {
         {tabIndex !== 0 && tabIndex !== 3 && (
           <>
             <TextField
-              label="budgetPeilDatum"
+              label="peilDatum"
               type="date"
-              value={budgetPeilDatum}
-              onChange={(e) => setBudgetPeilDatum(e.target.value)}
+              value={peilDatum}
+              onChange={(e) => setpeilDatum(e.target.value)}
               size="small"
               fullWidth
               slotProps={{ inputLabel: { shrink: true } }}
@@ -158,7 +158,7 @@ const PotjesDemoWrapper: React.FC = () => {
         {/* Tab panels - render based on tabIndex */}
         <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
           {tabIndex === 0 && (
-            <PotjesUitgaveDemo
+            <PotjesUitgave
               naam={naam}
               openingsReserveSaldo={openingsReserveSaldo}
               periodeReservering={periodeReservering}
@@ -169,14 +169,14 @@ const PotjesDemoWrapper: React.FC = () => {
           )}
 
           {tabIndex === 1 && (
-            <PotjesUitgaveDemo
+            <PotjesUitgave
               naam={naam}
               openingsReserveSaldo={openingsReserveSaldo}
               periodeReservering={periodeReservering}
               periodeBetaling={periodeBetaling}
               nogNodig={nogNodig}
               budgetMaandBedrag={budgetMaandBedrag}
-              budgetPeilDatum={budgetPeilDatum}
+              peilDatum={peilDatum}
               budgetBetaalDatum={budgetBetaalDatum}
             />
           )}
@@ -189,7 +189,7 @@ const PotjesDemoWrapper: React.FC = () => {
               periodeBetaling={periodeBetaling}
               nogNodig={nogNodig}
               budgetMaandBedrag={budgetMaandBedrag}
-              budgetPeilDatum={budgetPeilDatum}
+              peilDatum={peilDatum}
               budgetBetaalDatum={budgetBetaalDatum}
             />
           )}

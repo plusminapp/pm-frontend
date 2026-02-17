@@ -16,6 +16,7 @@ import {
 import { useCustomContext } from '../../context/CustomContext';
 import { useState } from 'react';
 import { HevelReserveOverForm } from './HevelReserveOverForm';
+import { SaldoDTO } from '@/model/Saldo';
 
 export const PotjesTabel: React.FC = () => {
   const {
@@ -25,18 +26,18 @@ export const PotjesTabel: React.FC = () => {
   } = useCustomContext();
 
   const [overTeHevelenReserve, setOverTeHevelenReserve] = useState<
-    string | undefined
+    SaldoDTO | undefined
   >(undefined);
 
-  const handleHevelReserveOverClick = (rekeningNaam: string) => {
+  const handleHevelReserveOverClick = (saldo: SaldoDTO) => {
     console.log(
       'handleHevelReserveOverClick',
-      rekeningNaam,
+      saldo.rekeningNaam,
       stand?.resultaatOpDatum.find(
-        (item) => item.rekeningGroepNaam === rekeningNaam,
+        (item) => item.rekeningGroepNaam === saldo.rekeningNaam,
       ),
     );
-    setOverTeHevelenReserve(rekeningNaam);
+    setOverTeHevelenReserve(saldo);
   };
 
   const formatAmount = (amount: number): string => {
@@ -150,7 +151,7 @@ export const PotjesTabel: React.FC = () => {
                                 <Button
                                   onClick={() =>
                                     handleHevelReserveOverClick(
-                                      saldo.rekeningNaam,
+                                      saldo,
                                     )
                                   }
                                   sx={{
@@ -189,8 +190,8 @@ export const PotjesTabel: React.FC = () => {
       )}
       {overTeHevelenReserve !== undefined && stand !== undefined && (
         <HevelReserveOverForm
-          resultaatOpDatum={stand.resultaatOpDatum}
-          geselecteerdeBestemming={overTeHevelenReserve}
+          stand={stand}
+          saldo={overTeHevelenReserve}
           onHevelReserveOverClose={() => setOverTeHevelenReserve(undefined)}
         />
       )}

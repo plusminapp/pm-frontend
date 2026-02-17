@@ -91,7 +91,7 @@ function usePlusminApi() {
   );
 
   /* Rekening */
-  const getRekeningenVooradministratieEnPeriode = useCallback(
+  const getRekeningenVoorAdministratieEnPeriode = useCallback(
     async (administratie: Administratie, periode: Periode) => {
       const token = await safeGetAccessToken();
       return fetchData<RekeningGroepPerBetalingsSoort[]>(
@@ -347,7 +347,7 @@ function usePlusminApi() {
   return {
     getGebruikerZelf,
     updateBijnaam,
-    getRekeningenVooradministratieEnPeriode,
+    getRekeningenVoorAdministratieEnPeriode,
     getStandVooradministratieEnDatum,
     getCashFlowVooradministratieEnPeriode,
     getBetalingenVooradministratieVoorPeriode,

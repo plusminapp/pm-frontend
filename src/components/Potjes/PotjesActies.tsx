@@ -1,5 +1,6 @@
 import { Box, Button, ButtonGroup, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { PeriodeSelect } from '../Periode/PeriodeSelect';
+import { useCustomContext } from '@/context/CustomContext';
 
 interface PotjesActiesProps {
   view: 'potjes' | 'tabel';
@@ -15,9 +16,26 @@ export const PotjesActies: React.FC<PotjesActiesProps> = ({
   handleViewChange,
   isReservering,
   handleReserveerClick,
-  handleReserveerAlleClick,
   layout = 'horizontal',
 }) => {
+
+  const {
+    gekozenPeriode,
+    stand,
+  } = useCustomContext();
+
+
+  const isHuidigePeriode = gekozenPeriode?.periodeStatus === 'HUIDIG';
+  const bufferSaldo = stand?.resultaatOpDatum.find((saldo) => saldo.rekeningGroepSoort === 'RESERVERING_BUFFER');
+  const toewijsbaarValue =
+    isHuidigePeriode && bufferSaldo
+      ? bufferSaldo.openingsReserveSaldo + bufferSaldo.periodeReservering
+      : undefined;
+
+  const toewijsbaarFormatted = toewijsbaarValue !== undefined
+    ? new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(toewijsbaarValue)
+    : undefined;
+
   const periodeSelectElement = <PeriodeSelect />;
 
   const toggleElement = (
@@ -36,16 +54,18 @@ export const PotjesActies: React.FC<PotjesActiesProps> = ({
     </ToggleButtonGroup>
   );
 
-  const buttonGroupElement = (
-    <ButtonGroup variant="contained" color="success" disabled={isReservering}>
-      <Button onClick={handleReserveerClick} sx={{ fontSize: '0.875rem' }}>
-        {isReservering ? 'Bezig...' : 'Reserveer'}
-      </Button>
-      <Button onClick={handleReserveerAlleClick} sx={{ fontSize: '0.875rem' }}>
-        {isReservering ? 'Bezig...' : 'Reserveer Alle'}
-      </Button>
-    </ButtonGroup>
-  );
+  const buttonGroupElement =
+    isHuidigePeriode
+      ? <ButtonGroup variant="contained" color="success" disabled={isReservering}>
+        <Button onClick={handleReserveerClick} sx={{ fontSize: '0.875rem' }}>
+          {isReservering ? 'Bezig...' : `Toewijsbaar: ${toewijsbaarFormatted ?? '—'}`}
+        </Button>
+      </ButtonGroup>
+      : <ButtonGroup variant="contained" color="success" disabled>
+        <Button sx={{ fontSize: '0.875rem' }}>
+          Toewijzen
+        </Button>
+      </ButtonGroup>;
 
   if (layout === 'vertical') {
     return (
