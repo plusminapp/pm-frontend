@@ -1,5 +1,6 @@
 import { AflossingDTO } from './Aflossing';
 import { Periode } from './Periode';
+import { RekeningGroepPerBetalingsSoort } from './RekeningGroep';
 
 export type RekeningDTO = {
   id: number;
@@ -27,4 +28,16 @@ export type RekeningDTO = {
   meerDanMaandBudget: number | undefined;
   restMaandBudget: number | undefined;
   aflossing: AflossingDTO | undefined;
+};
+
+export const getEersteBetaalMethode = (
+  rekeningGroepPerBetalingsSoort: RekeningGroepPerBetalingsSoort[],
+  rekeningNaam: string
+): string | undefined => {
+  const rekening = rekeningGroepPerBetalingsSoort
+    .flatMap((rgpbs) => rgpbs.rekeningGroepen)
+    .flatMap((rg) => rg.rekeningen)
+    .find((r) => r.naam === rekeningNaam);
+  
+  return rekening?.betaalMethoden?.[0];
 };

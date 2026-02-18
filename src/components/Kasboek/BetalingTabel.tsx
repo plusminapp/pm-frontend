@@ -11,7 +11,9 @@ import {
   FormGroup,
   FormControlLabel,
   Switch,
+  IconButton,
 } from '@mui/material';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import Grid from '@mui/material/Grid2';
 import {
   BetalingDTO,
@@ -33,12 +35,14 @@ import UpsertBetalingDialoog from './UpsertBetalingDialoog';
 import { InfoIcon } from '../../icons/Info';
 import { SaldoDTO } from '../../model/Saldo';
 import { berekenRekeningGroepIcoon } from '../Stand/BerekenStandKleurEnTekst';
+import { getEersteBetaalMethode } from '@/model/Rekening';
 
 type BetalingTabelProps = {
   betalingen: BetalingDTO[];
   rekeningGroep: RekeningGroepDTO | undefined;
   rekeningNaam: string | undefined;
   geaggregeerdResultaatOpDatum: SaldoDTO[];
+  isReserveringenTabel?: boolean;
   onBetalingBewaardChange: (betalingDTO: BetalingDTO) => void;
   onBetalingVerwijderdChange: (betalingDTO: BetalingDTO) => void;
 };
@@ -46,12 +50,13 @@ type BetalingTabelProps = {
 const BetalingTabel: React.FC<BetalingTabelProps> = (
   props: BetalingTabelProps,
 ) => {
+  const { isReserveringenTabel = false } = props;
   const formatter = new Intl.NumberFormat('nl-NL', {
     style: 'currency',
     currency: 'EUR',
   });
 
-  const { gekozenPeriode, setSnackbarMessage, rekeningGroepPerBetalingsSoort } =
+  const { vandaag, gekozenPeriode, setSnackbarMessage, rekeningGroepPerBetalingsSoort } =
     useCustomContext();
 
   const [selectedBetaling, setSelectedBetaling] = useState<
@@ -64,7 +69,22 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
   const [toonReserveringen, setToonReserveringen] = useState<boolean>(
     localStorage.getItem('toonReserveringen') === 'true',
   );
-
+  const betaalMethode = getEersteBetaalMethode(rekeningGroepPerBetalingsSoort, props.rekeningNaam ?? '');
+  const boekingsdatum = gekozenPeriode?.periodeStatus === 'HUIDIG' ?
+    vandaag ?? new Date().toISOString() : 
+    gekozenPeriode?.periodeEindDatum ?? new Date().toISOString();
+  const betalingTemplate: BetalingDTO = {
+    id: 0,
+    boekingsdatum: boekingsdatum,
+    omschrijving: '',
+    bedrag: 0,
+    betalingsSoort: BetalingsSoort.uitgaven,
+    bestemming: props.rekeningNaam,
+    ocrOmschrijving: '',
+    sortOrder: '',
+    bestaatAl: false,
+    bron: betaalMethode
+  }
   useEffect(() => {
     setBetaalTabelSaldi(
       props.geaggregeerdResultaatOpDatum
@@ -449,7 +469,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
                 .sort((a, b) => (a.sortOrder > b.sortOrder ? -1 : 1))
                 .map(
                   (betaling) =>
-                    (!isReservering(betaling) || toonReserveringen) &&
+                    (!isReservering(betaling) || toonReserveringen || isReserveringenTabel) &&
                     (!isIntern(betaling) || toonIntern) && (
                       <TableRow key={betaling.id}>
                         <TableCell sx={{ padding: '5px' }}>
@@ -507,6 +527,25 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
                       </TableRow>
                     ),
                 )}
+              <TableRow>
+                {gekozenPeriode && isPeriodeOpen(gekozenPeriode) && !isReserveringenTabel && (
+                  <TableCell
+                    size="small"
+                    sx={{ p: '5px', cursor: 'pointer' }}
+                    colSpan={10}
+                    align="right"
+                    onClick={() => handleEditClick(betalingTemplate)}
+                  >
+                    Nieuwe betaling uit dit potje
+                    <IconButton >
+                      <AddCircleOutlineIcon
+                        sx={{ fontSize: '18px', color: '#666' }}
+                      />
+                    </IconButton>
+                  </TableCell>
+                )}
+
+              </TableRow>
             </>
           </TableBody>
         </Table>
@@ -524,7 +563,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
           betaling={{ ...selectedBetaling }}
         />
       )}
-      {/* {JSON.stringify(betaalTabelRekeningGroepen.map((rg) => rg.naam))} */}
+      {/* isReserveringenTabel {JSON.stringify(isReserveringenTabel)} */}
     </>
   );
 };

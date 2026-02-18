@@ -1,5 +1,7 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
+import { useCustomContext } from '../../context/CustomContext';
+import { InfoIcon } from '../../icons/Info';
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 
 interface Props {
@@ -187,6 +189,11 @@ const PotjesUitgave: React.FC<Props> = ({
         }
     }
     // backward pass
+    // show aggregaat-like orange badge when periodeBetaling exceeds budgetMaandBedrag
+    const showAggregaatOrangeBadge = Boolean(budgetMaandBedrag && periodeBetaling > budgetMaandBedrag);
+    const meerUitgegegvenTekst = `Je hebt tot nu toe ${formatAmount(periodeBetaling - (budgetMaandBedrag ?? 0))} meer uitgegeven aan ${naam} dan je van plan was.`;    
+    const { setSnackbarMessage } = useCustomContext();
+
     for (let i = adjustedLabels.length - 2; i >= 0; i--) {
         if (adjustedLabels[i + 1].y - adjustedLabels[i].y < MIN_GAP) {
             adjustedLabels[i].y = Math.max(MIN_Y, adjustedLabels[i + 1].y - MIN_GAP);
@@ -200,43 +207,63 @@ const PotjesUitgave: React.FC<Props> = ({
                 {showThumb && <ThumbUpOffAltIcon sx={{ fontSize: 16, color: '#2e7d32' }} />}
             </Box>
 
-            <svg width={VIEW_W} height={VIEW_H} viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} style={{ display: 'block', overflow: 'visible' }}>
-                <defs>
-                    <clipPath id="potClipUitgave">
-                        <polygon points="1.32,1.32 91.08,1.32 76.23,128.04 16.17,128.04" />
-                    </clipPath>
-                </defs>
+            <Box sx={{ position: 'relative', display: 'block' }}>
+                <svg width={VIEW_W} height={VIEW_H} viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} style={{ display: 'block', overflow: 'visible' }}>
+                    <defs>
+                        <clipPath id="potClipUitgave">
+                            <polygon points="1.32,1.32 91.08,1.32 76.23,128.04 16.17,128.04" />
+                        </clipPath>
+                    </defs>
 
-                <polygon points="1.32,1.32 91.08,1.32 76.23,128.04 16.17,128.04" fill="#fff" stroke={borderColor} strokeWidth="2.64" strokeLinejoin="miter" />
+                    <polygon points="1.32,1.32 91.08,1.32 76.23,128.04 16.17,128.04" fill="#fff" stroke={borderColor} strokeWidth="2.64" strokeLinejoin="miter" />
 
-                {isError ? (
-                    <g>
-                        <text x="50%" y="56%" textAnchor="middle" dominantBaseline="middle" fontSize="48" fill="#d32f2f">!</text>
-                    </g>
-                ) : (
-                    <>
-                        <g clipPath="url(#potClipUitgave)">
-                            {fillParts}
-                            {overlayTexts}
+                    {isError ? (
+                        <g>
+                            <text x="50%" y="20%" textAnchor="middle" dominantBaseline="middle" fontSize="12" fill="#d32f2f" style={{ fontFamily: 'Roboto', fontWeight: 700 }}>{shortageText}</text>
+                            <text x="50%" y="60%" textAnchor="middle" dominantBaseline="middle" fontSize="48" fill="#d32f2f">!</text>
                         </g>
-
-                        {/* external labels for small areas: render left of pot with connector */}
-                        {adjustedLabels.map((lab) => (
-                            <g key={lab.key}>
-                                <text x={VIEW_W + 8} y={lab.y} textAnchor="start" dominantBaseline="middle" fontSize={12} fill={lab.color ?? '#000'} style={{ fontFamily: 'Roboto' }}>
-                                    {formatAmount(lab.amount)}
-                                </text>
+                    ) : (
+                        <>
+                            <g clipPath="url(#potClipUitgave)">
+                                {fillParts}
+                                {overlayTexts}
                             </g>
-                        ))}
-                    </>
-                )}
-            </svg>
 
-            {isError && (
-                <Box sx={{ textAlign: 'center', mt: 1 }}>
-                    <Typography sx={{ color: '#d32f2f', fontWeight: '700', fontSize: '12px' }}>{shortageText}</Typography>
-                </Box>
-            )}
+                            {/* external labels for small areas: render left of pot with connector */}
+                            {adjustedLabels.map((lab) => (
+                                <g key={lab.key}>
+                                    <text x={VIEW_W + 8} y={lab.y} textAnchor="start" dominantBaseline="middle" fontSize={12} fill={lab.color ?? '#000'} style={{ fontFamily: 'Roboto' }}>
+                                        {formatAmount(lab.amount)}
+                                    </text>
+                                </g>
+                            ))}
+                        </>
+                    )}
+                </svg>
+
+                {/* aggregaat-like orange badge top-right when periodeBetaling > budgetMaandBedrag */}
+                {showAggregaatOrangeBadge && (
+                    <Box sx={{ position: 'absolute', right: -6, top: -10 }}>
+                        <Box
+                            role="button"
+                            onClick={() => setSnackbarMessage({ message: meerUitgegegvenTekst, type: 'info' })}
+                            sx={{
+                                bgcolor: '#ff9800',
+                                width: 22,
+                                height: 22,
+                                borderRadius: '50%',
+                                boxShadow: '0 0 0 2px #fff',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            <InfoIcon color="#fff" height="22px" />
+                        </Box>
+                    </Box>
+                )}
+            </Box>
         </Box>
     );
 };
