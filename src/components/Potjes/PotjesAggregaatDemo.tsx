@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import { CupIcon } from '../../icons/Cup';
+import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 
 interface Props {
   naam: string;
@@ -30,11 +30,15 @@ const PotjesAggregaatDemo: React.FC<Props> = ({ naam, aantal, aantalOranje, aant
   // badges
   const showOrange = aantalOranje > 0;
   const showRed = aantalRood > 0;
+  const badgeBg = frontBorder === '#2e7d32' ? '#2e7d32' : '#9e9e9e';
+
+  const showThumb = frontBorder === '#2e7d32';
 
   return (
     <Box sx={{ width: `${VIEW_W}px`, margin: '12px auto', position: 'relative', overflow: 'visible' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2, gap: 1 }}>
         <Typography sx={{ color: '#333', fontWeight: 'bold', fontSize: '0.9rem', fontFamily: 'Roboto' }}>{naam}</Typography>
+        {showThumb && <ThumbUpOffAltIcon sx={{ fontSize: 16, color: '#2e7d32' }} />}
       </Box>
 
       <Box sx={{ position: 'relative', width: `${VIEW_W}px`, height: `${VIEW_H}px` }}>
@@ -47,23 +51,21 @@ const PotjesAggregaatDemo: React.FC<Props> = ({ naam, aantal, aantalOranje, aant
         <svg width={VIEW_W} height={VIEW_H} viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} style={{ position: 'absolute', left: 0, top: 0, overflow: 'visible' }}>
           <polygon points="1.32,1.32 91.08,1.32 76.23,128.04 16.17,128.04" fill="#fff" stroke={frontBorder} strokeWidth="2.64" strokeLinejoin="miter" />
           {showRed && (
-            <text x="50%" y="56%" textAnchor="middle" dominantBaseline="middle" fontSize="48" fill="#d32f2f">!</text>
+            <text x="50%" y="66%" textAnchor="middle" dominantBaseline="middle" fontSize="48" fill="#d32f2f">!</text>
           )}
         </svg>
 
-        {/* total count + cup inside front potje; when red present move to small-exclamation position */}
+        {/* replaced count+icon with a gray badge showing the number */}
         {showRed ? (
-          <Box sx={{ position: 'absolute', left: VIEW_W / 2 - 16, top: VIEW_H / 4 - 12, width: 32, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 0.5 }}>
-            <Typography sx={{ fontSize: 12, fontWeight: 400, fontFamily: 'Roboto' }}>{aantal}</Typography>
-            <Box sx={{ width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333' }}>
-              <CupIcon />
+          <Box sx={{ position: 'absolute', left: VIEW_W / 2 - 10, top: VIEW_H / 4 - 10, width: 20, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <Box sx={{ width: 20, height: 20, borderRadius: '50%', bgcolor: badgeBg, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 2px #fff' }}>
+              <Typography sx={{ fontSize: 11, fontWeight: 700, color: '#fff', fontFamily: 'Roboto' }}>{aantal}</Typography>
             </Box>
           </Box>
         ) : (
-          <Box sx={{ position: 'absolute', left: 0, top: VIEW_H / 2 - 12, width: VIEW_W, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1 }}>
-            <Typography sx={{ fontSize: 12, fontWeight: 400, fontFamily: 'Roboto' }}>{aantal}</Typography>
-            <Box sx={{ width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333' }}>
-              <CupIcon />
+          <Box sx={{ position: 'absolute', left: 0, top: VIEW_H / 2 - 10, width: VIEW_W, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <Box sx={{ width: 20, height: 20, borderRadius: '50%', bgcolor: badgeBg, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 2px #fff' }}>
+              <Typography sx={{ fontSize: 11, fontWeight: 700, color: '#fff', fontFamily: 'Roboto' }}>{aantal}</Typography>
             </Box>
           </Box>
         )}

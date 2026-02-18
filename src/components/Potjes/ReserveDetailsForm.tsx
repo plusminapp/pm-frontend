@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -11,10 +12,13 @@ import {
   Typography,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { SaldoDTO } from '../../model/Saldo';
 import { BetalingDTO, BetalingsSoort } from '@/model/Betaling';
 import BetalingTabel from '../Kasboek/BetalingTabel';
 import { useCustomContext } from '@/context/CustomContext';
+import dayjs from 'dayjs';
 
 interface ReserveDetailsFormProps {
   betalingen: BetalingDTO[];
@@ -27,6 +31,17 @@ export const ReserveDetailsForm: React.FC<ReserveDetailsFormProps> = ({
   saldo,
   onClose,
 }) => {
+  const [contextBetalingen, setContextBetalingen] = useState<BetalingDTO[]>(betalingen);
+  const [showReserveTable, setShowReserveTable] = useState<boolean>(false);
+  const [showBetalingTable, setShowBetalingTable] = useState<boolean>(false);
+  const [reserveBetalingen, setReserveBetalingen] = useState<BetalingDTO[]>([]);
+  const [otherBetalingen, setOtherBetalingen] = useState<BetalingDTO[]>([]);
+
+  useEffect(() => {
+    setReserveBetalingen(contextBetalingen.filter(betaling => betaling.betalingsSoort === BetalingsSoort.reserveren));
+    setOtherBetalingen(contextBetalingen.filter(betaling => betaling.betalingsSoort !== BetalingsSoort.reserveren));
+  }, [contextBetalingen]);
+
   const formatAmount = (amount: number | undefined): string => {
     return amount?.toLocaleString('nl-NL', {
       style: 'currency',
@@ -34,9 +49,49 @@ export const ReserveDetailsForm: React.FC<ReserveDetailsFormProps> = ({
     }) ?? '€ undefined';
   };
 
-    const { setIsStandDirty } =
-      useCustomContext();
-  
+  const formatDate = (d?: string | Date): string => {
+    if (!d) return '';
+    try {
+      const date = typeof d === 'string' ? new Date(d) : d;
+      if (isNaN(date.getTime())) return String(d);
+      return date.toLocaleDateString('nl-NL', { year: 'numeric', month: 'long', day: 'numeric' });
+    } catch {
+      return String(d);
+    }
+  };
+
+  const { setIsStandDirty, gekozenPeriode } =
+    useCustomContext();
+
+  const isBoekingInGekozenPeriode = (boekingsdatum: string | Date) =>
+    dayjs(boekingsdatum).isAfter(
+      dayjs(gekozenPeriode?.periodeStartDatum).subtract(1, 'day'),
+    ) &&
+    dayjs(boekingsdatum).isBefore(
+      dayjs(gekozenPeriode?.periodeEindDatum).add(1, 'day'),
+    );
+
+  const onBetalingBewaardChange = (betaling: BetalingDTO): void => {
+    if (betaling && isBoekingInGekozenPeriode(betaling.boekingsdatum)) {
+      setContextBetalingen(prev => {
+        const index = prev.findIndex(b => b.id === betaling.id);
+        if (index >= 0) {
+          const updated = [...prev];
+          updated[index] = betaling;
+          return updated;
+        }
+        return [...prev, betaling];
+      });
+      setIsStandDirty(true);
+    }
+  };
+  const onBetalingVerwijderdChange = (betaling: BetalingDTO): void => {
+    if (betaling && isBoekingInGekozenPeriode(betaling.boekingsdatum)) {
+      setContextBetalingen(prev => prev.filter(b => b.id !== betaling.id));
+      setIsStandDirty(true);
+    }
+  };
+
 
   const reserveNu =
     saldo.openingsReserveSaldo + saldo.periodeReservering - saldo.periodeBetaling;
@@ -63,12 +118,12 @@ export const ReserveDetailsForm: React.FC<ReserveDetailsFormProps> = ({
       <DialogContent>
         <Table>
           <TableBody>
-            {saldo.budgetBetaalDag && (
+            {saldo.budgetBetaalDatum && (
               <TableRow>
                 <TableCell sx={{ fontWeight: 'bold', width: '50%' }}>
-                  Betaaldag
+                  Betaaldatum
                 </TableCell>
-                <TableCell>{saldo.budgetBetaalDag}</TableCell>
+                <TableCell>{formatDate(saldo.budgetBetaalDatum)}</TableCell>
               </TableRow>
             )}
 
@@ -87,48 +142,65 @@ export const ReserveDetailsForm: React.FC<ReserveDetailsFormProps> = ({
             </TableRow>
 
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold' }}>Reservering</TableCell>
-              <TableCell>{formatAmount(saldo.periodeReservering)}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell colSpan={2} sx={{ fontWeight: 'bold' }}>
-                <BetalingTabel
-                  betalingen={betalingen.filter(betaling => betaling.betalingsSoort === BetalingsSoort.reserveren)}
-                  rekeningNaam={saldo.rekeningNaam}
-                  rekeningGroep={undefined}
-                  geaggregeerdResultaatOpDatum={[]}
-                  onBetalingBewaardChange={function (_: BetalingDTO): void {
-                    setIsStandDirty(true);
-                  }}
-                  onBetalingVerwijderdChange={function (_: BetalingDTO): void {
-                    setIsStandDirty(true);
-                  }} />
-
+              <TableCell sx={{ fontWeight: 'bold' }}>In het potje gestopt</TableCell>
+              <TableCell sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box>{formatAmount(saldo.periodeReservering)}</Box>
+                <Box>
+                  <IconButton size="small" onClick={() => setShowReserveTable(v => !v)}>
+                    {showReserveTable ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}
+                  </IconButton>
+                  <Typography component="span" sx={{ ml: 0.5 }}>{reserveBetalingen.length}</Typography>
+                </Box>
               </TableCell>
             </TableRow>
+
+            {showReserveTable && (
+              <TableRow>
+                <TableCell colSpan={2} sx={{ fontWeight: 'bold' }}>
+                  <BetalingTabel
+                    betalingen={reserveBetalingen}
+                    rekeningNaam={saldo.rekeningNaam}
+                    rekeningGroep={undefined}
+                    geaggregeerdResultaatOpDatum={[]}
+                    isReserveringenTabel={true}
+                    onBetalingBewaardChange={function (_: BetalingDTO): void {
+                      setIsStandDirty(true);
+                    }}
+                    onBetalingVerwijderdChange={function (_: BetalingDTO): void {
+                      setIsStandDirty(true);
+                    }} />
+
+                </TableCell>
+              </TableRow>
+            )}
 
             <TableRow>
               <TableCell sx={{ fontWeight: 'bold' }}>Betalingen</TableCell>
-              <TableCell>
-                {formatAmount(saldo.periodeBetaling)}<br />
+              <TableCell sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box>{formatAmount(saldo.periodeBetaling)}</Box>
+                <Box>
+                  <IconButton size="small" onClick={() => setShowBetalingTable(v => !v)}>
+                    {showBetalingTable ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}
+                  </IconButton>
+                  <Typography component="span" sx={{ ml: 0.5 }}>{otherBetalingen.length}</Typography>
+                </Box>
               </TableCell>
             </TableRow>
-            <TableRow>
-              <TableCell colSpan={2} sx={{ fontWeight: 'bold' }}>
-                <BetalingTabel
-                  betalingen={betalingen.filter(betaling => betaling.betalingsSoort !== BetalingsSoort.reserveren)}
-                  rekeningNaam={saldo.rekeningNaam}
-                  rekeningGroep={undefined}
-                  geaggregeerdResultaatOpDatum={[]}
-                  onBetalingBewaardChange={function (_: BetalingDTO): void {
-                    setIsStandDirty(true);
-                  }}
-                  onBetalingVerwijderdChange={function (_: BetalingDTO): void {
-                    setIsStandDirty(true);
-                  }} />
 
-              </TableCell>
-            </TableRow>
+            {showBetalingTable && (
+              <TableRow>
+                <TableCell colSpan={2} sx={{ fontWeight: 'bold' }}>
+                  <BetalingTabel
+                    betalingen={otherBetalingen}
+                    rekeningNaam={saldo.rekeningNaam}
+                    rekeningGroep={undefined}
+                    geaggregeerdResultaatOpDatum={[]}
+                    onBetalingBewaardChange={onBetalingBewaardChange}
+                    onBetalingVerwijderdChange={onBetalingVerwijderdChange} />
+
+                </TableCell>
+              </TableRow>
+            )}
 
             <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
               <TableCell sx={{ fontWeight: 'bold' }}>Reserve nu</TableCell>

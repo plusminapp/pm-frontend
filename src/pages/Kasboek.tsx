@@ -21,7 +21,7 @@ import BetalingTabel from '../components/Kasboek/BetalingTabel';
 import KolommenTabel from '../components/Kasboek/KolommenTabel';
 
 export default function Kasboek() {
-  const { gekozenPeriode, betalingen, stand, setIsStandDirty } =
+  const { gekozenPeriode, betalingen, setBetalingen, stand, setIsStandDirty } =
     useCustomContext();
 
   const theme = useTheme();
@@ -36,21 +36,26 @@ export default function Kasboek() {
       setExpanded(isExpanded ? panel : false);
     };
 
+  const isBoekingInGekozenPeriode = (boekingsdatum: string | Date) =>
+    dayjs(boekingsdatum).isAfter(
+      dayjs(gekozenPeriode?.periodeStartDatum).subtract(1, 'day'),
+    ) &&
+    dayjs(boekingsdatum).isBefore(
+      dayjs(gekozenPeriode?.periodeEindDatum).add(1, 'day'),
+    );
+
   const onBetalingBewaardChange = (betaling: BetalingDTO): void => {
-    const isBoekingInGekozenPeriode =
-      dayjs(betaling?.boekingsdatum).isAfter(
-        dayjs(gekozenPeriode?.periodeStartDatum).subtract(1, 'day'),
-      ) &&
-      dayjs(betaling?.boekingsdatum).isBefore(
-        dayjs(gekozenPeriode?.periodeEindDatum).add(1, 'day'),
-      );
-    if (isBoekingInGekozenPeriode && betaling) {
+    if (betaling && isBoekingInGekozenPeriode(betaling.boekingsdatum)) {
+      setBetalingen({ ...betalingen, [betaling.id]: betaling });
       setIsStandDirty(true);
     }
-    setIsStandDirty(true);
   };
-  const onBetalingVerwijderdChange = (): void => {
-    setIsStandDirty(true);
+  const onBetalingVerwijderdChange = (betaling: BetalingDTO): void => {
+    if (betaling && isBoekingInGekozenPeriode(betaling.boekingsdatum)) {
+      const { [betaling.id]: _, ...rest } = betalingen;
+      setBetalingen(rest);
+      setIsStandDirty(true);
+    }
   };
   const isPeriodeOpen =
     gekozenPeriode?.periodeStatus === 'OPEN' ||
@@ -93,8 +98,8 @@ export default function Kasboek() {
               onBetalingBewaardChange={(betalingDTO) =>
                 onBetalingBewaardChange(betalingDTO)
               }
-              onBetalingVerwijderdChange={() =>
-                onBetalingVerwijderdChange()
+              onBetalingVerwijderdChange={(betalingDTO) =>
+                onBetalingVerwijderdChange(betalingDTO)
               }
             />
           </Grid>
@@ -111,8 +116,8 @@ export default function Kasboek() {
           onBetalingBewaardChange={(betalingDTO) =>
             onBetalingBewaardChange(betalingDTO)
           }
-          onBetalingVerwijderdChange={() =>
-            onBetalingVerwijderdChange()
+          onBetalingVerwijderdChange={(betalingDTO) =>
+            onBetalingVerwijderdChange(betalingDTO)
           }
         />
       )}
@@ -138,8 +143,8 @@ export default function Kasboek() {
                 onBetalingBewaardChange={(betalingDTO) =>
                   onBetalingBewaardChange(betalingDTO)
                 }
-                onBetalingVerwijderdChange={() =>
-                  onBetalingVerwijderdChange()
+                onBetalingVerwijderdChange={(betalingDTO) =>
+                  onBetalingVerwijderdChange(betalingDTO)
                 }
               />
             </AccordionDetails>}

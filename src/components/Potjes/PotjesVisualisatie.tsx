@@ -1,6 +1,5 @@
 import { Box, Typography, styled } from '@mui/material';
 import UTurnRightOutlinedIcon from '@mui/icons-material/UTurnRightOutlined';
-import PointOfSaleOutlinedIcon from '@mui/icons-material/PointOfSaleOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import {
   RekeningGroepSoort,
@@ -272,17 +271,6 @@ export const PotjesVisualisatie: React.FC = () => {
                               gap: '8px',
                             }}
                           >
-                            <IconButton
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                // Actie voor PointOfSale komt later
-                              }}
-                            >
-                              <PointOfSaleOutlinedIcon
-                                sx={{ fontSize: '18px', color: '#666' }}
-                              />
-                            </IconButton>
-
                             <IconButton
                               onClick={(e) => {
                                 e.stopPropagation();
