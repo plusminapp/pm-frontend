@@ -13,6 +13,7 @@ interface Props {
     nogNodig: number;
     peilDatum?: string;
     budgetBetaalDatum?: string;
+    periodeIsAfgelopen: boolean;
 }
 
 const VIEW_W = 92.4;
@@ -28,6 +29,7 @@ const PotjesUitgave: React.FC<Props> = ({
     nogNodig,
     peilDatum,
     budgetBetaalDatum,
+    periodeIsAfgelopen
 }) => {
     const formatAmount = (amount: number) =>
         amount.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
@@ -66,7 +68,7 @@ const PotjesUitgave: React.FC<Props> = ({
     if (isError) {
         borderColor = '#d32f2f';
         // empty pot with exclamation handled in render
-    } else if (isVast && naBetaalDatum && nogNodig > 0) {
+    } else if (isVast && (naBetaalDatum || periodeIsAfgelopen) && nogNodig > 0) {
         borderColor = '#d32f2f';
         const fillH = heightFor(Math.max(0, reservering - periodeBetaling));
         if (fillH > 0) fillParts.push(<rect key="red" x={0} y={VIEW_H - fillH} width={VIEW_W} height={fillH} fill="#d32f2f" />);

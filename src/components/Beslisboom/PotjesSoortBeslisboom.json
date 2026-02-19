@@ -1,0 +1,178 @@
+{
+  "entryNode": "start",
+  "shortcuts": [
+    "inkomsten",
+    "vasteLasten",
+    "aflossingen",
+    "leefgeld",
+    "spaarpotten"
+  ],
+  "nodes": [
+    {
+      "naam": "start",
+      "uitkomst": null,
+      "vraag": "Is het een potje voor inkomsten of uitgaven?",
+      "antwoorden": [
+        {
+          "tekst": "Inkomsten",
+          "vervolg": "inkomsten"
+        },
+        {
+          "tekst": "Uitgaven",
+          "vervolg": "uitgaven"
+        }
+      ]
+    },
+    {
+      "naam": "inkomsten",
+      "titel": "Inkomsten",
+      "uitkomst": "Hoera, het zijn inkomsten!",
+      "vraag": "Is het duidelijk wanneer en, hoeveel je dan krijgt? Zoals een salaris of een uitkering? Of is komt het wisselend binnen, zoals bij uizendwerk of een eigen bedrijf, en/of het bedrag erg variabel?",
+      "antwoorden": [
+        {
+          "tekst": "Ja, het zijn vaste, voorspelbare inkomsten",
+          "vervolg": "vasteInkomsten"
+        },
+        {
+          "tekst": "Nee, het zijn variabele, onvoorspelbare inkomsten",
+          "vervolg": "variabeleInkomsten"
+        }
+      ]
+    },
+    {
+      "naam": "vasteInkomsten",
+      "titel": "Vaste Inkomsten",
+      "uitkomst": "Fijn, vaste inkomsten! <br/>Vaste inkomsten hebben een betaaldag en een vast bedrag. Neem voor de betaaldag de laatste dag dat het wordt betaald (dus als het tussen de 21ste en de 24ste wordt betaald, neem dan de 24ste.",
+      "vraag": null,
+      "antwoorden": []
+    },
+    {
+      "naam": "variabeleInkomsten",
+      "titel": "Variabele Inkomsten",
+      "uitkomst": "Ok, het zijn variabele inkomsten. <br/>Variabele inkomsten zijn minder voorspelbaar en maakt budgetteren ingewikkelder; je moet zorgen voor een grotere buffers, voor als het tegen zit ... Om enigszins te kunnen plannen is het wel fijn als je een schatting kunt geven van het bedrag dat je maandelijks denkt te ontvangen.",
+      "vraag": null,
+      "antwoorden": []
+    },
+    {
+      "naam": "uitgaven",
+      "titel": "Uitgaven",
+      "uitkomst": null,
+      "vraag": "Zijn het vaste, voorspelbare uitgaven, zoals huur, abonnementen of de aflossing van een lening, die periodiek terugkomen (niet perse elke maand), en waarbij je indringend wil worden gewaarschuwd als ze niet op tijd zijn betaald?",
+      "antwoorden": [
+        {
+          "tekst": "Ja, het zijn vaste, voorspelbare uitganven",
+          "vervolg": "vasteUitgaven"
+        },
+        {
+          "tekst": "Nee, het zijn variabele, onvoorspelbare uitgaven",
+          "vervolg": "nietVasteUitgaven"
+        }
+      ]
+    },
+    {
+      "naam": "vasteUitgaven",
+      "titel": "Vaste Uitgaven",
+      "uitkomst": "Ok, het zijn vaste uitgaven! We onderscheiden 2 soorten vaste uitgaven: aflossingen en vaste lasten. Aflossingen zijn uitgaven die in mindering worden gebracht op een schuld, zoals een lening of een achterstand. Als je graag inzicht wil in het verloop van de schuld (wanneer heb ik alles afgelost en hoe ver ben ik daar nu mee?) kun je het aflossing configureren. ",
+      "vraag": "Wil je inzicht in het verloop van een schuld?",
+      "antwoorden": [
+        {
+          "tekst": "Ja, ik wil inzicht in het verloop van een schuld",
+          "vervolg": "aflossingen"
+        },
+        {
+          "tekst": "Nee, het zijn vaste lasten",
+          "vervolg": "vasteLasten"
+        }
+      ]
+      },
+      {
+        "naam": "aflossingen",
+        "titel": "Aflossingen",
+        "uitkomst": "Oei, het zijn aflossingen! Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+        "vraag": null,
+        "antwoorden": []
+      },
+      {
+        "naam": "vasteLasten",
+        "titel": "Vaste Lasten",
+        "uitkomst": "Oei, het zijn vaste lasten! Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+        "vraag": null,
+        "antwoorden": []
+      },
+      {
+        "naam": "nietVasteUitgaven",
+        "uitkomst": null,
+        "vraag": "Zijn het wisselend (leefgeld) uitgaven, zoals boodschappen of fun, die maand of zelfs week terugkomen, en waarbij je vooral inzicht wil hoeveel je er deze periode nog aan kan uitgeven?",
+        "antwoorden": [
+          {
+            "tekst": "Ja, het zijn leefgeld uitgaven",
+            "vervolg": "leefgeld"
+          },
+          {
+            "tekst": "Nee, het zijn geen leefgeld uitgaven",
+            "vervolg": "spaarpotten"
+          }
+        ]
+      },
+      {
+        "naam": "leefgeld",
+        "titel": "Leefgeld",
+        "uitkomst": "Ok, het zijn leefgeld uitgaven! Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+        "vraag": null,
+        "antwoorden": []
+      },
+      {
+        "naam": "spaarpotten",
+        "titel": "Spaarpotten",
+        "uitkomst": "We onderscheiden een paar verschillende soorten spaarpotten. Doel sparen is wanneer je een specifiek doel hebt, zoals een vakantie of een nieuwe fiets, en je een bedrag en een datum in gedachten hebt waarop je dat bedrag bij elkaar wilt hebben. Vrij sparen is wanneer je geen specifiek doel hebt, maar gewoon wat geld opzij wilt zetten voor later, of voor als er iets onverwachts gebeurt.",
+        "vraag": "Heb je een bedrag waar je naartoe wil sparen? ",
+        "antwoorden": [
+          {
+            "tekst": "Ja, ik heb een bedrag dat ik uiteindelijk in het potje wil hebben",
+            "vervolg": "doeldatum"
+          },
+          {
+            "tekst": "Nee, ik wil wat ik over heb er in stoppen.",
+            "vervolg": "vrijSparen"
+          }
+        ]
+      },
+      {
+        "naam": "vrijSparen",
+        "titel": "Vrij sparen",
+        "uitkomst": "Vrij sparen is wanneer je geen specifiek doel hebt, maar gewoon wat geld opzij wilt zetten voor later, of voor als er iets onverwachts gebeurt. Gewoon lekker, een buffertje opbouwen, zonder dat je er een specifiek doel aan koppelt. Je stopt er gewoon wat in als je wat over hebt, en je haalt er wat uit als je het nodig hebt.",
+        "vraag": null,
+        "antwoorden": []
+      },
+            {
+        "naam": "doeldatum",
+        "titel": "Sparen voor een bedrag",
+        "uitkomst": "Doel sparen is wanneer je een specifiek doel hebt, zoals een vakantie of een nieuwe fiets, en je een bedrag en een datum in gedachten hebt waarop je dat bedrag bij elkaar wilt hebben.",
+        "vraag": "Heb je een datum waarop je het bedrag bij elkaar wilt of moet hebben? ",
+        "antwoorden": [
+          {
+            "tekst": "Ja, ik heb een datum waarop ik het bedrag bij elkaar wil hebben",
+            "vervolg": "doelSparen"
+          },
+          {
+            "tekst": "Nee, ik wil een bedrag in het potje en het daar daarna dan op houden.",
+            "vervolg": "bufferSparen"
+          }
+        ]
+      },
+            {
+        "naam": "doelSparen",
+        "titel": "Doel sparen",
+        "uitkomst": "Doel sparen is wanneer je een specifiek doel hebt, zoals een vakantie of een nieuwe fiets, en je een bedrag en een datum in gedachten hebt waarop je dat bedrag bij elkaar wilt hebben.",
+        "vraag": null,
+        "antwoorden": []
+      },
+      {
+        "naam": "bufferSparen",
+        "titel": "Buffer sparen",
+        "uitkomst": "Buffer sparen is wanneer je geen specifiek doel maar het niet duidelijk is wanneer je het nodig hebt.",
+        "vraag": null,
+        "antwoorden": []
+      }
+    ]
+  }
