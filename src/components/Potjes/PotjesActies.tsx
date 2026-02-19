@@ -143,7 +143,7 @@ export const PotjesActies: React.FC<PotjesActiesProps> = ({
           {toggleElement}
         </Box>
         <Box display="flex" justifyContent="center">
-          {labelFilterElement}
+          {labels.length > 0 ? labelFilterElement : null}
         </Box>
         <Box display="flex" justifyContent="center" mt={-2}>
           {periodeSelectElement}
@@ -156,7 +156,7 @@ export const PotjesActies: React.FC<PotjesActiesProps> = ({
     <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
       {buttonGroupElement}
       {toggleElement}
-      {labelFilterElement}
+      {labels.length > 0 ? labelFilterElement : null}
       {periodeSelectElement}
     </Box>
   );
