@@ -28,6 +28,7 @@ export type SaldoDTO = {
   openingsReserveSaldo: number;
   openingsAchterstand: number;
   budgetMaandBedrag: number;
+  labels: string[] | undefined;
   periodeBetaling: number;
   periodeReservering: number;
   periodeAchterstand: number;

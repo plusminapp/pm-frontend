@@ -113,6 +113,17 @@ function usePlusminApi() {
     [safeGetAccessToken],
   );
 
+  const getLabels = useCallback(
+    async (administratie: Administratie) => {
+      const token = await safeGetAccessToken();
+      return fetchData<string[]>(
+        `/api/v1/label/${administratie.id}`,
+        token,
+      );
+    },
+    [safeGetAccessToken],
+  );
+
   /* Betaling  */
   const getBetalingenVooradministratieVoorPeriode = useCallback(
     async (administratie: Administratie, periode: Periode) => {
@@ -348,6 +359,7 @@ function usePlusminApi() {
     getGebruikerZelf,
     updateBijnaam,
     getRekeningenVoorAdministratieEnPeriode,
+    getLabels,
     getStandVooradministratieEnDatum,
     getCashFlowVooradministratieEnPeriode,
     getBetalingenVooradministratieVoorPeriode,

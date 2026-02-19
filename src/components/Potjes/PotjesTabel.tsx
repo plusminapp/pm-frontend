@@ -18,7 +18,13 @@ import { useState } from 'react';
 import { HevelReserveOverForm } from './HevelReserveOverForm';
 import { SaldoDTO } from '@/model/Saldo';
 
-export const PotjesTabel: React.FC = () => {
+interface PotjesTabelProps {
+  selectedLabels: string[];
+}
+
+export const PotjesTabel: React.FC<PotjesTabelProps> = ({
+  selectedLabels,
+}) => {
   const {
     rekeningGroepPerBetalingsSoort,
     stand,
@@ -95,6 +101,13 @@ export const PotjesTabel: React.FC = () => {
                       reserverenRekeningGroepSoorten.includes(
                         saldo.rekeningGroepSoort as RekeningGroepSoort,
                       ),
+                    )
+                    .filter((saldo) =>
+                      selectedLabels.length > 0
+                        ? selectedLabels.every((label) =>
+                            saldo.labels?.includes(label),
+                          )
+                        : true,
                     )
                     .sort((a, b) => a.sortOrder - b.sortOrder)
                     .reduce<{

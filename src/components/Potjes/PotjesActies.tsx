@@ -1,4 +1,16 @@
-import { Box, Button, ButtonGroup, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Checkbox,
+  FormControl,
+  InputLabel,
+  ListItemText,
+  MenuItem,
+  Select,
+  ToggleButton,
+  ToggleButtonGroup,
+} from '@mui/material';
 import { PeriodeSelect } from '../Periode/PeriodeSelect';
 import { useCustomContext } from '@/context/CustomContext';
 
@@ -8,6 +20,9 @@ interface PotjesActiesProps {
   isReservering: boolean;
   handleReserveerClick: () => void;
   handleReserveerAlleClick: () => void;
+  labels: string[];
+  selectedLabels: string[];
+  onLabelChange: (labels: string[]) => void;
   layout?: 'horizontal' | 'vertical';
 }
 
@@ -16,6 +31,9 @@ export const PotjesActies: React.FC<PotjesActiesProps> = ({
   handleViewChange,
   isReservering,
   handleReserveerClick,
+  labels,
+  selectedLabels,
+  onLabelChange,
   layout = 'horizontal',
 }) => {
 
@@ -54,11 +72,59 @@ export const PotjesActies: React.FC<PotjesActiesProps> = ({
     </ToggleButtonGroup>
   );
 
+  const labelFilterElement = (
+    <FormControl variant="standard" size="small" sx={{ minWidth: 220 }}>
+      <InputLabel id="potjes-label-filter" sx={{ fontSize: '0.875rem' }}>
+        Filter op label
+      </InputLabel>
+      <Select
+        sx={{ fontSize: '0.875rem' }}
+        labelId="potjes-label-filter"
+        multiple
+        value={selectedLabels}
+        label="Filter op label"
+        renderValue={(selected) =>
+          selected.length > 0 ? selected.join(', ') : 'Alle labels'
+        }
+        onChange={(event) => {
+          const value = event.target.value as string[];
+          if (value.includes('__all__')) {
+            onLabelChange([]);
+            return;
+          }
+          onLabelChange(value);
+        }}
+      >
+        <MenuItem value="__all__">
+          <ListItemText
+            primary="Alle labels"
+            slotProps={{ primary: { sx: { fontSize: '0.875rem' } } }}
+          />
+        </MenuItem>
+        {labels.map((label) => (
+          <MenuItem key={label}
+            value={label}
+            sx={{ fontSize: '0.875rem' }}
+          >
+            <Checkbox
+              size="small"
+              sx={{ padding: '2px 8px 2px 0' }}
+              checked={selectedLabels.includes(label)} />
+            <ListItemText
+              primary={label}
+              slotProps={{ primary: { sx: { fontSize: '0.875rem' } } }}
+            />
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  );
+
   const buttonGroupElement =
     isHuidigePeriode
       ? <ButtonGroup variant="contained" color="success" disabled={isReservering}>
         <Button onClick={handleReserveerClick} sx={{ fontSize: '0.875rem' }}>
-            {isReservering ? 'Bezig...' : `Toewijsbaar: ${toewijsbaarFormatted ?? '—'}`}
+          {isReservering ? 'Bezig...' : `Toewijsbaar: ${toewijsbaarFormatted ?? '—'}`}
         </Button>
       </ButtonGroup>
       : <ButtonGroup variant="contained" color="success" disabled>
@@ -70,14 +136,17 @@ export const PotjesActies: React.FC<PotjesActiesProps> = ({
   if (layout === 'vertical') {
     return (
       <Box display="flex" flexDirection="column" gap={2}>
-        <Box display="flex" justifyContent="center" mt={-6}>
-          {periodeSelectElement}
+        <Box display="flex" justifyContent="center">
+          {buttonGroupElement}
         </Box>
         <Box display="flex" justifyContent="center">
           {toggleElement}
         </Box>
         <Box display="flex" justifyContent="center">
-          {buttonGroupElement}
+          {labels.length > 0 ? labelFilterElement : null}
+        </Box>
+        <Box display="flex" justifyContent="center" mt={-2}>
+          {periodeSelectElement}
         </Box>
       </Box>
     );
@@ -85,9 +154,10 @@ export const PotjesActies: React.FC<PotjesActiesProps> = ({
 
   return (
     <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
-      {periodeSelectElement}
-      {toggleElement}
       {buttonGroupElement}
+      {toggleElement}
+      {labels.length > 0 ? labelFilterElement : null}
+      {periodeSelectElement}
     </Box>
   );
 };
