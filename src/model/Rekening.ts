@@ -18,6 +18,7 @@ export type RekeningDTO = {
   maanden: number[] | undefined;
   budgetBetaalDag: number | undefined;
   betaalMethoden: string[] | undefined;
+  labels: string[] | undefined;
   budgetMaandBedrag: number | undefined;
   peilDatum: string | undefined;
   betaling: number | undefined;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
@@ -10,7 +10,7 @@ import { PotjesActies } from '../components/Potjes/PotjesActies';
 
 const Potjes: React.FC = () => {
   const { rekeningGroepPerBetalingsSoort, actieveAdministratie, setIsStandDirty, setSnackbarMessage } = useCustomContext();
-  const { putReserveringen, putAlleReserveringen } = usePlusminApi();
+  const { putReserveringen, putAlleReserveringen, getLabels } = usePlusminApi();
   
   const getInitialView = (): 'potjes' | 'tabel' => {
     const saved = localStorage.getItem('potjesVisualisatieVoorkeur');
@@ -19,6 +19,38 @@ const Potjes: React.FC = () => {
   
   const [view, setView] = useState<'potjes' | 'tabel'>(getInitialView);
   const [isReservering, setIsReservering] = useState(false);
+  const [labels, setLabels] = useState<string[]>([]);
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadLabels = async () => {
+      if (!actieveAdministratie) {
+        setLabels([]);
+        setSelectedLabels([]);
+        return;
+      }
+
+      try {
+        const result = await getLabels(actieveAdministratie);
+        if (!isActive) return;
+        const sorted = [...result].sort((a, b) => a.localeCompare(b));
+        setLabels(sorted);
+        setSelectedLabels((current) =>
+          current.filter((label) => sorted.includes(label)),
+        );
+      } catch (error) {
+        console.error('Fout bij ophalen labels:', error);
+      }
+    };
+
+    loadLabels();
+
+    return () => {
+      isActive = false;
+    };
+  }, [actieveAdministratie, getLabels]);
 
   const handleViewChange = (
     _event: React.MouseEvent<HTMLElement>,
@@ -109,6 +141,9 @@ const Potjes: React.FC = () => {
                   isReservering={isReservering}
                   handleReserveerClick={handleReserveerClick}
                   handleReserveerAlleClick={handleReserveerAlleClick}
+                  labels={labels}
+                  selectedLabels={selectedLabels}
+                  onLabelChange={setSelectedLabels}
                   layout="vertical"
                 />
               </AccordionDetails>
@@ -122,10 +157,17 @@ const Potjes: React.FC = () => {
                 isReservering={isReservering}
                 handleReserveerClick={handleReserveerClick}
                 handleReserveerAlleClick={handleReserveerAlleClick}
+                labels={labels}
+                selectedLabels={selectedLabels}
+                onLabelChange={setSelectedLabels}
                 layout="horizontal"
               />
             </Box>
-            {view === 'potjes' ? <PotjesVisualisatie /> : <PotjesTabel />}
+            {view === 'potjes' ? (
+              <PotjesVisualisatie selectedLabels={selectedLabels} />
+            ) : (
+              <PotjesTabel selectedLabels={selectedLabels} />
+            )}
           </>
         )}
     </>

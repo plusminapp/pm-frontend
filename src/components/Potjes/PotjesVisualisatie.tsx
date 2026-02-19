@@ -51,12 +51,18 @@ interface KolomData {
   groepen: GroepData[];
 }
 
-export const PotjesVisualisatie: React.FC = () => {
+interface PotjesVisualisatieProps {
+  selectedLabels: string[];
+}
+
+export const PotjesVisualisatie: React.FC<PotjesVisualisatieProps> = ({
+  selectedLabels,
+}) => {
   const {
     betalingen,
     stand,
     gekozenPeriode,
-    vandaag
+    vandaag,
   } = useCustomContext();
 
   const [overTeHevelenReserve, setOverTeHevelenReserve] = useState<
@@ -81,6 +87,7 @@ export const PotjesVisualisatie: React.FC = () => {
         (betaling.bron === saldo.rekeningNaam || betaling.bestemming === saldo.rekeningNaam)))
   };
 
+
   // Groepeer saldi per RekeningGroep
   const groepeerPerRekeningGroep = () => {
     if (!stand) return {};
@@ -92,6 +99,11 @@ export const PotjesVisualisatie: React.FC = () => {
         potjesRekeningGroepSoorten.includes(
           saldo.rekeningGroepSoort as RekeningGroepSoort,
         ),
+      )
+      .filter((saldo) =>
+        selectedLabels.length > 0
+          ? selectedLabels.every((label) => saldo.labels?.includes(label))
+          : true,
       )
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .forEach((saldo) => {
