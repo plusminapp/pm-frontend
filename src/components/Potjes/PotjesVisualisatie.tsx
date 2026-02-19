@@ -55,6 +55,8 @@ export const PotjesVisualisatie: React.FC = () => {
   const {
     betalingen,
     stand,
+    gekozenPeriode,
+    vandaag
   } = useCustomContext();
 
   const [overTeHevelenReserve, setOverTeHevelenReserve] = useState<
@@ -65,6 +67,9 @@ export const PotjesVisualisatie: React.FC = () => {
   );
   const [detailsBetalingen, setDetailsBetalingen] = useState<BetalingDTO[]>([]);
 
+  const periodeIsAfgelopen = gekozenPeriode
+    ? (vandaag ?? '') > gekozenPeriode.periodeEindDatum
+    : false;
   const handleHevelReserveOverClick = (saldo: SaldoDTO) => {
     setOverTeHevelenReserve(saldo);
   };
@@ -260,6 +265,7 @@ export const PotjesVisualisatie: React.FC = () => {
                           periodeBetaling={saldo.periodeBetaling}
                           nogNodig={saldo.komtNogNodig}
                           budgetBetaalDatum={saldo.budgetBetaalDatum}
+                          periodeIsAfgelopen={periodeIsAfgelopen}
                         />
 
                         <IconContainer>

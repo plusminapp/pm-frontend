@@ -26,6 +26,7 @@ import PotjesDemoWrapper from './pages/PotjesDemoWrapper';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AppHeader } from '@/components/AppHeader';
 import { useState } from 'react';
+import BeslisboomWrapper from './pages/BeslisboomWrapper';
 
 const ProtectedRoute: React.FC<{ element: JSX.Element }> = ({ element }) => {
   const { state } = useAuthContext();
@@ -94,6 +95,7 @@ const App: React.FC = () => {
                 element={<ProtectedRoute element={<Potjes />} />}
               />
               <Route path="/potjesdemo" element={<PotjesDemoWrapper />} />
+              <Route path="/beslisboom" element={<BeslisboomWrapper />} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

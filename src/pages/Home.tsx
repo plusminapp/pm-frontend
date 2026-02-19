@@ -27,6 +27,9 @@ export default function Home() {
       <Typography sx={{ my: '25px' }}>
       Bezoek de demo van potjes op <a href="/potjesdemo">/potjesdemo</a>.
       </Typography>
+      <Typography sx={{ my: '25px' }}>
+      Bezoek de beslisboom om te bepalen wat voor een soort potje je moet kiezen op <a href="/beslisboom">/beslisboom</a>.
+      </Typography>
     </>
   );
 }

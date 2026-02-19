@@ -204,6 +204,7 @@ const PotjesDemoWrapper: React.FC = () => {
               periodeBetaling={periodeBetaling}
               nogNodig={nogNodig}
               budgetMaandBedrag={budgetMaandBedrag}
+              periodeIsAfgelopen={false}
             />
           )}
 
@@ -217,6 +218,7 @@ const PotjesDemoWrapper: React.FC = () => {
               budgetMaandBedrag={budgetMaandBedrag}
               peilDatum={peilDatum}
               budgetBetaalDatum={budgetBetaalDatum}
+              periodeIsAfgelopen={false}
             />
           )}
 
