@@ -8,11 +8,15 @@ import {
   ListItemText,
   MenuItem,
   Select,
+  Typography,
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
 import { PeriodeSelect } from '../Periode/PeriodeSelect';
 import { useCustomContext } from '@/context/CustomContext';
+import { SaldoDTO } from '@/model/Saldo';
+
+type SaldoStatusFilter = NonNullable<SaldoDTO['saldoStatus']>;
 
 interface PotjesActiesProps {
   view: 'potjes' | 'tabel';
@@ -23,7 +27,13 @@ interface PotjesActiesProps {
   labels: string[];
   selectedLabels: string[];
   onLabelChange: (labels: string[]) => void;
+  selectedSaldoStatussen: SaldoStatusFilter[];
+  onSaldoStatusChange: (statussen: SaldoStatusFilter[]) => void;
   layout?: 'horizontal' | 'vertical';
+  showFilters?: boolean;
+  showLabelFilter?: boolean;
+  variant?: 'default' | 'filters-inline';
+  compactFilters?: boolean;
 }
 
 export const PotjesActies: React.FC<PotjesActiesProps> = ({
@@ -34,7 +44,13 @@ export const PotjesActies: React.FC<PotjesActiesProps> = ({
   labels,
   selectedLabels,
   onLabelChange,
+  selectedSaldoStatussen,
+  onSaldoStatusChange,
   layout = 'horizontal',
+  showFilters = true,
+  showLabelFilter = true,
+  variant = 'default',
+  compactFilters = false,
 }) => {
 
   const {
@@ -72,8 +88,87 @@ export const PotjesActies: React.FC<PotjesActiesProps> = ({
     </ToggleButtonGroup>
   );
 
+  const saldoStatusOpties: {
+    value: SaldoStatusFilter;
+    label: string;
+    color: 'success.main' | 'warning.main' | 'error.main';
+  }[] = [
+    { value: 'GROEN', label: 'Groen', color: 'success.main' },
+    { value: 'ORANJE', label: 'Oranje', color: 'warning.main' },
+    { value: 'ROOD', label: 'Rood', color: 'error.main' },
+  ];
+
+  const filterMinWidth = compactFilters ? 170 : 220;
+
+  const saldoStatusFilterElement = (
+    <Box sx={{ minWidth: filterMinWidth }}>
+      <Box display="flex" alignItems="center" justifyContent="space-between" mb={0.5}>
+        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+          Filter op kleur
+        </Typography>
+        <Button
+          size="small"
+          sx={{ fontSize: '0.75rem', textTransform: 'none', minWidth: 'auto', p: 0 }}
+          disabled={selectedSaldoStatussen.length === 0}
+          onClick={() => onSaldoStatusChange([])}
+        >
+          Alle kleuren
+        </Button>
+      </Box>
+      <ToggleButtonGroup
+        size="small"
+        value={selectedSaldoStatussen}
+        onChange={(_event, nieuweSelectie: SaldoStatusFilter[]) => {
+          if (nieuweSelectie.length === 3) {
+            onSaldoStatusChange([]);
+            return;
+          }
+
+          onSaldoStatusChange(nieuweSelectie);
+        }}
+        aria-label="saldo status filter"
+        sx={{ gap: 1, border: 0, flexWrap: 'wrap' }}
+      >
+        {saldoStatusOpties.map((statusOptie) => {
+          return (
+            <ToggleButton
+              key={statusOptie.value}
+              value={statusOptie.value}
+              aria-label={`filter ${statusOptie.label}`}
+              sx={{
+                fontSize: '0.8rem',
+                gap: 0.75,
+                textTransform: 'none',
+                borderRadius: 999,
+                px: 1.25,
+                border: '1px solid',
+                borderColor: 'divider',
+                '&.MuiToggleButtonGroup-grouped': {
+                  borderRadius: 999,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  margin: 0,
+                },
+              }}
+            >
+              <Box
+                sx={{
+                  width: 9,
+                  height: 9,
+                  borderRadius: '50%',
+                  backgroundColor: statusOptie.color,
+                }}
+              />
+              {statusOptie.label}
+            </ToggleButton>
+          );
+        })}
+      </ToggleButtonGroup>
+    </Box>
+  );
+
   const labelFilterElement = (
-    <FormControl variant="standard" size="small" sx={{ minWidth: 220 }}>
+    <FormControl variant="standard" size="small" sx={{ minWidth: filterMinWidth }}>
       <InputLabel id="potjes-label-filter" sx={{ fontSize: '0.875rem' }}>
         Filter op label
       </InputLabel>
@@ -133,6 +228,23 @@ export const PotjesActies: React.FC<PotjesActiesProps> = ({
         </Button>
       </ButtonGroup>;
 
+  if (variant === 'filters-inline') {
+    return (
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="flex-end"
+        gap={1}
+        flexWrap="wrap"
+        onClick={(event) => event.stopPropagation()}
+        onFocus={(event) => event.stopPropagation()}
+      >
+        {showFilters ? saldoStatusFilterElement : null}
+        {showFilters && showLabelFilter && labels.length > 0 ? labelFilterElement : null}
+      </Box>
+    );
+  }
+
   if (layout === 'vertical') {
     return (
       <Box display="flex" flexDirection="column" gap={2}>
@@ -142,9 +254,16 @@ export const PotjesActies: React.FC<PotjesActiesProps> = ({
         <Box display="flex" justifyContent="center">
           {toggleElement}
         </Box>
-        <Box display="flex" justifyContent="center">
-          {labels.length > 0 ? labelFilterElement : null}
-        </Box>
+        {showFilters ? (
+          <>
+            <Box display="flex" justifyContent="center">
+              {saldoStatusFilterElement}
+            </Box>
+            <Box display="flex" justifyContent="center">
+              {showLabelFilter && labels.length > 0 ? labelFilterElement : null}
+            </Box>
+          </>
+        ) : null}
         <Box display="flex" justifyContent="center" mt={-2}>
           {periodeSelectElement}
         </Box>
@@ -156,7 +275,8 @@ export const PotjesActies: React.FC<PotjesActiesProps> = ({
     <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
       {buttonGroupElement}
       {toggleElement}
-      {labels.length > 0 ? labelFilterElement : null}
+      {showFilters ? saldoStatusFilterElement : null}
+      {showFilters && showLabelFilter && labels.length > 0 ? labelFilterElement : null}
       {periodeSelectElement}
     </Box>
   );

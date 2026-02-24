@@ -20,10 +20,12 @@ import { SaldoDTO } from '@/model/Saldo';
 
 interface PotjesTabelProps {
   selectedLabels: string[];
+  selectedSaldoStatussen: NonNullable<SaldoDTO['saldoStatus']>[];
 }
 
 export const PotjesTabel: React.FC<PotjesTabelProps> = ({
   selectedLabels,
+  selectedSaldoStatussen,
 }) => {
   const {
     rekeningGroepPerBetalingsSoort,
@@ -107,6 +109,12 @@ export const PotjesTabel: React.FC<PotjesTabelProps> = ({
                         ? selectedLabels.every((label) =>
                             saldo.labels?.includes(label),
                           )
+                        : true,
+                    )
+                    .filter((saldo) =>
+                      selectedSaldoStatussen.length > 0
+                        ? saldo.saldoStatus !== undefined &&
+                          selectedSaldoStatussen.includes(saldo.saldoStatus)
                         : true,
                     )
                     .sort((a, b) => a.sortOrder - b.sortOrder)

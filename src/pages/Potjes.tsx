@@ -7,6 +7,10 @@ import { PotjesVisualisatie } from '../components/Potjes/PotjesVisualisatie';
 import { PotjesTabel } from '../components/Potjes/PotjesTabel';
 import { usePlusminApi } from '../api/plusminApi';
 import { PotjesActies } from '../components/Potjes/PotjesActies';
+import { SaldoDTO } from '@/model/Saldo';
+
+type SaldoStatusFilter = NonNullable<SaldoDTO['saldoStatus']>;
+const SALDO_STATUS_OPSLAG_SLEUTEL = 'potjesSaldoStatusFilter';
 
 const Potjes: React.FC = () => {
   const { rekeningGroepPerBetalingsSoort, actieveAdministratie, setIsStandDirty, setSnackbarMessage } = useCustomContext();
@@ -16,11 +20,36 @@ const Potjes: React.FC = () => {
     const saved = localStorage.getItem('potjesVisualisatieVoorkeur');
     return (saved === 'potjes' || saved === 'tabel') ? saved : 'potjes';
   };
+
+  const getInitialSaldoStatussen = (): SaldoStatusFilter[] => {
+    const geldig: SaldoStatusFilter[] = ['GROEN', 'ORANJE', 'ROOD'];
+    const opgeslagen = localStorage.getItem(SALDO_STATUS_OPSLAG_SLEUTEL);
+
+    if (!opgeslagen) return [];
+
+    try {
+      const parsed = JSON.parse(opgeslagen);
+      if (!Array.isArray(parsed)) return [];
+
+      const uniekeGeldige = Array.from(
+        new Set(parsed.filter((status): status is SaldoStatusFilter => geldig.includes(status))),
+      );
+
+      if (uniekeGeldige.length >= 3) {
+        return [];
+      }
+
+      return uniekeGeldige;
+    } catch {
+      return [];
+    }
+  };
   
   const [view, setView] = useState<'potjes' | 'tabel'>(getInitialView);
   const [isReservering, setIsReservering] = useState(false);
   const [labels, setLabels] = useState<string[]>([]);
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
+  const [selectedSaldoStatussen, setSelectedSaldoStatussen] = useState<SaldoStatusFilter[]>(getInitialSaldoStatussen);
 
   useEffect(() => {
     let isActive = true;
@@ -51,6 +80,18 @@ const Potjes: React.FC = () => {
       isActive = false;
     };
   }, [actieveAdministratie, getLabels]);
+
+  useEffect(() => {
+    if (selectedSaldoStatussen.length === 0) {
+      localStorage.removeItem(SALDO_STATUS_OPSLAG_SLEUTEL);
+      return;
+    }
+
+    localStorage.setItem(
+      SALDO_STATUS_OPSLAG_SLEUTEL,
+      JSON.stringify(selectedSaldoStatussen),
+    );
+  }, [selectedSaldoStatussen]);
 
   const handleViewChange = (
     _event: React.MouseEvent<HTMLElement>,
@@ -131,8 +172,32 @@ const Potjes: React.FC = () => {
                 expandIcon={<ExpandMoreIcon />}
                 aria-controls="acties-content"
                 id="acties-header"
+                sx={{
+                  '& .MuiAccordionSummary-content': {
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 1,
+                    my: 0.5,
+                  },
+                }}
               >
                 <Typography>Acties</Typography>
+                <PotjesActies
+                  view={view}
+                  handleViewChange={handleViewChange}
+                  isReservering={isReservering}
+                  handleReserveerClick={handleReserveerClick}
+                  handleReserveerAlleClick={handleReserveerAlleClick}
+                  labels={labels}
+                  selectedLabels={selectedLabels}
+                  onLabelChange={setSelectedLabels}
+                  selectedSaldoStatussen={selectedSaldoStatussen}
+                  onSaldoStatusChange={setSelectedSaldoStatussen}
+                  variant="filters-inline"
+                  compactFilters
+                  showLabelFilter={false}
+                />
               </AccordionSummary>
               <AccordionDetails>
                 <PotjesActies
@@ -144,7 +209,10 @@ const Potjes: React.FC = () => {
                   labels={labels}
                   selectedLabels={selectedLabels}
                   onLabelChange={setSelectedLabels}
+                  selectedSaldoStatussen={selectedSaldoStatussen}
+                  onSaldoStatusChange={setSelectedSaldoStatussen}
                   layout="vertical"
+                  showFilters={false}
                 />
               </AccordionDetails>
             </Accordion>
@@ -160,13 +228,21 @@ const Potjes: React.FC = () => {
                 labels={labels}
                 selectedLabels={selectedLabels}
                 onLabelChange={setSelectedLabels}
+                selectedSaldoStatussen={selectedSaldoStatussen}
+                onSaldoStatusChange={setSelectedSaldoStatussen}
                 layout="horizontal"
               />
             </Box>
             {view === 'potjes' ? (
-              <PotjesVisualisatie selectedLabels={selectedLabels} />
+              <PotjesVisualisatie
+                selectedLabels={selectedLabels}
+                selectedSaldoStatussen={selectedSaldoStatussen}
+              />
             ) : (
-              <PotjesTabel selectedLabels={selectedLabels} />
+              <PotjesTabel
+                selectedLabels={selectedLabels}
+                selectedSaldoStatussen={selectedSaldoStatussen}
+              />
             )}
           </>
         )}
