@@ -42,6 +42,7 @@ export type SaldoDTO = {
   meerDanMaandBudget: number;
   komtNogNodig: number;
   bedrag: number;
+  saldoStatus: 'GROEN' | 'ORANJE' | 'ROOD' | undefined;
 };
 
 export type ResultaatSamenvattingOpDatumDTO = {

@@ -53,10 +53,12 @@ interface KolomData {
 
 interface PotjesVisualisatieProps {
   selectedLabels: string[];
+  selectedSaldoStatussen: NonNullable<SaldoDTO['saldoStatus']>[];
 }
 
 export const PotjesVisualisatie: React.FC<PotjesVisualisatieProps> = ({
   selectedLabels,
+  selectedSaldoStatussen,
 }) => {
   const {
     betalingen,
@@ -103,6 +105,12 @@ export const PotjesVisualisatie: React.FC<PotjesVisualisatieProps> = ({
       .filter((saldo) =>
         selectedLabels.length > 0
           ? selectedLabels.every((label) => saldo.labels?.includes(label))
+          : true,
+      )
+      .filter((saldo) =>
+        selectedSaldoStatussen.length > 0
+          ? saldo.saldoStatus !== undefined &&
+            selectedSaldoStatussen.includes(saldo.saldoStatus)
           : true,
       )
       .sort((a, b) => a.sortOrder - b.sortOrder)
