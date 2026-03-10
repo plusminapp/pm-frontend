@@ -1,6 +1,7 @@
 import { BetalingDTO } from './Betaling';
 import { Gebruiker } from './Gebruiker';
 import { Periode } from './Periode';
+import { Persona } from './Persona';
 import { RekeningDTO } from './Rekening';
 
 export type Administratie = {
@@ -10,6 +11,7 @@ export type Administratie = {
   vandaag: string | null;
   eigenaarNaam: string;
   eigenaarSubject: string;
+  persona: Persona | null;
   isInDemoModus: boolean;
   periodes: Periode[];
   gebruikers: Gebruiker[];
