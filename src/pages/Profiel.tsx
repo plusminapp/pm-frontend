@@ -38,6 +38,7 @@ import dayjs from 'dayjs';
 import { RekeningDTO } from '../model/Rekening';
 import { isPeriodeOpen } from '../model/Periode';
 import { CashFlowGrafiek } from '../components/CashFlow/Graph/CashFlowGrafiek';
+import PersonaCard from '../components/Profiel/PersonaCard';
 import { usePlusminApi } from '../api/plusminApi';
 import { useNavigate } from 'react-router-dom';
 import RekeningResultaat from '../components/Stand/RekeningResultaat';
@@ -193,6 +194,10 @@ const Profiel: React.FC = () => {
         <>
           {/* periodes */}
           <PeriodeSelect />
+
+          {actieveAdministratie?.persona && (
+            <PersonaCard persona={actieveAdministratie.persona} />
+          )}
 
           {stand && (
             <Accordion>
