@@ -10,7 +10,7 @@ interface Props {
 const PersonaCard: React.FC<Props> = ({ persona }) => {
   if (!persona) return null;
 
-  const PLACEHOLDER = '/persona-examples/simon.png';
+  const PLACEHOLDER = '/persona-fotos/simon.png';
 
   const [imgSrc, setImgSrc] = React.useState<string>(
     persona.foto?.value || PLACEHOLDER,

@@ -23,7 +23,7 @@ import Grid from '@mui/material/Grid2';
 import IconButton from '@mui/material/IconButton';
 import { styled } from '@mui/material/styles';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   BetalingDTO,
   BetalingsSoort,
@@ -72,16 +72,27 @@ export default function UpsertBetalingDialoog(
   const { postBetalingVooradministratie, putBetaling, deleteBetaling } =
     usePlusminApi();
 
-  const boekingsDatum =
-    gekozenPeriode?.periodeEindDatum && vandaag &&
-    dayjs(vandaag).toISOString().slice(0, 10) > gekozenPeriode?.periodeEindDatum
-      ? dayjs(gekozenPeriode?.periodeEindDatum).format(DateFormats.YYYY_MM_DD)
-      : dayjs(vandaag).format(DateFormats.YYYY_MM_DD);
+  const [boekingsdatum, setBoekingsdatum] = useState<string>(
+    dayjs().format(DateFormats.YYYY_MM_DD),
+  );
+
+  useEffect(() => {
+    if (!vandaag) {
+      setBoekingsdatum(dayjs().format(DateFormats.YYYY_MM_DD));
+      return;
+    }
+    const nieuweBoekingsdatum =
+      gekozenPeriode?.periodeEindDatum && vandaag &&
+      dayjs(vandaag).toISOString().slice(0, 10) > gekozenPeriode?.periodeEindDatum
+        ? dayjs(gekozenPeriode?.periodeEindDatum).format(DateFormats.YYYY_MM_DD)
+        : dayjs(vandaag).format(DateFormats.YYYY_MM_DD);
+    setBoekingsdatum(nieuweBoekingsdatum);
+  }, [gekozenPeriode?.periodeEindDatum, vandaag]);
 
   const initialBetalingDTO = useMemo(
     () => ({
       id: 0,
-      boekingsdatum: boekingsDatum,
+      boekingsdatum,
       bedrag: 0,
       omschrijving: '',
       ocrOmschrijving: '',
@@ -91,7 +102,7 @@ export default function UpsertBetalingDialoog(
       bron: undefined,
       bestemming: undefined,
     }),
-    [boekingsDatum],
+    [boekingsdatum],
   );
 
   type BetalingDtoErrors = {
@@ -110,20 +121,17 @@ export default function UpsertBetalingDialoog(
   };
   const initialBetalingDtoWarnings = { boekingsdatum: undefined };
 
+  const mapBetalingToFormState = (betaling: BetalingDTO): BetalingDTO => ({
+    ...betaling,
+    bedrag: betaling.bedrag < 0 ? -betaling.bedrag : betaling.bedrag,
+    boekingsdatum: dayjs(betaling.boekingsdatum).isValid()
+      ? dayjs(betaling.boekingsdatum).format(DateFormats.YYYY_MM_DD)
+      : boekingsdatum,
+  });
+
   const [open, setOpen] = useState(props.editMode);
   const [betalingDTO, setBetalingDTO] = useState<BetalingDTO>(
-    props.betaling
-      ? {
-          ...props.betaling,
-          bedrag:
-            props.betaling.bedrag < 0
-              ? -props.betaling.bedrag
-              : props.betaling.bedrag,
-          boekingsdatum: dayjs(props.betaling.boekingsdatum).format(
-            DateFormats.YYYY_MM_DD,
-          ),
-        }
-      : initialBetalingDTO,
+    props.betaling ? mapBetalingToFormState(props.betaling) : initialBetalingDTO,
   );
   const [errors, setErrors] = useState<BetalingDtoErrors>(
     initialBetalingDtoErrors,
@@ -134,6 +142,14 @@ export default function UpsertBetalingDialoog(
   const [isOntvangst, setIsOntvangst] = useState(
     props.betaling && props.betaling.bedrag < 0,
   );
+
+  useEffect(() => {
+    if (props.betaling) {
+      setBetalingDTO(mapBetalingToFormState(props.betaling));
+    } else {
+      setBetalingDTO(initialBetalingDTO);
+    }
+  }, [props.betaling, initialBetalingDTO, boekingsdatum]);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -533,7 +549,7 @@ export default function UpsertBetalingDialoog(
                     'boekingsdatum',
                     newvalue
                       ? newvalue.format(DateFormats.YYYY_MM_DD)
-                      : dayjs(vandaag).format(DateFormats.YYYY_MM_DD),
+                      : boekingsdatum,
                   )
                 }
               />
@@ -587,7 +603,6 @@ export default function UpsertBetalingDialoog(
             BEWAAR
           </Button>
         </DialogActions>
-      {/* {JSON.stringify(betalingDTO)} */}
       </BootstrapDialog>
     </React.Fragment>
   );

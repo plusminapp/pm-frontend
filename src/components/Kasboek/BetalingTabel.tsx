@@ -455,7 +455,7 @@ const BetalingTabel: React.FC<BetalingTabelProps> = (
             </TableHead>}
           <TableBody>
             <>
-              {props.betalingen
+              {props.betalingen && props.betalingen
                 .filter(
                   (betaling) =>
                     !props.rekeningGroep ||

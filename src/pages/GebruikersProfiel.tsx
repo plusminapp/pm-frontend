@@ -47,7 +47,7 @@ const GebruikersProfiel: React.FC = () => {
   >(null);
   const [resettingAdminId, setResettingAdminId] = useState<string | null>(null);
   const [demoModeAdminId, setDemoModeAdminId] = useState<string | null>(null);
-
+  const isCoordinator = gebruiker?.roles.some((role) => role === 'ROLE_COORDINATOR');
   const {
     control,
     handleSubmit,
@@ -283,6 +283,7 @@ const GebruikersProfiel: React.FC = () => {
                     <Typography component="span">
                       <strong>{admin.naam}</strong>
                     </Typography>
+                    {isCoordinator && (
                       <IconButton
                         onClick={() => handleDemoModus(admin)}
                         size="small"
@@ -294,13 +295,14 @@ const GebruikersProfiel: React.FC = () => {
                         ) : (
                           <ScienceOutlinedIcon fontSize="small" />
                         )}
-                      </IconButton>
+                      </IconButton>)}
                   </Box>
                   Eigenaar is {admin.eigenaarNaam}, <br />
                   Gebruikers met toegang zijn:{' '}
                   {admin.gebruikers
                     .map((gebruiker) => gebruiker.bijnaam)
                     .join(', ')}
+                    {isCoordinator && (
                   <Box sx={{ mt: 0 }}>
                     {editingVandaagAdminId === admin.id.toString() ? (
                       <Box
@@ -398,7 +400,7 @@ const GebruikersProfiel: React.FC = () => {
                         )}
                       </Box>
                     )}
-                  </Box>
+                  </Box>)}
                 </Box>
               </li>
             ))}

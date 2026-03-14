@@ -22,6 +22,7 @@
 }
 svg.languageFlag {
   height: 25px;
-  margin-top: 10px;
-  margin-right: 15px;
+  margin-top: 6px;
+  margin-right: 0;
+  display: block;
 }

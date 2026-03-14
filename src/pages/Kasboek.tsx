@@ -46,14 +46,20 @@ export default function Kasboek() {
 
   const onBetalingBewaardChange = (betaling: BetalingDTO): void => {
     if (betaling && isBoekingInGekozenPeriode(betaling.boekingsdatum)) {
-      setBetalingen({ ...betalingen, [betaling.id]: betaling });
+      const bestaandeIndex = betalingen.findIndex((b) => b.id === betaling.id);
+      if (bestaandeIndex >= 0) {
+        setBetalingen(
+          betalingen.map((b) => (b.id === betaling.id ? betaling : b)),
+        );
+      } else {
+        setBetalingen([...betalingen, betaling]);
+      }
       setIsStandDirty(true);
     }
   };
   const onBetalingVerwijderdChange = (betaling: BetalingDTO): void => {
     if (betaling && isBoekingInGekozenPeriode(betaling.boekingsdatum)) {
-      const { [betaling.id]: _, ...rest } = betalingen;
-      setBetalingen(rest);
+      setBetalingen(betalingen.filter((b) => b.id !== betaling.id));
       setIsStandDirty(true);
     }
   };
