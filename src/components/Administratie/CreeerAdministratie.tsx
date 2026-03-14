@@ -91,50 +91,45 @@ const CreeerAdministratie: React.FC = () => {
   };
 
   return (
-    <>
-      <Typography variant="h6" component="h3">Administratie toevoegen of vervangen</Typography>
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 1,
-        }}
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 1,
+      }}
+    >
+      <Typography>
+        {isUploading
+          ? 'Aan het uploaden...'
+          : <>
+            Je kunt een administratie aanmaken of vervangen door een JSON{' '}
+            <em>administratie-wrapper</em> te uploaden.
+
+          </>}
+      </Typography>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept=".json"
+        style={{ display: 'none' }}
+      />
+
+      <IconButton
+        onClick={handleUploadClick}
+        disabled={isUploading}
+        aria-label="Upload spel JSON bestand"
       >
+        <UploadIcon />
+      </IconButton>
 
-        <Typography>
-          {isUploading
-            ? 'Aan het uploaden...'
-            : <>
-              Je kunt een administratie aanmaken of vervangen door een JSON{' '}
-              <em>administratie-wrapper</em> te uploaden.
-
-            </>}
+      {error && (
+        <Typography variant="body2" color="error">
+          {error}
         </Typography>
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          accept=".json"
-          style={{ display: 'none' }}
-        />
-
-        <IconButton
-          onClick={handleUploadClick}
-          disabled={isUploading}
-          aria-label="Upload spel JSON bestand"
-        >
-          <UploadIcon />
-        </IconButton>
-
-        {error && (
-          <Typography variant="body2" color="error">
-            {error}
-          </Typography>
-        )}
-      </Box>
-    </>
-
+      )}
+    </Box>
   );
 };
 

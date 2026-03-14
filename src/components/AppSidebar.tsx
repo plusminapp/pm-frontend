@@ -12,7 +12,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import LoginIcon from '@mui/icons-material/Login';
 import { Separator } from '@/components/ui/separator';
 
 import { usePlusminApi } from '../api/plusminApi';
@@ -21,6 +20,7 @@ import { Periode } from '../model/Periode';
 import { RekeningGroepPerBetalingsSoort } from '../model/RekeningGroep';
 import { Administratie } from '../model/Administratie';
 import StyledSnackbar from './StyledSnackbar';
+import { TaalKeuzes } from './Header/TaalKeuzes';
 import NaarMorgen from './Header/NaarMorgen';
 
 import {
@@ -32,8 +32,7 @@ import {
   X,
 } from 'lucide-react';
 import { CupIcon } from '@/icons/Cup';
-import { PlusMinLogo } from '@/assets/PlusMinLogo';
-import { PlusLogo } from '@/assets/PlusLogo';
+
 const I18N_KEY = 'components.header';
 
 interface AppSidebarProps {
@@ -312,12 +311,12 @@ export function AppSidebar({
         <div className="flex h-14 items-center justify-between px-4">
           {!isCollapsed && (
             <span className="text-xl text-foreground font-medium px-2 pt-4">
-              <PlusMinLogo />
+              PlusMin
             </span>
           )}
           {isCollapsed && (
             <div className="flex items-center justify-center w-full">
-              <span className="text-lg text-center font-bold"><PlusLogo/></span>
+              <span className="text-lg text-center font-bold">P</span>
             </div>
           )}
           {/* Close button for mobile */}
@@ -421,7 +420,7 @@ export function AppSidebar({
 
           {/* Administraties */}
           {state.isAuthenticated && administraties.length > 0 && (
-            <div className="mt-2 space-y-1">
+            <div className="mt-2 space-y-1 mb-8">
               <Separator className="my-2" />
               {!isCollapsed && (
                 <p className="px-3 py-2 text-xs d text-muted-foreground uppercase tracking-wider">
@@ -482,11 +481,20 @@ export function AppSidebar({
           )}
         </div>
 
-        {/* Footer - Login */}
+        {/* Footer - Language & Login */}
         <div className="border-t p-2 space-y-4">
-          {!state.isAuthenticated  && (
+          {state.isAuthenticated ? (
+            <div
+              className={cn(
+                'flex items-center justify-center mb-4 gap-2',
+                isCollapsed && 'items-center',
+              )}
+            >
+              <TaalKeuzes />
+            </div>
+          ) : (
             <Button onClick={handleLogin} className="w-full" size="sm">
-              <LoginIcon />{!isCollapsed ? 'Inloggen' : ''}
+              {!isCollapsed ? 'Inloggen' : 'In'}
             </Button>
           )}
         </div>
