@@ -55,11 +55,21 @@ describe('applyRecurrenceDetection', () => {
     expect(result[0].bucket).toBe('ONBEKEND')
   })
 
-  it('does not promote when intervals are irregular', () => {
+  it('does not promote when intervals are too short', () => {
     const txs: CategorizedTransaction[] = [
-      makeTx('1', '2023-01-05', -120.00, 'Onregelmatig'),
-      makeTx('2', '2023-01-10', -120.00, 'Onregelmatig'), // 5 days — too short
-      makeTx('3', '2023-02-15', -120.00, 'Onregelmatig'), // 36 days — too long
+      makeTx('1', '2023-01-05', -120.00, 'TeKortInterval'),
+      makeTx('2', '2023-01-10', -120.00, 'TeKortInterval'), // 5 days — too short
+      makeTx('3', '2023-02-10', -120.00, 'TeKortInterval'),
+    ]
+    const result = applyRecurrenceDetection(txs)
+    expect(result[0].bucket).toBe('ONBEKEND')
+  })
+
+  it('does not promote when intervals are too long', () => {
+    const txs: CategorizedTransaction[] = [
+      makeTx('1', '2023-01-05', -120.00, 'TeLangInterval'),
+      makeTx('2', '2023-02-14', -120.00, 'TeLangInterval'), // 40 days — too long
+      makeTx('3', '2023-03-25', -120.00, 'TeLangInterval'), // 39 days — too long
     ]
     const result = applyRecurrenceDetection(txs)
     expect(result[0].bucket).toBe('ONBEKEND')

@@ -48,7 +48,7 @@ export const defaultRules: Rule[] = [
   { patroon: 'connexxion',    bucket: 'LEEFGELD',     subCategorie: 'vervoer',      naam: 'Connexxion' },
   { patroon: 'arriva',        bucket: 'LEEFGELD',     subCategorie: 'vervoer',      naam: 'Arriva' },
   { patroon: 'shell',         bucket: 'LEEFGELD',     subCategorie: 'brandstof',    naam: 'Shell' },
-  { patroon: 'bp ',           bucket: 'LEEFGELD',     subCategorie: 'brandstof',    naam: 'BP' },
+  { patroon: 'bp tankstation', bucket: 'LEEFGELD',     subCategorie: 'brandstof',    naam: 'BP' },
   { patroon: 'tango',         bucket: 'LEEFGELD',     subCategorie: 'brandstof',    naam: 'Tango' },
 
   // VASTE_LASTEN
@@ -62,7 +62,7 @@ export const defaultRules: Rule[] = [
   { patroon: 'nuon',          bucket: 'VASTE_LASTEN', subCategorie: 'energie',      naam: 'Nuon' },
   { patroon: 'essent',        bucket: 'VASTE_LASTEN', subCategorie: 'energie',      naam: 'Essent' },
   { patroon: 'greenchoice',   bucket: 'VASTE_LASTEN', subCategorie: 'energie',      naam: 'Greenchoice' },
-  { patroon: 'uwaterschap',   bucket: 'VASTE_LASTEN', subCategorie: 'water',        naam: 'Waterschap' },
+  { patroon: 'waterschap',    bucket: 'VASTE_LASTEN', subCategorie: 'water',        naam: 'Waterschap' },
   { patroon: 'waternet',      bucket: 'VASTE_LASTEN', subCategorie: 'water',        naam: 'Waternet' },
   { patroon: 'woonbedrijf',   bucket: 'VASTE_LASTEN', subCategorie: 'huur',         naam: 'Woonbedrijf' },
   { patroon: 'ymere',         bucket: 'VASTE_LASTEN', subCategorie: 'huur',         naam: 'Ymere' },

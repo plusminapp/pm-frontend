@@ -46,10 +46,13 @@ export function applyRecurrenceDetection(
 
   for (const [key, group] of groups) {
     if (group.length < MIN_OCCURRENCES) continue
-    if (!amountsWithinTolerance(group.map((t) => t.bedrag))) continue
+    const amounts = group.map((t) => t.bedrag)
+    // All amounts must have the same sign (no mixed debit/credit groups)
+    const isCredit = amounts.every((a) => a > 0)
+    const isDebit = amounts.every((a) => a < 0)
+    if (!isCredit && !isDebit) continue
+    if (!amountsWithinTolerance(amounts)) continue
     if (!intervalsAreMonthly(group.map((t) => t.datum))) continue
-
-    const isCredit = group[0].bedrag > 0
     recurringIds.add(key)
     recurringBucket.set(key, isCredit ? 'INKOMEN' : 'VASTE_LASTEN')
   }
