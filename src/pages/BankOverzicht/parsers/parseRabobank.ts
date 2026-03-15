@@ -9,7 +9,7 @@ export function parseRabobank(content: string, fileName: string): ParsedTransact
   })
 
   return data.map((row) => {
-    const rawBedrag = (row['Bedrag'] ?? '').replace('.', '').replace(',', '.')
+    const rawBedrag = (row['Bedrag'] ?? '').replace(/\./g, '').replace(',', '.')
     const bedrag = parseFloat(rawBedrag) || 0
 
     const tegenrekening = (row['Tegenrekening IBAN/BBAN'] ?? '').trim() || null

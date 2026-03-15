@@ -10,7 +10,7 @@ export function parseAbnAmro(content: string, fileName: string): ParsedTransacti
       ? `${rawDate.slice(0, 4)}-${rawDate.slice(4, 6)}-${rawDate.slice(6, 8)}`
       : rawDate
 
-    const rawBedrag = (cols[3] ?? '').replace('.', '').replace(',', '.')
+    const rawBedrag = (cols[3] ?? '').replace(/\./g, '').replace(',', '.')
     const bedrag = parseFloat(rawBedrag) || 0
 
     const tegenrekening = (cols[4] ?? '').trim() || null

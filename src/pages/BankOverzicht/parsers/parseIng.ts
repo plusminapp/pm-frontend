@@ -14,7 +14,7 @@ export function parseIng(content: string, fileName: string): ParsedTransaction[]
       ? `${rawDate.slice(0, 4)}-${rawDate.slice(4, 6)}-${rawDate.slice(6, 8)}`
       : rawDate
 
-    const rawBedrag = (row['Bedrag (EUR)'] ?? '').replace('.', '').replace(',', '.')
+    const rawBedrag = (row['Bedrag (EUR)'] ?? '').replace(/\./g, '').replace(',', '.')
     const amount = parseFloat(rawBedrag) || 0
     const bedrag = (row['Af Bij'] ?? '').trim().toLowerCase() === 'af' ? -amount : amount
 
