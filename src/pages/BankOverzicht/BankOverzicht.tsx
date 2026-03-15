@@ -221,7 +221,7 @@ export default function BankOverzicht() {
                   dispatch({ type: 'CATEGORIE_WIJZIGEN', transactieIds: ids, bucket: 'ONBEKEND' })
                 }}
               >
-                {duplicatenAantal} duplicaten verwijderen
+                {duplicatenAantal} duplicaten naar Onbekend
               </Button>
             }
           >

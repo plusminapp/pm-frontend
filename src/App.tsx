@@ -8,8 +8,6 @@ import {
 import { useAuthContext } from '@asgardeo/auth-react';
 import { CircularProgress } from '@mui/material';
 
-const BankOverzicht = React.lazy(() => import('./pages/BankOverzicht/BankOverzicht'));
-
 import Profiel from './pages/Profiel';
 import Stand from './pages/Stand';
 import Home from './pages/Home';
@@ -30,6 +28,8 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { AppHeader } from '@/components/AppHeader';
 import { useState } from 'react';
 import BeslisboomWrapper from './pages/BeslisboomWrapper';
+
+const BankOverzicht = React.lazy(() => import('./pages/BankOverzicht/BankOverzicht'));
 
 const ProtectedRoute: React.FC<{ element: JSX.Element }> = ({ element }) => {
   const { state } = useAuthContext();
