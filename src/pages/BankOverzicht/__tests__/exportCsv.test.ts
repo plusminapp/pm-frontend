@@ -23,13 +23,12 @@ describe('buildCsvContent', () => {
     expect(typeof buildCsvContent([tx])).toBe('string')
   })
 
-  it('includes a header row with expected column names', () => {
+  it('includes all 7 required column names in the header', () => {
     const csv = buildCsvContent([tx])
     const header = csv.split('\n')[0]
-    expect(header).toContain('datum')
-    expect(header).toContain('tegenpartij')
-    expect(header).toContain('bedrag')
-    expect(header).toContain('bucket')
+    for (const col of ['datum', 'tegenpartij', 'omschrijving', 'bedrag', 'bucket', 'subCategorie', 'bronBestand']) {
+      expect(header).toContain(col)
+    }
   })
 
   it('includes the transaction data in the second row', () => {
