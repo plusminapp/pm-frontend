@@ -34,4 +34,7 @@ describe('parseRabobank', () => {
     const result = parseRabobank(RABO_CSV, 'rabo.csv')
     expect(result[0].bankFormat).toBe('RABOBANK')
   })
+  it('returns empty array for empty content', () => {
+    expect(parseRabobank('', 'rabo.csv')).toHaveLength(0)
+  })
 })

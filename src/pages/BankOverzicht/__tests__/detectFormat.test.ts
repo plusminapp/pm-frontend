@@ -22,4 +22,7 @@ describe('detectFormat', () => {
   it('returns null for unknown format', () => {
     expect(detectFormat('some,random,csv,content\n')).toBeNull()
   })
+  it('returns null for empty string', () => {
+    expect(detectFormat('')).toBeNull()
+  })
 })

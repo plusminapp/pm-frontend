@@ -69,4 +69,11 @@ describe('parseCamt053', () => {
     const result = parseCamt053(CAMT_XML, 'camt.xml')
     expect(result[0].bankFormat).toBe('CAMT053')
   })
+  it('returns empty array when no Ntry elements', () => {
+    const emptyXml = '<?xml version="1.0"?><Document><BkToCstmrStmt><Stmt></Stmt></BkToCstmrStmt></Document>'
+    expect(parseCamt053(emptyXml, 'camt.xml')).toHaveLength(0)
+  })
+  it('throws on malformed XML', () => {
+    expect(() => parseCamt053('not xml at all', 'camt.xml')).toThrow()
+  })
 })

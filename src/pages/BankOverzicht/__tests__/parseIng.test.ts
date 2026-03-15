@@ -40,4 +40,7 @@ describe('parseIng', () => {
     const result = parseIng(ING_CSV, 'ing-export.csv')
     expect(result[0].id).not.toBe(result[1].id)
   })
+  it('returns empty array for empty content', () => {
+    expect(parseIng('', 'ing.csv')).toHaveLength(0)
+  })
 })

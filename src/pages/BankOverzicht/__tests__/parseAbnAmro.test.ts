@@ -33,4 +33,7 @@ describe('parseAbnAmro', () => {
     const result = parseAbnAmro(ABN_CSV, 'abn.csv')
     expect(result[0].bankFormat).toBe('ABN_AMRO')
   })
+  it('returns empty array for empty content', () => {
+    expect(parseAbnAmro('', 'abn.csv')).toHaveLength(0)
+  })
 })

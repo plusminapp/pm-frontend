@@ -1,5 +1,6 @@
 import Papa from 'papaparse'
 import type { ParsedTransaction } from '../types'
+import { formatYYYYMMDD } from './utils'
 
 export function parseIng(content: string, fileName: string): ParsedTransaction[] {
   const { data } = Papa.parse<Record<string, string>>(content, {
@@ -9,14 +10,13 @@ export function parseIng(content: string, fileName: string): ParsedTransaction[]
   })
 
   return data.map((row) => {
-    const rawDate = row['Datum'] ?? ''
-    const datum = rawDate.length === 8
-      ? `${rawDate.slice(0, 4)}-${rawDate.slice(4, 6)}-${rawDate.slice(6, 8)}`
-      : rawDate
+    const rawDate = (row['Datum'] ?? '').trim()
+    const datum = formatYYYYMMDD(rawDate)
 
     const rawBedrag = (row['Bedrag (EUR)'] ?? '').replace(/\./g, '').replace(',', '.')
-    const amount = parseFloat(rawBedrag) || 0
-    const bedrag = (row['Af Bij'] ?? '').trim().toLowerCase() === 'af' ? -amount : amount
+    const amount = parseFloat(rawBedrag)
+    const safeAmount = isNaN(amount) ? 0 : amount
+    const bedrag = (row['Af Bij'] ?? '').trim().toLowerCase() === 'af' ? -safeAmount : safeAmount
 
     const tegenrekening = (row['Tegenrekening'] ?? '').trim() || null
 
