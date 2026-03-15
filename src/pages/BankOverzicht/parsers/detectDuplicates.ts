@@ -16,6 +16,6 @@ export function markDuplicates(
     const key = txKey(tx)
     if (seen.has(key)) return { ...tx, isDuplicaat: true }
     seen.add(key)
-    return tx
+    return { ...tx, isDuplicaat: false }
   })
 }

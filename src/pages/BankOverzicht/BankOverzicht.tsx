@@ -109,7 +109,9 @@ export default function BankOverzicht() {
       offset += txs.length
     }
 
-    dispatch({ type: 'NAAR_REVIEW' })
+    if (fileResults.length > 0) {
+      dispatch({ type: 'NAAR_REVIEW' })
+    }
     setIsLoading(false)
   }, [state.userRules, state.transacties])
 

@@ -40,4 +40,9 @@ describe('markDuplicates', () => {
     const result = markDuplicates([tx('1'), tx('2', { bedrag: -99.00 })])
     expect(result[1].isDuplicaat).toBe(false)
   })
+
+  it('resets isDuplicaat to false for first occurrence even if pre-flagged', () => {
+    const result = markDuplicates([tx('1', { isDuplicaat: true })])
+    expect(result[0].isDuplicaat).toBe(false)
+  })
 })
