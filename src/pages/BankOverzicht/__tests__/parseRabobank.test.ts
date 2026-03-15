@@ -3,7 +3,7 @@ import { parseRabobank } from '../parsers/parseRabobank'
 
 const RABO_CSV = `"IBAN/BBAN";"Munt";"BIC";"Volgnr";"Datum";"Rentedatum";"Bedrag";"Saldo na trn";"Tegenrekening IBAN/BBAN";"Naam tegenpartij";"Naam uiteindelijke partij";"Naam initiërende partij";"BIC tegenpartij";"Code";"Batch ID";"Transactiereferentie";"Machtigingskenmerk";"Incassant ID";"Betalingskenmerk";"Omschrijving-1";"Omschrijving-2";"Omschrijving-3";"Reden retour";"Oorspr bedrag";"Oorspr munt";"Koers"
 "NL91RABO0000000000";"EUR";"RABONL2U";"1";"2023-12-01";"2023-12-01";"-45,67";"1234,56";"NL86INGB0002445588";"Albert Heijn";"Albert Heijn";"";"";"";"";"";"";"";"";"";"";"";"";"";"";""
-"NL91RABO0000000000";"EUR";"RABONL2U";"2";"2023-12-05";"2023-12-05";"2500,00";"3734,56";"NL99TEST0000000001";"Werkgever BV";"Werkgever BV";"";"";"";"";"";"";"";"Salaris";"";"";"";"";"";""
+"NL91RABO0000000000";"EUR";"RABONL2U";"2";"2023-12-05";"2023-12-05";"2500,00";"3734,56";"NL99TEST0000000001";"Werkgever BV";"Werkgever BV";"";"";"";"";"";"";"";"";"Salaris";"";"";"";"";"";""
 `
 
 describe('parseRabobank', () => {

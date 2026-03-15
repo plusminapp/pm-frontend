@@ -18,7 +18,7 @@ export function parseRabobank(content: string, fileName: string): ParsedTransact
       id: crypto.randomUUID(),
       datum: row['Datum'] ?? '',
       bedrag,
-      omschrijving: (row['Omschrijving-1'] || row['Betalingskenmerk'] || '').trim(),
+      omschrijving: (row['Omschrijving-1'] ?? '').trim(),
       tegenrekening,
       tegenpartij: (row['Naam tegenpartij'] ?? '').trim(),
       bronBestand: fileName,
