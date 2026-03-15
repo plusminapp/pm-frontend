@@ -1,4 +1,4 @@
-import React, { useReducer, useState, useCallback } from 'react'
+import { useReducer, useState, useCallback } from 'react'
 import {
   Alert, Button, Chip, CircularProgress, Dialog, DialogActions,
   DialogContent, DialogTitle, Tab, Tabs,
