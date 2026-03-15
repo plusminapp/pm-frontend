@@ -6,6 +6,9 @@ import {
   Navigate,
 } from 'react-router-dom';
 import { useAuthContext } from '@asgardeo/auth-react';
+import { CircularProgress } from '@mui/material';
+
+const BankOverzicht = React.lazy(() => import('./pages/BankOverzicht/BankOverzicht'));
 
 import Profiel from './pages/Profiel';
 import Stand from './pages/Stand';
@@ -60,9 +63,11 @@ const App: React.FC = () => {
 
           {/* Page content */}
           <main className="flex-1 overflow-y-auto p-4 md:p-6">
+            <React.Suspense fallback={<div className="flex h-full items-center justify-center"><CircularProgress /></div>}>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<LoginPagina />} />
+              <Route path="/bankoverzicht" element={<BankOverzicht />} />
 
               {/* Beschermde routes */}
               <Route
@@ -99,6 +104,7 @@ const App: React.FC = () => {
 
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </React.Suspense>
           </main>
         </div>
       </div>
