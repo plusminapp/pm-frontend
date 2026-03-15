@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { AgCharts } from 'ag-charts-react'
 import type { AgChartOptions } from 'ag-charts-community'
 import type { CategorizedTransaction } from '../types'
@@ -25,7 +26,7 @@ function buildChartData(transacties: CategorizedTransaction[]) {
 }
 
 export function MonthlyChart({ transacties }: Props) {
-  const options: AgChartOptions = {
+  const options: AgChartOptions = useMemo(() => ({
     data: buildChartData(transacties),
     series: [
       { type: 'bar', xKey: 'maand', yKey: 'inkomen',     yName: 'Inkomsten',    fill: '#22c55e', stacked: true },
@@ -45,7 +46,7 @@ export function MonthlyChart({ transacties }: Props) {
       },
     ],
     legend: { position: 'bottom' },
-  }
+  }), [transacties])
 
   return (
     <div className="rounded-xl border bg-white p-4 shadow-sm">

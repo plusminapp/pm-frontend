@@ -1,3 +1,4 @@
+import type { ElementType } from 'react'
 import type { CategorizedTransaction, Bucket } from '../types'
 import { TrendingUp, ShoppingCart, Home, PiggyBank } from 'lucide-react'
 
@@ -8,7 +9,7 @@ interface Props {
 interface BucketConfig {
   bucket: Bucket
   label: string
-  icon: React.ElementType
+  icon: ElementType
   colorClass: string
   bgClass: string
 }
@@ -25,6 +26,8 @@ function formatEur(n: number) {
 }
 
 export function BucketCards({ transacties }: Props) {
+  const aantalMaanden = new Set(transacties.map((t) => t.datum.slice(0, 7))).size || 1
+
   const totals = Object.fromEntries(
     BUCKET_CONFIG.map(({ bucket }) => [
       bucket,
@@ -46,7 +49,7 @@ export function BucketCards({ transacties }: Props) {
             {formatEur(totals[bucket])}
           </p>
           <p className="mt-1 text-xs text-gray-500">
-            Gem. {formatEur(totals[bucket] / 12)} / maand
+            Gem. {formatEur(totals[bucket] / aantalMaanden)} / maand
           </p>
         </div>
       ))}

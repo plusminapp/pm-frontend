@@ -75,8 +75,16 @@ export function CategoryBreakdown({ transacties, onCorrectie, onRegelToepassen }
         {ranking.map(({ naam, totaal, count, txs, maandGemiddeld }) => (
           <div key={naam}>
             <div
+              role="button"
+              tabIndex={0}
               className="flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-gray-50"
               onClick={() => setExpanded(expanded === naam ? null : naam)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  setExpanded(expanded === naam ? null : naam)
+                }
+              }}
             >
               {expanded === naam
                 ? <ChevronDown className="h-4 w-4 shrink-0 text-gray-400" />
@@ -111,13 +119,15 @@ export function CategoryBreakdown({ transacties, onCorrectie, onRegelToepassen }
         ))}
       </div>
 
-      <CorrectionDialog
-        open={dialogTxs.length > 0}
-        transacties={dialogTxs}
-        onSluiten={() => setDialogTxs([])}
-        onCorrectie={(ids, bucket) => { onCorrectie(ids, bucket); setDialogTxs([]) }}
-        onRegelToepassen={(regel) => { onRegelToepassen(regel); setDialogTxs([]) }}
-      />
+      {dialogTxs.length > 0 && (
+        <CorrectionDialog
+          open
+          transacties={dialogTxs}
+          onSluiten={() => setDialogTxs([])}
+          onCorrectie={(ids, bucket) => { onCorrectie(ids, bucket); setDialogTxs([]) }}
+          onRegelToepassen={(regel) => { onRegelToepassen(regel); setDialogTxs([]) }}
+        />
+      )}
     </div>
   )
 }

@@ -80,7 +80,7 @@ export function CorrectionDialog({
       </DialogContent>
       <DialogActions>
         <Button onClick={onSluiten}>Annuleren</Button>
-        <Button onClick={handleOpslaan} variant="contained" disabled={!gekozenBucket}>
+        <Button onClick={handleOpslaan} variant="contained">
           Opslaan
         </Button>
       </DialogActions>
