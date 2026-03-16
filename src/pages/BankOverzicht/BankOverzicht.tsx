@@ -140,14 +140,17 @@ export default function BankOverzicht() {
     setReviewBucketFilter('ONBEKEND')
   }
 
+  const reviewVisible = state.transacties.filter((t) => !t.isHandmatig)
   const reviewFiltered = reviewBucketFilter === 'ALLE'
-    ? state.transacties
-    : state.transacties.filter((t) => t.bucket === reviewBucketFilter)
+    ? reviewVisible
+    : reviewVisible.filter((t) => t.bucket === reviewBucketFilter)
+
+  const hiddenCount = state.transacties.length - reviewVisible.length
 
   const tabCounts = Object.fromEntries(
     BUCKET_FILTER_TABS.map(({ value }) => [
       value,
-      value === 'ALLE' ? state.transacties.length : state.transacties.filter((t) => t.bucket === value).length,
+      value === 'ALLE' ? reviewVisible.length : reviewVisible.filter((t) => t.bucket === value).length,
     ])
   )
 
@@ -321,6 +324,10 @@ export default function BankOverzicht() {
             <Tab key={value} value={value} label={`${label} (${tabCounts[value]})`} />
           ))}
         </Tabs>
+
+        {hiddenCount > 0 && (
+          <p className="text-xs text-gray-400">{hiddenCount} gecategoriseerde items verborgen</p>
+        )}
 
         <TransactionTable
           transacties={reviewFiltered}

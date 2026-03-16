@@ -20,8 +20,8 @@ export function ExportButtons({ transacties, jaar, userRules = [], learnedRules 
     setAnchor(null)
   }
 
-  const handlePdf = () => {
-    exportPdf(transacties, jaar, userRules, learnedRules)
+  const handlePdf = async () => {
+    await exportPdf(transacties, jaar, userRules, learnedRules)
     setAnchor(null)
   }
 

@@ -68,13 +68,32 @@ function formatEur(amount: number): string {
 
 const MAANDEN = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec']
 
-export function exportPdf(
+async function loadLogoDataUrl(): Promise<string | null> {
+  try {
+    const resp = await fetch('/plusmin.png')
+    if (!resp.ok) return null
+    const blob = await resp.blob()
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = () => resolve(null)
+      reader.readAsDataURL(blob)
+    })
+  } catch {
+    return null
+  }
+}
+
+export async function exportPdf(
   transactions: CategorizedTransaction[],
   jaar: number,
   userRules: UserRule[] = [],
   learnedRules: UserRule[] = [],
-): void {
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+): Promise<void> {
+  const [doc, logoDataUrl] = await Promise.all([
+    Promise.resolve(new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })),
+    loadLogoDataUrl(),
+  ])
   const summary = buildBucketSummary(transactions)
   const monthlyTotals = buildMonthlyTotals(transactions)
   const pageWidth = doc.internal.pageSize.getWidth()
@@ -89,6 +108,9 @@ export function exportPdf(
   doc.setFontSize(9)
   doc.setFont('helvetica', 'normal')
   doc.text(`Gegenereerd op ${new Date().toLocaleDateString('nl-NL')}`, pageWidth - 14, 12, { align: 'right' })
+  if (logoDataUrl) {
+    doc.addImage(logoDataUrl, 'PNG', pageWidth - 28, 2, 14, 14)
+  }
 
   // Bucket summary table
   doc.setTextColor(0, 0, 0)
