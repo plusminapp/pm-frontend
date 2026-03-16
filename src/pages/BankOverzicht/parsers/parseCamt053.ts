@@ -23,9 +23,10 @@ export function parseCamt053(content: string, fileName: string): ParsedTransacti
 
     const datum = getText(entry, 'Dt')
 
-    const tegenpartij = isDebit
+    const cdtDbtTegenpartij = isDebit
       ? getText(entry.getElementsByTagName('Cdtr')[0] ?? entry, 'Nm')
       : getText(entry.getElementsByTagName('Dbtr')[0] ?? entry, 'Nm')
+    const tegenpartij = cdtDbtTegenpartij || getText(entry, 'AddtlNtryInf').replace(/\s+/g, ' ').slice(0, 30)
 
     const ibanEl = isDebit
       ? entry.getElementsByTagName('CdtrAcct')[0]

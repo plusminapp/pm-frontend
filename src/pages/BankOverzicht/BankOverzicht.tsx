@@ -142,6 +142,13 @@ export default function BankOverzicht() {
     ? state.transacties
     : state.transacties.filter((t) => t.bucket === reviewBucketFilter)
 
+  const tabCounts = Object.fromEntries(
+    BUCKET_FILTER_TABS.map(({ value }) => [
+      value,
+      value === 'ALLE' ? state.transacties.length : state.transacties.filter((t) => t.bucket === value).length,
+    ])
+  )
+
   const jaar = selectedYear ?? detectDominantYear(state.transacties)
   const jaarFiltered = state.transacties.filter((t) => t.datum.startsWith(String(jaar)))
   const onbekendCount = jaarFiltered.filter((t) => t.bucket === 'ONBEKEND').length
@@ -248,7 +255,7 @@ export default function BankOverzicht() {
           scrollButtons="auto"
         >
           {BUCKET_FILTER_TABS.map(({ value, label }) => (
-            <Tab key={value} value={value} label={label} />
+            <Tab key={value} value={value} label={`${label} (${tabCounts[value]})`} />
           ))}
         </Tabs>
 
