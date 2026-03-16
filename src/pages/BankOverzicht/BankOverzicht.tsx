@@ -250,15 +250,32 @@ export default function BankOverzicht() {
 
         {/* File status */}
         <div className="flex flex-wrap gap-2">
-          {state.bestanden.map((b) => (
-            <Chip
-              key={b.naam}
-              label={b.naam}
-              color={b.status === 'FOUT' ? 'error' : b.status === 'KLAAR' ? 'success' : 'default'}
-              icon={b.status === 'PARSING' ? <CircularProgress size={14} /> : undefined}
-              size="small"
-            />
-          ))}
+          {state.bestanden.length <= 3
+            ? state.bestanden.map((b) => (
+                <Chip
+                  key={b.naam}
+                  label={b.naam}
+                  color={b.status === 'FOUT' ? 'error' : b.status === 'KLAAR' ? 'success' : 'default'}
+                  icon={b.status === 'PARSING' ? <CircularProgress size={14} /> : undefined}
+                  size="small"
+                />
+              ))
+            : (() => {
+                const fout = state.bestanden.filter((b) => b.status === 'FOUT').length
+                const parsing = state.bestanden.filter((b) => b.status === 'PARSING').length
+                return (
+                  <>
+                    <Chip
+                      label={`${state.bestanden.length} bestanden geladen`}
+                      color={fout > 0 ? 'error' : parsing > 0 ? 'default' : 'success'}
+                      icon={parsing > 0 ? <CircularProgress size={14} /> : undefined}
+                      size="small"
+                    />
+                    {fout > 0 && <Chip label={`${fout} fout`} color="error" size="small" />}
+                  </>
+                )
+              })()
+          }
         </div>
 
         {/* Duplicate warning */}

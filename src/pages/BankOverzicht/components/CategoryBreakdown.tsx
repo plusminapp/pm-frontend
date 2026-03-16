@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Tabs, Tab } from '@mui/material'
+import { Button, Tabs, Tab } from '@mui/material'
 import { ChevronDown, ChevronRight, Pencil } from 'lucide-react'
 import { CorrectionDialog } from './CorrectionDialog'
 import { TransactionTable } from './TransactionTable'
@@ -46,6 +46,7 @@ export function CategoryBreakdown({ transacties, onCorrectie, onRegelToepassen }
   const [activeTab, setActiveTab] = useState<Bucket | 'ALLE'>('ALLE')
   const [expanded, setExpanded] = useState<string | null>(null)
   const [dialogTxs, setDialogTxs] = useState<CategorizedTransaction[]>([])
+  const [geselecteerd, setGeselecteerd] = useState<string[]>([])
 
   const filtered = activeTab === 'ALLE'
     ? transacties
@@ -78,11 +79,12 @@ export function CategoryBreakdown({ transacties, onCorrectie, onRegelToepassen }
               role="button"
               tabIndex={0}
               className="flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-gray-50"
-              onClick={() => setExpanded(expanded === naam ? null : naam)}
+              onClick={() => { setExpanded(expanded === naam ? null : naam); setGeselecteerd([]) }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault()
                   setExpanded(expanded === naam ? null : naam)
+                  setGeselecteerd([])
                 }
               }}
             >
@@ -107,10 +109,19 @@ export function CategoryBreakdown({ transacties, onCorrectie, onRegelToepassen }
 
             {expanded === naam && (
               <div className="border-t bg-gray-50 px-4 py-3">
+                {geselecteerd.length > 0 && (
+                  <div className="mb-2 flex items-center gap-3 rounded-lg bg-blue-50 px-3 py-1.5">
+                    <span className="text-sm font-medium">{geselecteerd.length} geselecteerd</span>
+                    <Button size="small" variant="outlined" onClick={() => setDialogTxs(txs.filter((t) => geselecteerd.includes(t.id)))}>
+                      Categorie wijzigen
+                    </Button>
+                    <Button size="small" onClick={() => setGeselecteerd([])}>Deselecteren</Button>
+                  </div>
+                )}
                 <TransactionTable
                   transacties={txs}
-                  geselecteerd={[]}
-                  onSelectie={() => {}}
+                  geselecteerd={geselecteerd}
+                  onSelectie={setGeselecteerd}
                   compact
                 />
               </div>
@@ -124,8 +135,8 @@ export function CategoryBreakdown({ transacties, onCorrectie, onRegelToepassen }
           open
           transacties={dialogTxs}
           onSluiten={() => setDialogTxs([])}
-          onCorrectie={(ids, bucket) => { onCorrectie(ids, bucket); setDialogTxs([]) }}
-          onRegelToepassen={(regel) => { onRegelToepassen(regel); setDialogTxs([]) }}
+          onCorrectie={(ids, bucket) => { onCorrectie(ids, bucket); setDialogTxs([]); setGeselecteerd([]) }}
+          onRegelToepassen={(regel) => { onRegelToepassen(regel); setDialogTxs([]); setGeselecteerd([]) }}
         />
       )}
     </div>
