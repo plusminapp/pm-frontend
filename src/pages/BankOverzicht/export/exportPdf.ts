@@ -100,27 +100,27 @@ export async function exportPdf(
 
   // Header
   doc.setFillColor(34, 197, 94)
-  doc.rect(0, 0, pageWidth, 18, 'F')
+  doc.rect(0, 0, pageWidth, 22, 'F')
   doc.setTextColor(255, 255, 255)
   doc.setFontSize(16)
   doc.setFont('helvetica', 'bold')
-  doc.text(`PlusMin Jaaroverzicht ${jaar}`, 14, 12)
+  doc.text(`PlusMin Jaaroverzicht ${jaar}`, 14, 11)
   doc.setFontSize(9)
   doc.setFont('helvetica', 'normal')
-  doc.text(`Gegenereerd op ${new Date().toLocaleDateString('nl-NL')}`, pageWidth - 14, 12, { align: 'right' })
+  doc.text(`Gegenereerd op ${new Date().toLocaleDateString('nl-NL')}`, 14, 18)
   if (logoDataUrl) {
-    doc.addImage(logoDataUrl, 'PNG', pageWidth - 28, 2, 14, 14)
+    doc.addImage(logoDataUrl, 'PNG', pageWidth - 20, 3, 16, 16)
   }
 
   // Bucket summary table
   doc.setTextColor(0, 0, 0)
   doc.setFontSize(11)
   doc.setFont('helvetica', 'bold')
-  doc.text('Jaaroverzicht per categorie', 14, 28)
+  doc.text('Jaaroverzicht per categorie', 14, 32)
 
   const buckets: Bucket[] = ['INKOMEN', 'LEEFGELD', 'VASTE_LASTEN', 'SPAREN']
   autoTable(doc, {
-    startY: 32,
+    startY: 36,
     head: [['Categorie', 'Jaartotaal', 'Maandgemiddelde']],
     body: buckets.map((b) => [
       BUCKET_LABELS[b],
