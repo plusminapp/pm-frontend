@@ -23,7 +23,10 @@ export interface CategorizedTransaction extends ParsedTransaction {
 
 export interface UserRule {
   tegenpartijPatroon: string
+  omschrijvingPatroon?: string   // new
+  richting?: 'credit' | 'debit' // new
   bucket: Bucket
+  subCategorie?: string          // new
 }
 
 export interface BestandStatus {
@@ -38,5 +41,6 @@ export interface BankOverzichtState {
   bestanden: BestandStatus[]
   transacties: CategorizedTransaction[]
   userRules: UserRule[]
+  learnedRules: UserRule[]                // new
   geselecteerdeTransacties: string[]
 }

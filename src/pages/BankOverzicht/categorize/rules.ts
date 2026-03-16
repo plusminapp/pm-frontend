@@ -1,10 +1,12 @@
 import type { Bucket } from '../types'
 
 export interface Rule {
-  patroon: string       // case-insensitive substring match on tegenpartij
+  patroon: string                // case-insensitive substring match on tegenpartij
+  omschrijvingPatroon?: string   // optional match on omschrijving
+  richting?: 'credit' | 'debit' // undefined = match both directions
   bucket: Bucket
   subCategorie: string
-  naam: string          // rule name shown in UI for transparency
+  naam: string
 }
 
 export const defaultRules: Rule[] = [
@@ -13,8 +15,10 @@ export const defaultRules: Rule[] = [
   { patroon: 'salaris',       bucket: 'INKOMEN',      subCategorie: 'salaris',      naam: 'salaris' },
   { patroon: 'uwv',           bucket: 'INKOMEN',      subCategorie: 'uitkering',    naam: 'UWV' },
   { patroon: 'sociale dienst',bucket: 'INKOMEN',      subCategorie: 'uitkering',    naam: 'sociale dienst' },
-  { patroon: 'belastingdienst',bucket: 'INKOMEN',     subCategorie: 'toeslagen',    naam: 'belastingdienst' },
-  { patroon: 'svb',           bucket: 'INKOMEN',      subCategorie: 'aow',          naam: 'SVB' },
+  { patroon: 'belastingdienst', richting: 'credit', bucket: 'INKOMEN',      subCategorie: 'toeslagen',   naam: 'Belastingdienst toeslag' },
+  { patroon: 'belastingdienst', richting: 'debit',  bucket: 'VASTE_LASTEN', subCategorie: 'belasting',   naam: 'Belastingdienst aanslag' },
+  { patroon: 'svb', richting: 'credit', bucket: 'INKOMEN',      subCategorie: 'aow',         naam: 'SVB uitkering' },
+  { patroon: 'svb', richting: 'debit',  bucket: 'VASTE_LASTEN', subCategorie: 'verzekering', naam: 'SVB premie' },
 
   // LEEFGELD
   { patroon: 'albert heijn',  bucket: 'LEEFGELD',     subCategorie: 'boodschappen', naam: 'Albert Heijn' },
@@ -72,10 +76,12 @@ export const defaultRules: Rule[] = [
   { patroon: 'vgz',           bucket: 'VASTE_LASTEN', subCategorie: 'zorg',         naam: 'VGZ' },
   { patroon: 'zilveren kruis',bucket: 'VASTE_LASTEN', subCategorie: 'zorg',         naam: 'Zilveren Kruis' },
   { patroon: 'menzis',        bucket: 'VASTE_LASTEN', subCategorie: 'zorg',         naam: 'Menzis' },
-  { patroon: 'nationale nederlanden', bucket: 'VASTE_LASTEN', subCategorie: 'verzekering', naam: 'Nationale Nederlanden' },
+  { patroon: 'nationale nederlanden', richting: 'credit', bucket: 'INKOMEN',      subCategorie: 'uitkering',   naam: 'Nationale Nederlanden uitkering' },
+  { patroon: 'nationale nederlanden', richting: 'debit',  bucket: 'VASTE_LASTEN', subCategorie: 'verzekering', naam: 'Nationale Nederlanden premie' },
   { patroon: 'aegon',         bucket: 'VASTE_LASTEN', subCategorie: 'verzekering',  naam: 'Aegon' },
   { patroon: 'interpolis',    bucket: 'VASTE_LASTEN', subCategorie: 'verzekering',  naam: 'Interpolis' },
-  { patroon: 'gemeente',      bucket: 'VASTE_LASTEN', subCategorie: 'gemeentelijk', naam: 'Gemeente' },
+  { patroon: 'gemeente', richting: 'credit', bucket: 'INKOMEN',      subCategorie: 'toeslag',      naam: 'Gemeente toeslag' },
+  { patroon: 'gemeente', richting: 'debit',  bucket: 'VASTE_LASTEN', subCategorie: 'gemeentelijk', naam: 'Gemeente belasting' },
 
   // SPAREN
   { patroon: 'spaarrekening', bucket: 'SPAREN',       subCategorie: 'sparen',       naam: 'Spaarrekening' },

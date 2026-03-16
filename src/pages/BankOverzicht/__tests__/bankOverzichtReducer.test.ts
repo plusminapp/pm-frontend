@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { bankOverzichtReducer, initialState } from '../bankOverzichtReducer'
-import type { BankOverzichtState, CategorizedTransaction } from '../types'
+import type { BankOverzichtState, CategorizedTransaction, UserRule } from '../types'
 
 const makeTx = (overrides: Partial<CategorizedTransaction> = {}): CategorizedTransaction => ({
   id: 'tx-1',
@@ -127,5 +127,123 @@ describe('bankOverzichtReducer', () => {
     const state = { ...initialState, stap: 'DASHBOARD' as const }
     const next = bankOverzichtReducer(state, { type: 'NAAR_UPLOAD' })
     expect(next.stap).toBe('UPLOAD')
+  })
+})
+
+// Helper for learned rule tests
+const makeLearnedState = (overrides: Partial<BankOverzichtState> = {}): BankOverzichtState => ({
+  ...initialState,
+  learnedRules: [],
+  ...overrides,
+})
+
+describe('learnedRules', () => {
+  it('initialState has empty learnedRules', () => {
+    expect(initialState.learnedRules).toEqual([])
+  })
+
+  it('REGEL_GELEERD adds a learned rule', () => {
+    const regel: UserRule = { tegenpartijPatroon: 'test', richting: 'debit', bucket: 'VASTE_LASTEN' }
+    const next = bankOverzichtReducer(makeLearnedState(), { type: 'REGEL_GELEERD', regel })
+    expect(next.learnedRules).toHaveLength(1)
+    expect(next.learnedRules[0].tegenpartijPatroon).toBe('test')
+  })
+
+  it('REGEL_GELEERD replaces existing rule with same key (last-wins)', () => {
+    const existing: UserRule = { tegenpartijPatroon: 'test', richting: 'debit', bucket: 'VASTE_LASTEN' }
+    const updated: UserRule = { tegenpartijPatroon: 'test', richting: 'debit', bucket: 'LEEFGELD' }
+    const state = makeLearnedState({ learnedRules: [existing] })
+    const next = bankOverzichtReducer(state, { type: 'REGEL_GELEERD', regel: updated })
+    expect(next.learnedRules).toHaveLength(1)
+    expect(next.learnedRules[0].bucket).toBe('LEEFGELD')
+  })
+
+  it('REGEL_GELEERD auto-applies to ONBEKEND transactions', () => {
+    const tx = makeTx({ id: 'tx-1', tegenpartij: 'belastingdienst', bedrag: -100, bucket: 'ONBEKEND' })
+    const state = makeLearnedState({ transacties: [tx] })
+    const regel: UserRule = { tegenpartijPatroon: 'belastingdienst', richting: 'debit', bucket: 'VASTE_LASTEN' }
+    const next = bankOverzichtReducer(state, { type: 'REGEL_GELEERD', regel })
+    expect(next.transacties[0].bucket).toBe('VASTE_LASTEN')
+  })
+
+  it('REGEL_GELEERD does NOT re-categorize already-categorized transactions', () => {
+    const tx = makeTx({ id: 'tx-1', tegenpartij: 'belastingdienst', bedrag: -100, bucket: 'LEEFGELD' })
+    const state = makeLearnedState({ transacties: [tx] })
+    const regel: UserRule = { tegenpartijPatroon: 'belastingdienst', richting: 'debit', bucket: 'VASTE_LASTEN' }
+    const next = bankOverzichtReducer(state, { type: 'REGEL_GELEERD', regel })
+    expect(next.transacties[0].bucket).toBe('LEEFGELD') // unchanged
+  })
+
+  it('REGELS_IMPORTEREN replaces userRules and learnedRules', () => {
+    const userRules: UserRule[] = [{ tegenpartijPatroon: 'test', bucket: 'SPAREN' }]
+    const learnedRules: UserRule[] = [{ tegenpartijPatroon: 'foo', richting: 'debit', bucket: 'VASTE_LASTEN' }]
+    const next = bankOverzichtReducer(makeLearnedState(), {
+      type: 'REGELS_IMPORTEREN',
+      userRules,
+      learnedRules,
+    })
+    expect(next.userRules).toEqual(userRules)
+    expect(next.learnedRules).toEqual(learnedRules)
+  })
+
+  it('REGELS_IMPORTEREN re-categorizes existing ONBEKEND transactions with new rules', () => {
+    const tx = makeTx({ id: 'tx-1', tegenpartij: 'test', bedrag: -50, bucket: 'ONBEKEND' })
+    const state = makeLearnedState({ transacties: [tx] })
+    const userRules: UserRule[] = [{ tegenpartijPatroon: 'test', bucket: 'VASTE_LASTEN' }]
+    const next = bankOverzichtReducer(state, { type: 'REGELS_IMPORTEREN', userRules, learnedRules: [] })
+    expect(next.transacties[0].bucket).toBe('VASTE_LASTEN')
+  })
+
+  it('REGELS_IMPORTEREN does NOT re-categorize isHandmatig: true transactions', () => {
+    const manual = makeTx({ id: 'tx-1', tegenpartij: 'test', bedrag: -50, bucket: 'SPAREN', isHandmatig: true })
+    const state = makeLearnedState({ transacties: [manual] })
+    const userRules: UserRule[] = [{ tegenpartijPatroon: 'test', bucket: 'VASTE_LASTEN' }]
+    const next = bankOverzichtReducer(state, { type: 'REGELS_IMPORTEREN', userRules, learnedRules: [] })
+    expect(next.transacties[0].bucket).toBe('SPAREN') // manual correction preserved
+  })
+
+  it('CATEGORIE_WIJZIGEN derives a learned rule from corrected transactions', () => {
+    const tx = makeTx({ id: 'tx-1', tegenpartij: 'Belastingdienst', bedrag: -300, bucket: 'INKOMEN' })
+    const state = makeLearnedState({ transacties: [tx] })
+    const next = bankOverzichtReducer(state, {
+      type: 'CATEGORIE_WIJZIGEN',
+      transactieIds: ['tx-1'],
+      bucket: 'VASTE_LASTEN',
+    })
+    expect(next.learnedRules).toHaveLength(1)
+    expect(next.learnedRules[0].tegenpartijPatroon).toBe('belastingdienst') // lowercased
+    expect(next.learnedRules[0].richting).toBe('debit')
+    expect(next.learnedRules[0].bucket).toBe('VASTE_LASTEN')
+  })
+
+  it('CATEGORIE_WIJZIGEN lowercases tegenpartijPatroon in learned rule', () => {
+    const tx = makeTx({ id: 'tx-1', tegenpartij: 'ZIGGO BV', bedrag: -50, bucket: 'ONBEKEND' })
+    const state = makeLearnedState({ transacties: [tx] })
+    const next = bankOverzichtReducer(state, {
+      type: 'CATEGORIE_WIJZIGEN',
+      transactieIds: ['tx-1'],
+      bucket: 'VASTE_LASTEN',
+    })
+    expect(next.learnedRules[0].tegenpartijPatroon).toBe('ziggo bv')
+  })
+
+  it('REGEL_TOEPASSEN lowercases tegenpartijPatroon in userRules', () => {
+    const next = bankOverzichtReducer(makeLearnedState(), {
+      type: 'REGEL_TOEPASSEN',
+      regel: { tegenpartijPatroon: 'Albert Heijn', bucket: 'SPAREN' },
+    })
+    expect(next.userRules[0].tegenpartijPatroon).toBe('albert heijn')
+  })
+
+  it('REGEL_TOEPASSEN with richting only applies to matching direction', () => {
+    const debit = makeTx({ id: 'tx-1', tegenpartij: 'gemeente', bedrag: -50, bucket: 'ONBEKEND' })
+    const credit = makeTx({ id: 'tx-2', tegenpartij: 'gemeente', bedrag: 200, bucket: 'ONBEKEND' })
+    const state = makeLearnedState({ transacties: [debit, credit] })
+    const next = bankOverzichtReducer(state, {
+      type: 'REGEL_TOEPASSEN',
+      regel: { tegenpartijPatroon: 'gemeente', richting: 'debit', bucket: 'VASTE_LASTEN' },
+    })
+    expect(next.transacties[0].bucket).toBe('VASTE_LASTEN') // debit → updated
+    expect(next.transacties[1].bucket).toBe('ONBEKEND')     // credit → untouched
   })
 })

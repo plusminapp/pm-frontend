@@ -3,7 +3,7 @@ import {
   Alert, Button, Chip, CircularProgress, Dialog, DialogActions,
   DialogContent, DialogTitle, Tab, Tabs,
 } from '@mui/material'
-import { ArrowLeft, ArrowRight, Plus } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Plus, Download } from 'lucide-react'
 
 import { bankOverzichtReducer, initialState } from './bankOverzichtReducer'
 import { detectFormat } from './parsers/detectFormat'
@@ -21,6 +21,7 @@ import { CategoryBreakdown } from './components/CategoryBreakdown'
 import { TransactionTable } from './components/TransactionTable'
 import { CorrectionDialog } from './components/CorrectionDialog'
 import { ExportButtons } from './components/ExportButtons'
+import { importRules, exportRules } from './export/exportRules'
 import type { BankFormat, Bucket, ParsedTransaction, CategorizedTransaction } from './types'
 
 function readFileAsText(file: File): Promise<string> {
@@ -71,6 +72,7 @@ export default function BankOverzicht() {
   const [correctionOpen, setCorrectionOpen] = useState(false)
   const [onbekendDialogOpen, setOnbekendDialogOpen] = useState(false)
   const [selectedYear, setSelectedYear] = useState<number | null>(null)
+  const [regelsImportStatus, setRegelsImportStatus] = useState<{ bericht: string; fout: boolean } | null>(null)
 
   const handleFiles = useCallback(async (files: File[]) => {
     setIsLoading(true)
@@ -91,7 +93,7 @@ export default function BankOverzicht() {
           continue
         }
         const parsed = parseByFormat(content, file.name, format)
-        const categorized = applyRecurrenceDetection(applyRules(parsed, state.userRules))
+        const categorized = applyRecurrenceDetection(applyRules(parsed, state.userRules, state.learnedRules))
         fileResults.push({ naam: file.name, txs: categorized })
       } catch (e) {
         dispatch({ type: 'BESTAND_FOUT', bestandNaam: file.name, foutmelding: String(e) })
@@ -113,7 +115,7 @@ export default function BankOverzicht() {
       dispatch({ type: 'NAAR_REVIEW' })
     }
     setIsLoading(false)
-  }, [state.userRules, state.transacties])
+  }, [state.userRules, state.learnedRules, state.transacties])
 
   const handleNaarDashboard = () => {
     const onbekend = state.transacties.filter((t) => t.bucket === 'ONBEKEND')
@@ -169,6 +171,41 @@ export default function BankOverzicht() {
           Upload je bankafschriften voor een overzicht van het jaar. Alle data blijft in je browser.
         </p>
         <FileDropZone onFiles={handleFiles} isLoading={isLoading} />
+        {regelsImportStatus && (
+          <Chip
+            label={regelsImportStatus.bericht}
+            color={regelsImportStatus.fout ? 'error' : 'success'}
+            size="small"
+            className="mt-2"
+            onDelete={() => setRegelsImportStatus(null)}
+          />
+        )}
+        <div className="mt-4 text-center">
+          <label className="cursor-pointer text-sm text-gray-500 hover:text-gray-700 underline">
+            Heb je eerder regels opgeslagen? Importeer ze hier.
+            <input
+              type="file"
+              accept=".json"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                const reader = new FileReader()
+                reader.onload = (ev) => {
+                  try {
+                    const { userRules, learnedRules } = importRules(ev.target?.result as string)
+                    dispatch({ type: 'REGELS_IMPORTEREN', userRules, learnedRules })
+                    setRegelsImportStatus({ bericht: `${userRules.length + learnedRules.length} regels geladen`, fout: false })
+                  } catch (err) {
+                    setRegelsImportStatus({ bericht: String(err), fout: true })
+                  }
+                }
+                reader.readAsText(file)
+                e.target.value = '' // reset so same file can be re-imported
+              }}
+            />
+          </label>
+        </div>
       </div>
     )
   }
@@ -187,9 +224,18 @@ export default function BankOverzicht() {
               variant="outlined"
               size="small"
               startIcon={<Plus className="h-4 w-4" />}
-              onClick={() => dispatch({ type: 'NAAR_UPLOAD' })}
+              onClick={() => { dispatch({ type: 'NAAR_UPLOAD' }); setRegelsImportStatus(null) }}
             >
               Bestanden toevoegen
+            </Button>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<Download className="h-4 w-4" />}
+              onClick={() => exportRules(state.userRules, state.learnedRules)}
+              disabled={state.userRules.length === 0 && state.learnedRules.length === 0}
+            >
+              Regels exporteren
             </Button>
             <Button
               variant="contained"
@@ -337,7 +383,12 @@ export default function BankOverzicht() {
         )}
 
         <div className="ml-auto">
-          <ExportButtons transacties={jaarFiltered} jaar={jaar} />
+          <ExportButtons
+            transacties={jaarFiltered}
+            jaar={jaar}
+            userRules={state.userRules}
+            learnedRules={state.learnedRules}
+          />
         </div>
       </div>
 
