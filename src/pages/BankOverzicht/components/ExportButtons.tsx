@@ -3,16 +3,17 @@ import { Button, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/materia
 import { FileDown, FileText, FileSpreadsheet } from 'lucide-react'
 import { triggerCsvDownload } from '../export/exportCsv'
 import { exportPdf } from '../export/exportPdf'
-import type { CategorizedTransaction, UserRule } from '../types'
+import type { CategorizedTransaction, UserRule, Potje } from '../types'
 
 interface Props {
   transacties: CategorizedTransaction[]
   jaar: number
   userRules?: UserRule[]
   learnedRules?: UserRule[]
+  potjes?: Potje[]
 }
 
-export function ExportButtons({ transacties, jaar, userRules = [], learnedRules = [] }: Props) {
+export function ExportButtons({ transacties, jaar, userRules = [], learnedRules = [], potjes = [] }: Props) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null)
 
   const handleCsv = () => {
@@ -21,7 +22,7 @@ export function ExportButtons({ transacties, jaar, userRules = [], learnedRules 
   }
 
   const handlePdf = async () => {
-    await exportPdf(transacties, jaar, userRules, learnedRules)
+    await exportPdf(transacties, jaar, userRules, learnedRules, potjes)
     setAnchor(null)
   }
 
