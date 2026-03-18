@@ -247,3 +247,53 @@ describe('learnedRules', () => {
     expect(next.transacties[1].bucket).toBe('ONBEKEND')     // credit → untouched
   })
 })
+
+describe('potje actions', () => {
+  it('POTJE_TOEVOEGEN adds a potje with generated id', () => {
+    const next = bankOverzichtReducer(initialState, {
+      type: 'POTJE_TOEVOEGEN',
+      naam: 'Huur',
+      bucket: 'VASTE_LASTEN',
+    })
+    expect(next.potjes).toHaveLength(1)
+    expect(next.potjes[0].naam).toBe('Huur')
+    expect(next.potjes[0].bucket).toBe('VASTE_LASTEN')
+    expect(typeof next.potjes[0].id).toBe('string')
+  })
+
+  it('POTJE_VERWIJDEREN removes the matching potje', () => {
+    const state = bankOverzichtReducer(initialState, {
+      type: 'POTJE_TOEVOEGEN', naam: 'Huur', bucket: 'VASTE_LASTEN',
+    })
+    const id = state.potjes[0].id
+    const next = bankOverzichtReducer(state, { type: 'POTJE_VERWIJDEREN', id })
+    expect(next.potjes).toHaveLength(0)
+  })
+
+  it('POTJE_VERWIJDEREN leaves other potjes untouched', () => {
+    let state = bankOverzichtReducer(initialState, {
+      type: 'POTJE_TOEVOEGEN', naam: 'Huur', bucket: 'VASTE_LASTEN',
+    })
+    state = bankOverzichtReducer(state, {
+      type: 'POTJE_TOEVOEGEN', naam: 'Boodschappen', bucket: 'LEEFGELD',
+    })
+    const idToRemove = state.potjes[0].id
+    const next = bankOverzichtReducer(state, { type: 'POTJE_VERWIJDEREN', id: idToRemove })
+    expect(next.potjes).toHaveLength(1)
+    expect(next.potjes[0].naam).toBe('Boodschappen')
+  })
+
+  it('POTJE_HERNOEMEN updates the naam of a potje', () => {
+    const state = bankOverzichtReducer(initialState, {
+      type: 'POTJE_TOEVOEGEN', naam: 'Huur', bucket: 'VASTE_LASTEN',
+    })
+    const id = state.potjes[0].id
+    const next = bankOverzichtReducer(state, { type: 'POTJE_HERNOEMEN', id, naam: 'Hypotheek' })
+    expect(next.potjes[0].naam).toBe('Hypotheek')
+    expect(next.potjes[0].bucket).toBe('VASTE_LASTEN')
+  })
+
+  it('initialState has empty potjes array', () => {
+    expect(initialState.potjes).toEqual([])
+  })
+})

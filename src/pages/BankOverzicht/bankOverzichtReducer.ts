@@ -2,6 +2,7 @@ import type {
   BankOverzichtState,
   CategorizedTransaction,
   UserRule,
+  Potje,
 } from './types'
 import { applyRules } from './categorize/ruleEngine'
 
@@ -15,6 +16,9 @@ export type BankOverzichtAction =
   | { type: 'REGEL_GELEERD'; regel: UserRule }
   | { type: 'REGELS_IMPORTEREN'; userRules: UserRule[]; learnedRules: UserRule[] }
   | { type: 'SELECTIE_WIJZIGEN'; transactieIds: string[] }
+  | { type: 'POTJE_TOEVOEGEN'; naam: string; bucket: Exclude<CategorizedTransaction['bucket'], 'ONBEKEND'> }
+  | { type: 'POTJE_VERWIJDEREN'; id: string }
+  | { type: 'POTJE_HERNOEMEN'; id: string; naam: string }
   | { type: 'NAAR_REVIEW' }
   | { type: 'NAAR_DASHBOARD' }
   | { type: 'NAAR_UPLOAD' }
@@ -169,6 +173,21 @@ export function bankOverzichtReducer(
 
     case 'SELECTIE_WIJZIGEN':
       return { ...state, geselecteerdeTransacties: action.transactieIds }
+
+    case 'POTJE_TOEVOEGEN':
+      return {
+        ...state,
+        potjes: [...state.potjes, { id: crypto.randomUUID(), naam: action.naam, bucket: action.bucket }],
+      }
+
+    case 'POTJE_VERWIJDEREN':
+      return { ...state, potjes: state.potjes.filter((p) => p.id !== action.id) }
+
+    case 'POTJE_HERNOEMEN':
+      return {
+        ...state,
+        potjes: state.potjes.map((p) => p.id === action.id ? { ...p, naam: action.naam } : p),
+      }
 
     case 'NAAR_REVIEW':
       return { ...state, stap: 'REVIEW' }
