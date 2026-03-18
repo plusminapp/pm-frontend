@@ -249,7 +249,7 @@ export default function BankOverzicht() {
               size="small"
               startIcon={<Download className="h-4 w-4" />}
               onClick={() => exportRules(state.userRules, state.learnedRules, state.potjes)}
-              disabled={state.userRules.length === 0 && state.learnedRules.length === 0}
+              disabled={state.userRules.length === 0 && state.learnedRules.length === 0 && state.potjes.length === 0}
             >
               Regels exporteren
             </Button>
