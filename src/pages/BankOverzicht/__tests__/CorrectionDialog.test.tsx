@@ -118,4 +118,20 @@ describe('CorrectionDialog', () => {
     fireEvent.click(screen.getByRole('radio', { name: /leefgeld/i }))
     expect(screen.getByText(/geen potjes/i)).toBeInTheDocument()
   })
+
+  it('shows stale potje as disabled option when tx has an unknown subCategorie', () => {
+    const staleTx: CategorizedTransaction = {
+      ...tx('1'),
+      bucket: 'VASTE_LASTEN',
+      subCategorie: 'OudPotje',
+    }
+    render(
+      <CorrectionDialog open transacties={[staleTx]} potjes={somePotjes}
+        onSluiten={vi.fn()} onCorrectie={vi.fn()} onRegelToepassen={vi.fn()} />,
+    )
+    fireEvent.click(screen.getByRole('radio', { name: /vaste lasten/i }))
+    const selectField = screen.getByLabelText(/potje/i)
+    fireEvent.mouseDown(selectField)
+    expect(screen.getByText(/\(onbekend potje: OudPotje\)/i)).toBeInTheDocument()
+  })
 })
