@@ -21,6 +21,7 @@ import { CategoryBreakdown } from './components/CategoryBreakdown'
 import { TransactionTable } from './components/TransactionTable'
 import { CorrectionDialog } from './components/CorrectionDialog'
 import { ExportButtons } from './components/ExportButtons'
+import { PotjesBeheerDialog } from './components/PotjesBeheerDialog'
 import { importRules, exportRules } from './export/exportRules'
 import type { BankFormat, Bucket, ParsedTransaction, CategorizedTransaction } from './types'
 
@@ -68,8 +69,8 @@ export default function BankOverzicht() {
   const [state, dispatch] = useReducer(bankOverzichtReducer, initialState)
   const [isLoading, setIsLoading] = useState(false)
   const [reviewBucketFilter, setReviewBucketFilter] = useState<Bucket | 'ALLE'>('ALLE')
-  const [geselecteerd, setGeselecteerd] = useState<string[]>([])
-  const [correctionOpen, setCorrectionOpen] = useState(false)
+  const [potjesOpen, setPotjesOpen] = useState(false)
+  const [correctionTx, setCorrectionTx] = useState<CategorizedTransaction | null>(null)
   const [onbekendDialogOpen, setOnbekendDialogOpen] = useState(false)
   const [selectedYear, setSelectedYear] = useState<number | null>(null)
   const [regelsImportStatus, setRegelsImportStatus] = useState<{ bericht: string; fout: boolean } | null>(null)
@@ -196,9 +197,9 @@ export default function BankOverzicht() {
                 const reader = new FileReader()
                 reader.onload = (ev) => {
                   try {
-                    const { userRules, learnedRules } = importRules(ev.target?.result as string)
-                    dispatch({ type: 'REGELS_IMPORTEREN', userRules, learnedRules })
-                    setRegelsImportStatus({ bericht: `${userRules.length + learnedRules.length} regels geladen`, fout: false })
+                    const { userRules, learnedRules, potjes } = importRules(ev.target?.result as string)
+                    dispatch({ type: 'REGELS_IMPORTEREN', userRules, learnedRules, potjes })
+                    setRegelsImportStatus({ bericht: `${userRules.length + learnedRules.length + potjes.length} regels/potjes geladen`, fout: false })
                   } catch (err) {
                     setRegelsImportStatus({ bericht: String(err), fout: true })
                   }
@@ -209,13 +210,25 @@ export default function BankOverzicht() {
             />
           </label>
         </div>
+        <div className="mt-2 text-center">
+          <Button variant="outlined" size="small" onClick={() => setPotjesOpen(true)}>
+            Potjes beheren
+          </Button>
+        </div>
+        <PotjesBeheerDialog
+          open={potjesOpen}
+          potjes={state.potjes}
+          onSluiten={() => setPotjesOpen(false)}
+          onToevoegen={(naam, bucket) => dispatch({ type: 'POTJE_TOEVOEGEN', naam, bucket })}
+          onVerwijderen={(id) => dispatch({ type: 'POTJE_VERWIJDEREN', id })}
+          onHernoemen={(id, naam) => dispatch({ type: 'POTJE_HERNOEMEN', id, naam })}
+        />
       </div>
     )
   }
 
   // ── REVIEW ────────────────────────────────────────────────────────────────
   if (state.stap === 'REVIEW') {
-    const selectedTxs = state.transacties.filter((t) => geselecteerd.includes(t.id))
     const duplicatenAantal = state.transacties.filter((t) => t.isDuplicaat).length
 
     return (
@@ -235,10 +248,13 @@ export default function BankOverzicht() {
               variant="outlined"
               size="small"
               startIcon={<Download className="h-4 w-4" />}
-              onClick={() => exportRules(state.userRules, state.learnedRules)}
+              onClick={() => exportRules(state.userRules, state.learnedRules, state.potjes)}
               disabled={state.userRules.length === 0 && state.learnedRules.length === 0}
             >
               Regels exporteren
+            </Button>
+            <Button variant="outlined" size="small" onClick={() => setPotjesOpen(true)}>
+              Potjes
             </Button>
             <Button
               variant="contained"
@@ -291,7 +307,7 @@ export default function BankOverzicht() {
                 color="inherit"
                 onClick={() => {
                   const ids = state.transacties.filter((t) => t.isDuplicaat).map((t) => t.id)
-                  dispatch({ type: 'CATEGORIE_WIJZIGEN', transactieIds: ids, bucket: 'ONBEKEND' })
+                  dispatch({ type: 'CATEGORIE_WIJZIGEN', transactieIds: ids, bucket: 'ONBEKEND', subCategorie: null })
                 }}
               >
                 {duplicatenAantal} duplicaten naar Onbekend
@@ -300,17 +316,6 @@ export default function BankOverzicht() {
           >
             {duplicatenAantal} mogelijke duplicaten gedetecteerd.
           </Alert>
-        )}
-
-        {/* Bulk action bar */}
-        {geselecteerd.length > 0 && (
-          <div className="flex items-center gap-3 rounded-lg bg-blue-50 px-4 py-2">
-            <span className="text-sm font-medium">{geselecteerd.length} geselecteerd</span>
-            <Button size="small" variant="outlined" onClick={() => setCorrectionOpen(true)}>
-              Categorie wijzigen
-            </Button>
-            <Button size="small" onClick={() => setGeselecteerd([])}>Deselecteren</Button>
-          </div>
         )}
 
         {/* Bucket filter tabs */}
@@ -331,27 +336,34 @@ export default function BankOverzicht() {
 
         <TransactionTable
           transacties={reviewFiltered}
-          geselecteerd={geselecteerd}
-          onSelectie={setGeselecteerd}
+          onEdit={(tx) => setCorrectionTx(tx)}
         />
 
-        {correctionOpen && selectedTxs.length > 0 && (
+        {correctionTx && (
           <CorrectionDialog
             open
-            transacties={selectedTxs}
-            onSluiten={() => setCorrectionOpen(false)}
-            onCorrectie={(ids, bucket) => {
-              dispatch({ type: 'CATEGORIE_WIJZIGEN', transactieIds: ids, bucket })
-              setGeselecteerd([])
-              setCorrectionOpen(false)
+            transacties={[correctionTx]}
+            potjes={state.potjes}
+            onSluiten={() => setCorrectionTx(null)}
+            onCorrectie={(ids, bucket, subCategorie) => {
+              dispatch({ type: 'CATEGORIE_WIJZIGEN', transactieIds: ids, bucket, subCategorie })
+              setCorrectionTx(null)
             }}
             onRegelToepassen={(regel) => {
               dispatch({ type: 'REGEL_TOEPASSEN', regel })
-              setGeselecteerd([])
-              setCorrectionOpen(false)
+              setCorrectionTx(null)
             }}
           />
         )}
+
+        <PotjesBeheerDialog
+          open={potjesOpen}
+          potjes={state.potjes}
+          onSluiten={() => setPotjesOpen(false)}
+          onToevoegen={(naam, bucket) => dispatch({ type: 'POTJE_TOEVOEGEN', naam, bucket })}
+          onVerwijderen={(id) => dispatch({ type: 'POTJE_VERWIJDEREN', id })}
+          onHernoemen={(id, naam) => dispatch({ type: 'POTJE_HERNOEMEN', id, naam })}
+        />
 
         {/* ONBEKEND prompt dialog */}
         <Dialog open={onbekendDialogOpen} onClose={() => setOnbekendDialogOpen(false)}>
@@ -390,6 +402,9 @@ export default function BankOverzicht() {
         >
           Bestanden toevoegen
         </Button>
+        <Button variant="outlined" size="small" onClick={() => setPotjesOpen(true)}>
+          Potjes
+        </Button>
 
         {availableYears.length > 1 && (
           <div className="flex items-center gap-1">
@@ -412,6 +427,7 @@ export default function BankOverzicht() {
             jaar={jaar}
             userRules={state.userRules}
             learnedRules={state.learnedRules}
+            potjes={state.potjes}
           />
         </div>
       </div>
@@ -441,12 +457,21 @@ export default function BankOverzicht() {
         <MonthlyChart transacties={jaarFiltered} />
         <CategoryBreakdown
           transacties={jaarFiltered}
-          onCorrectie={(ids, bucket) =>
-            dispatch({ type: 'CATEGORIE_WIJZIGEN', transactieIds: ids, bucket })
+          potjes={state.potjes}
+          onCorrectie={(ids, bucket, subCategorie) =>
+            dispatch({ type: 'CATEGORIE_WIJZIGEN', transactieIds: ids, bucket, subCategorie })
           }
           onRegelToepassen={(regel) => dispatch({ type: 'REGEL_TOEPASSEN', regel })}
         />
       </div>
+      <PotjesBeheerDialog
+        open={potjesOpen}
+        potjes={state.potjes}
+        onSluiten={() => setPotjesOpen(false)}
+        onToevoegen={(naam, bucket) => dispatch({ type: 'POTJE_TOEVOEGEN', naam, bucket })}
+        onVerwijderen={(id) => dispatch({ type: 'POTJE_VERWIJDEREN', id })}
+        onHernoemen={(id, naam) => dispatch({ type: 'POTJE_HERNOEMEN', id, naam })}
+      />
     </div>
   )
 }
