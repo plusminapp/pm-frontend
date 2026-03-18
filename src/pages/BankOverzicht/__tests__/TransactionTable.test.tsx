@@ -21,63 +21,32 @@ const tx = (id: string, tegenpartij: string, bucket: CategorizedTransaction['buc
 
 describe('TransactionTable', () => {
   it('renders all transactions', () => {
-    render(
-      <TransactionTable
-        transacties={[tx('1', 'Albert Heijn'), tx('2', 'Jumbo')]}
-        geselecteerd={[]}
-        onSelectie={vi.fn()}
-      />,
-    )
+    render(<TransactionTable transacties={[tx('1', 'Albert Heijn'), tx('2', 'Jumbo')]} />)
     expect(screen.getByText('Albert Heijn')).toBeInTheDocument()
     expect(screen.getByText('Jumbo')).toBeInTheDocument()
   })
 
   it('shows empty state when no transactions', () => {
-    render(
-      <TransactionTable transacties={[]} geselecteerd={[]} onSelectie={vi.fn()} />,
-    )
+    render(<TransactionTable transacties={[]} />)
     expect(screen.getByText(/geen transacties/i)).toBeInTheDocument()
   })
 
-  it('calls onSelectie when a row checkbox is toggled', () => {
-    const onSelectie = vi.fn()
-    render(
-      <TransactionTable
-        transacties={[tx('1', 'Albert Heijn')]}
-        geselecteerd={[]}
-        onSelectie={onSelectie}
-      />,
-    )
-    const checkbox = screen.getByRole('checkbox', { name: /selecteer Albert Heijn/i })
-    fireEvent.click(checkbox)
-    expect(onSelectie).toHaveBeenCalledWith(['1'])
+  it('does not render checkboxes', () => {
+    render(<TransactionTable transacties={[tx('1', 'Albert Heijn')]} />)
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
   })
 
-  it('deselects a transaction when already selected', () => {
-    const onSelectie = vi.fn()
-    render(
-      <TransactionTable
-        transacties={[tx('1', 'Albert Heijn')]}
-        geselecteerd={['1']}
-        onSelectie={onSelectie}
-      />,
-    )
-    const checkbox = screen.getByRole('checkbox', { name: /selecteer Albert Heijn/i })
-    fireEvent.click(checkbox)
-    expect(onSelectie).toHaveBeenCalledWith([])
+  it('calls onEdit with the transaction when pencil is clicked', () => {
+    const onEdit = vi.fn()
+    render(<TransactionTable transacties={[tx('1', 'Albert Heijn')]} onEdit={onEdit} />)
+    const pencilBtn = screen.getByRole('button', { name: /categorie wijzigen voor albert heijn/i })
+    fireEvent.click(pencilBtn)
+    expect(onEdit).toHaveBeenCalledWith(expect.objectContaining({ id: '1', tegenpartij: 'Albert Heijn' }))
   })
 
-  it('selects all via header checkbox', () => {
-    const onSelectie = vi.fn()
-    render(
-      <TransactionTable
-        transacties={[tx('1', 'Albert Heijn'), tx('2', 'Jumbo')]}
-        geselecteerd={[]}
-        onSelectie={onSelectie}
-      />,
-    )
-    const selectAll = screen.getByRole('checkbox', { name: /alles selecteren/i })
-    fireEvent.click(selectAll)
-    expect(onSelectie).toHaveBeenCalledWith(['1', '2'])
+  it('does not throw when onEdit is not provided and pencil is clicked', () => {
+    render(<TransactionTable transacties={[tx('1', 'Albert Heijn')]} />)
+    const pencilBtn = screen.getByRole('button', { name: /categorie wijzigen voor albert heijn/i })
+    expect(() => fireEvent.click(pencilBtn)).not.toThrow()
   })
 })
