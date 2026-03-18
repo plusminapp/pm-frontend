@@ -1,4 +1,4 @@
-import type { UserRule } from '../types'
+import type { UserRule, Potje } from '../types'
 
 interface ExportedRule {
   tegenpartijPatroon: string
@@ -12,9 +12,10 @@ interface ExportedRule {
 interface RulesFile {
   versie: number
   regels: ExportedRule[]
+  potjes: Potje[]
 }
 
-export function buildRulesJson(userRules: UserRule[], learnedRules: UserRule[]): string {
+export function buildRulesJson(userRules: UserRule[], learnedRules: UserRule[], potjes: Potje[]): string {
   const toExported = (r: UserRule, bron: 'user' | 'learned'): ExportedRule => ({
     tegenpartijPatroon: r.tegenpartijPatroon,
     omschrijvingPatroon: r.omschrijvingPatroon ?? null,
@@ -30,12 +31,13 @@ export function buildRulesJson(userRules: UserRule[], learnedRules: UserRule[]):
       ...userRules.map((r) => toExported(r, 'user')),
       ...learnedRules.map((r) => toExported(r, 'learned')),
     ],
+    potjes,
   }
   return JSON.stringify(file, null, 2)
 }
 
-export function exportRules(userRules: UserRule[], learnedRules: UserRule[]): void {
-  const json = buildRulesJson(userRules, learnedRules)
+export function exportRules(userRules: UserRule[], learnedRules: UserRule[], potjes: Potje[]): void {
+  const json = buildRulesJson(userRules, learnedRules, potjes)
   const blob = new Blob([json], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -45,7 +47,7 @@ export function exportRules(userRules: UserRule[], learnedRules: UserRule[]): vo
   URL.revokeObjectURL(url)
 }
 
-export function importRules(json: string): { userRules: UserRule[]; learnedRules: UserRule[] } {
+export function importRules(json: string): { userRules: UserRule[]; learnedRules: UserRule[]; potjes: Potje[] } {
   let parsed: unknown
   try {
     parsed = JSON.parse(json)
@@ -91,5 +93,6 @@ export function importRules(json: string): { userRules: UserRule[]; learnedRules
     }
   }
 
-  return { userRules, learnedRules }
+  const potjes: Potje[] = Array.isArray((file as any).potjes) ? (file as any).potjes : []
+  return { userRules, learnedRules, potjes }
 }
