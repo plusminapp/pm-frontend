@@ -38,9 +38,10 @@ export function PotjesBeheerDialog({ open, potjes, onSluiten, onToevoegen, onVer
     }
   }
 
-  const handleHernoemen = (id: string) => {
-    if (editNaam.trim()) {
-      onHernoemen(id, editNaam.trim())
+  const handleHernoemen = (id: string, originalNaam: string) => {
+    const trimmed = editNaam.trim()
+    if (trimmed && trimmed !== originalNaam) {
+      onHernoemen(id, trimmed)
     }
     setEditingId(null)
     setEditNaam('')
@@ -73,13 +74,13 @@ export function PotjesBeheerDialog({ open, potjes, onSluiten, onToevoegen, onVer
                         value={editNaam}
                         onChange={(e) => setEditNaam(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleHernoemen(p.id)
+                          if (e.key === 'Enter') handleHernoemen(p.id, p.naam)
                           if (e.key === 'Escape') { setEditingId(null); setEditNaam('') }
                         }}
                         autoFocus
                         sx={{ flex: 1 }}
                       />
-                      <Button size="small" onClick={() => handleHernoemen(p.id)}>OK</Button>
+                      <Button size="small" onClick={() => handleHernoemen(p.id, p.naam)}>OK</Button>
                       <Button size="small" onClick={() => { setEditingId(null); setEditNaam('') }}>
                         Annuleren
                       </Button>
@@ -118,8 +119,8 @@ export function PotjesBeheerDialog({ open, potjes, onSluiten, onToevoegen, onVer
                     autoFocus
                     sx={{ flex: 1 }}
                   />
-                  <Button size="small" aria-label="Bevestigen" onClick={() => handleToevoegen(bucket)}>
-                    OK
+                  <Button size="small" onClick={() => handleToevoegen(bucket)}>
+                    Bevestigen
                   </Button>
                   <Button size="small" onClick={() => { setOpenForm(null); setNewNaam('') }}>
                     Annuleren
