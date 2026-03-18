@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Button, Tabs, Tab } from '@mui/material'
+import { Tabs, Tab } from '@mui/material'
 import { ChevronDown, ChevronRight, Pencil } from 'lucide-react'
 import { CorrectionDialog } from './CorrectionDialog'
 import { TransactionTable } from './TransactionTable'
-import type { CategorizedTransaction, Bucket, UserRule } from '../types'
+import type { CategorizedTransaction, Bucket, UserRule, Potje } from '../types'
 
 const TABS: { value: Bucket | 'ALLE'; label: string }[] = [
   { value: 'ALLE',        label: 'Alle' },
@@ -38,15 +38,15 @@ function buildCounterpartyRanking(transacties: CategorizedTransaction[]) {
 
 interface Props {
   transacties: CategorizedTransaction[]
-  onCorrectie: (ids: string[], bucket: Bucket) => void
+  potjes: Potje[]
+  onCorrectie: (ids: string[], bucket: Bucket, subCategorie: string | null) => void
   onRegelToepassen: (regel: UserRule) => void
 }
 
-export function CategoryBreakdown({ transacties, onCorrectie, onRegelToepassen }: Props) {
+export function CategoryBreakdown({ transacties, potjes, onCorrectie, onRegelToepassen }: Props) {
   const [activeTab, setActiveTab] = useState<Bucket | 'ALLE'>('ALLE')
   const [expanded, setExpanded] = useState<string | null>(null)
   const [dialogTxs, setDialogTxs] = useState<CategorizedTransaction[]>([])
-  const [geselecteerd, setGeselecteerd] = useState<string[]>([])
 
   const filtered = activeTab === 'ALLE'
     ? transacties
@@ -78,13 +78,12 @@ export function CategoryBreakdown({ transacties, onCorrectie, onRegelToepassen }
             <div
               role="button"
               tabIndex={0}
-              className="flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-gray-50"
-              onClick={() => { setExpanded(expanded === naam ? null : naam); setGeselecteerd([]) }}
+              className="group flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-gray-50"
+              onClick={() => { setExpanded(expanded === naam ? null : naam) }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault()
                   setExpanded(expanded === naam ? null : naam)
-                  setGeselecteerd([])
                 }
               }}
             >
@@ -99,7 +98,7 @@ export function CategoryBreakdown({ transacties, onCorrectie, onRegelToepassen }
                 {formatEur(totaal)}
               </span>
               <button
-                className="ml-2 rounded p-1 hover:bg-gray-100"
+                className="ml-2 rounded p-1 opacity-0 group-hover:opacity-100 hover:bg-gray-100"
                 aria-label={`Categorie wijzigen voor ${naam}`}
                 onClick={(e) => { e.stopPropagation(); setDialogTxs(txs) }}
               >
@@ -109,19 +108,9 @@ export function CategoryBreakdown({ transacties, onCorrectie, onRegelToepassen }
 
             {expanded === naam && (
               <div className="border-t bg-gray-50 px-4 py-3">
-                {geselecteerd.length > 0 && (
-                  <div className="mb-2 flex items-center gap-3 rounded-lg bg-blue-50 px-3 py-1.5">
-                    <span className="text-sm font-medium">{geselecteerd.length} geselecteerd</span>
-                    <Button size="small" variant="outlined" onClick={() => setDialogTxs(txs.filter((t) => geselecteerd.includes(t.id)))}>
-                      Categorie wijzigen
-                    </Button>
-                    <Button size="small" onClick={() => setGeselecteerd([])}>Deselecteren</Button>
-                  </div>
-                )}
                 <TransactionTable
                   transacties={txs}
-                  geselecteerd={geselecteerd}
-                  onSelectie={setGeselecteerd}
+                  onEdit={(tx) => setDialogTxs([tx])}
                   compact
                 />
               </div>
@@ -134,9 +123,13 @@ export function CategoryBreakdown({ transacties, onCorrectie, onRegelToepassen }
         <CorrectionDialog
           open
           transacties={dialogTxs}
+          potjes={potjes}
           onSluiten={() => setDialogTxs([])}
-          onCorrectie={(ids, bucket) => { onCorrectie(ids, bucket); setDialogTxs([]); setGeselecteerd([]) }}
-          onRegelToepassen={(regel) => { onRegelToepassen(regel); setDialogTxs([]); setGeselecteerd([]) }}
+          onCorrectie={(ids, bucket, subCategorie) => {
+            onCorrectie(ids, bucket, subCategorie)
+            setDialogTxs([])
+          }}
+          onRegelToepassen={(regel) => { onRegelToepassen(regel); setDialogTxs([]) }}
         />
       )}
     </div>
