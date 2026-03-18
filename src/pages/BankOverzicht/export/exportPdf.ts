@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import type { CategorizedTransaction, Bucket, UserRule } from '../types'
+import type { CategorizedTransaction, Bucket, UserRule, Potje } from '../types'
 import { exportRules } from './exportRules'
 
 const BUCKET_LABELS: Record<Bucket, string> = {
@@ -89,6 +89,7 @@ export async function exportPdf(
   jaar: number,
   userRules: UserRule[] = [],
   learnedRules: UserRule[] = [],
+  potjes: Potje[] = [],
 ): Promise<void> {
   const [doc, logoDataUrl] = await Promise.all([
     Promise.resolve(new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })),
@@ -183,6 +184,6 @@ export async function exportPdf(
 
   // Auto-download rules JSON alongside PDF (only if any rules exist)
   if (userRules.length > 0 || learnedRules.length > 0) {
-    exportRules(userRules, learnedRules)
+    exportRules(userRules, learnedRules, potjes)
   }
 }
