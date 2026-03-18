@@ -25,7 +25,7 @@ export const initialState: BankOverzichtState = {
   transacties: [],
   userRules: [],
   learnedRules: [],
-  geselecteerdeTransacties: [],
+  potjes: [],
 }
 
 // Deduplication key for learned rules

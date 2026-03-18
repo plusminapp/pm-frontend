@@ -2,6 +2,12 @@ export type BankFormat = 'ING' | 'ABN_AMRO' | 'RABOBANK' | 'CAMT053'
 
 export type Bucket = 'INKOMEN' | 'LEEFGELD' | 'VASTE_LASTEN' | 'SPAREN' | 'ONBEKEND'
 
+export interface Potje {
+  id: string                          // crypto.randomUUID()
+  naam: string
+  bucket: Exclude<Bucket, 'ONBEKEND'>
+}
+
 export interface ParsedTransaction {
   id: string                   // crypto.randomUUID()
   datum: string                // YYYY-MM-DD
@@ -41,6 +47,6 @@ export interface BankOverzichtState {
   bestanden: BestandStatus[]
   transacties: CategorizedTransaction[]
   userRules: UserRule[]
-  learnedRules: UserRule[]                // new
-  geselecteerdeTransacties: string[]
+  learnedRules: UserRule[]
+  potjes: Potje[]
 }
