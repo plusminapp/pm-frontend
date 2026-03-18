@@ -73,6 +73,7 @@ describe('bankOverzichtReducer', () => {
       type: 'CATEGORIE_WIJZIGEN',
       transactieIds: ['tx-1'],
       bucket: 'LEEFGELD',
+      subCategorie: null,
     })
     expect(next.transacties[0].bucket).toBe('LEEFGELD')
     expect(next.transacties[0].isHandmatig).toBe(true)
@@ -103,14 +104,6 @@ describe('bankOverzichtReducer', () => {
     expect(next.transacties[0].bucket).toBe('LEEFGELD')
     expect(next.transacties[0].isHandmatig).toBe(true)
     expect(next.transacties[1].bucket).toBe('ONBEKEND') // no match
-  })
-
-  it('SELECTIE_WIJZIGEN replaces selection', () => {
-    const next = bankOverzichtReducer(initialState, {
-      type: 'SELECTIE_WIJZIGEN',
-      transactieIds: ['tx-1', 'tx-2'],
-    })
-    expect(next.geselecteerdeTransacties).toEqual(['tx-1', 'tx-2'])
   })
 
   it('NAAR_REVIEW sets stap to REVIEW', () => {
@@ -181,6 +174,7 @@ describe('learnedRules', () => {
       type: 'REGELS_IMPORTEREN',
       userRules,
       learnedRules,
+      potjes: [],
     })
     expect(next.userRules).toEqual(userRules)
     expect(next.learnedRules).toEqual(learnedRules)
@@ -190,7 +184,7 @@ describe('learnedRules', () => {
     const tx = makeTx({ id: 'tx-1', tegenpartij: 'test', bedrag: -50, bucket: 'ONBEKEND' })
     const state = makeLearnedState({ transacties: [tx] })
     const userRules: UserRule[] = [{ tegenpartijPatroon: 'test', bucket: 'VASTE_LASTEN' }]
-    const next = bankOverzichtReducer(state, { type: 'REGELS_IMPORTEREN', userRules, learnedRules: [] })
+    const next = bankOverzichtReducer(state, { type: 'REGELS_IMPORTEREN', userRules, learnedRules: [], potjes: [] })
     expect(next.transacties[0].bucket).toBe('VASTE_LASTEN')
   })
 
@@ -198,7 +192,7 @@ describe('learnedRules', () => {
     const manual = makeTx({ id: 'tx-1', tegenpartij: 'test', bedrag: -50, bucket: 'SPAREN', isHandmatig: true })
     const state = makeLearnedState({ transacties: [manual] })
     const userRules: UserRule[] = [{ tegenpartijPatroon: 'test', bucket: 'VASTE_LASTEN' }]
-    const next = bankOverzichtReducer(state, { type: 'REGELS_IMPORTEREN', userRules, learnedRules: [] })
+    const next = bankOverzichtReducer(state, { type: 'REGELS_IMPORTEREN', userRules, learnedRules: [], potjes: [] })
     expect(next.transacties[0].bucket).toBe('SPAREN') // manual correction preserved
   })
 
@@ -209,6 +203,7 @@ describe('learnedRules', () => {
       type: 'CATEGORIE_WIJZIGEN',
       transactieIds: ['tx-1'],
       bucket: 'VASTE_LASTEN',
+      subCategorie: null,
     })
     expect(next.learnedRules).toHaveLength(1)
     expect(next.learnedRules[0].tegenpartijPatroon).toBe('belastingdienst') // lowercased
@@ -223,6 +218,7 @@ describe('learnedRules', () => {
       type: 'CATEGORIE_WIJZIGEN',
       transactieIds: ['tx-1'],
       bucket: 'VASTE_LASTEN',
+      subCategorie: null,
     })
     expect(next.learnedRules[0].tegenpartijPatroon).toBe('ziggo bv')
   })
@@ -295,5 +291,95 @@ describe('potje actions', () => {
 
   it('initialState has empty potjes array', () => {
     expect(initialState.potjes).toEqual([])
+  })
+})
+
+describe('CATEGORIE_WIJZIGEN with subCategorie', () => {
+  it('writes subCategorie onto updated transactions', () => {
+    const state: BankOverzichtState = { ...initialState, transacties: [makeTx()] }
+    const next = bankOverzichtReducer(state, {
+      type: 'CATEGORIE_WIJZIGEN',
+      transactieIds: ['tx-1'],
+      bucket: 'LEEFGELD',
+      subCategorie: 'Boodschappen',
+    })
+    expect(next.transacties[0].subCategorie).toBe('Boodschappen')
+    expect(next.transacties[0].bucket).toBe('LEEFGELD')
+    expect(next.transacties[0].isHandmatig).toBe(true)
+  })
+
+  it('writes null subCategorie when passed null', () => {
+    const state: BankOverzichtState = {
+      ...initialState,
+      transacties: [makeTx({ subCategorie: 'Huur' })],
+    }
+    const next = bankOverzichtReducer(state, {
+      type: 'CATEGORIE_WIJZIGEN',
+      transactieIds: ['tx-1'],
+      bucket: 'VASTE_LASTEN',
+      subCategorie: null,
+    })
+    expect(next.transacties[0].subCategorie).toBeNull()
+  })
+
+  it('derives learned rule with user-chosen subCategorie, not hardcoded overig', () => {
+    const state: BankOverzichtState = { ...initialState, transacties: [makeTx()] }
+    const next = bankOverzichtReducer(state, {
+      type: 'CATEGORIE_WIJZIGEN',
+      transactieIds: ['tx-1'],
+      bucket: 'LEEFGELD',
+      subCategorie: 'Boodschappen',
+    })
+    expect(next.learnedRules[0].subCategorie).toBe('Boodschappen')
+  })
+
+  it('derives learned rule without subCategorie when null passed', () => {
+    const state: BankOverzichtState = { ...initialState, transacties: [makeTx()] }
+    const next = bankOverzichtReducer(state, {
+      type: 'CATEGORIE_WIJZIGEN',
+      transactieIds: ['tx-1'],
+      bucket: 'LEEFGELD',
+      subCategorie: null,
+    })
+    expect(next.learnedRules[0].subCategorie).toBeUndefined()
+  })
+})
+
+describe('REGEL_TOEPASSEN with subCategorie', () => {
+  it('writes subCategorie onto matched transactions', () => {
+    const state: BankOverzichtState = {
+      ...initialState,
+      transacties: [makeTx({ tegenpartij: 'Albert Heijn', bucket: 'ONBEKEND' })],
+    }
+    const next = bankOverzichtReducer(state, {
+      type: 'REGEL_TOEPASSEN',
+      regel: { tegenpartijPatroon: 'albert heijn', bucket: 'LEEFGELD', subCategorie: 'Boodschappen' },
+    })
+    expect(next.transacties[0].subCategorie).toBe('Boodschappen')
+  })
+
+  it('writes null subCategorie when rule has none', () => {
+    const state: BankOverzichtState = {
+      ...initialState,
+      transacties: [makeTx({ tegenpartij: 'Albert Heijn', subCategorie: 'OldPotje' })],
+    }
+    const next = bankOverzichtReducer(state, {
+      type: 'REGEL_TOEPASSEN',
+      regel: { tegenpartijPatroon: 'albert heijn', bucket: 'LEEFGELD' },
+    })
+    expect(next.transacties[0].subCategorie).toBeNull()
+  })
+})
+
+describe('REGELS_IMPORTEREN with potjes', () => {
+  it('sets state.potjes from action payload', () => {
+    const potje = { id: 'p-1', naam: 'Huur', bucket: 'VASTE_LASTEN' as const }
+    const next = bankOverzichtReducer(initialState, {
+      type: 'REGELS_IMPORTEREN',
+      userRules: [],
+      learnedRules: [],
+      potjes: [potje],
+    })
+    expect(next.potjes).toEqual([potje])
   })
 })

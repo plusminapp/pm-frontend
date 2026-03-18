@@ -10,12 +10,11 @@ export type BankOverzichtAction =
   | { type: 'BESTANDEN_TOEVOEGEN'; bestanden: File[] }
   | { type: 'BESTAND_PARSED'; bestandNaam: string; transacties: CategorizedTransaction[] }
   | { type: 'BESTAND_FOUT'; bestandNaam: string; foutmelding: string }
-  | { type: 'CATEGORIE_WIJZIGEN'; transactieIds: string[]; bucket: CategorizedTransaction['bucket'] }
+  | { type: 'CATEGORIE_WIJZIGEN'; transactieIds: string[]; bucket: CategorizedTransaction['bucket']; subCategorie: string | null }
   | { type: 'REGEL_TOEVOEGEN'; regel: UserRule }
   | { type: 'REGEL_TOEPASSEN'; regel: UserRule }
   | { type: 'REGEL_GELEERD'; regel: UserRule }
-  | { type: 'REGELS_IMPORTEREN'; userRules: UserRule[]; learnedRules: UserRule[] }
-  | { type: 'SELECTIE_WIJZIGEN'; transactieIds: string[] }
+  | { type: 'REGELS_IMPORTEREN'; userRules: UserRule[]; learnedRules: UserRule[]; potjes: Potje[] }
   | { type: 'POTJE_TOEVOEGEN'; naam: string; bucket: Exclude<CategorizedTransaction['bucket'], 'ONBEKEND'> }
   | { type: 'POTJE_VERWIJDEREN'; id: string }
   | { type: 'POTJE_HERNOEMEN'; id: string; naam: string }
@@ -38,12 +37,12 @@ function learnedKey(r: UserRule): string {
 }
 
 // Derive a learned rule from a corrected transaction
-function deriveLearnedRule(tx: CategorizedTransaction, bucket: CategorizedTransaction['bucket']): UserRule {
+function deriveLearnedRule(tx: CategorizedTransaction, bucket: CategorizedTransaction['bucket'], subCategorie: string | null): UserRule {
   return {
     tegenpartijPatroon: tx.tegenpartij.toLowerCase(),
     richting: tx.bedrag < 0 ? 'debit' : tx.bedrag > 0 ? 'credit' : undefined,
     bucket,
-    subCategorie: 'overig',
+    ...(subCategorie ? { subCategorie } : {}),
   }
 }
 
@@ -106,22 +105,15 @@ export function bankOverzichtReducer(
 
     case 'CATEGORIE_WIJZIGEN': {
       const ids = new Set(action.transactieIds)
-
-      // 1. Update bucket on selected transactions
       const updatedTxs = state.transacties.map((tx) =>
-        ids.has(tx.id) ? { ...tx, bucket: action.bucket, isHandmatig: true } : tx,
+        ids.has(tx.id)
+          ? { ...tx, bucket: action.bucket, subCategorie: action.subCategorie, isHandmatig: true }
+          : tx,
       )
-
-      // 2. Derive learned rules from corrected transactions
       const corrected = state.transacties.filter((tx) => ids.has(tx.id))
-      const newRules = corrected.map((tx) => deriveLearnedRule(tx, action.bucket))
-
-      // 3. Deduplicate into existing learnedRules
+      const newRules = corrected.map((tx) => deriveLearnedRule(tx, action.bucket, action.subCategorie))
       const mergedRules = mergeLearnedRules(state.learnedRules, newRules)
-
-      // 4. Re-scan ONBEKEND transactions with updated learned rules
       const finalTxs = applyLearnedToOnbekend(updatedTxs, mergedRules)
-
       return { ...state, transacties: finalTxs, learnedRules: mergedRules }
     }
 
@@ -141,7 +133,7 @@ export function bankOverzichtReducer(
           if (!tx.tegenpartij.toLowerCase().includes(pattern)) return tx
           if (lowercased.richting === 'debit' && tx.bedrag > 0) return tx
           if (lowercased.richting === 'credit' && tx.bedrag < 0) return tx
-          return { ...tx, bucket: lowercased.bucket, isHandmatig: true }
+          return { ...tx, bucket: lowercased.bucket, subCategorie: lowercased.subCategorie ?? null, isHandmatig: true }
         }),
       }
     }
@@ -167,12 +159,10 @@ export function bankOverzichtReducer(
         ...state,
         userRules: action.userRules,
         learnedRules: action.learnedRules,
+        potjes: action.potjes,
         transacties: finalTxs,
       }
     }
-
-    case 'SELECTIE_WIJZIGEN':
-      return { ...state, geselecteerdeTransacties: action.transactieIds }
 
     case 'POTJE_TOEVOEGEN':
       return {
