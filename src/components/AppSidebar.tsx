@@ -30,6 +30,7 @@ import {
   TrendingDown,
   PieChart,
   X,
+  BarChart2,
 } from 'lucide-react';
 import { CupIcon } from '@/icons/Cup';
 import { PlusMinLogo } from '@/assets/PlusMinLogo';
@@ -350,6 +351,27 @@ export function AppSidebar({
               </Button>
             </TooltipTrigger>
             {isCollapsed && <TooltipContent side="right">Home</TooltipContent>}
+          </Tooltip>
+
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <Button
+                variant={pathname === '/bankoverzicht' ? 'secondary' : 'ghost'}
+                className={cn(
+                  'w-full justify-start gap-3 text-foreground hover:text-foreground',
+                  isCollapsed && 'justify-center',
+                )}
+                onClick={() => handleNavigation('/bankoverzicht')}
+              >
+                <BarChart2 className="h-5 w-5 shrink-0" />
+                {!isCollapsed && (
+                  <span className="text-sm text-foreground">
+                    {t(`${I18N_KEY}.bankoverzicht`)}
+                  </span>
+                )}
+              </Button>
+            </TooltipTrigger>
+            {isCollapsed && <TooltipContent side="right">{t(`${I18N_KEY}.bankoverzicht`)}</TooltipContent>}
           </Tooltip>
 
           {state.isAuthenticated &&
