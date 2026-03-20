@@ -43,7 +43,7 @@ export interface BestandStatus {
 }
 
 export interface BankOverzichtState {
-  stap: 'UPLOAD' | 'REVIEW' | 'DASHBOARD'
+  stap: 'WELKOM' | 'UPLOAD' | 'KOPPELEN' | 'GEBRUIKEN'
   bestanden: BestandStatus[]
   transacties: CategorizedTransaction[]
   userRules: UserRule[]

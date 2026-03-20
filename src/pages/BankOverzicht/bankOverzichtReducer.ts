@@ -18,12 +18,13 @@ export type BankOverzichtAction =
   | { type: 'POTJE_TOEVOEGEN'; naam: string; bucket: Exclude<CategorizedTransaction['bucket'], 'ONBEKEND'> }
   | { type: 'POTJE_VERWIJDEREN'; id: string }
   | { type: 'POTJE_HERNOEMEN'; id: string; naam: string }
-  | { type: 'NAAR_REVIEW' }
-  | { type: 'NAAR_DASHBOARD' }
+  | { type: 'NAAR_KOPPELEN' }
+  | { type: 'NAAR_GEBRUIKEN' }
   | { type: 'NAAR_UPLOAD' }
+  | { type: 'NAAR_WELKOM' }
 
 export const initialState: BankOverzichtState = {
-  stap: 'UPLOAD',
+  stap: 'WELKOM',
   bestanden: [],
   transacties: [],
   userRules: [],
@@ -179,14 +180,17 @@ export function bankOverzichtReducer(
         potjes: state.potjes.map((p) => p.id === action.id ? { ...p, naam: action.naam } : p),
       }
 
-    case 'NAAR_REVIEW':
-      return { ...state, stap: 'REVIEW' }
+    case 'NAAR_KOPPELEN':
+      return { ...state, stap: 'KOPPELEN' }
 
-    case 'NAAR_DASHBOARD':
-      return { ...state, stap: 'DASHBOARD' }
+    case 'NAAR_GEBRUIKEN':
+      return { ...state, stap: 'GEBRUIKEN' }
 
     case 'NAAR_UPLOAD':
       return { ...state, stap: 'UPLOAD' }
+
+    case 'NAAR_WELKOM':
+      return { ...state, stap: 'WELKOM' }
 
     default:
       return state

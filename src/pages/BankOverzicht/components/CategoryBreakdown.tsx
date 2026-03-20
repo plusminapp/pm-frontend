@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Tabs, Tab } from '@mui/material'
 import { ChevronDown, ChevronRight, Pencil } from 'lucide-react'
 import { CorrectionDialog } from './CorrectionDialog'
@@ -48,6 +48,17 @@ export function CategoryBreakdown({ transacties, potjes, onCorrectie, onRegelToe
   const [expanded, setExpanded] = useState<string | null>(null)
   const [dialogTxs, setDialogTxs] = useState<CategorizedTransaction[]>([])
 
+  const tabCounts = useMemo(() => (
+    Object.fromEntries(
+      TABS.map(({ value }) => [
+        value,
+        value === 'ALLE'
+          ? transacties.length
+          : transacties.filter((t) => t.bucket === value).length,
+      ]),
+    ) as Record<Bucket | 'ALLE', number>
+  ), [transacties])
+
   const filtered = activeTab === 'ALLE'
     ? transacties
     : transacties.filter((t) => t.bucket === activeTab)
@@ -64,7 +75,7 @@ export function CategoryBreakdown({ transacties, potjes, onCorrectie, onRegelToe
           scrollButtons="auto"
         >
           {TABS.map(({ value, label }) => (
-            <Tab key={value} value={value} label={label} />
+            <Tab key={value} value={value} label={`${label} (${tabCounts[value]})`} />
           ))}
         </Tabs>
       </div>

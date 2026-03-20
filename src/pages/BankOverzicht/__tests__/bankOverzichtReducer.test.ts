@@ -20,8 +20,8 @@ const makeTx = (overrides: Partial<CategorizedTransaction> = {}): CategorizedTra
 })
 
 describe('bankOverzichtReducer', () => {
-  it('starts in UPLOAD stap', () => {
-    expect(initialState.stap).toBe('UPLOAD')
+  it('starts in WELKOM stap', () => {
+    expect(initialState.stap).toBe('WELKOM')
   })
 
   it('BESTANDEN_TOEVOEGEN adds files with PARSING status', () => {
@@ -106,18 +106,13 @@ describe('bankOverzichtReducer', () => {
     expect(next.transacties[1].bucket).toBe('ONBEKEND') // no match
   })
 
-  it('NAAR_REVIEW sets stap to REVIEW', () => {
-    const next = bankOverzichtReducer(initialState, { type: 'NAAR_REVIEW' })
-    expect(next.stap).toBe('REVIEW')
-  })
-
-  it('NAAR_DASHBOARD sets stap to DASHBOARD', () => {
-    const next = bankOverzichtReducer(initialState, { type: 'NAAR_DASHBOARD' })
-    expect(next.stap).toBe('DASHBOARD')
+  it('NAAR_KOPPELEN sets stap to KOPPELEN', () => {
+    const next = bankOverzichtReducer(initialState, { type: 'NAAR_KOPPELEN' })
+    expect(next.stap).toBe('KOPPELEN')
   })
 
   it('NAAR_UPLOAD sets stap to UPLOAD', () => {
-    const state = { ...initialState, stap: 'DASHBOARD' as const }
+    const state = { ...initialState, stap: 'KOPPELEN' as const }
     const next = bankOverzichtReducer(state, { type: 'NAAR_UPLOAD' })
     expect(next.stap).toBe('UPLOAD')
   })

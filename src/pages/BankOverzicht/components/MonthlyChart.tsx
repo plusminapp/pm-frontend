@@ -50,7 +50,6 @@ export function MonthlyChart({ transacties }: Props) {
 
   return (
     <div className="rounded-xl border bg-white p-4 shadow-sm">
-      <h3 className="mb-4 text-sm font-semibold">Maandelijks overzicht</h3>
       <AgCharts options={options} style={{ height: 320 }} />
     </div>
   )
