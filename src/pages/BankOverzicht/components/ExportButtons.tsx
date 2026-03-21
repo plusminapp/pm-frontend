@@ -38,13 +38,13 @@ export function OpslaanButtons({ transacties, jaar, userRules = [], learnedRules
         Opslaan
       </Button>
       <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
-        <MenuItem onClick={handleJson}>
-          <ListItemIcon><FileSpreadsheet className="h-4 w-4" /></ListItemIcon>
-          <ListItemText>JSON opslaan</ListItemText>
-        </MenuItem>
         <MenuItem onClick={handlePdf}>
           <ListItemIcon><FileText className="h-4 w-4" /></ListItemIcon>
           <ListItemText>PDF opslaan</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={handleJson}>
+          <ListItemIcon><FileSpreadsheet className="h-4 w-4" /></ListItemIcon>
+          <ListItemText>JSON opslaan</ListItemText>
         </MenuItem>
       </Menu>
     </>

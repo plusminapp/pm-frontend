@@ -75,4 +75,81 @@ describe('CategoryBreakdown', () => {
       'Netflix Gezinsabonnement',
     )
   })
+
+  it('shows bulk leefgeld action on Onbekend tab and supports header/group selection', () => {
+    render(
+      <CategoryBreakdown
+        transacties={[
+          tx('t-1', 'Albert Heijn'),
+          tx('t-2', 'Jumbo'),
+        ]}
+        potjes={[]}
+        userRules={[]}
+        learnedRules={[]}
+        onCorrectie={vi.fn()}
+        onPotjeToevoegen={vi.fn()}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('tab', { name: /onbekend/i }))
+
+    expect(screen.getByRole('button', { name: /koppel eenmalig aan leefgeld \(0\)/i })).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: /alle zichtbare transacties voor leefgeld eenmalig/i })).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: /alle transacties van albert heijn selecteren voor leefgeld eenmalig/i })).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: /alle transacties van jumbo selecteren voor leefgeld eenmalig/i })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /alle zichtbare transacties voor leefgeld eenmalig/i }))
+    expect(screen.getByRole('button', { name: /koppel eenmalig aan leefgeld \(2\)/i })).toBeInTheDocument()
+  })
+
+  it('supports wildcard in tegenpartij filter', () => {
+    render(
+      <CategoryBreakdown
+        transacties={[
+          tx('t-1', 'Stichting Philips'),
+          tx('t-2', 'ASN Ideaalsparen'),
+          tx('t-3', 'Jumbo Deventer'),
+        ]}
+        potjes={[]}
+        userRules={[]}
+        learnedRules={[]}
+        onCorrectie={vi.fn()}
+        onPotjeToevoegen={vi.fn()}
+      />,
+    )
+
+    const filterInput = screen.getByLabelText(/tegenpartij/i)
+
+    fireEvent.change(filterInput, { target: { value: '*philips' } })
+    expect(screen.getByText(/stichting philips/i)).toBeInTheDocument()
+    expect(screen.queryByText(/asn ideaalsparen/i)).not.toBeInTheDocument()
+
+    fireEvent.change(filterInput, { target: { value: 'asn*sparen' } })
+    expect(screen.getByText(/asn ideaalsparen/i)).toBeInTheDocument()
+    expect(screen.queryByText(/stichting philips/i)).not.toBeInTheDocument()
+  })
+
+  it('uses the entered tegenpartij filter as merged group name', () => {
+    render(
+      <CategoryBreakdown
+        transacties={[
+          tx('t-1', 'ASN Sparen'),
+          tx('t-2', 'ASN Ideaalsparen'),
+        ]}
+        potjes={[]}
+        userRules={[]}
+        learnedRules={[]}
+        onCorrectie={vi.fn()}
+        onPotjeToevoegen={vi.fn()}
+      />,
+    )
+
+    const filterInput = screen.getByLabelText(/tegenpartij/i)
+    fireEvent.change(filterInput, { target: { value: 'asn*sparen' } })
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /alle zichtbare groepen/i }))
+    fireEvent.click(screen.getByRole('button', { name: /samenvoegen \(2\)/i }))
+
+    expect(screen.getByText('asn*sparen')).toBeInTheDocument()
+  })
 })

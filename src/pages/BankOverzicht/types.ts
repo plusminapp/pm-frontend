@@ -1,11 +1,11 @@
 export type BankFormat = 'ING' | 'ABN_AMRO' | 'RABOBANK' | 'CAMT053'
 
-export type Bucket = 'INKOMEN' | 'LEEFGELD' | 'VASTE_LASTEN' | 'SPAREN' | 'ONBEKEND'
+export type Bucket = 'INKOMEN' | 'LEEFGELD' | 'VASTE_LASTEN' | 'SPAREN' | 'ONBEKEND' | 'NEGEREN'
 
 export interface Potje {
   id: string                          // crypto.randomUUID()
   naam: string
-  bucket: Exclude<Bucket, 'ONBEKEND'>
+  bucket: Exclude<Bucket, 'ONBEKEND' | 'NEGEREN'>
 }
 
 export interface ParsedTransaction {

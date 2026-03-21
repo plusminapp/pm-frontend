@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react'
 import { Button, Checkbox, Chip, IconButton, InputAdornment, Tab, Tabs, TextField } from '@mui/material'
 import { ChevronDown, ChevronRight, CircleHelp, Home, Pencil, PiggyBank, ShoppingCart, TrendingUp, X } from 'lucide-react'
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
 import { CorrectionDialog } from './CorrectionDialog'
 import { TransactionTable } from './TransactionTable'
 import { formatTegenpartijVoorWeergave, titleCaseWoorden } from '../displayTegenpartij'
+import { matchesRulePattern, matchesOmschrijvingPattern } from '../categorize/patternMatcher'
 import type { CategorizedTransaction, Bucket, Potje, UserRule } from '../types'
 
 const BUCKET_COLORS: Record<Bucket, 'success' | 'error' | 'primary' | 'warning' | 'default'> = {
@@ -12,6 +14,7 @@ const BUCKET_COLORS: Record<Bucket, 'success' | 'error' | 'primary' | 'warning' 
   VASTE_LASTEN: 'primary',
   SPAREN: 'warning',
   ONBEKEND: 'default',
+  NEGEREN: 'default',
 }
 
 const BUCKET_ICONS: Record<Bucket, React.ComponentType<{ className?: string }>> = {
@@ -20,6 +23,7 @@ const BUCKET_ICONS: Record<Bucket, React.ComponentType<{ className?: string }>> 
   VASTE_LASTEN: Home,
   SPAREN: PiggyBank,
   ONBEKEND: CircleHelp,
+  NEGEREN: VisibilityOffOutlinedIcon,
 }
 
 const TABS: { value: Bucket | 'ALLE'; label: string }[] = [
@@ -29,6 +33,7 @@ const TABS: { value: Bucket | 'ALLE'; label: string }[] = [
   { value: 'VASTE_LASTEN', label: 'Vaste lasten' },
   { value: 'SPAREN', label: 'Sparen' },
   { value: 'ONBEKEND', label: 'Onbekend' },
+  { value: 'NEGEREN', label: 'Negeren' },
 ]
 
 function formatEur(n: number) {
@@ -66,8 +71,8 @@ function bepaalTegenpartijPatroon(
       || (rule.richting === 'debit' && tx.bedrag < 0)
       || (rule.richting === 'credit' && tx.bedrag > 0)
     if (!richtingMatch) return false
-    if (tegenpartij.startsWith(pattern)) return true
-    return Boolean(rule.omschrijvingPatroon && omschrijving.startsWith(normalizePattern(rule.omschrijvingPatroon)))
+    if (matchesRulePattern(tegenpartij, pattern)) return true
+    return Boolean(rule.omschrijvingPatroon && matchesOmschrijvingPattern(omschrijving, normalizePattern(rule.omschrijvingPatroon)))
   }
 
   const candidates = [...userRules, ...learnedRules]
@@ -148,7 +153,7 @@ interface Props {
   userRules: UserRule[]
   learnedRules: UserRule[]
   onCorrectie: (ids: string[], bucket: Bucket, potje: string | null, groepCriterium?: string, zonderRegel?: boolean) => void
-  onPotjeToevoegen: (naam: string, bucket: Exclude<Bucket, 'ONBEKEND'>) => void
+  onPotjeToevoegen: (naam: string, bucket: Exclude<Bucket, 'ONBEKEND' | 'NEGEREN'>) => void
 }
 
 type CounterpartyGroup = {
@@ -182,6 +187,8 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
   const [geselecteerdeTransacties, setGeselecteerdeTransacties] = useState<string[]>([])
   const [samengevoegdeGroepen, setSamengevoegdeGroepen] = useState<GroupMerge[]>([])
   const [groupNameOverrides, setGroupNameOverrides] = useState<Record<string, string>>({})
+
+  const isLeefgeldEenmaligKandidaat = (tx: CategorizedTransaction) => tx.bucket === 'ONBEKEND' && tx.bedrag < 0
 
   const tabCounts = useMemo(() => (
     Object.fromEntries(
@@ -239,7 +246,8 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
 
   const isAanHetFilteren = tegenpartijFilter.length > 0
   const rankingFiltered = ranking.filter((group) => {
-    const naamMatch = getGroupNaamVoorWeergave(group).toLowerCase().startsWith(tegenpartijFilter.toLowerCase())
+    const naamMatch = tegenpartijFilter.trim() === ''
+      || matchesRulePattern(getGroupNaamVoorWeergave(group), tegenpartijFilter)
     if (!naamMatch) return false
     if (group.totaal > 0 && !toonInkomsten) return false
     if (group.totaal < 0 && !toonUitgaven) return false
@@ -249,7 +257,24 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
   const zichtbareGroepen = rankingFiltered.map(({ key }) => key)
   const geselecteerdSet = new Set(geselecteerdeGroepen)
   const geselecteerdeTxSet = new Set(geselecteerdeTransacties)
-  const bulkEenmaligBeschikbaar = activeTab === 'ONBEKEND' && !toonInkomsten && toonUitgaven
+  const bulkEenmaligBeschikbaar = activeTab === 'ONBEKEND'
+  const kandidaatTxIdSet = new Set(
+    filtered
+      .filter(isLeefgeldEenmaligKandidaat)
+      .map((tx) => tx.id),
+  )
+  const zichtbareKandidaatTxIds = rankingFiltered
+    .flatMap((group) => group.txs)
+    .filter(isLeefgeldEenmaligKandidaat)
+    .map((tx) => tx.id)
+  const zichtbareKandidaatTxIdSet = new Set(zichtbareKandidaatTxIds)
+  const geselecteerdeKandidaatAantal = geselecteerdeTransacties.filter((id) => kandidaatTxIdSet.has(id)).length
+  const alleZichtbareKandidatenGeselecteerd =
+    zichtbareKandidaatTxIds.length > 0
+    && zichtbareKandidaatTxIds.every((id) => geselecteerdeTxSet.has(id))
+  const deelsZichtbareKandidatenGeselecteerd =
+    zichtbareKandidaatTxIds.some((id) => geselecteerdeTxSet.has(id))
+    && !alleZichtbareKandidatenGeselecteerd
   const alleZichtbareGeselecteerd =
     zichtbareGroepen.length > 0 && zichtbareGroepen.every((key) => geselecteerdSet.has(key))
   const deelsZichtbaarGeselecteerd =
@@ -272,13 +297,21 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
     setGeselecteerdeGroepen((current) => current.filter((key) => !zichtbaarSet.has(key)))
   }
 
+  const toggleAlleZichtbareKandidaatTransacties = (checked: boolean) => {
+    setGeselecteerdeTransacties((current) => {
+      if (checked) return [...new Set([...current, ...zichtbareKandidaatTxIds])]
+      return current.filter((id) => !zichtbareKandidaatTxIdSet.has(id))
+    })
+  }
+
   const samenvoegen = () => {
     const groepen = ranking.filter(({ key }) => geselecteerdSet.has(key))
     if (groepen.length < 2) return
 
     const namen = groepen.map((g) => getGroupNaamVoorWeergave(g))
     const fallbackNaam = [...namen].sort((a, b) => a.localeCompare(b, 'nl'))[0]
-    const nieuweNaam = titleCaseWoorden(bepaalGezamenlijkNaamdeel(namen) || fallbackNaam)
+    const filterNaam = tegenpartijFilter.trim()
+    const nieuweNaam = filterNaam || titleCaseWoorden(bepaalGezamenlijkNaamdeel(namen) || fallbackNaam)
     if (!nieuweNaam) return
 
     const leden = groepen.flatMap((group) => {
@@ -327,9 +360,7 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
   }
 
   const openBulkLeefgeldEenmalig = () => {
-    const geselecteerdeTxs = rankingFiltered
-      .flatMap((group) => group.txs)
-      .filter((tx) => geselecteerdeTxSet.has(tx.id) && tx.bucket === 'ONBEKEND' && tx.bedrag < 0)
+    const geselecteerdeTxs = transacties.filter((tx) => geselecteerdeTxSet.has(tx.id) && isLeefgeldEenmaligKandidaat(tx))
     if (geselecteerdeTxs.length === 0) return
     setDialogTxs(geselecteerdeTxs)
     setDialogGroupKey(null)
@@ -361,11 +392,17 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
           <Checkbox
             size="small"
             color="success"
-            checked={alleZichtbareGeselecteerd}
-            indeterminate={deelsZichtbaarGeselecteerd}
-            onChange={(_, checked) => toggleAllesZichtbaar(checked)}
-            inputProps={{ 'aria-label': 'Alle zichtbare groepen (de)selecteren' }}
-            sx={{ visibility: isAanHetFilteren ? 'visible' : 'hidden' }}
+            checked={bulkEenmaligBeschikbaar ? alleZichtbareKandidatenGeselecteerd : alleZichtbareGeselecteerd}
+            indeterminate={bulkEenmaligBeschikbaar ? deelsZichtbareKandidatenGeselecteerd : deelsZichtbaarGeselecteerd}
+            onChange={(_, checked) => {
+              if (bulkEenmaligBeschikbaar) {
+                toggleAlleZichtbareKandidaatTransacties(checked)
+                return
+              }
+              toggleAllesZichtbaar(checked)
+            }}
+            inputProps={{ 'aria-label': bulkEenmaligBeschikbaar ? 'Alle zichtbare transacties voor leefgeld eenmalig (de)selecteren' : 'Alle zichtbare groepen (de)selecteren' }}
+            sx={{ visibility: (isAanHetFilteren || bulkEenmaligBeschikbaar) ? 'visible' : 'hidden' }}
           />
           <TextField
             size="small"
@@ -443,9 +480,9 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
               variant="outlined"
               color="success"
               onClick={openBulkLeefgeldEenmalig}
-              disabled={geselecteerdeTransacties.length === 0}
+              disabled={geselecteerdeKandidaatAantal === 0}
             >
-              Koppel eenmalig aan leefgeld ({geselecteerdeTransacties.length})
+              Koppel eenmalig aan leefgeld ({geselecteerdeKandidaatAantal})
             </Button>
           )}
         </div>
@@ -458,6 +495,13 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
         {rankingFiltered.map((group) => {
           const { key, patroonGedreven, totaal, count, txs, maandGemiddeld } = group
           const weergaveNaam = getGroupNaamVoorWeergave(group)
+          const groepKandidaatTxIds = txs.filter(isLeefgeldEenmaligKandidaat).map((tx) => tx.id)
+          const groepAllesGeselecteerd =
+            groepKandidaatTxIds.length > 0
+            && groepKandidaatTxIds.every((txId) => geselecteerdeTxSet.has(txId))
+          const groepDeelsGeselecteerd =
+            groepKandidaatTxIds.some((txId) => geselecteerdeTxSet.has(txId))
+            && !groepAllesGeselecteerd
           return (
             <div key={key}>
               <div
@@ -476,15 +520,28 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
                   ? <ChevronDown className="h-4 w-4 shrink-0 text-gray-400" />
                   : <ChevronRight className="h-4 w-4 shrink-0 text-gray-400" />
                 }
-                {isAanHetFilteren && (
-                  <Checkbox
-                    size="small"
-                    color="success"
-                    checked={geselecteerdSet.has(key)}
-                    onClick={(e) => e.stopPropagation()}
-                    onChange={() => toggleGroepSelectie(key)}
-                    inputProps={{ 'aria-label': `Groep ${weergaveNaam} selecteren om samen te voegen` }}
-                  />
+                {(isAanHetFilteren || bulkEenmaligBeschikbaar) && (
+                  bulkEenmaligBeschikbaar ? (
+                    <Checkbox
+                      size="small"
+                      color="success"
+                      disabled={groepKandidaatTxIds.length === 0}
+                      checked={groepAllesGeselecteerd}
+                      indeterminate={groepDeelsGeselecteerd}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(_, checked) => toggleAlleTransactiesInGroep(groepKandidaatTxIds, checked)}
+                      inputProps={{ 'aria-label': `Alle transacties van ${weergaveNaam} selecteren voor leefgeld eenmalig` }}
+                    />
+                  ) : (
+                    <Checkbox
+                      size="small"
+                      color="success"
+                      checked={geselecteerdSet.has(key)}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={() => toggleGroepSelectie(key)}
+                      inputProps={{ 'aria-label': `Groep ${weergaveNaam} selecteren om samen te voegen` }}
+                    />
+                  )
                 )}
                 <span className="flex-1 font-medium">
                   {weergaveNaam}
@@ -533,6 +590,7 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
                   <TransactionTable
                     transacties={txs}
                     selectable={bulkEenmaligBeschikbaar}
+                    isSelectableTx={bulkEenmaligBeschikbaar ? isLeefgeldEenmaligKandidaat : undefined}
                     selectedIds={geselecteerdeTxSet}
                     onToggleSelect={toggleTransactieSelectie}
                     onToggleSelectAll={toggleAlleTransactiesInGroep}

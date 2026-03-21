@@ -254,6 +254,24 @@ describe('learnedRules', () => {
     expect(next.transacties[0].bucket).toBe('VASTE_LASTEN') // debit → updated
     expect(next.transacties[1].bucket).toBe('ONBEKEND')     // credit → untouched
   })
+
+  it('REGEL_TOEPASSEN supports wildcard patroon', () => {
+    const a = makeTx({ id: 'tx-1', tegenpartij: 'Stichting Philips', bedrag: -10, bucket: 'ONBEKEND' })
+    const b = makeTx({ id: 'tx-2', tegenpartij: 'ASN Ideaalsparen', bedrag: -10, bucket: 'ONBEKEND' })
+    const state = makeLearnedState({ transacties: [a, b] })
+
+    const first = bankOverzichtReducer(state, {
+      type: 'REGEL_TOEPASSEN',
+      regel: { tegenpartijPatroon: '*philips', bucket: 'LEEFGELD' },
+    })
+    expect(first.transacties[0].bucket).toBe('LEEFGELD')
+
+    const second = bankOverzichtReducer(first, {
+      type: 'REGEL_TOEPASSEN',
+      regel: { tegenpartijPatroon: 'asn*sparen', bucket: 'SPAREN' },
+    })
+    expect(second.transacties[1].bucket).toBe('SPAREN')
+  })
 })
 
 describe('potje actions', () => {
@@ -304,6 +322,37 @@ describe('potje actions', () => {
   it('initialState has empty potjes array', () => {
     expect(initialState.potjes).toEqual([])
   })
+
+    it('POTJE_HERNOEMEN_BY_BUCKET_EN_NAAM updates potje by bucket and name', () => {
+      const state = bankOverzichtReducer(initialState, {
+        type: 'POTJE_TOEVOEGEN', naam: 'Boodschappen', bucket: 'LEEFGELD',
+      })
+      const next = bankOverzichtReducer(state, {
+        type: 'POTJE_HERNOEMEN_BY_BUCKET_EN_NAAM',
+        bucket: 'LEEFGELD',
+        oudeNaam: 'Boodschappen',
+        nieuweNaam: 'Groceries',
+      })
+      expect(next.potjes[0].naam).toBe('Groceries')
+      expect(next.potjes[0].bucket).toBe('LEEFGELD')
+    })
+
+    it('POTJE_HERNOEMEN_BY_BUCKET_EN_NAAM does not update other potjes', () => {
+      let state = bankOverzichtReducer(initialState, {
+        type: 'POTJE_TOEVOEGEN', naam: 'Boodschappen', bucket: 'LEEFGELD',
+      })
+      state = bankOverzichtReducer(state, {
+        type: 'POTJE_TOEVOEGEN', naam: 'Huur', bucket: 'VASTE_LASTEN',
+      })
+      const next = bankOverzichtReducer(state, {
+        type: 'POTJE_HERNOEMEN_BY_BUCKET_EN_NAAM',
+        bucket: 'LEEFGELD',
+        oudeNaam: 'Boodschappen',
+        nieuweNaam: 'Groceries',
+      })
+      expect(next.potjes[0].naam).toBe('Groceries')
+      expect(next.potjes[1].naam).toBe('Huur')
+    })
 })
 
 describe('CATEGORIE_WIJZIGEN with potje', () => {

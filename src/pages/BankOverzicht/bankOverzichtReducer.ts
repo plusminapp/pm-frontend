@@ -5,21 +5,23 @@ import type {
   Potje,
 } from './types'
 import { applyRules } from './categorize/ruleEngine'
+import { matchesRulePattern } from './categorize/patternMatcher'
 
 export type BankOverzichtAction =
   | { type: 'BESTANDEN_TOEVOEGEN'; bestanden: File[] }
   | { type: 'BESTAND_PARSED'; bestandNaam: string; transacties: CategorizedTransaction[] }
   | { type: 'BESTAND_FOUT'; bestandNaam: string; foutmelding: string }
   | { type: 'CATEGORIE_WIJZIGEN'; transactieIds: string[]; bucket: CategorizedTransaction['bucket']; potje: string | null; groepCriterium?: string; zonderRegel?: boolean }
-  | { type: 'REGEL_PATROON_OVERSCHRIJVEN'; bron: 'user' | 'learned'; oldRegel: UserRule; tegenpartijPatroon: string; omschrijvingPatroon?: string }
+  | { type: 'REGEL_PATROON_OVERSCHRIJVEN'; bron: 'user' | 'learned'; oldRegel: UserRule; tegenpartijPatroon: string; omschrijvingPatroon?: string; potje: string | null }
   | { type: 'REGEL_TOEVOEGEN'; regel: UserRule }
   | { type: 'REGEL_TOEPASSEN'; regel: UserRule }
   | { type: 'REGEL_GELEERD'; regel: UserRule }
   | { type: 'REGELS_IMPORTEREN'; userRules: UserRule[]; learnedRules: UserRule[]; potjes: Potje[] }
   | { type: 'SNAPSHOT_IMPORTEREN'; userRules: UserRule[]; learnedRules: UserRule[]; potjes: Potje[]; transacties: CategorizedTransaction[] }
-  | { type: 'POTJE_TOEVOEGEN'; naam: string; bucket: Exclude<CategorizedTransaction['bucket'], 'ONBEKEND'> }
+  | { type: 'POTJE_TOEVOEGEN'; naam: string; bucket: Exclude<CategorizedTransaction['bucket'], 'ONBEKEND' | 'NEGEREN'> }
   | { type: 'POTJE_VERWIJDEREN'; id: string }
   | { type: 'POTJE_HERNOEMEN'; id: string; naam: string }
+  | { type: 'POTJE_HERNOEMEN_BY_BUCKET_EN_NAAM'; bucket: string; oudeNaam: string | null; nieuweNaam: string }
   | { type: 'NAAR_KOPPELEN' }
   | { type: 'NAAR_GEBRUIKEN' }
   | { type: 'NAAR_UPLOAD' }
@@ -74,12 +76,22 @@ function isZelfdeRegel(a: UserRule, b: UserRule): boolean {
     && a.potje === b.potje
 }
 
-function overschrijfPatronen(regel: UserRule, tegenpartijPatroon: string, omschrijvingPatroon?: string): UserRule {
+function overschrijfPatronen(regel: UserRule, tegenpartijPatroon: string, omschrijvingPatroon: string | undefined, potje: string | null): UserRule {
   const nextTegenpartijPatroon = tegenpartijPatroon.trim()
   const nextOmschrijvingPatroon = (omschrijvingPatroon ?? '').trim()
+  const nextPotje = (potje ?? '').trim()
   const base: UserRule = {
     ...regel,
     tegenpartijPatroon: nextTegenpartijPatroon,
+    ...(nextPotje ? { potje: nextPotje } : {}),
+  }
+  if (!nextPotje) {
+    const { potje: _removedPotje, ...withoutPotje } = base
+    if (nextOmschrijvingPatroon) {
+      return { ...withoutPotje, omschrijvingPatroon: nextOmschrijvingPatroon }
+    }
+    const { omschrijvingPatroon: _removed, ...withoutOmschrijving } = withoutPotje
+    return withoutOmschrijving
   }
   if (nextOmschrijvingPatroon) {
     return { ...base, omschrijvingPatroon: nextOmschrijvingPatroon }
@@ -170,7 +182,7 @@ export function bankOverzichtReducer(
       const update = (regels: UserRule[]) => regels.map((regel) => {
         if (vervangen || !isZelfdeRegel(regel, action.oldRegel)) return regel
         vervangen = true
-        return overschrijfPatronen(regel, action.tegenpartijPatroon, action.omschrijvingPatroon)
+        return overschrijfPatronen(regel, action.tegenpartijPatroon, action.omschrijvingPatroon, action.potje)
       })
 
       if (action.bron === 'user') {
@@ -190,12 +202,11 @@ export function bankOverzichtReducer(
         ...action.regel,
         tegenpartijPatroon: action.regel.tegenpartijPatroon.toLowerCase(),
       }
-      const pattern = lowercased.tegenpartijPatroon
       return {
         ...state,
         userRules: [...state.userRules, lowercased],
         transacties: state.transacties.map((tx) => {
-          if (!tx.tegenpartij.toLowerCase().startsWith(pattern)) return tx
+          if (!matchesRulePattern(tx.tegenpartij, lowercased.tegenpartijPatroon)) return tx
           if (lowercased.richting === 'debit' && tx.bedrag > 0) return tx
           if (lowercased.richting === 'credit' && tx.bedrag < 0) return tx
           return { ...tx, bucket: lowercased.bucket, potje: lowercased.potje ?? null, isHandmatig: true }
@@ -264,6 +275,16 @@ export function bankOverzichtReducer(
         ...state,
         potjes: state.potjes.map((p) => p.id === action.id ? { ...p, naam: action.naam } : p),
       }
+    
+      case 'POTJE_HERNOEMEN_BY_BUCKET_EN_NAAM':
+        return {
+          ...state,
+          potjes: state.potjes.map((p) =>
+            p.bucket === action.bucket && p.naam === action.oudeNaam
+              ? { ...p, naam: action.nieuweNaam }
+              : p
+          ),
+        }
 
     case 'NAAR_KOPPELEN':
       return { ...state, stap: 'KOPPELEN' }

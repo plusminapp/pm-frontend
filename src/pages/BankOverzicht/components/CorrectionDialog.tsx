@@ -13,6 +13,7 @@ const BUCKET_OPTIONS: { value: Bucket; label: string }[] = [
   { value: 'LEEFGELD',     label: 'Leefgeld' },
   { value: 'VASTE_LASTEN', label: 'Vaste lasten' },
   { value: 'SPAREN',       label: 'Sparen' },
+  { value: 'NEGEREN',      label: 'Negeren' },
 ]
 
 interface Props {
@@ -23,7 +24,7 @@ interface Props {
   forceLeefgeldEenmalig?: boolean
   onSluiten: () => void
   onCorrectie: (ids: string[], bucket: Bucket, potje: string | null, groepNaam?: string, zonderRegel?: boolean) => void
-  onPotjeToevoegen: (naam: string, bucket: Exclude<Bucket, 'ONBEKEND'>) => void
+  onPotjeToevoegen: (naam: string, bucket: Exclude<Bucket, 'ONBEKEND' | 'NEGEREN'>) => void
   onGroepNaamWijzigen?: (naam: string) => void
 }
 
@@ -114,7 +115,7 @@ export function CorrectionDialog({
     const trimmedPotje = gekozenPotje.trim()
     if (trimmedPotje) {
       const bestondAl = bucketPotjes.some((p) => p.naam.toLowerCase() === trimmedPotje.toLowerCase())
-      if (!bestondAl && gekozenBucket !== 'ONBEKEND') {
+      if (!bestondAl && gekozenBucket !== 'ONBEKEND' && gekozenBucket !== 'NEGEREN') {
         onPotjeToevoegen(trimmedPotje, gekozenBucket)
       }
     }
@@ -180,7 +181,7 @@ export function CorrectionDialog({
           </FormControl>
         )}
 
-        {gekozenBucket !== 'ONBEKEND' && (
+        {gekozenBucket !== 'ONBEKEND' && gekozenBucket !== 'NEGEREN' && (
           <Autocomplete
             freeSolo
             selectOnFocus
