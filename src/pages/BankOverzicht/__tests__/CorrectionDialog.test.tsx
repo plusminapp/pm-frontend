@@ -13,7 +13,7 @@ const tx = (id: string): CategorizedTransaction => ({
   bronBestand: 'test.csv',
   bankFormat: 'ING',
   bucket: 'ONBEKEND',
-  subCategorie: null,
+  potje: null,
   isHandmatig: false,
   isDuplicaat: false,
   regelNaam: null,
@@ -29,7 +29,7 @@ describe('CorrectionDialog', () => {
   it('renders when open', () => {
     render(
       <CorrectionDialog open transacties={[tx('1')]} potjes={noPotjes}
-        onSluiten={vi.fn()} onCorrectie={vi.fn()} onRegelToepassen={vi.fn()} />,
+        onSluiten={vi.fn()} onCorrectie={vi.fn()} onPotjeToevoegen={vi.fn()} />,
     )
     expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
@@ -37,7 +37,7 @@ describe('CorrectionDialog', () => {
   it('does not render when closed', () => {
     render(
       <CorrectionDialog open={false} transacties={[tx('1')]} potjes={noPotjes}
-        onSluiten={vi.fn()} onCorrectie={vi.fn()} onRegelToepassen={vi.fn()} />,
+        onSluiten={vi.fn()} onCorrectie={vi.fn()} onPotjeToevoegen={vi.fn()} />,
     )
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
@@ -45,45 +45,30 @@ describe('CorrectionDialog', () => {
   it('shows all four assignable bucket options', () => {
     render(
       <CorrectionDialog open transacties={[tx('1')]} potjes={noPotjes}
-        onSluiten={vi.fn()} onCorrectie={vi.fn()} onRegelToepassen={vi.fn()} />,
+        onSluiten={vi.fn()} onCorrectie={vi.fn()} onPotjeToevoegen={vi.fn()} />,
     )
     expect(screen.getByRole('radio', { name: /inkomsten/i })).toBeInTheDocument()
-    expect(screen.getByRole('radio', { name: /leefgeld/i })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: /^leefgeld$/i })).toBeInTheDocument()
     expect(screen.getByRole('radio', { name: /vaste lasten/i })).toBeInTheDocument()
     expect(screen.getByRole('radio', { name: /sparen/i })).toBeInTheDocument()
   })
 
-  it('calls onCorrectie with bucket and null subCategorie when no potje selected', () => {
+  it('calls onCorrectie with bucket and null potje when no potje selected', () => {
     const onCorrectie = vi.fn()
     render(
       <CorrectionDialog open transacties={[tx('1')]} potjes={noPotjes}
-        onSluiten={vi.fn()} onCorrectie={onCorrectie} onRegelToepassen={vi.fn()} />,
+        onSluiten={vi.fn()} onCorrectie={onCorrectie} onPotjeToevoegen={vi.fn()} />,
     )
     fireEvent.click(screen.getByRole('radio', { name: /inkomsten/i }))
     fireEvent.click(screen.getByRole('button', { name: /opslaan/i }))
-    expect(onCorrectie).toHaveBeenCalledWith(['1'], 'INKOMEN', null)
-  })
-
-  it('calls onRegelToepassen when apply-all is checked', () => {
-    const onRegelToepassen = vi.fn()
-    render(
-      <CorrectionDialog open transacties={[tx('1')]} potjes={noPotjes}
-        onSluiten={vi.fn()} onCorrectie={vi.fn()} onRegelToepassen={onRegelToepassen} />,
-    )
-    fireEvent.click(screen.getByRole('radio', { name: /vaste lasten/i }))
-    fireEvent.click(screen.getByRole('checkbox', { name: /toepassen op alle/i }))
-    fireEvent.click(screen.getByRole('button', { name: /opslaan/i }))
-    expect(onRegelToepassen).toHaveBeenCalledWith({
-      tegenpartijPatroon: 'Onbekende Winkel',
-      bucket: 'VASTE_LASTEN',
-    })
+    expect(onCorrectie).toHaveBeenCalledWith(['1'], 'INKOMEN', null, undefined)
   })
 
   it('calls onSluiten when cancel is clicked', () => {
     const onSluiten = vi.fn()
     render(
       <CorrectionDialog open transacties={[tx('1')]} potjes={noPotjes}
-        onSluiten={onSluiten} onCorrectie={vi.fn()} onRegelToepassen={vi.fn()} />,
+        onSluiten={onSluiten} onCorrectie={vi.fn()} onPotjeToevoegen={vi.fn()} />,
     )
     fireEvent.click(screen.getByRole('button', { name: /annuleren/i }))
     expect(onSluiten).toHaveBeenCalled()
@@ -92,46 +77,86 @@ describe('CorrectionDialog', () => {
   it('shows potje dropdown for non-ONBEKEND bucket', () => {
     render(
       <CorrectionDialog open transacties={[tx('1')]} potjes={somePotjes}
-        onSluiten={vi.fn()} onCorrectie={vi.fn()} onRegelToepassen={vi.fn()} />,
+        onSluiten={vi.fn()} onCorrectie={vi.fn()} onPotjeToevoegen={vi.fn()} />,
     )
     fireEvent.click(screen.getByRole('radio', { name: /vaste lasten/i }))
-    expect(screen.getByLabelText(/potje/i)).toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: /^potje$/i })).toBeInTheDocument()
   })
 
   it('filters potje dropdown to selected bucket', () => {
     render(
       <CorrectionDialog open transacties={[tx('1')]} potjes={somePotjes}
-        onSluiten={vi.fn()} onCorrectie={vi.fn()} onRegelToepassen={vi.fn()} />,
+        onSluiten={vi.fn()} onCorrectie={vi.fn()} onPotjeToevoegen={vi.fn()} />,
     )
     fireEvent.click(screen.getByRole('radio', { name: /vaste lasten/i }))
-    const selectField = screen.getByLabelText(/potje/i)
-    fireEvent.mouseDown(selectField)
+    const input = screen.getByRole('combobox', { name: /^potje$/i })
+    fireEvent.mouseDown(input)
     expect(screen.getByText('Huur')).toBeInTheDocument()
     expect(screen.queryByText('Boodschappen')).not.toBeInTheDocument()
   })
 
-  it('shows disabled hint when selected bucket has no potjes', () => {
+  it('shows helper text for filtering and adding potjes', () => {
     render(
       <CorrectionDialog open transacties={[tx('1')]} potjes={noPotjes}
-        onSluiten={vi.fn()} onCorrectie={vi.fn()} onRegelToepassen={vi.fn()} />,
+        onSluiten={vi.fn()} onCorrectie={vi.fn()} onPotjeToevoegen={vi.fn()} />,
     )
-    fireEvent.click(screen.getByRole('radio', { name: /leefgeld/i }))
-    expect(screen.getByText(/geen potjes/i)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('radio', { name: /^leefgeld$/i }))
+    expect(screen.getByText(/typ om te filteren of voeg een nieuw potje toe/i)).toBeInTheDocument()
   })
 
-  it('shows stale potje as disabled option when tx has an unknown subCategorie', () => {
-    const staleTx: CategorizedTransaction = {
-      ...tx('1'),
-      bucket: 'VASTE_LASTEN',
-      subCategorie: 'OudPotje',
-    }
+  it('uses current category as default when available', () => {
+    const categorizedTx: CategorizedTransaction = { ...tx('1'), bucket: 'VASTE_LASTEN' }
     render(
-      <CorrectionDialog open transacties={[staleTx]} potjes={somePotjes}
-        onSluiten={vi.fn()} onCorrectie={vi.fn()} onRegelToepassen={vi.fn()} />,
+      <CorrectionDialog open transacties={[categorizedTx]} potjes={somePotjes}
+        onSluiten={vi.fn()} onCorrectie={vi.fn()} onPotjeToevoegen={vi.fn()} />,
     )
-    fireEvent.click(screen.getByRole('radio', { name: /vaste lasten/i }))
-    const selectField = screen.getByLabelText(/potje/i)
-    fireEvent.mouseDown(selectField)
-    expect(screen.getByText(/\(onbekend potje: OudPotje\)/i)).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: /vaste lasten/i })).toBeChecked()
+  })
+
+  it('adds a new potje when entered name does not exist', () => {
+    const onPotjeToevoegen = vi.fn()
+    const onCorrectie = vi.fn()
+    render(
+      <CorrectionDialog open transacties={[{ ...tx('1'), bucket: 'LEEFGELD' }]} potjes={somePotjes}
+        onSluiten={vi.fn()} onCorrectie={onCorrectie} onPotjeToevoegen={onPotjeToevoegen} />,
+    )
+    fireEvent.change(screen.getByRole('combobox', { name: /^potje$/i }), { target: { value: 'Nieuw Potje' } })
+    fireEvent.click(screen.getByRole('button', { name: /opslaan/i }))
+    expect(onPotjeToevoegen).toHaveBeenCalledWith('Nieuw Potje', 'LEEFGELD')
+    expect(onCorrectie).toHaveBeenCalledWith(['1'], 'LEEFGELD', 'Nieuw Potje', undefined)
+  })
+
+  it('pressing Enter in the open dialog saves and closes', () => {
+    const onCorrectie = vi.fn()
+    const onSluiten = vi.fn()
+    render(
+      <CorrectionDialog open transacties={[tx('1')]} potjes={noPotjes}
+        onSluiten={onSluiten} onCorrectie={onCorrectie} onPotjeToevoegen={vi.fn()} />,
+    )
+
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Enter', code: 'Enter' })
+
+    expect(onCorrectie).toHaveBeenCalledWith(['1'], 'LEEFGELD', null, undefined)
+    expect(onSluiten).toHaveBeenCalled()
+  })
+
+  it('shows Leefgeld eenmalig as radio option on the Leefgeld row', () => {
+    render(
+      <CorrectionDialog open transacties={[tx('1')]} potjes={noPotjes}
+        onSluiten={vi.fn()} onCorrectie={vi.fn()} onPotjeToevoegen={vi.fn()} />,
+    )
+    expect(screen.getByRole('radio', { name: /^leefgeld$/i })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: /leefgeld eenmalig/i })).toBeInTheDocument()
+  })
+
+  it('passes zonderRegel=true when Leefgeld eenmalig is selected', () => {
+    const onCorrectie = vi.fn()
+    render(
+      <CorrectionDialog open transacties={[tx('1')]} potjes={noPotjes}
+        onSluiten={vi.fn()} onCorrectie={onCorrectie} onPotjeToevoegen={vi.fn()} />,
+    )
+    fireEvent.click(screen.getByRole('radio', { name: /leefgeld eenmalig/i }))
+    fireEvent.click(screen.getByRole('button', { name: /opslaan/i }))
+    expect(onCorrectie).toHaveBeenCalledWith(['1'], 'LEEFGELD', null, undefined, true)
   })
 })

@@ -1,6 +1,5 @@
 import type { ParsedTransaction, CategorizedTransaction, UserRule } from '../types'
-import type { Rule } from './rules'
-import { defaultRules } from './rules'
+import { formatTegenpartijVoorWeergave } from '../displayTegenpartij'
 
 // Internal adapter — bridges Rule (patroon) and UserRule (tegenpartijPatroon) into one shape
 interface MatchableRule {
@@ -8,7 +7,7 @@ interface MatchableRule {
   omschrijvingPatroon?: string
   richting?: 'credit' | 'debit'
   bucket: CategorizedTransaction['bucket']
-  subCategorie: string | null
+  potje: string | null
   naam: string | null
 }
 
@@ -20,24 +19,13 @@ function isGeneric(tegenpartij: string): boolean {
   return tegenpartij.trim() === '' || GENERIC_TEGENPARTIJEN.has(tegenpartij.trim().toLowerCase())
 }
 
-function fromDefault(r: Rule): MatchableRule {
-  return {
-    tegenpartijPatroon: r.patroon,
-    omschrijvingPatroon: r.omschrijvingPatroon,
-    richting: r.richting,
-    bucket: r.bucket,
-    subCategorie: r.subCategorie,
-    naam: r.naam,
-  }
-}
-
 function fromUser(r: UserRule, naamPrefix: string): MatchableRule {
   return {
     tegenpartijPatroon: r.tegenpartijPatroon,
     omschrijvingPatroon: r.omschrijvingPatroon,
     richting: r.richting,
     bucket: r.bucket,
-    subCategorie: r.subCategorie ?? null,
+    potje: r.potje ?? null,
     naam: `${naamPrefix}: ${r.tegenpartijPatroon}`,
   }
 }
@@ -56,23 +44,23 @@ function matches(
 ): { field: 'tegenpartij' | 'omschrijving' } | null {
   if (!directionMatches(rule.richting, bedrag)) return null
 
-  const tp = tegenpartij.toLowerCase()
+  const tpMatch = formatTegenpartijVoorWeergave(tegenpartij).toLowerCase()
   const om = omschrijving.toLowerCase()
   const patroon = rule.tegenpartijPatroon.toLowerCase()
 
   // Tegenpartij match (skip if empty/whitespace)
-  if (tp.trim() !== '' && tp.includes(patroon)) {
+  if (tpMatch.trim() !== '' && tpMatch.startsWith(patroon)) {
     return { field: 'tegenpartij' }
   }
 
   // Omschrijving match
   if (rule.omschrijvingPatroon) {
-    if (om.includes(rule.omschrijvingPatroon.toLowerCase())) {
+    if (om.startsWith(rule.omschrijvingPatroon.toLowerCase())) {
       return { field: 'omschrijving' }
     }
   } else if (isGeneric(tegenpartij)) {
     // Fallback: use tegenpartijPatroon against omschrijving only for generic counterparties
-    if (om.includes(patroon)) {
+    if (om.startsWith(patroon)) {
       return { field: 'omschrijving' }
     }
   }
@@ -84,7 +72,7 @@ function categorize(tx: ParsedTransaction, rule: MatchableRule): CategorizedTran
   return {
     ...tx,
     bucket: rule.bucket,
-    subCategorie: rule.subCategorie,
+    potje: rule.potje,
     isHandmatig: false,
     isDuplicaat: false,
     regelNaam: rule.naam,
@@ -103,9 +91,8 @@ export function applyRules(
 ): CategorizedTransaction[] {
   const user = sortBySpecificity(userRules.map((r) => fromUser(r, 'regel')))
   const learned = sortBySpecificity(learnedRules.map((r) => fromUser(r, 'geleerd')))
-  const defaults = sortBySpecificity(defaultRules.map(fromDefault))
 
-  const tiers = [user, learned, defaults]
+  const tiers = [user, learned]
 
   return transactions.map((tx) => {
     const { tegenpartij, omschrijving, bedrag } = tx
@@ -129,7 +116,7 @@ export function applyRules(
     return {
       ...tx,
       bucket: 'ONBEKEND',
-      subCategorie: null,
+      potje: null,
       isHandmatig: false,
       isDuplicaat: false,
       regelNaam: null,

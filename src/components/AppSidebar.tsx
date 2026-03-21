@@ -507,7 +507,7 @@ export function AppSidebar({
         {/* Footer - Login */}
         <div className="border-t p-2 space-y-4">
           {!state.isAuthenticated  && (
-            <Button onClick={handleLogin} className="w-full" size="sm">
+            <Button color="success" onClick={handleLogin} className="w-full" size="sm">
               <LoginIcon />{!isCollapsed ? 'Inloggen' : ''}
             </Button>
           )}

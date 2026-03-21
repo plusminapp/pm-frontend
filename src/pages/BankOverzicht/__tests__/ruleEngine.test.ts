@@ -15,85 +15,87 @@ const makeTx = (overrides: Partial<ParsedTransaction> = {}): ParsedTransaction =
 })
 
 describe('applyRules', () => {
-  it('categorizes Albert Heijn as LEEFGELD/boodschappen', () => {
-    const result = applyRules([makeTx({ tegenpartij: 'Albert Heijn' })], [])
-    expect(result[0].bucket).toBe('LEEFGELD')
-    expect(result[0].subCategorie).toBe('boodschappen')
-  })
-
-  it('categorizes Ziggo as VASTE_LASTEN/internet', () => {
-    const result = applyRules([makeTx({ tegenpartij: 'Ziggo BV' })], [])
-    expect(result[0].bucket).toBe('VASTE_LASTEN')
-    expect(result[0].subCategorie).toBe('internet')
-  })
-
   it('leaves unmatched transactions as ONBEKEND', () => {
     const result = applyRules([makeTx({ tegenpartij: 'Onbekende Partij BV' })], [])
     expect(result[0].bucket).toBe('ONBEKEND')
     expect(result[0].regelNaam).toBeNull()
   })
 
-  it('user rules take priority over default rules', () => {
-    const userRule: UserRule = { tegenpartijPatroon: 'Albert Heijn', bucket: 'SPAREN' }
+  it('applies user rule to matching transaction', () => {
+    const userRule: UserRule = { tegenpartijPatroon: 'albert heijn', bucket: 'LEEFGELD' }
     const result = applyRules([makeTx({ tegenpartij: 'Albert Heijn' })], [userRule])
-    expect(result[0].bucket).toBe('SPAREN')
-    expect(result[0].isHandmatig).toBe(false) // rule-matched, not manually corrected
+    expect(result[0].bucket).toBe('LEEFGELD')
+    expect(result[0].isHandmatig).toBe(false)
   })
 
   it('matching is case-insensitive', () => {
-    const result = applyRules([makeTx({ tegenpartij: 'ALBERT HEIJN 1234' })], [])
+    const userRule: UserRule = { tegenpartijPatroon: 'albert heijn', bucket: 'LEEFGELD' }
+    const result = applyRules([makeTx({ tegenpartij: 'ALBERT HEIJN 1234' })], [userRule])
     expect(result[0].bucket).toBe('LEEFGELD')
   })
 
   it('sets regelNaam for matched transactions', () => {
-    const result = applyRules([makeTx({ tegenpartij: 'Jumbo Supermarkt' })], [])
-    expect(result[0].regelNaam).toBe('Jumbo')
+    const userRule: UserRule = { tegenpartijPatroon: 'jumbo', bucket: 'LEEFGELD' }
+    const result = applyRules([makeTx({ tegenpartij: 'Jumbo Supermarkt' })], [userRule])
+    expect(result[0].regelNaam).toBe('regel: jumbo')
   })
 
   it('sets isHandmatig to false for rule-matched transactions', () => {
-    const result = applyRules([makeTx({ tegenpartij: 'Jumbo Supermarkt' })], [])
+    const userRule: UserRule = { tegenpartijPatroon: 'jumbo', bucket: 'LEEFGELD' }
+    const result = applyRules([makeTx({ tegenpartij: 'Jumbo Supermarkt' })], [userRule])
     expect(result[0].isHandmatig).toBe(false)
   })
 
   it('processes multiple transactions independently', () => {
+    const rules: UserRule[] = [
+      { tegenpartijPatroon: 'albert heijn', bucket: 'LEEFGELD' },
+      { tegenpartijPatroon: 'ziggo', bucket: 'VASTE_LASTEN' },
+    ]
     const txs = [
       makeTx({ id: 'tx-1', tegenpartij: 'Albert Heijn' }),
       makeTx({ id: 'tx-2', tegenpartij: 'Ziggo' }),
       makeTx({ id: 'tx-3', tegenpartij: 'Onbekend' }),
     ]
-    const result = applyRules(txs, [])
+    const result = applyRules(txs, rules)
     expect(result[0].bucket).toBe('LEEFGELD')
     expect(result[1].bucket).toBe('VASTE_LASTEN')
     expect(result[2].bucket).toBe('ONBEKEND')
   })
 
   // --- Direction-aware matching ---
-  it('belastingdienst credit is categorized as INKOMEN', () => {
-    const result = applyRules([makeTx({ tegenpartij: 'Belastingdienst', bedrag: 300 })], [])
+  it('direction-specific credit rule matches credit transaction', () => {
+    const rules: UserRule[] = [
+      { tegenpartijPatroon: 'belastingdienst', richting: 'credit', bucket: 'INKOMEN' },
+      { tegenpartijPatroon: 'belastingdienst', richting: 'debit', bucket: 'VASTE_LASTEN' },
+    ]
+    const result = applyRules([makeTx({ tegenpartij: 'Belastingdienst', bedrag: 300 })], rules)
     expect(result[0].bucket).toBe('INKOMEN')
-    expect(result[0].regelNaam).toBe('Belastingdienst toeslag')
   })
 
-  it('belastingdienst debit is categorized as VASTE_LASTEN', () => {
-    const result = applyRules([makeTx({ tegenpartij: 'Belastingdienst', bedrag: -300 })], [])
+  it('direction-specific debit rule matches debit transaction', () => {
+    const rules: UserRule[] = [
+      { tegenpartijPatroon: 'belastingdienst', richting: 'credit', bucket: 'INKOMEN' },
+      { tegenpartijPatroon: 'belastingdienst', richting: 'debit', bucket: 'VASTE_LASTEN' },
+    ]
+    const result = applyRules([makeTx({ tegenpartij: 'Belastingdienst', bedrag: -300 })], rules)
     expect(result[0].bucket).toBe('VASTE_LASTEN')
-    expect(result[0].regelNaam).toBe('Belastingdienst aanslag')
   })
 
-  it('zero-amount transaction matches directionless rules', () => {
-    const result = applyRules([makeTx({ tegenpartij: 'Albert Heijn', bedrag: 0 })], [])
+  it('zero-amount transaction matches directionless rule', () => {
+    const userRule: UserRule = { tegenpartijPatroon: 'albert heijn', bucket: 'LEEFGELD' }
+    const result = applyRules([makeTx({ tegenpartij: 'Albert Heijn', bedrag: 0 })], [userRule])
     expect(result[0].bucket).toBe('LEEFGELD')
   })
 
   // --- Omschrijving fallback (only for generic tegenpartij) ---
   it('matches on omschrijving when tegenpartij is generic', () => {
+    const userRule: UserRule = { tegenpartijPatroon: 'albert heijn', bucket: 'LEEFGELD' }
     const result = applyRules([makeTx({
       tegenpartij: 'Betaalautomaat',
-      omschrijving: 'Betaling Albert Heijn filiaal 1234',
+      omschrijving: 'Albert Heijn filiaal 1234',
       bedrag: -15,
-    })], [])
+    })], [userRule])
     expect(result[0].bucket).toBe('LEEFGELD')
-    expect(result[0].regelNaam).toBe('Albert Heijn')
   })
 
   it('does NOT match on omschrijving when tegenpartij is specific', () => {
@@ -106,28 +108,29 @@ describe('applyRules', () => {
   })
 
   it('matches on omschrijving when tegenpartij is empty', () => {
+    const userRule: UserRule = { tegenpartijPatroon: 'ziggo', bucket: 'VASTE_LASTEN' }
     const result = applyRules([makeTx({
       tegenpartij: '',
       omschrijving: 'Ziggo internet factuur',
       bedrag: -49,
-    })], [])
+    })], [userRule])
     expect(result[0].bucket).toBe('VASTE_LASTEN')
   })
 
   // --- Priority cascade: tegenpartij beats omschrijving ---
-  it('tegenpartij match from default rules beats omschrijving match from user rules', () => {
-    const userRule: UserRule = { tegenpartijPatroon: 'albert heijn', bucket: 'SPAREN', omschrijvingPatroon: 'iets' }
+  it('tegenpartij match beats omschrijving match from another user rule', () => {
+    const omschrijvingRule: UserRule = { tegenpartijPatroon: 'albert heijn', bucket: 'SPAREN', omschrijvingPatroon: 'iets' }
+    const tegenpartijRule: UserRule = { tegenpartijPatroon: 'jumbo', bucket: 'LEEFGELD' }
     const result = applyRules([makeTx({
       tegenpartij: 'Jumbo Supermarkt',
       omschrijving: 'iets',
       bedrag: -20,
-    })], [userRule])
-    // tegenpartij matches default rule for Jumbo (tier 3), not user rule omschrijving (tier 4)
+    })], [omschrijvingRule, tegenpartijRule])
     expect(result[0].bucket).toBe('LEEFGELD')
   })
 
   // --- Learned rules priority ---
-  it('learned rules have higher priority than default rules', () => {
+  it('learned rules apply when no user rule matches', () => {
     const learned: UserRule = { tegenpartijPatroon: 'jumbo', bucket: 'SPAREN' }
     const result = applyRules(
       [makeTx({ tegenpartij: 'Jumbo Supermarkt', bedrag: -20 })],
@@ -160,7 +163,6 @@ describe('applyRules', () => {
 
   // --- bedrag === 0 matches direction-specific rules ---
   it('bedrag === 0 matches a direction-specific rule', () => {
-    // A rule with richting: 'debit' should still match when bedrag is 0 (zero is directionless per spec)
     const rule: UserRule = { tegenpartijPatroon: 'test', richting: 'debit', bucket: 'VASTE_LASTEN' }
     const result = applyRules([makeTx({ tegenpartij: 'Test BV', bedrag: 0 })], [rule])
     expect(result[0].bucket).toBe('VASTE_LASTEN')
@@ -168,8 +170,8 @@ describe('applyRules', () => {
 
   // --- Backward compat ---
   it('learnedRules defaults to empty array (two-arg call still works)', () => {
-    const result = applyRules([makeTx({ tegenpartij: 'Albert Heijn' })], [])
-    expect(result[0].bucket).toBe('LEEFGELD')
+    const result = applyRules([makeTx({ tegenpartij: 'Onbekende Partij' })], [])
+    expect(result[0].bucket).toBe('ONBEKEND')
   })
 
   // --- regelNaam for user rules ---

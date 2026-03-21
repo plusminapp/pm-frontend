@@ -10,7 +10,7 @@ describe('FileDropZone', () => {
 
   it('shows helper text', () => {
     render(<FileDropZone onFiles={vi.fn()} />)
-    expect(screen.getByText(/sleep bestanden/i)).toBeInTheDocument()
+    expect(screen.getByText(/sleep bankafschriften/i)).toBeInTheDocument()
   })
 
   it('is keyboard focusable', () => {

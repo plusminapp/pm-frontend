@@ -1,6 +1,7 @@
 import { useReducer, useState, useCallback } from 'react'
 import { Accordion, AccordionDetails, AccordionSummary, Alert, Button, Chip, Step, StepButton, Stepper } from '@mui/material'
-import { ChevronDown, Plus, Download } from 'lucide-react'
+import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined'
+import { ChevronDown } from 'lucide-react'
 
 import { bankOverzichtReducer, initialState } from './bankOverzichtReducer'
 import { detectFormat } from './parsers/detectFormat'
@@ -15,9 +16,9 @@ import { FileDropZone } from './components/FileDropZone'
 import { BucketCards } from './components/BucketCards'
 import { MonthlyChart } from './components/MonthlyChart'
 import { CategoryBreakdown } from './components/CategoryBreakdown'
-import { ExportButtons } from './components/ExportButtons'
+import { OpslaanButtons } from './components/ExportButtons'
 import { PotjesBeheerDialog } from './components/PotjesBeheerDialog'
-import { importRules, exportRules } from './export/exportRules'
+import { importRules } from './export/exportRules'
 import type { BankFormat, ParsedTransaction, CategorizedTransaction } from './types'
 
 function readFileAsText(file: File): Promise<string> {
@@ -67,7 +68,19 @@ export default function BankOverzicht() {
     for (const file of jsonFiles) {
       try {
         const content = await readFileAsText(file)
-        const { userRules, learnedRules, potjes } = importRules(content)
+        const { userRules, learnedRules, potjes, transacties } = importRules(content)
+
+        if (transacties.length > 0) {
+          dispatch({ type: 'SNAPSHOT_IMPORTEREN', userRules, learnedRules, potjes, transacties })
+          setSelectedYear(detectDominantYear(transacties))
+          setRegelsImportStatus({
+            bericht: `${file.name}: ${transacties.length} transacties en ${userRules.length + learnedRules.length + potjes.length} regels/potjes geladen`,
+            fout: false,
+          })
+          setIsLoading(false)
+          return
+        }
+
         dispatch({ type: 'REGELS_IMPORTEREN', userRules, learnedRules, potjes })
         setRegelsImportStatus({
           bericht: `${file.name}: ${userRules.length + learnedRules.length + potjes.length} regels/potjes geladen`,
@@ -119,7 +132,6 @@ export default function BankOverzicht() {
       const allTxs = [...state.transacties, ...allNewTxs]
       const year = detectDominantYear(allTxs)
       setSelectedYear(year)
-      dispatch({ type: 'NAAR_KOPPELEN' })
     }
     setIsLoading(false)
   }, [state.userRules, state.learnedRules, state.transacties])
@@ -127,8 +139,11 @@ export default function BankOverzicht() {
   const jaar = selectedYear ?? detectDominantYear(state.transacties)
   const jaarFiltered = state.transacties.filter((t) => t.datum.startsWith(String(jaar)))
   const onbekendCount = jaarFiltered.filter((t) => t.bucket === 'ONBEKEND').length
-  const onbekendTotal = jaarFiltered
-    .filter((t) => t.bucket === 'ONBEKEND')
+  const onbekendOntvangen = jaarFiltered
+    .filter((t) => t.bucket === 'ONBEKEND' && t.bedrag > 0)
+    .reduce((s, t) => s + t.bedrag, 0)
+  const onbekendUitgegeven = jaarFiltered
+    .filter((t) => t.bucket === 'ONBEKEND' && t.bedrag < 0)
     .reduce((s, t) => s + t.bedrag, 0)
 
   const availableYears = [...new Set(
@@ -141,7 +156,26 @@ export default function BankOverzicht() {
   return (
     <div>
       {/* ── Stepper ──────────────────────────────────────────────────────── */}
-      <Stepper nonLinear activeStep={stapIndex} sx={{ mb: 4 }}>
+      <Stepper
+        nonLinear
+        activeStep={stapIndex}
+        sx={{
+          mb: 4,
+          '& .MuiStepIcon-root': {
+            fontSize: '2rem',
+          },
+          '& .MuiStepLabel-label': {
+            fontSize: '0.875rem',
+            lineHeight: 1.43,
+          },
+          '& .MuiStepIcon-root.Mui-active, & .MuiStepIcon-root.Mui-completed': {
+            color: 'success.main',
+          },
+          '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line, & .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': {
+            borderColor: 'success.main',
+          },
+        }}
+      >
         <Step completed={stapIndex > 0}>
           <StepButton sx={{ '& .MuiStepLabel-label': { color: 'text.primary' } }} onClick={() => dispatch({ type: 'NAAR_WELKOM' })}>Welkom</StepButton>
         </Step>
@@ -151,7 +185,18 @@ export default function BankOverzicht() {
         <Step completed={stapIndex > 2} disabled={!heeftTransacties}>
           <StepButton
             disabled={!heeftTransacties}
-            sx={{ '& .MuiStepLabel-label': { color: heeftTransacties ? 'text.primary' : 'text.disabled' } }}
+            sx={{
+              '& .MuiStepLabel-label': { color: heeftTransacties ? 'text.primary' : 'text.disabled' },
+              '&.Mui-disabled': {
+                opacity: 0.65,
+              },
+              '&.Mui-disabled .MuiStepLabel-label': {
+                color: '#94a3b8',
+              },
+              '&.Mui-disabled .MuiStepIcon-root': {
+                color: '#cbd5e1',
+              },
+            }}
             onClick={() => dispatch({ type: 'NAAR_KOPPELEN' })}
           >
             Koppelen
@@ -160,7 +205,18 @@ export default function BankOverzicht() {
         <Step completed={stapIndex > 3} disabled={!heeftTransacties}>
           <StepButton
             disabled={!heeftTransacties}
-            sx={{ '& .MuiStepLabel-label': { color: heeftTransacties ? 'text.primary' : 'text.disabled' } }}
+            sx={{
+              '& .MuiStepLabel-label': { color: heeftTransacties ? 'text.primary' : 'text.disabled' },
+              '&.Mui-disabled': {
+                opacity: 0.65,
+              },
+              '&.Mui-disabled .MuiStepLabel-label': {
+                color: '#94a3b8',
+              },
+              '&.Mui-disabled .MuiStepIcon-root': {
+                color: '#cbd5e1',
+              },
+            }}
             onClick={() => dispatch({ type: 'NAAR_GEBRUIKEN' })}
           >
             Gebruiken
@@ -203,13 +259,16 @@ export default function BankOverzicht() {
             externe servers sturen. Je bent volledig zelf baas over je data.
           </p>
 
-          <Button
-            variant="contained"
-            size="large"
-            onClick={() => dispatch({ type: 'NAAR_UPLOAD' })}
-          >
-            Aan de slag
-          </Button>
+          <div className="flex justify-end">
+            <Button
+              color="success"
+              variant="contained"
+              size="large"
+              onClick={() => dispatch({ type: 'NAAR_UPLOAD' })}
+            >
+              Aan de slag
+            </Button>
+          </div>
         </div>
       )}
 
@@ -229,6 +288,16 @@ export default function BankOverzicht() {
               onDelete={() => setRegelsImportStatus(null)}
             />
           )}
+          <div className="mt-8 flex justify-end">
+            <Button
+              color="success"
+              variant="contained"
+              onClick={() => dispatch({ type: 'NAAR_KOPPELEN' })}
+              disabled={!heeftTransacties}
+            >
+              Koppelen
+            </Button>
+          </div>
         </div>
       )}
 
@@ -239,24 +308,21 @@ export default function BankOverzicht() {
           <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outlined"
+              color="success"
               size="small"
-              startIcon={<Plus className="h-4 w-4" />}
-              onClick={() => dispatch({ type: 'NAAR_UPLOAD' })}
+              startIcon={<LinkOutlinedIcon fontSize="small" />}
+              onClick={() => setPotjesOpen(true)}
             >
-              Bestanden toevoegen
+              Koppelingregels
             </Button>
-            <Button variant="outlined" size="small" onClick={() => setPotjesOpen(true)}>
-              Potjes
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<Download className="h-4 w-4" />}
-              onClick={() => exportRules(state.userRules, state.learnedRules, state.potjes)}
-              disabled={state.userRules.length === 0 && state.learnedRules.length === 0 && state.potjes.length === 0}
-            >
-              Regels exporteren
-            </Button>
+
+            <OpslaanButtons
+              transacties={jaarFiltered}
+              jaar={jaar}
+              userRules={state.userRules}
+              learnedRules={state.learnedRules}
+              potjes={state.potjes}
+            />
 
             {availableYears.length > 1 && (
               <div className="flex items-center gap-1">
@@ -274,21 +340,26 @@ export default function BankOverzicht() {
             )}
 
             <div className="ml-auto">
-              <ExportButtons
-                transacties={jaarFiltered}
-                jaar={jaar}
-                userRules={state.userRules}
-                learnedRules={state.learnedRules}
-                potjes={state.potjes}
-              />
+              <Button
+                variant="contained"
+                color="success"
+                size="small"
+                onClick={() => dispatch({ type: 'NAAR_GEBRUIKEN' })}
+              >
+                Gebruiken
+              </Button>
             </div>
           </div>
 
           {onbekendCount > 0 && (
             <Alert severity="warning">
-              {onbekendCount} transacties zonder categorie (
-              {new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(onbekendTotal)}
-              ) zijn uitgesloten van de totalen.
+              {onbekendCount} transacties zonder categorie zijn uitgesloten van de totalen
+              {onbekendOntvangen !== 0 && (
+                <> — ontvangen: {new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(onbekendOntvangen)}</>
+              )}
+              {onbekendUitgegeven !== 0 && (
+                <>, uitgegeven: {new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(onbekendUitgegeven)}</>
+              )}
             </Alert>
           )}
 
@@ -306,10 +377,12 @@ export default function BankOverzicht() {
             <CategoryBreakdown
               transacties={jaarFiltered}
               potjes={state.potjes}
-              onCorrectie={(ids, bucket, subCategorie) =>
-                dispatch({ type: 'CATEGORIE_WIJZIGEN', transactieIds: ids, bucket, subCategorie })
+              userRules={state.userRules}
+              learnedRules={state.learnedRules}
+              onCorrectie={(ids, bucket, potje, groepCriterium, zonderRegel) =>
+                dispatch({ type: 'CATEGORIE_WIJZIGEN', transactieIds: ids, bucket, potje, groepCriterium, zonderRegel })
               }
-              onRegelToepassen={(regel) => dispatch({ type: 'REGEL_TOEPASSEN', regel })}
+              onPotjeToevoegen={(naam, bucket) => dispatch({ type: 'POTJE_TOEVOEGEN', naam, bucket })}
             />
           </div>
         </div>
@@ -324,11 +397,12 @@ export default function BankOverzicht() {
 
       <PotjesBeheerDialog
         open={potjesOpen}
-        potjes={state.potjes}
+        userRules={state.userRules}
+        learnedRules={state.learnedRules}
+        onRegelPatronenWijzigen={(bron, oldRegel, tegenpartijPatroon, omschrijvingPatroon) =>
+          dispatch({ type: 'REGEL_PATROON_OVERSCHRIJVEN', bron, oldRegel, tegenpartijPatroon, omschrijvingPatroon })
+        }
         onSluiten={() => setPotjesOpen(false)}
-        onToevoegen={(naam, bucket) => dispatch({ type: 'POTJE_TOEVOEGEN', naam, bucket })}
-        onVerwijderen={(id) => dispatch({ type: 'POTJE_VERWIJDEREN', id })}
-        onHernoemen={(id, naam) => dispatch({ type: 'POTJE_HERNOEMEN', id, naam })}
       />
     </div>
   )
