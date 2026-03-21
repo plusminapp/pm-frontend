@@ -1,7 +1,8 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import type { CategorizedTransaction, Bucket, UserRule, Potje } from '../types'
-import { exportRules } from './exportRules'
+import { formatTegenpartijVoorWeergave } from '../displayTegenpartij'
+import { matchesRulePattern, matchesOmschrijvingPattern } from '../categorize/patternMatcher'
 
 const BUCKET_LABELS: Record<Bucket, string> = {
   INKOMEN: 'Inkomsten',
@@ -22,6 +23,46 @@ const BUCKET_COLORS: Record<Bucket, [number, number, number]> = {
 }
 
 type MonthlyTotals = Record<number, Partial<Record<Bucket, number>>>
+type GroepeerRegel = Pick<UserRule, 'tegenpartijPatroon' | 'omschrijvingPatroon' | 'richting'>
+
+function normalizePattern(pattern: string): string {
+  return pattern.trim().toLowerCase()
+}
+
+function bepaalTegenpartijPatroon(
+  tx: CategorizedTransaction,
+  userRules: UserRule[],
+  learnedRules: UserRule[],
+): string | null {
+  const tegenpartij = formatTegenpartijVoorWeergave(tx.tegenpartij).toLowerCase()
+  const omschrijving = tx.omschrijving.toLowerCase()
+
+  const regelMatches = (rule: GroepeerRegel) => {
+    const pattern = normalizePattern(rule.tegenpartijPatroon)
+    if (!pattern) return false
+    const richtingMatch = !rule.richting
+      || (rule.richting === 'debit' && tx.bedrag < 0)
+      || (rule.richting === 'credit' && tx.bedrag > 0)
+    if (!richtingMatch) return false
+    if (matchesRulePattern(tegenpartij, pattern)) return true
+    return Boolean(rule.omschrijvingPatroon && matchesOmschrijvingPattern(omschrijving, normalizePattern(rule.omschrijvingPatroon)))
+  }
+
+  const candidates = [...userRules, ...learnedRules]
+    .filter(regelMatches)
+    .sort((a, b) => b.tegenpartijPatroon.length - a.tegenpartijPatroon.length)
+
+  return candidates[0] ? normalizePattern(candidates[0].tegenpartijPatroon) : null
+}
+
+function bepaalGroepNaam(
+  tx: CategorizedTransaction,
+  userRules: UserRule[],
+  learnedRules: UserRule[],
+): string {
+  const patroon = bepaalTegenpartijPatroon(tx, userRules, learnedRules)
+  return patroon ?? tx.tegenpartij
+}
 
 function buildMonthlyTotals(transactions: CategorizedTransaction[]): MonthlyTotals {
   const totals: MonthlyTotals = {}
@@ -52,11 +93,14 @@ function buildBucketSummary(
 function topTegenpartijen(
   transactions: CategorizedTransaction[],
   bucket: Bucket,
+  userRules: UserRule[],
+  learnedRules: UserRule[],
   n = 10,
 ): Array<{ naam: string; totaal: number }> {
   const sums = new Map<string, number>()
   for (const tx of transactions.filter((t) => t.bucket === bucket)) {
-    sums.set(tx.tegenpartij, (sums.get(tx.tegenpartij) ?? 0) + tx.bedrag)
+    const groepNaam = bepaalGroepNaam(tx, userRules, learnedRules)
+    sums.set(groepNaam, (sums.get(groepNaam) ?? 0) + tx.bedrag)
   }
   return [...sums.entries()]
     .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
@@ -93,6 +137,10 @@ export async function exportPdf(
   learnedRules: UserRule[] = [],
   potjes: Potje[] = [],
 ): Promise<void> {
+  void jaar
+  void userRules
+  void learnedRules
+  void potjes
   const [doc, logoDataUrl] = await Promise.all([
     Promise.resolve(new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })),
     loadLogoDataUrl(),
@@ -143,7 +191,7 @@ export async function exportPdf(
 
   autoTable(doc, {
     startY: afterSummary + 4,
-    head: [['Maand', 'Inkomsten', 'Leefgeld', 'Vaste lasten', 'Sparen', 'Negeren']],
+    head: [['Maand', 'Inkomsten', 'Leefgeld', 'Vaste lasten', 'Sparen']],
     body: Array.from({ length: 12 }, (_, i) => {
       const m = i + 1
       const t = monthlyTotals[m]
@@ -153,12 +201,11 @@ export async function exportPdf(
         formatEur(t.LEEFGELD ?? 0),
         formatEur(t.VASTE_LASTEN ?? 0),
         formatEur(t.SPAREN ?? 0),
-        formatEur(t.NEGEREN ?? 0),
       ]
     }),
     headStyles: { fillColor: [59, 130, 246], textColor: 255 },
     styles: { fontSize: 9 },
-    columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' } },
+    columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } },
   })
 
   // Top counterparties per bucket
@@ -172,7 +219,7 @@ export async function exportPdf(
     doc.setFont('helvetica', 'bold')
     doc.text(`Top tegenpartijen — ${BUCKET_LABELS[bucket]}`, 14, 10)
 
-    const top = topTegenpartijen(transactions, bucket)
+    const top = topTegenpartijen(transactions, bucket, userRules, learnedRules)
     autoTable(doc, {
       startY: 18,
       head: [['Tegenpartij', 'Totaal']],
@@ -183,10 +230,5 @@ export async function exportPdf(
     })
   }
 
-  doc.save(`plusmin-jaaroverzicht-${jaar}.pdf`)
-
-  // Auto-download rules JSON alongside PDF (only if any rules exist)
-  if (userRules.length > 0 || learnedRules.length > 0) {
-    exportRules(userRules, learnedRules, potjes)
-  }
+  doc.save('plusmin-jaaroverzicht.pdf')
 }
