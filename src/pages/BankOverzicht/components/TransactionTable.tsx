@@ -1,5 +1,6 @@
 import { Checkbox, Chip } from '@mui/material'
 import { CircleHelp, Home, Pencil, PiggyBank, ShoppingCart, TrendingUp } from 'lucide-react'
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
 import { formatTegenpartijVoorWeergave } from '../displayTegenpartij'
 import type { CategorizedTransaction, Bucket } from '../types'
 
@@ -9,6 +10,7 @@ const BUCKET_COLORS: Record<Bucket, 'success' | 'error' | 'primary' | 'warning' 
   VASTE_LASTEN: 'primary',
   SPAREN: 'warning',
   ONBEKEND: 'default',
+  NEGEREN: 'default',
 }
 
 const BUCKET_ICONS: Record<Bucket, React.ComponentType<{ className?: string }>> = {
@@ -17,6 +19,7 @@ const BUCKET_ICONS: Record<Bucket, React.ComponentType<{ className?: string }>> 
   VASTE_LASTEN: Home,
   SPAREN: PiggyBank,
   ONBEKEND: CircleHelp,
+  NEGEREN: VisibilityOffOutlinedIcon,
 }
 
 function formatEur(n: number) {
@@ -28,6 +31,7 @@ interface Props {
   onEdit?: (tx: CategorizedTransaction) => void
   compact?: boolean
   selectable?: boolean
+  isSelectableTx?: (tx: CategorizedTransaction) => boolean
   selectedIds?: Set<string>
   onToggleSelect?: (txId: string, selected: boolean) => void
   onToggleSelectAll?: (txIds: string[], selected: boolean) => void
@@ -38,6 +42,7 @@ export function TransactionTable({
   onEdit,
   compact = false,
   selectable = false,
+  isSelectableTx,
   selectedIds,
   onToggleSelect,
   onToggleSelectAll,
@@ -46,10 +51,12 @@ export function TransactionTable({
     return <p className="py-8 text-center text-sm text-gray-500">Geen transacties</p>
   }
 
-  const txIds = transacties.map((tx) => tx.id)
-  const selectedCount = txIds.filter((id) => selectedIds?.has(id)).length
-  const allSelected = selectable && txIds.length > 0 && selectedCount === txIds.length
-  const partlySelected = selectable && selectedCount > 0 && selectedCount < txIds.length
+  const selectableTxIds = transacties
+    .filter((tx) => !isSelectableTx || isSelectableTx(tx))
+    .map((tx) => tx.id)
+  const selectedCount = selectableTxIds.filter((id) => selectedIds?.has(id)).length
+  const allSelected = selectable && selectableTxIds.length > 0 && selectedCount === selectableTxIds.length
+  const partlySelected = selectable && selectedCount > 0 && selectedCount < selectableTxIds.length
 
   return (
     <div className="overflow-x-auto rounded-lg border">
@@ -63,7 +70,7 @@ export function TransactionTable({
                   color="success"
                   checked={allSelected}
                   indeterminate={partlySelected}
-                  onChange={(_, checked) => onToggleSelectAll?.(txIds, checked)}
+                  onChange={(_, checked) => onToggleSelectAll?.(selectableTxIds, checked)}
                   inputProps={{ 'aria-label': 'Alle zichtbare transacties (de)selecteren' }}
                 />
               </th>
@@ -83,6 +90,7 @@ export function TransactionTable({
                   <Checkbox
                     size="small"
                     color="success"
+                    disabled={Boolean(isSelectableTx && !isSelectableTx(tx))}
                     checked={Boolean(selectedIds?.has(tx.id))}
                     onChange={(_, checked) => onToggleSelect?.(tx.id, checked)}
                     inputProps={{ 'aria-label': `Transactie op ${tx.datum} selecteren` }}

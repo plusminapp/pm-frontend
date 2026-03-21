@@ -1,6 +1,7 @@
 import type { ElementType } from 'react'
 import type { CategorizedTransaction, Bucket } from '../types'
 import { TrendingUp, ShoppingCart, Home, PiggyBank } from 'lucide-react'
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
 
 interface Props {
   transacties: CategorizedTransaction[]
@@ -19,6 +20,7 @@ const BUCKET_CONFIG: BucketConfig[] = [
   { bucket: 'LEEFGELD',     label: 'Leefgeld',     icon: ShoppingCart, colorClass: 'text-red-600',    bgClass: 'bg-red-50' },
   { bucket: 'VASTE_LASTEN', label: 'Vaste lasten', icon: Home,         colorClass: 'text-blue-600',   bgClass: 'bg-blue-50' },
   { bucket: 'SPAREN',       label: 'Sparen',       icon: PiggyBank,    colorClass: 'text-amber-600',  bgClass: 'bg-amber-50' },
+  { bucket: 'NEGEREN',      label: 'Negeren',      icon: VisibilityOffOutlinedIcon, colorClass: 'text-gray-600', bgClass: 'bg-gray-100' },
 ]
 
 function formatEur(n: number) {
@@ -36,7 +38,7 @@ export function BucketCards({ transacties }: Props) {
   ) as Record<Bucket, number>
 
   return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
       {BUCKET_CONFIG.map(({ bucket, label, icon: Icon, colorClass, bgClass }) => (
         <div key={bucket} className="rounded-xl border bg-white p-4 shadow-sm">
           <div className="flex items-center gap-2">

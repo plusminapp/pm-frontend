@@ -9,6 +9,7 @@ const BUCKET_LABELS: Record<Bucket, string> = {
   VASTE_LASTEN: 'Vaste lasten',
   SPAREN: 'Sparen',
   ONBEKEND: 'Onbekend',
+  NEGEREN: 'Negeren',
 }
 
 const BUCKET_COLORS: Record<Bucket, [number, number, number]> = {
@@ -17,6 +18,7 @@ const BUCKET_COLORS: Record<Bucket, [number, number, number]> = {
   VASTE_LASTEN: [59,  130, 246],
   SPAREN:       [245, 158, 11],
   ONBEKEND:     [156, 163, 175],
+  NEGEREN:      [107, 114, 128],
 }
 
 type MonthlyTotals = Record<number, Partial<Record<Bucket, number>>>
@@ -41,7 +43,7 @@ function buildBucketSummary(
     if (tx.bucket === 'ONBEKEND') continue
     sums[tx.bucket] = (sums[tx.bucket] ?? 0) + tx.bedrag
   }
-  const buckets: Bucket[] = ['INKOMEN', 'LEEFGELD', 'VASTE_LASTEN', 'SPAREN']
+  const buckets: Bucket[] = ['INKOMEN', 'LEEFGELD', 'VASTE_LASTEN', 'SPAREN', 'NEGEREN']
   return Object.fromEntries(
     buckets.map((b) => [b, { totaal: sums[b] ?? 0, gemiddeld: (sums[b] ?? 0) / 12 }]),
   ) as Record<Bucket, { totaal: number; gemiddeld: number }>
@@ -119,7 +121,7 @@ export async function exportPdf(
   doc.setFont('helvetica', 'bold')
   doc.text('Jaaroverzicht per categorie', 14, 32)
 
-  const buckets: Bucket[] = ['INKOMEN', 'LEEFGELD', 'VASTE_LASTEN', 'SPAREN']
+  const buckets: Bucket[] = ['INKOMEN', 'LEEFGELD', 'VASTE_LASTEN', 'SPAREN', 'NEGEREN']
   autoTable(doc, {
     startY: 36,
     head: [['Categorie', 'Jaartotaal', 'Maandgemiddelde']],
@@ -141,7 +143,7 @@ export async function exportPdf(
 
   autoTable(doc, {
     startY: afterSummary + 4,
-    head: [['Maand', 'Inkomsten', 'Leefgeld', 'Vaste lasten', 'Sparen']],
+    head: [['Maand', 'Inkomsten', 'Leefgeld', 'Vaste lasten', 'Sparen', 'Negeren']],
     body: Array.from({ length: 12 }, (_, i) => {
       const m = i + 1
       const t = monthlyTotals[m]
@@ -151,11 +153,12 @@ export async function exportPdf(
         formatEur(t.LEEFGELD ?? 0),
         formatEur(t.VASTE_LASTEN ?? 0),
         formatEur(t.SPAREN ?? 0),
+        formatEur(t.NEGEREN ?? 0),
       ]
     }),
     headStyles: { fillColor: [59, 130, 246], textColor: 255 },
     styles: { fontSize: 9 },
-    columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } },
+    columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' } },
   })
 
   // Top counterparties per bucket

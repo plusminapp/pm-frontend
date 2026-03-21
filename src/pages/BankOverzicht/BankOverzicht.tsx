@@ -399,10 +399,13 @@ export default function BankOverzicht() {
         open={potjesOpen}
         userRules={state.userRules}
         learnedRules={state.learnedRules}
-        onRegelPatronenWijzigen={(bron, oldRegel, tegenpartijPatroon, omschrijvingPatroon) =>
-          dispatch({ type: 'REGEL_PATROON_OVERSCHRIJVEN', bron, oldRegel, tegenpartijPatroon, omschrijvingPatroon })
+        onRegelPatronenWijzigen={(bron, oldRegel, tegenpartijPatroon, omschrijvingPatroon, potje) =>
+          dispatch({ type: 'REGEL_PATROON_OVERSCHRIJVEN', bron, oldRegel, tegenpartijPatroon, omschrijvingPatroon, potje: potje ?? null })
         }
         onSluiten={() => setPotjesOpen(false)}
+          onPotjeWijzigen={(bucket, oudeNaam, nieuweNaam) =>
+            dispatch({ type: 'POTJE_HERNOEMEN_BY_BUCKET_EN_NAAM', bucket, oudeNaam, nieuweNaam })
+          }
       />
     </div>
   )

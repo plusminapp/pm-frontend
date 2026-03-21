@@ -1,5 +1,6 @@
 import type { ParsedTransaction, CategorizedTransaction, UserRule } from '../types'
 import { formatTegenpartijVoorWeergave } from '../displayTegenpartij'
+import { matchesRulePattern, matchesOmschrijvingPattern } from './patternMatcher'
 
 // Internal adapter — bridges Rule (patroon) and UserRule (tegenpartijPatroon) into one shape
 interface MatchableRule {
@@ -46,21 +47,21 @@ function matches(
 
   const tpMatch = formatTegenpartijVoorWeergave(tegenpartij).toLowerCase()
   const om = omschrijving.toLowerCase()
-  const patroon = rule.tegenpartijPatroon.toLowerCase()
+  const patroon = rule.tegenpartijPatroon
 
   // Tegenpartij match (skip if empty/whitespace)
-  if (tpMatch.trim() !== '' && tpMatch.startsWith(patroon)) {
+  if (tpMatch.trim() !== '' && matchesRulePattern(tpMatch, patroon)) {
     return { field: 'tegenpartij' }
   }
 
   // Omschrijving match
   if (rule.omschrijvingPatroon) {
-    if (om.startsWith(rule.omschrijvingPatroon.toLowerCase())) {
+    if (matchesOmschrijvingPattern(om, rule.omschrijvingPatroon)) {
       return { field: 'omschrijving' }
     }
   } else if (isGeneric(tegenpartij)) {
     // Fallback: use tegenpartijPatroon against omschrijving only for generic counterparties
-    if (om.startsWith(patroon)) {
+    if (matchesRulePattern(om, patroon)) {
       return { field: 'omschrijving' }
     }
   }

@@ -34,6 +34,40 @@ describe('applyRules', () => {
     expect(result[0].bucket).toBe('LEEFGELD')
   })
 
+  it('supports wildcard at start of tegenpartijPatroon', () => {
+    const userRule: UserRule = { tegenpartijPatroon: '*philips', bucket: 'VASTE_LASTEN' }
+    const result = applyRules([makeTx({ tegenpartij: 'Stichting Philips' })], [userRule])
+    expect(result[0].bucket).toBe('VASTE_LASTEN')
+  })
+
+  it('supports wildcard in the middle of tegenpartijPatroon', () => {
+    const userRule: UserRule = { tegenpartijPatroon: 'asn*sparen', bucket: 'SPAREN' }
+    const result = applyRules([
+      makeTx({ id: 'tx-1', tegenpartij: 'ASN Sparen' }),
+      makeTx({ id: 'tx-2', tegenpartij: 'ASN Ideaalsparen' }),
+    ], [userRule])
+    expect(result[0].bucket).toBe('SPAREN')
+    expect(result[1].bucket).toBe('SPAREN')
+  })
+
+  it('omschrijving pattern matches substring anywhere (without wildcards)', () => {
+    const userRule: UserRule = { tegenpartijPatroon: 'betaalautomaat', bucket: 'LEEFGELD', omschrijvingPatroon: 'ahold' }
+    const result = applyRules([
+      makeTx({ omschrijving: 'AHOLD BETAALD' }),
+      makeTx({ omschrijving: 'DEF AHOLD BETALING' }),
+    ], [userRule])
+    expect(result[0].bucket).toBe('LEEFGELD')
+    expect(result[1].bucket).toBe('LEEFGELD')
+  })
+
+  it('omschrijving pattern with wildcard still works', () => {
+    const userRule: UserRule = { tegenpartijPatroon: 'generiek', bucket: 'VASTE_LASTEN', omschrijvingPatroon: 'internet*factuur' }
+    const result = applyRules([
+      makeTx({ tegenpartij: 'Generiek', omschrijving: 'Internet Monthly Factuur' }),
+    ], [userRule])
+    expect(result[0].bucket).toBe('VASTE_LASTEN')
+  })
+
   it('sets regelNaam for matched transactions', () => {
     const userRule: UserRule = { tegenpartijPatroon: 'jumbo', bucket: 'LEEFGELD' }
     const result = applyRules([makeTx({ tegenpartij: 'Jumbo Supermarkt' })], [userRule])

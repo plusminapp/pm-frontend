@@ -21,6 +21,7 @@ function buildChartData(transacties: CategorizedTransaction[]) {
       leefgeld:    Math.abs(inMonth.filter((t) => t.bucket === 'LEEFGELD').reduce((s, t) => s + t.bedrag, 0)),
       vasteLasten: Math.abs(inMonth.filter((t) => t.bucket === 'VASTE_LASTEN').reduce((s, t) => s + t.bedrag, 0)),
       sparen:      Math.abs(inMonth.filter((t) => t.bucket === 'SPAREN').reduce((s, t) => s + t.bedrag, 0)),
+      negeren:     Math.abs(inMonth.filter((t) => t.bucket === 'NEGEREN').reduce((s, t) => s + t.bedrag, 0)),
     }
   })
 }
@@ -33,6 +34,7 @@ export function MonthlyChart({ transacties }: Props) {
       { type: 'bar', xKey: 'maand', yKey: 'leefgeld',    yName: 'Leefgeld',     fill: '#ef4444', stacked: true },
       { type: 'bar', xKey: 'maand', yKey: 'vasteLasten', yName: 'Vaste lasten', fill: '#3b82f6', stacked: true },
       { type: 'bar', xKey: 'maand', yKey: 'sparen',      yName: 'Sparen',       fill: '#f59e0b', stacked: true },
+      { type: 'bar', xKey: 'maand', yKey: 'negeren',     yName: 'Negeren',      fill: '#6b7280', stacked: true },
     ],
     axes: [
       { type: 'category', position: 'bottom' },

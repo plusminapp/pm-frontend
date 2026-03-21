@@ -26,7 +26,7 @@ describe('PotjesBeheerDialog', () => {
     render(
       <PotjesBeheerDialog open userRules={userRules} learnedRules={learnedRules} onSluiten={vi.fn()} />,
     )
-    expect(screen.getByText('ah')).toBeInTheDocument()
+    expect(screen.getByText('ah (boodschappen)')).toBeInTheDocument()
     expect(screen.getByText('salaris')).toBeInTheDocument()
   })
 
@@ -52,7 +52,23 @@ describe('PotjesBeheerDialog', () => {
       userRules[0],
       'albert heijn',
       'boodschappen',
+      'Boodschappen',
     )
+  })
+
+  it('shows Vaste lasten label without potje edit pencil on bucket header', () => {
+    const vasteLastenRule: UserRule = {
+      tegenpartijPatroon: 'hypotheek',
+      richting: 'debit',
+      bucket: 'VASTE_LASTEN',
+    }
+
+    render(
+      <PotjesBeheerDialog open userRules={[vasteLastenRule]} learnedRules={[]} onSluiten={vi.fn()} />,
+    )
+
+    expect(screen.getByText('Vaste lasten')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /potjesnaam wijzigen voor VASTE_LASTEN/i })).not.toBeInTheDocument()
   })
 
   it('calls onSluiten when close button is clicked', () => {
