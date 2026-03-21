@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react'
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, FormControl, FormLabel, RadioGroup, FormControlLabel,
-  Radio, Checkbox, FormGroup, Typography, Select, MenuItem, InputLabel,
+  Radio, Typography, Autocomplete, TextField,
 } from '@mui/material'
-import type { CategorizedTransaction, Bucket, UserRule, Potje } from '../types'
+import { createFilterOptions } from '@mui/material/Autocomplete'
+import { formatTegenpartijVoorWeergave, titleCaseWoorden } from '../displayTegenpartij'
+import type { CategorizedTransaction, Bucket, Potje } from '../types'
 
 const BUCKET_OPTIONS: { value: Bucket; label: string }[] = [
   { value: 'INKOMEN',      label: 'Inkomsten' },
@@ -17,100 +19,216 @@ interface Props {
   open: boolean
   transacties: CategorizedTransaction[]
   potjes: Potje[]
+  groepNaam?: string
+  forceLeefgeldEenmalig?: boolean
   onSluiten: () => void
-  onCorrectie: (ids: string[], bucket: Bucket, subCategorie: string | null) => void
-  onRegelToepassen: (regel: UserRule) => void
+  onCorrectie: (ids: string[], bucket: Bucket, potje: string | null, groepNaam?: string, zonderRegel?: boolean) => void
+  onPotjeToevoegen: (naam: string, bucket: Exclude<Bucket, 'ONBEKEND'>) => void
+  onGroepNaamWijzigen?: (naam: string) => void
+}
+
+interface PotjeOption {
+  naam: string
+  isNieuw?: boolean
+}
+
+const ASSIGNABLE_BUCKETS: Bucket[] = BUCKET_OPTIONS.map((b) => b.value)
+const filter = createFilterOptions<PotjeOption>()
+type CategorieKeuze = Bucket | 'LEEFGELD_EENMALIG'
+
+function suggestBucket(transacties: CategorizedTransaction[]): Bucket {
+  const score = new Map<Bucket, number>()
+  for (const tx of transacties) {
+    if (ASSIGNABLE_BUCKETS.includes(tx.bucket)) {
+      score.set(tx.bucket, (score.get(tx.bucket) ?? 0) + 1)
+    }
+  }
+  let best: Bucket | null = null
+  let max = 0
+  for (const [bucket, count] of score.entries()) {
+    if (count > max) {
+      max = count
+      best = bucket
+    }
+  }
+  if (best) return best
+  const totaal = transacties.reduce((s, t) => s + t.bedrag, 0)
+  return totaal > 0 ? 'INKOMEN' : 'LEEFGELD'
+}
+
+function suggestPotje(transacties: CategorizedTransaction[], bucket: Bucket): string {
+  const score = new Map<string, number>()
+  for (const tx of transacties) {
+    if (tx.bucket === bucket && tx.potje) {
+      score.set(tx.potje, (score.get(tx.potje) ?? 0) + 1)
+    }
+  }
+  let best = ''
+  let max = 0
+  for (const [potje, count] of score.entries()) {
+    if (count > max) {
+      max = count
+      best = potje
+    }
+  }
+  return best
 }
 
 export function CorrectionDialog({
-  open, transacties, potjes, onSluiten, onCorrectie, onRegelToepassen,
+  open, transacties, potjes, groepNaam, forceLeefgeldEenmalig, onSluiten, onCorrectie, onPotjeToevoegen, onGroepNaamWijzigen,
 }: Props) {
-  const [gekozenBucket, setGekozenBucket] = useState<Bucket>('LEEFGELD')
-  const [gekozenSubCategorie, setGekozenSubCategorie] = useState<string>('')
-  const [toepassenOpAlle, setToepassenOpAlle] = useState(false)
+  const [categorieKeuze, setCategorieKeuze] = useState<CategorieKeuze>('LEEFGELD')
+  const [gekozenPotje, setGekozenPotje] = useState<string>('')
+  const [bewerkteGroepNaam, setBewerkteGroepNaam] = useState('')
 
-  // Reset subCategorie when bucket changes
-  useEffect(() => { setGekozenSubCategorie('') }, [gekozenBucket])
+  useEffect(() => {
+    if (!open) return
+    if (forceLeefgeldEenmalig) {
+      setCategorieKeuze('LEEFGELD_EENMALIG')
+      setGekozenPotje(suggestPotje(transacties, 'LEEFGELD'))
+      setBewerkteGroepNaam('')
+      return
+    }
+    const bucket = suggestBucket(transacties)
+    setCategorieKeuze(bucket)
+    setGekozenPotje(suggestPotje(transacties, bucket))
+    const initNaam = groepNaam ?? formatTegenpartijVoorWeergave(transacties[0]?.tegenpartij ?? '')
+    setBewerkteGroepNaam(titleCaseWoorden(initNaam))
+  }, [open, transacties, groepNaam, forceLeefgeldEenmalig])
 
-  const tegenpartij = transacties[0]?.tegenpartij ?? ''
+  const gekozenBucket: Bucket = categorieKeuze === 'LEEFGELD_EENMALIG' ? 'LEEFGELD' : categorieKeuze
+  const zonderRegel = categorieKeuze === 'LEEFGELD_EENMALIG'
+
+  const tegenpartij = formatTegenpartijVoorWeergave(transacties[0]?.tegenpartij ?? '')
+  const isGroepNiveau = !forceLeefgeldEenmalig && (transacties.length > 1 || Boolean(groepNaam))
   const aantalTekst = transacties.length === 1 ? '1 transactie' : `${transacties.length} transacties`
   const bucketPotjes = potjes.filter((p) => p.bucket === gekozenBucket)
-  const currentSubCategorie = transacties[0]?.subCategorie ?? null
-  const isStale = currentSubCategorie && !potjes.some((p) => p.naam === currentSubCategorie)
+  const potjeOptions: PotjeOption[] = bucketPotjes.map((p) => ({ naam: p.naam }))
 
   const handleOpslaan = () => {
-    if (toepassenOpAlle) {
-      onRegelToepassen({
-        tegenpartijPatroon: tegenpartij,
-        bucket: gekozenBucket,
-        ...(gekozenSubCategorie ? { subCategorie: gekozenSubCategorie } : {}),
-      })
+    const normalizedNaam = bewerkteGroepNaam.trim()
+    if (isGroepNiveau && onGroepNaamWijzigen) {
+      if (normalizedNaam) onGroepNaamWijzigen(normalizedNaam)
+    }
+
+    const trimmedPotje = gekozenPotje.trim()
+    if (trimmedPotje) {
+      const bestondAl = bucketPotjes.some((p) => p.naam.toLowerCase() === trimmedPotje.toLowerCase())
+      if (!bestondAl && gekozenBucket !== 'ONBEKEND') {
+        onPotjeToevoegen(trimmedPotje, gekozenBucket)
+      }
+    }
+    const ids = transacties.map((t) => t.id)
+    const groepCriterium = isGroepNiveau ? normalizedNaam || undefined : undefined
+    if (zonderRegel) {
+      onCorrectie(ids, gekozenBucket, trimmedPotje || null, groepCriterium, true)
     } else {
-      onCorrectie(transacties.map((t) => t.id), gekozenBucket, gekozenSubCategorie || null)
+      onCorrectie(ids, gekozenBucket, trimmedPotje || null, groepCriterium)
     }
     onSluiten()
   }
 
+  const handleDialogKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key !== 'Enter') return
+    if (event.defaultPrevented) return
+    event.preventDefault()
+    handleOpslaan()
+  }
+
   return (
-    <Dialog open={open} onClose={onSluiten} maxWidth="xs" fullWidth>
-      <DialogTitle>Categorie wijzigen</DialogTitle>
+    <Dialog open={open} onClose={onSluiten} onKeyDown={handleDialogKeyDown} maxWidth="xs" fullWidth>
+      <DialogTitle>{forceLeefgeldEenmalig ? 'Leefgeld eenmalig koppelen' : 'Potjes koppelen'}</DialogTitle>
       <DialogContent>
         <Typography variant="body2" color="text.secondary" gutterBottom>
-          {aantalTekst} voor <strong>{tegenpartij}</strong>
+          {aantalTekst} voor <strong>{isGroepNiveau ? bewerkteGroepNaam || tegenpartij : tegenpartij}</strong>
         </Typography>
 
-        <FormControl component="fieldset" sx={{ mt: 2, width: '100%' }}>
-          <FormLabel component="legend">Nieuwe categorie</FormLabel>
-          <RadioGroup value={gekozenBucket} onChange={(e) => setGekozenBucket(e.target.value as Bucket)}>
-            {BUCKET_OPTIONS.map(({ value, label }) => (
-              <FormControlLabel key={value} value={value} control={<Radio />} label={label} />
-            ))}
-          </RadioGroup>
-        </FormControl>
+        {forceLeefgeldEenmalig && (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Deze koppeling geldt alleen voor de geselecteerde transacties. Er wordt geen regel opgeslagen.
+          </Typography>
+        )}
 
-        {gekozenBucket !== 'ONBEKEND' && (
-          <FormControl fullWidth sx={{ mt: 2 }} disabled={bucketPotjes.length === 0}>
-            <InputLabel id="potje-label">Potje</InputLabel>
-            <Select
-              labelId="potje-label"
-              label="Potje"
-              value={gekozenSubCategorie}
-              onChange={(e) => setGekozenSubCategorie(e.target.value)}
-            >
-              <MenuItem value="">Geen</MenuItem>
-              {isStale && (
-                <MenuItem value={currentSubCategorie!} disabled>
-                  (onbekend potje: {currentSubCategorie})
-                </MenuItem>
-              )}
-              {bucketPotjes.map((p) => (
-                <MenuItem key={p.id} value={p.naam}>{p.naam}</MenuItem>
-              ))}
-            </Select>
-            {bucketPotjes.length === 0 && (
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-                Geen potjes — maak aan via Potjes beheren.
-              </Typography>
-            )}
+        {isGroepNiveau && (
+          <TextField
+            fullWidth
+            color="success"
+            label="Groepsnaam"
+            value={bewerkteGroepNaam}
+            onChange={(e) => setBewerkteGroepNaam(e.target.value)}
+            onBlur={() => setBewerkteGroepNaam((current) => current.trim())}
+            sx={{ mt: 1 }}
+          />
+        )}
+
+        {!forceLeefgeldEenmalig && (
+          <FormControl component="fieldset" sx={{ mt: 2, width: '100%' }}>
+            <FormLabel component="legend" sx={{ color: 'success.main', '&.Mui-focused': { color: 'success.main' } }}>Nieuwe categorie</FormLabel>
+            <RadioGroup value={categorieKeuze} onChange={(e) => setCategorieKeuze(e.target.value as CategorieKeuze)}>
+              {BUCKET_OPTIONS.map(({ value, label }) => {
+                if (value !== 'LEEFGELD') {
+                  return <FormControlLabel key={value} value={value} control={<Radio color="success" />} label={label} />
+                }
+                return (
+                  <div key={value} className="flex items-center gap-4">
+                    <FormControlLabel value="LEEFGELD" control={<Radio color="success" />} label="Leefgeld" />
+                    <FormControlLabel value="LEEFGELD_EENMALIG" control={<Radio color="success" />} label="Leefgeld eenmalig" />
+                  </div>
+                )
+              })}
+            </RadioGroup>
           </FormControl>
         )}
 
-        <FormGroup sx={{ mt: 2 }}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={toepassenOpAlle}
-                onChange={(e) => setToepassenOpAlle(e.target.checked)}
-                inputProps={{ 'aria-label': `Toepassen op alle transacties van "${tegenpartij}"` }}
+        {gekozenBucket !== 'ONBEKEND' && (
+          <Autocomplete
+            freeSolo
+            selectOnFocus
+            clearOnBlur
+            handleHomeEndKeys
+            options={potjeOptions}
+            value={gekozenPotje ? { naam: gekozenPotje } : null}
+            onChange={(_, value) => {
+              if (!value) {
+                setGekozenPotje('')
+                return
+              }
+              setGekozenPotje(typeof value === 'string' ? value : value.naam)
+            }}
+            filterOptions={(options, params) => {
+              const filtered = filter(options, params)
+              const input = params.inputValue.trim()
+              const bestaat = options.some((option) => option.naam.toLowerCase() === input.toLowerCase())
+              if (input !== '' && !bestaat) {
+                filtered.push({ naam: input, isNieuw: true })
+              }
+              return filtered
+            }}
+            getOptionLabel={(option) => (typeof option === 'string' ? option : option.naam)}
+            renderOption={(props, option) => {
+              const { key, ...rest } = props
+              return (
+                <li key={key} {...rest}>
+                {option.isNieuw ? `Nieuw potje toevoegen: ${option.naam}` : option.naam}
+                </li>
+              )
+            }}
+            onInputChange={(_, value) => setGekozenPotje(value)}
+            sx={{ mt: 2 }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Potje"
+                color="success"
+                helperText="Typ om te filteren of voeg een nieuw potje toe."
               />
-            }
-            label={`Toepassen op alle transacties van "${tegenpartij}"`}
+            )}
           />
-        </FormGroup>
+        )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onSluiten}>Annuleren</Button>
-        <Button onClick={handleOpslaan} variant="contained">Opslaan</Button>
+        <Button onClick={onSluiten} color="success">Annuleren</Button>
+        <Button onClick={handleOpslaan} variant="contained" color="success">Opslaan</Button>
       </DialogActions>
     </Dialog>
   )

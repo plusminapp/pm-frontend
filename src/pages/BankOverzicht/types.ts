@@ -21,7 +21,7 @@ export interface ParsedTransaction {
 
 export interface CategorizedTransaction extends ParsedTransaction {
   bucket: Bucket
-  subCategorie: string | null
+  potje: string | null
   isHandmatig: boolean
   regelNaam: string | null     // which rule matched
   isDuplicaat: boolean
@@ -32,7 +32,7 @@ export interface UserRule {
   omschrijvingPatroon?: string   // new
   richting?: 'credit' | 'debit' // new
   bucket: Bucket
-  subCategorie?: string          // new
+  potje?: string          // new
 }
 
 export interface BestandStatus {
@@ -43,7 +43,7 @@ export interface BestandStatus {
 }
 
 export interface BankOverzichtState {
-  stap: 'UPLOAD' | 'REVIEW' | 'DASHBOARD'
+  stap: 'WELKOM' | 'UPLOAD' | 'KOPPELEN' | 'GEBRUIKEN'
   bestanden: BestandStatus[]
   transacties: CategorizedTransaction[]
   userRules: UserRule[]

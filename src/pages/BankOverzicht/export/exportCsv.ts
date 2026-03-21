@@ -10,7 +10,7 @@ export function buildCsvContent(transactions: CategorizedTransaction[]): string 
     omschrijving: tx.omschrijving,
     bedrag: tx.bedrag,
     bucket: tx.bucket,
-    subCategorie: tx.subCategorie ?? '',
+    potje: tx.potje ?? '',
     bronBestand: tx.bronBestand,
   }))
 

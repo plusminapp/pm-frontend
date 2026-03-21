@@ -1,9 +1,7 @@
 import { useReducer, useState, useCallback } from 'react'
-import {
-  Alert, Button, Chip, CircularProgress, Dialog, DialogActions,
-  DialogContent, DialogTitle, Tab, Tabs,
-} from '@mui/material'
-import { ArrowLeft, ArrowRight, Plus, Download } from 'lucide-react'
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Button, Chip, Step, StepButton, Stepper } from '@mui/material'
+import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined'
+import { ChevronDown } from 'lucide-react'
 
 import { bankOverzichtReducer, initialState } from './bankOverzichtReducer'
 import { detectFormat } from './parsers/detectFormat'
@@ -18,16 +16,15 @@ import { FileDropZone } from './components/FileDropZone'
 import { BucketCards } from './components/BucketCards'
 import { MonthlyChart } from './components/MonthlyChart'
 import { CategoryBreakdown } from './components/CategoryBreakdown'
-import { TransactionTable } from './components/TransactionTable'
-import { CorrectionDialog } from './components/CorrectionDialog'
-import { ExportButtons } from './components/ExportButtons'
+import { OpslaanButtons } from './components/ExportButtons'
 import { PotjesBeheerDialog } from './components/PotjesBeheerDialog'
-import { importRules, exportRules } from './export/exportRules'
-import type { BankFormat, Bucket, ParsedTransaction, CategorizedTransaction } from './types'
+import { importRules } from './export/exportRules'
+import type { BankFormat, ParsedTransaction, CategorizedTransaction } from './types'
 
 function readFileAsText(file: File): Promise<string> {
-  const isXml = file.name.toLowerCase().endsWith('.xml')
-  const encoding = isXml ? 'utf-8' : 'windows-1252'
+  const lowerName = file.name.toLowerCase()
+  const isUtf8 = lowerName.endsWith('.xml') || lowerName.endsWith('.json')
+  const encoding = isUtf8 ? 'utf-8' : 'windows-1252'
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = (e) => resolve(e.target?.result as string)
@@ -56,32 +53,51 @@ function detectDominantYear(txs: CategorizedTransaction[]): number {
   return best
 }
 
-const BUCKET_FILTER_TABS: { value: Bucket | 'ALLE'; label: string }[] = [
-  { value: 'ALLE',        label: 'Alle' },
-  { value: 'INKOMEN',      label: 'Inkomsten' },
-  { value: 'LEEFGELD',     label: 'Leefgeld' },
-  { value: 'VASTE_LASTEN', label: 'Vaste lasten' },
-  { value: 'SPAREN',       label: 'Sparen' },
-  { value: 'ONBEKEND',     label: 'Onbekend' },
-]
-
 export default function BankOverzicht() {
   const [state, dispatch] = useReducer(bankOverzichtReducer, initialState)
   const [isLoading, setIsLoading] = useState(false)
-  const [reviewBucketFilter, setReviewBucketFilter] = useState<Bucket | 'ALLE'>('ALLE')
   const [potjesOpen, setPotjesOpen] = useState(false)
-  const [correctionTx, setCorrectionTx] = useState<CategorizedTransaction | null>(null)
-  const [onbekendDialogOpen, setOnbekendDialogOpen] = useState(false)
   const [selectedYear, setSelectedYear] = useState<number | null>(null)
   const [regelsImportStatus, setRegelsImportStatus] = useState<{ bericht: string; fout: boolean } | null>(null)
 
   const handleFiles = useCallback(async (files: File[]) => {
     setIsLoading(true)
-    dispatch({ type: 'BESTANDEN_TOEVOEGEN', bestanden: files })
+    const jsonFiles = files.filter((f) => f.name.toLowerCase().endsWith('.json'))
+    const bankFiles = files.filter((f) => !f.name.toLowerCase().endsWith('.json'))
+
+    for (const file of jsonFiles) {
+      try {
+        const content = await readFileAsText(file)
+        const { userRules, learnedRules, potjes, transacties } = importRules(content)
+
+        if (transacties.length > 0) {
+          dispatch({ type: 'SNAPSHOT_IMPORTEREN', userRules, learnedRules, potjes, transacties })
+          setSelectedYear(detectDominantYear(transacties))
+          setRegelsImportStatus({
+            bericht: `${file.name}: ${transacties.length} transacties en ${userRules.length + learnedRules.length + potjes.length} regels/potjes geladen`,
+            fout: false,
+          })
+          setIsLoading(false)
+          return
+        }
+
+        dispatch({ type: 'REGELS_IMPORTEREN', userRules, learnedRules, potjes })
+        setRegelsImportStatus({
+          bericht: `${file.name}: ${userRules.length + learnedRules.length + potjes.length} regels/potjes geladen`,
+          fout: false,
+        })
+      } catch (err) {
+        setRegelsImportStatus({ bericht: `${file.name}: ${String(err)}`, fout: true })
+      }
+    }
+
+    if (bankFiles.length > 0) {
+      dispatch({ type: 'BESTANDEN_TOEVOEGEN', bestanden: bankFiles })
+    }
 
     // Parse all files first
     const fileResults: { naam: string; txs: CategorizedTransaction[] }[] = []
-    for (const file of files) {
+    for (const file of bankFiles) {
       try {
         const content = await readFileAsText(file)
         const format = detectFormat(content)
@@ -113,364 +129,280 @@ export default function BankOverzicht() {
     }
 
     if (fileResults.length > 0) {
-      dispatch({ type: 'NAAR_REVIEW' })
+      const allTxs = [...state.transacties, ...allNewTxs]
+      const year = detectDominantYear(allTxs)
+      setSelectedYear(year)
     }
     setIsLoading(false)
   }, [state.userRules, state.learnedRules, state.transacties])
 
-  const handleNaarDashboard = () => {
-    const onbekend = state.transacties.filter((t) => t.bucket === 'ONBEKEND')
-    if (onbekend.length > 0) {
-      setOnbekendDialogOpen(true)
-    } else {
-      const year = detectDominantYear(state.transacties)
-      setSelectedYear(year)
-      dispatch({ type: 'NAAR_DASHBOARD' })
-    }
-  }
-
-  const handleOnbekendOverslaan = () => {
-    const year = detectDominantYear(state.transacties)
-    setSelectedYear(year)
-    setOnbekendDialogOpen(false)
-    dispatch({ type: 'NAAR_DASHBOARD' })
-  }
-
-  const handleOnbekendToewijzen = () => {
-    setOnbekendDialogOpen(false)
-    setReviewBucketFilter('ONBEKEND')
-  }
-
-  const reviewVisible = state.transacties.filter((t) => !t.isHandmatig)
-  const reviewFiltered = reviewBucketFilter === 'ALLE'
-    ? reviewVisible
-    : reviewVisible.filter((t) => t.bucket === reviewBucketFilter)
-
-  const hiddenCount = state.transacties.length - reviewVisible.length
-
-  const tabCounts = Object.fromEntries(
-    BUCKET_FILTER_TABS.map(({ value }) => [
-      value,
-      value === 'ALLE' ? reviewVisible.length : reviewVisible.filter((t) => t.bucket === value).length,
-    ])
-  )
-
   const jaar = selectedYear ?? detectDominantYear(state.transacties)
   const jaarFiltered = state.transacties.filter((t) => t.datum.startsWith(String(jaar)))
   const onbekendCount = jaarFiltered.filter((t) => t.bucket === 'ONBEKEND').length
-  const onbekendTotal = jaarFiltered
-    .filter((t) => t.bucket === 'ONBEKEND')
+  const onbekendOntvangen = jaarFiltered
+    .filter((t) => t.bucket === 'ONBEKEND' && t.bedrag > 0)
+    .reduce((s, t) => s + t.bedrag, 0)
+  const onbekendUitgegeven = jaarFiltered
+    .filter((t) => t.bucket === 'ONBEKEND' && t.bedrag < 0)
     .reduce((s, t) => s + t.bedrag, 0)
 
   const availableYears = [...new Set(
     state.transacties.map((t) => parseInt(t.datum.slice(0, 4), 10)).filter((y) => !isNaN(y)),
   )].sort()
 
-  // ── UPLOAD ────────────────────────────────────────────────────────────────
-  if (state.stap === 'UPLOAD') {
-    return (
-      <div className="mx-auto max-w-2xl py-12">
-        <h1 className="mb-2 text-2xl font-bold">Bank Overzicht</h1>
-        <p className="mb-8 text-gray-500">
-          Upload je bankafschriften voor een overzicht van het jaar. Alle data blijft in je browser.
-        </p>
-        <FileDropZone onFiles={handleFiles} isLoading={isLoading} />
-        {regelsImportStatus && (
-          <Chip
-            label={regelsImportStatus.bericht}
-            color={regelsImportStatus.fout ? 'error' : 'success'}
-            size="small"
-            className="mt-2"
-            onDelete={() => setRegelsImportStatus(null)}
-          />
-        )}
-        <div className="mt-4 text-center">
-          <label className="cursor-pointer text-sm text-gray-500 hover:text-gray-700 underline">
-            Heb je eerder regels opgeslagen? Importeer ze hier.
-            <input
-              type="file"
-              accept=".json"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (!file) return
-                const reader = new FileReader()
-                reader.onload = (ev) => {
-                  try {
-                    const { userRules, learnedRules, potjes } = importRules(ev.target?.result as string)
-                    dispatch({ type: 'REGELS_IMPORTEREN', userRules, learnedRules, potjes })
-                    setRegelsImportStatus({ bericht: `${userRules.length + learnedRules.length + potjes.length} regels/potjes geladen`, fout: false })
-                  } catch (err) {
-                    setRegelsImportStatus({ bericht: String(err), fout: true })
-                  }
-                }
-                reader.readAsText(file)
-                e.target.value = '' // reset so same file can be re-imported
-              }}
-            />
-          </label>
-        </div>
-        <div className="mt-2 text-center">
-          <Button variant="outlined" size="small" onClick={() => setPotjesOpen(true)}>
-            Potjes beheren
-          </Button>
-        </div>
-        <PotjesBeheerDialog
-          open={potjesOpen}
-          potjes={state.potjes}
-          onSluiten={() => setPotjesOpen(false)}
-          onToevoegen={(naam, bucket) => dispatch({ type: 'POTJE_TOEVOEGEN', naam, bucket })}
-          onVerwijderen={(id) => dispatch({ type: 'POTJE_VERWIJDEREN', id })}
-          onHernoemen={(id, naam) => dispatch({ type: 'POTJE_HERNOEMEN', id, naam })}
-        />
-      </div>
-    )
-  }
+  const stapIndex = { WELKOM: 0, UPLOAD: 1, KOPPELEN: 2, GEBRUIKEN: 3 }[state.stap]
+  const heeftTransacties = state.transacties.length > 0
 
-  // ── REVIEW ────────────────────────────────────────────────────────────────
-  if (state.stap === 'REVIEW') {
-    const duplicatenAantal = state.transacties.filter((t) => t.isDuplicaat).length
-
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold">Transacties controleren</h1>
-          <div className="flex gap-2">
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<Plus className="h-4 w-4" />}
-              onClick={() => { dispatch({ type: 'NAAR_UPLOAD' }); setRegelsImportStatus(null) }}
-            >
-              Bestanden toevoegen
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<Download className="h-4 w-4" />}
-              onClick={() => exportRules(state.userRules, state.learnedRules, state.potjes)}
-              disabled={state.userRules.length === 0 && state.learnedRules.length === 0 && state.potjes.length === 0}
-            >
-              Regels exporteren
-            </Button>
-            <Button variant="outlined" size="small" onClick={() => setPotjesOpen(true)}>
-              Potjes
-            </Button>
-            <Button
-              variant="contained"
-              size="small"
-              endIcon={<ArrowRight className="h-4 w-4" />}
-              onClick={handleNaarDashboard}
-            >
-              Naar dashboard
-            </Button>
-          </div>
-        </div>
-
-        {/* File status */}
-        <div className="flex flex-wrap gap-2">
-          {state.bestanden.length <= 3
-            ? state.bestanden.map((b) => (
-                <Chip
-                  key={b.naam}
-                  label={b.naam}
-                  color={b.status === 'FOUT' ? 'error' : b.status === 'KLAAR' ? 'success' : 'default'}
-                  icon={b.status === 'PARSING' ? <CircularProgress size={14} /> : undefined}
-                  size="small"
-                />
-              ))
-            : (() => {
-                const fout = state.bestanden.filter((b) => b.status === 'FOUT').length
-                const parsing = state.bestanden.filter((b) => b.status === 'PARSING').length
-                return (
-                  <>
-                    <Chip
-                      label={`${state.bestanden.length} bestanden geladen`}
-                      color={fout > 0 ? 'error' : parsing > 0 ? 'default' : 'success'}
-                      icon={parsing > 0 ? <CircularProgress size={14} /> : undefined}
-                      size="small"
-                    />
-                    {fout > 0 && <Chip label={`${fout} fout`} color="error" size="small" />}
-                  </>
-                )
-              })()
-          }
-        </div>
-
-        {/* Duplicate warning */}
-        {duplicatenAantal > 0 && (
-          <Alert
-            severity="warning"
-            action={
-              <Button
-                size="small"
-                color="inherit"
-                onClick={() => {
-                  const ids = state.transacties.filter((t) => t.isDuplicaat).map((t) => t.id)
-                  dispatch({ type: 'CATEGORIE_WIJZIGEN', transactieIds: ids, bucket: 'ONBEKEND', subCategorie: null })
-                }}
-              >
-                {duplicatenAantal} duplicaten naar Onbekend
-              </Button>
-            }
-          >
-            {duplicatenAantal} mogelijke duplicaten gedetecteerd.
-          </Alert>
-        )}
-
-        {/* Bucket filter tabs */}
-        <Tabs
-          value={reviewBucketFilter}
-          onChange={(_, v) => setReviewBucketFilter(v)}
-          variant="scrollable"
-          scrollButtons="auto"
-        >
-          {BUCKET_FILTER_TABS.map(({ value, label }) => (
-            <Tab key={value} value={value} label={`${label} (${tabCounts[value]})`} />
-          ))}
-        </Tabs>
-
-        {hiddenCount > 0 && (
-          <p className="text-xs text-gray-400">{hiddenCount} gecategoriseerde items verborgen</p>
-        )}
-
-        <TransactionTable
-          transacties={reviewFiltered}
-          onEdit={(tx) => setCorrectionTx(tx)}
-        />
-
-        {correctionTx && (
-          <CorrectionDialog
-            open
-            transacties={[correctionTx]}
-            potjes={state.potjes}
-            onSluiten={() => setCorrectionTx(null)}
-            onCorrectie={(ids, bucket, subCategorie) => {
-              dispatch({ type: 'CATEGORIE_WIJZIGEN', transactieIds: ids, bucket, subCategorie })
-              setCorrectionTx(null)
-            }}
-            onRegelToepassen={(regel) => {
-              dispatch({ type: 'REGEL_TOEPASSEN', regel })
-              setCorrectionTx(null)
-            }}
-          />
-        )}
-
-        <PotjesBeheerDialog
-          open={potjesOpen}
-          potjes={state.potjes}
-          onSluiten={() => setPotjesOpen(false)}
-          onToevoegen={(naam, bucket) => dispatch({ type: 'POTJE_TOEVOEGEN', naam, bucket })}
-          onVerwijderen={(id) => dispatch({ type: 'POTJE_VERWIJDEREN', id })}
-          onHernoemen={(id, naam) => dispatch({ type: 'POTJE_HERNOEMEN', id, naam })}
-        />
-
-        {/* ONBEKEND prompt dialog */}
-        <Dialog open={onbekendDialogOpen} onClose={() => setOnbekendDialogOpen(false)}>
-          <DialogTitle>Ongecategoriseerde transacties</DialogTitle>
-          <DialogContent>
-            Er zijn nog {state.transacties.filter((t) => t.bucket === 'ONBEKEND').length} transacties
-            zonder categorie. Wil je deze eerst toewijzen?
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleOnbekendOverslaan}>Overslaan</Button>
-            <Button onClick={handleOnbekendToewijzen} variant="contained">Toewijzen</Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    )
-  }
-
-  // ── DASHBOARD ─────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-4">
-      {/* Top bar */}
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
-          variant="outlined"
-          size="small"
-          startIcon={<ArrowLeft className="h-4 w-4" />}
-          onClick={() => dispatch({ type: 'NAAR_REVIEW' })}
-        >
-          Categorieën aanpassen
-        </Button>
-        <Button
-          variant="outlined"
-          size="small"
-          startIcon={<Plus className="h-4 w-4" />}
-          onClick={() => dispatch({ type: 'NAAR_UPLOAD' })}
-        >
-          Bestanden toevoegen
-        </Button>
-        <Button variant="outlined" size="small" onClick={() => setPotjesOpen(true)}>
-          Potjes
-        </Button>
+    <div>
+      {/* ── Stepper ──────────────────────────────────────────────────────── */}
+      <Stepper
+        nonLinear
+        activeStep={stapIndex}
+        sx={{
+          mb: 4,
+          '& .MuiStepIcon-root': {
+            fontSize: '2rem',
+          },
+          '& .MuiStepLabel-label': {
+            fontSize: '0.875rem',
+            lineHeight: 1.43,
+          },
+          '& .MuiStepIcon-root.Mui-active, & .MuiStepIcon-root.Mui-completed': {
+            color: 'success.main',
+          },
+          '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line, & .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': {
+            borderColor: 'success.main',
+          },
+        }}
+      >
+        <Step completed={stapIndex > 0}>
+          <StepButton sx={{ '& .MuiStepLabel-label': { color: 'text.primary' } }} onClick={() => dispatch({ type: 'NAAR_WELKOM' })}>Welkom</StepButton>
+        </Step>
+        <Step completed={stapIndex > 1}>
+          <StepButton sx={{ '& .MuiStepLabel-label': { color: 'text.primary' } }} onClick={() => dispatch({ type: 'NAAR_UPLOAD' })}>Uploaden</StepButton>
+        </Step>
+        <Step completed={stapIndex > 2} disabled={!heeftTransacties}>
+          <StepButton
+            disabled={!heeftTransacties}
+            sx={{
+              '& .MuiStepLabel-label': { color: heeftTransacties ? 'text.primary' : 'text.disabled' },
+              '&.Mui-disabled': {
+                opacity: 0.65,
+              },
+              '&.Mui-disabled .MuiStepLabel-label': {
+                color: '#94a3b8',
+              },
+              '&.Mui-disabled .MuiStepIcon-root': {
+                color: '#cbd5e1',
+              },
+            }}
+            onClick={() => dispatch({ type: 'NAAR_KOPPELEN' })}
+          >
+            Koppelen
+          </StepButton>
+        </Step>
+        <Step completed={stapIndex > 3} disabled={!heeftTransacties}>
+          <StepButton
+            disabled={!heeftTransacties}
+            sx={{
+              '& .MuiStepLabel-label': { color: heeftTransacties ? 'text.primary' : 'text.disabled' },
+              '&.Mui-disabled': {
+                opacity: 0.65,
+              },
+              '&.Mui-disabled .MuiStepLabel-label': {
+                color: '#94a3b8',
+              },
+              '&.Mui-disabled .MuiStepIcon-root': {
+                color: '#cbd5e1',
+              },
+            }}
+            onClick={() => dispatch({ type: 'NAAR_GEBRUIKEN' })}
+          >
+            Gebruiken
+          </StepButton>
+        </Step>
+      </Stepper>
 
-        {availableYears.length > 1 && (
-          <div className="flex items-center gap-1">
-            {availableYears.map((y) => (
-              <Chip
-                key={y}
-                label={y}
-                color={y === jaar ? 'primary' : 'default'}
-                onClick={() => setSelectedYear(y)}
-                clickable
-                size="small"
-              />
-            ))}
-          </div>
-        )}
+      {/* ── WELKOM ────────────────────────────────────────────────────────── */}
+      {state.stap === 'WELKOM' && (
+        <div className="mx-auto max-w-2xl py-12 space-y-6">
+          <h1 className="text-2xl font-bold">Bankafschriften overzicht</h1>
 
-        <div className="ml-auto">
-          <ExportButtons
-            transacties={jaarFiltered}
-            jaar={jaar}
-            userRules={state.userRules}
-            learnedRules={state.learnedRules}
-            potjes={state.potjes}
-          />
-        </div>
-      </div>
+          <p>
+            Welkom terug? Of eigenlijk, gewoon welkom (want we weten helemaal niet of je hier al eerder
+            was)!
+          </p>
 
-      {onbekendCount > 0 && (
-        <Alert
-          severity="warning"
-          action={
+          <p>
+            Met de functie 'Bankafschriften overzicht' maak je snel een helder overzicht van al je
+            betalingen, bijvoorbeeld over het afgelopen jaar. Je uploadt hiervoor de afschriften die je
+            van je bank hebt gedownload. Vervolgens maak je (budget)potjes aan en koppel je elke uitgave
+            of inkomsten aan het juiste potje. Zo zie je precies hoeveel geld je met elk potje hebt
+            uitgegeven of ontvangen. Dit is erg handig als je wilt beginnen met budgetteren, maar nog
+            niet weet waar je geld naartoe gaat of vandaan komt.
+          </p>
+
+          <p>
+            Privacy staat bij ons voorop. Daarom weten we niet of je hier al eens bent geweest. We
+            onthouden niets van je vorige sessie; voor ons ben je elke keer nieuw. Heb je bij een eerder
+            bezoek een koppelingsbestand gedownload? Dat bestand bevat de regels die bepalen welke
+            betaling bij welk potje hoort. Je kunt dit bestand opnieuw uploaden. Samen met je (nieuwe)
+            bankafschriften kun je zo direct verdergaan waar je gebleven was, voor een vliegende start.
+          </p>
+
+          <p>
+            Nog een belangrijke privacy-voordeel: Je bestanden verlaten je computer of telefoon nooit.
+            Alle verwerking gebeurt volledig in je browser, rechtstreeks op jouw apparaat. Twijfel je
+            hierover? Geen probleem: download de app, zorg dat je bestanden op je apparaat staan en
+            verbreek daarna je internetverbinding. Alles blijft gewoon werken, omdat we niets naar
+            externe servers sturen. Je bent volledig zelf baas over je data.
+          </p>
+
+          <div className="flex justify-end">
             <Button
-              size="small"
-              color="inherit"
-              onClick={() => { dispatch({ type: 'NAAR_REVIEW' }); setReviewBucketFilter('ONBEKEND') }}
+              color="success"
+              variant="contained"
+              size="large"
+              onClick={() => dispatch({ type: 'NAAR_UPLOAD' })}
             >
-              Toewijzen
+              Aan de slag
             </Button>
-          }
-        >
-          {onbekendCount} transacties zonder categorie (
-          {new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(onbekendTotal)}
-          ) zijn uitgesloten van de totalen.
-        </Alert>
+          </div>
+        </div>
       )}
 
-      <BucketCards transacties={jaarFiltered} />
+      {/* ── UPLOAD ────────────────────────────────────────────────────────── */}
+      {state.stap === 'UPLOAD' && (
+        <div className="mx-auto max-w-2xl py-8">
+          <p className="mb-8 text-gray-500">
+            Upload je bankafschriften (en eventueel regelsbestanden) voor een overzicht van het jaar. Alle data blijft in je browser.
+          </p>
+          <FileDropZone onFiles={handleFiles} isLoading={isLoading} />
+          {regelsImportStatus && (
+            <Chip
+              label={regelsImportStatus.bericht}
+              color={regelsImportStatus.fout ? 'error' : 'success'}
+              size="small"
+              className="mt-2"
+              onDelete={() => setRegelsImportStatus(null)}
+            />
+          )}
+          <div className="mt-8 flex justify-end">
+            <Button
+              color="success"
+              variant="contained"
+              onClick={() => dispatch({ type: 'NAAR_KOPPELEN' })}
+              disabled={!heeftTransacties}
+            >
+              Koppelen
+            </Button>
+          </div>
+        </div>
+      )}
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <MonthlyChart transacties={jaarFiltered} />
-        <CategoryBreakdown
-          transacties={jaarFiltered}
-          potjes={state.potjes}
-          onCorrectie={(ids, bucket, subCategorie) =>
-            dispatch({ type: 'CATEGORIE_WIJZIGEN', transactieIds: ids, bucket, subCategorie })
-          }
-          onRegelToepassen={(regel) => dispatch({ type: 'REGEL_TOEPASSEN', regel })}
-        />
-      </div>
+      {/* ── KOPPELEN ──────────────────────────────────────────────────────── */}
+      {state.stap === 'KOPPELEN' && (
+        <div className="space-y-4">
+          {/* Top bar */}
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outlined"
+              color="success"
+              size="small"
+              startIcon={<LinkOutlinedIcon fontSize="small" />}
+              onClick={() => setPotjesOpen(true)}
+            >
+              Koppelingregels
+            </Button>
+
+            <OpslaanButtons
+              transacties={jaarFiltered}
+              jaar={jaar}
+              userRules={state.userRules}
+              learnedRules={state.learnedRules}
+              potjes={state.potjes}
+            />
+
+            {availableYears.length > 1 && (
+              <div className="flex items-center gap-1">
+                {availableYears.map((y) => (
+                  <Chip
+                    key={y}
+                    label={y}
+                    color={y === jaar ? 'primary' : 'default'}
+                    onClick={() => setSelectedYear(y)}
+                    clickable
+                    size="small"
+                  />
+                ))}
+              </div>
+            )}
+
+            <div className="ml-auto">
+              <Button
+                variant="contained"
+                color="success"
+                size="small"
+                onClick={() => dispatch({ type: 'NAAR_GEBRUIKEN' })}
+              >
+                Gebruiken
+              </Button>
+            </div>
+          </div>
+
+          {onbekendCount > 0 && (
+            <Alert severity="warning">
+              {onbekendCount} transacties zonder categorie zijn uitgesloten van de totalen
+              {onbekendOntvangen !== 0 && (
+                <> — ontvangen: {new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(onbekendOntvangen)}</>
+              )}
+              {onbekendUitgegeven !== 0 && (
+                <>, uitgegeven: {new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(onbekendUitgegeven)}</>
+              )}
+            </Alert>
+          )}
+
+          <BucketCards transacties={jaarFiltered} />
+
+          <div className="flex flex-col gap-4">
+            <Accordion disableGutters defaultExpanded={false}>
+              <AccordionSummary expandIcon={<ChevronDown className="h-4 w-4" />}>
+                <span className="text-sm font-semibold">Maandelijks overzicht</span>
+              </AccordionSummary>
+              <AccordionDetails sx={{ p: 0 }}>
+                <MonthlyChart transacties={jaarFiltered} />
+              </AccordionDetails>
+            </Accordion>
+            <CategoryBreakdown
+              transacties={jaarFiltered}
+              potjes={state.potjes}
+              userRules={state.userRules}
+              learnedRules={state.learnedRules}
+              onCorrectie={(ids, bucket, potje, groepCriterium, zonderRegel) =>
+                dispatch({ type: 'CATEGORIE_WIJZIGEN', transactieIds: ids, bucket, potje, groepCriterium, zonderRegel })
+              }
+              onPotjeToevoegen={(naam, bucket) => dispatch({ type: 'POTJE_TOEVOEGEN', naam, bucket })}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ── GEBRUIKEN ─────────────────────────────────────────────────────── */}
+      {state.stap === 'GEBRUIKEN' && (
+        <div className="mx-auto max-w-2xl py-12">
+          <p className="text-gray-500">Nog uit te werken</p>
+        </div>
+      )}
+
       <PotjesBeheerDialog
         open={potjesOpen}
-        potjes={state.potjes}
+        userRules={state.userRules}
+        learnedRules={state.learnedRules}
+        onRegelPatronenWijzigen={(bron, oldRegel, tegenpartijPatroon, omschrijvingPatroon) =>
+          dispatch({ type: 'REGEL_PATROON_OVERSCHRIJVEN', bron, oldRegel, tegenpartijPatroon, omschrijvingPatroon })
+        }
         onSluiten={() => setPotjesOpen(false)}
-        onToevoegen={(naam, bucket) => dispatch({ type: 'POTJE_TOEVOEGEN', naam, bucket })}
-        onVerwijderen={(id) => dispatch({ type: 'POTJE_VERWIJDEREN', id })}
-        onHernoemen={(id, naam) => dispatch({ type: 'POTJE_HERNOEMEN', id, naam })}
       />
     </div>
   )

@@ -17,7 +17,7 @@ const makeTx = (
   bronBestand: 'test.csv',
   bankFormat: 'ING',
   bucket: 'ONBEKEND',
-  subCategorie: null,
+  potje: null,
   isHandmatig: false,
   isDuplicaat: false,
   regelNaam: null,

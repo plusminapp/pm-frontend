@@ -1,148 +1,237 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  Button, IconButton, Typography, TextField,
+  Button, IconButton, Typography, TextField, Chip,
 } from '@mui/material'
-import { Trash2 } from 'lucide-react'
-import type { Potje, Bucket } from '../types'
+import { CircleHelp, Home, Pencil, PiggyBank, ShoppingCart, TrendingUp } from 'lucide-react'
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined'
+import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined'
+import type { UserRule } from '../types'
 
-type AssignableBucket = Exclude<Bucket, 'ONBEKEND'>
+const BUCKET_COLORS: Record<string, 'success' | 'error' | 'primary' | 'warning' | 'default'> = {
+  INKOMEN: 'success',
+  LEEFGELD: 'error',
+  VASTE_LASTEN: 'primary',
+  SPAREN: 'warning',
+  ONBEKEND: 'default',
+}
 
-const BUCKET_GROUPS: { bucket: AssignableBucket; label: string }[] = [
-  { bucket: 'INKOMEN',      label: 'Inkomsten' },
-  { bucket: 'LEEFGELD',     label: 'Leefgeld' },
-  { bucket: 'VASTE_LASTEN', label: 'Vaste lasten' },
-  { bucket: 'SPAREN',       label: 'Sparen' },
-]
+const BUCKET_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  INKOMEN: TrendingUp,
+  LEEFGELD: ShoppingCart,
+  VASTE_LASTEN: Home,
+  SPAREN: PiggyBank,
+  ONBEKEND: CircleHelp,
+}
+
+const BUCKET_SORT_ORDER: Record<string, number> = {
+  INKOMEN: 0,
+  LEEFGELD: 1,
+  VASTE_LASTEN: 2,
+  SPAREN: 3,
+  ONBEKEND: 4,
+}
 
 interface Props {
   open: boolean
-  potjes: Potje[]
+  userRules: UserRule[]
+  learnedRules: UserRule[]
+  onRegelPatronenWijzigen?: (bron: 'user' | 'learned', oldRegel: UserRule, tegenpartijPatroon: string, omschrijvingPatroon?: string) => void
   onSluiten: () => void
-  onToevoegen: (naam: string, bucket: AssignableBucket) => void
-  onVerwijderen: (id: string) => void
-  onHernoemen: (id: string, naam: string) => void
 }
 
-export function PotjesBeheerDialog({ open, potjes, onSluiten, onToevoegen, onVerwijderen, onHernoemen }: Props) {
-  const [openForm, setOpenForm] = useState<AssignableBucket | null>(null)
-  const [newNaam, setNewNaam] = useState('')
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [editNaam, setEditNaam] = useState('')
+export function PotjesBeheerDialog({ open, userRules = [], learnedRules = [], onRegelPatronenWijzigen, onSluiten }: Props) {
+  const [patternDrafts, setPatternDrafts] = useState<Record<string, { tegenpartijPatroon: string; omschrijvingPatroon: string }>>({})
+  const [editingRegelId, setEditingRegelId] = useState<string | null>(null)
 
-  const handleToevoegen = (bucket: AssignableBucket) => {
-    if (newNaam.trim()) {
-      onToevoegen(newNaam.trim(), bucket)
-      setNewNaam('')
-      setOpenForm(null)
-    }
+  useEffect(() => {
+    if (!open) return
+    setEditingRegelId(null)
+  }, [open])
+
+  // --- Regels tab ---
+  type RegelMeta = UserRule & { id: string; bron: 'user' | 'learned'; oldRegel: UserRule }
+  const alleRegels: RegelMeta[] = [
+    ...userRules.map((r, i) => ({ ...r, id: `user:${i}`, bron: 'user' as const, oldRegel: r })),
+    ...learnedRules.map((r, i) => ({ ...r, id: `learned:${i}`, bron: 'learned' as const, oldRegel: r })),
+  ]
+
+  const regelGroepen = new Map<string, RegelMeta[]>()
+  for (const regel of alleRegels) {
+    const key = `${regel.bucket}|${regel.potje ?? ''}`
+    const bestaand = regelGroepen.get(key) ?? []
+    bestaand.push(regel)
+    regelGroepen.set(key, bestaand)
   }
 
-  const handleHernoemen = (id: string, originalNaam: string) => {
-    const trimmed = editNaam.trim()
-    if (trimmed && trimmed !== originalNaam) {
-      onHernoemen(id, trimmed)
-    }
-    setEditingId(null)
-    setEditNaam('')
+  const gesorteerdeGroepen = [...regelGroepen.entries()].sort(([, a], [, b]) => {
+    const bucketA = a[0].bucket
+    const bucketB = b[0].bucket
+    const bucketDiff = (BUCKET_SORT_ORDER[bucketA] ?? 999) - (BUCKET_SORT_ORDER[bucketB] ?? 999)
+    if (bucketDiff !== 0) return bucketDiff
+
+    const potjeA = a[0].potje ?? ''
+    const potjeB = b[0].potje ?? ''
+    if (potjeA === '' && potjeB !== '') return 1
+    if (potjeA !== '' && potjeB === '') return -1
+    return potjeA.localeCompare(potjeB, 'nl')
+  })
+
+  const vasteLastenGroepen = gesorteerdeGroepen.filter(([, regels]) => regels[0].bucket === 'VASTE_LASTEN')
+  const overigeGroepen = gesorteerdeGroepen.filter(([, regels]) => regels[0].bucket !== 'VASTE_LASTEN')
+  const vasteLastenRegels = vasteLastenGroepen.flatMap(([, regels]) => regels)
+
+  const getDraft = (regel: RegelMeta) => patternDrafts[regel.id] ?? {
+    tegenpartijPatroon: regel.tegenpartijPatroon,
+    omschrijvingPatroon: regel.omschrijvingPatroon ?? '',
   }
+
+  const setDraft = (regel: RegelMeta, next: Partial<{ tegenpartijPatroon: string; omschrijvingPatroon: string }>) => {
+    const current = getDraft(regel)
+    setPatternDrafts((prev) => ({
+      ...prev,
+      [regel.id]: {
+        tegenpartijPatroon: next.tegenpartijPatroon ?? current.tegenpartijPatroon,
+        omschrijvingPatroon: next.omschrijvingPatroon ?? current.omschrijvingPatroon,
+      },
+    }))
+  }
+
+  const handlePatroonOpslaan = (regel: RegelMeta) => {
+    if (!onRegelPatronenWijzigen) return
+    const draft = getDraft(regel)
+    const tegenpartijPatroon = draft.tegenpartijPatroon.trim()
+    if (!tegenpartijPatroon) return
+    const omschrijvingPatroon = draft.omschrijvingPatroon.trim()
+    onRegelPatronenWijzigen(
+      regel.bron,
+      regel.oldRegel,
+      tegenpartijPatroon,
+      omschrijvingPatroon || undefined,
+    )
+    setEditingRegelId(null)
+  }
+
+  const handlePatroonAnnuleren = (regel: RegelMeta) => {
+    setPatternDrafts((prev) => {
+      const next = { ...prev }
+      delete next[regel.id]
+      return next
+    })
+    setEditingRegelId(null)
+  }
+
+  const renderRegel = (r: RegelMeta) => (
+    <div key={r.id} className="border-l-2 border-gray-200 pl-2 text-sm" style={{ color: 'var(--mui-palette-success-main)' }}>
+      {editingRegelId === r.id ? (
+        <div className="grid gap-2 md:grid-cols-[1fr_auto] md:items-start">
+          <div className="grid gap-2 md:grid-cols-2">
+            <TextField
+              size="small"
+              label="Tegenpartijpatroon"
+              value={getDraft(r).tegenpartijPatroon}
+              onChange={(e) => setDraft(r, { tegenpartijPatroon: e.target.value })}
+            />
+            <TextField
+              size="small"
+              label="Omschrijvingspatroon"
+              value={getDraft(r).omschrijvingPatroon}
+              onChange={(e) => setDraft(r, { omschrijvingPatroon: e.target.value })}
+            />
+          </div>
+          <div className="flex items-center gap-1 justify-self-end">
+            <IconButton
+              size="small"
+              aria-label={`Patronen wijzigen annuleren voor ${r.tegenpartijPatroon}`}
+              onClick={() => handlePatroonAnnuleren(r)}
+              color="success"
+            >
+              <CancelOutlinedIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              size="small"
+              aria-label={`Patronen opslaan voor ${r.tegenpartijPatroon}`}
+              onClick={() => handlePatroonOpslaan(r)}
+              disabled={!getDraft(r).tegenpartijPatroon.trim()}
+              color="success"
+            >
+              <SaveOutlinedIcon fontSize="small" />
+            </IconButton>
+          </div>
+        </div>
+      ) : (
+        <div className="grid gap-2 md:grid-cols-[1fr_auto] md:items-center">
+          <div className="space-y-1">
+            <div><span className="font-mono">{r.tegenpartijPatroon}</span></div>
+            {r.omschrijvingPatroon && (
+              <div><span className="text-xs" style={{ color: 'var(--mui-palette-success-main)' }}>Omschrijvingspatroon:</span> <span className="font-mono">{r.omschrijvingPatroon}</span></div>
+            )}
+          </div>
+          <IconButton
+            size="small"
+            aria-label={`Patronen wijzigen voor ${r.tegenpartijPatroon}`}
+            onClick={() => setEditingRegelId(r.id)}
+            color="success"
+          >
+            <Pencil className="h-4 w-4" />
+          </IconButton>
+        </div>
+      )}
+    </div>
+  )
 
   return (
     <Dialog open={open} onClose={onSluiten} maxWidth="sm" fullWidth>
-      <DialogTitle>Potjes beheren</DialogTitle>
+      <DialogTitle sx={{ color: 'success.main' }}>Koppelingregels</DialogTitle>
       <DialogContent>
-        {BUCKET_GROUPS.map(({ bucket, label }) => {
-          const groepPotjes = potjes.filter((p) => p.bucket === bucket)
-          return (
-            <div key={bucket} className="mb-4">
-              <Typography variant="subtitle2" className="mb-1 font-semibold text-gray-600">
-                {label}
-              </Typography>
-
-              {groepPotjes.length === 0 && openForm !== bucket && (
-                <Typography variant="caption" color="text.secondary" className="ml-2">
-                  Geen potjes
-                </Typography>
-              )}
-
-              {groepPotjes.map((p) => (
-                <div key={p.id} className="flex items-center gap-2 py-1">
-                  {editingId === p.id ? (
-                    <>
-                      <TextField
-                        size="small"
-                        value={editNaam}
-                        onChange={(e) => setEditNaam(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleHernoemen(p.id, p.naam)
-                          if (e.key === 'Escape') { setEditingId(null); setEditNaam('') }
-                        }}
-                        autoFocus
-                        sx={{ flex: 1 }}
-                      />
-                      <Button size="small" onClick={() => handleHernoemen(p.id, p.naam)}>OK</Button>
-                      <Button size="small" onClick={() => { setEditingId(null); setEditNaam('') }}>
-                        Annuleren
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <span
-                        className="flex-1 cursor-pointer hover:underline"
-                        onClick={() => { setEditingId(p.id); setEditNaam(p.naam) }}
-                      >
-                        {p.naam}
-                      </span>
-                      <IconButton
-                        size="small"
-                        aria-label={`Verwijder ${p.naam}`}
-                        onClick={() => onVerwijderen(p.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-gray-400" />
-                      </IconButton>
-                    </>
-                  )}
-                </div>
-              ))}
-
-              {openForm === bucket ? (
-                <div className="mt-1 flex items-center gap-2">
-                  <TextField
+        <div>
+          {gesorteerdeGroepen.length === 0 && (
+            <Typography variant="body2" sx={{ color: 'success.main' }}>
+              Geen koppelingregels beschikbaar.
+            </Typography>
+          )}
+          {overigeGroepen.map(([key, regels]) => {
+            const { bucket, potje } = regels[0]
+            const BucketIcon = BUCKET_ICONS[bucket] ?? CircleHelp
+            return (
+              <div key={key} className="mb-4">
+                <div className="mb-2 flex items-center gap-2">
+                  <Chip
+                    label={potje ?? ''}
+                    icon={<BucketIcon className="h-3.5 w-3.5" />}
+                    color={BUCKET_COLORS[bucket] ?? 'default'}
                     size="small"
-                    placeholder="Naam"
-                    value={newNaam}
-                    onChange={(e) => setNewNaam(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleToevoegen(bucket)
-                      if (e.key === 'Escape') { setOpenForm(null); setNewNaam('') }
-                    }}
-                    autoFocus
-                    sx={{ flex: 1 }}
+                    sx={potje ? { '& .MuiChip-icon': { marginLeft: '6px' } } : { '& .MuiChip-label': { display: 'none' }, '& .MuiChip-icon': { marginLeft: '6px', marginRight: '6px' } }}
                   />
-                  <Button size="small" onClick={() => handleToevoegen(bucket)}>
-                    Bevestigen
-                  </Button>
-                  <Button size="small" onClick={() => { setOpenForm(null); setNewNaam('') }}>
-                    Annuleren
-                  </Button>
                 </div>
-              ) : (
-                <Button
+                <div className="ml-2 space-y-1">
+                  {regels.map(renderRegel)}
+                </div>
+              </div>
+            )
+          })}
+          {vasteLastenRegels.length > 0 && (
+            <div className="mb-4">
+              <div className="mb-2 flex items-center gap-2">
+                <Chip
+                  label="Vaste lasten"
+                  icon={<Home className="h-3.5 w-3.5" />}
+                  color={BUCKET_COLORS.VASTE_LASTEN}
                   size="small"
-                  aria-label={`Nieuw potje voor ${label}`}
-                  onClick={() => { setOpenForm(bucket); setNewNaam('') }}
-                  sx={{ mt: 0.5 }}
-                >
-                  + Nieuw potje
-                </Button>
-              )}
+                  sx={{ '& .MuiChip-icon': { marginLeft: '6px' } }}
+                />
+              </div>
+              <div className="ml-2 space-y-1">
+                {vasteLastenRegels.map(renderRegel)}
+              </div>
             </div>
-          )
-        })}
+          )}
+        </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onSluiten}>Sluiten</Button>
+        <Button onClick={onSluiten} color="success">Sluiten</Button>
       </DialogActions>
     </Dialog>
   )
 }
+

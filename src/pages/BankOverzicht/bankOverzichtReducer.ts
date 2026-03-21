@@ -10,20 +10,23 @@ export type BankOverzichtAction =
   | { type: 'BESTANDEN_TOEVOEGEN'; bestanden: File[] }
   | { type: 'BESTAND_PARSED'; bestandNaam: string; transacties: CategorizedTransaction[] }
   | { type: 'BESTAND_FOUT'; bestandNaam: string; foutmelding: string }
-  | { type: 'CATEGORIE_WIJZIGEN'; transactieIds: string[]; bucket: CategorizedTransaction['bucket']; subCategorie: string | null }
+  | { type: 'CATEGORIE_WIJZIGEN'; transactieIds: string[]; bucket: CategorizedTransaction['bucket']; potje: string | null; groepCriterium?: string; zonderRegel?: boolean }
+  | { type: 'REGEL_PATROON_OVERSCHRIJVEN'; bron: 'user' | 'learned'; oldRegel: UserRule; tegenpartijPatroon: string; omschrijvingPatroon?: string }
   | { type: 'REGEL_TOEVOEGEN'; regel: UserRule }
   | { type: 'REGEL_TOEPASSEN'; regel: UserRule }
   | { type: 'REGEL_GELEERD'; regel: UserRule }
   | { type: 'REGELS_IMPORTEREN'; userRules: UserRule[]; learnedRules: UserRule[]; potjes: Potje[] }
+  | { type: 'SNAPSHOT_IMPORTEREN'; userRules: UserRule[]; learnedRules: UserRule[]; potjes: Potje[]; transacties: CategorizedTransaction[] }
   | { type: 'POTJE_TOEVOEGEN'; naam: string; bucket: Exclude<CategorizedTransaction['bucket'], 'ONBEKEND'> }
   | { type: 'POTJE_VERWIJDEREN'; id: string }
   | { type: 'POTJE_HERNOEMEN'; id: string; naam: string }
-  | { type: 'NAAR_REVIEW' }
-  | { type: 'NAAR_DASHBOARD' }
+  | { type: 'NAAR_KOPPELEN' }
+  | { type: 'NAAR_GEBRUIKEN' }
   | { type: 'NAAR_UPLOAD' }
+  | { type: 'NAAR_WELKOM' }
 
 export const initialState: BankOverzichtState = {
-  stap: 'UPLOAD',
+  stap: 'WELKOM',
   bestanden: [],
   transacties: [],
   userRules: [],
@@ -37,13 +40,52 @@ function learnedKey(r: UserRule): string {
 }
 
 // Derive a learned rule from a corrected transaction
-function deriveLearnedRule(tx: CategorizedTransaction, bucket: CategorizedTransaction['bucket'], subCategorie: string | null): UserRule {
+function deriveLearnedRule(tx: CategorizedTransaction, bucket: CategorizedTransaction['bucket'], potje: string | null): UserRule {
   return {
     tegenpartijPatroon: tx.tegenpartij.toLowerCase(),
     richting: tx.bedrag < 0 ? 'debit' : tx.bedrag > 0 ? 'credit' : undefined,
     bucket,
-    ...(subCategorie ? { subCategorie } : {}),
+    ...(potje ? { potje } : {}),
   }
+}
+
+function deriveLearnedRuleVoorGroep(
+  criterium: string,
+  txs: CategorizedTransaction[],
+  bucket: CategorizedTransaction['bucket'],
+  potje: string | null,
+): UserRule {
+  const normalized = criterium.trim()
+  const allDebit = txs.length > 0 && txs.every((tx) => tx.bedrag < 0)
+  const allCredit = txs.length > 0 && txs.every((tx) => tx.bedrag > 0)
+  return {
+    tegenpartijPatroon: normalized,
+    richting: allDebit ? 'debit' : allCredit ? 'credit' : undefined,
+    bucket,
+    ...(potje ? { potje } : {}),
+  }
+}
+
+function isZelfdeRegel(a: UserRule, b: UserRule): boolean {
+  return a.tegenpartijPatroon === b.tegenpartijPatroon
+    && a.omschrijvingPatroon === b.omschrijvingPatroon
+    && a.richting === b.richting
+    && a.bucket === b.bucket
+    && a.potje === b.potje
+}
+
+function overschrijfPatronen(regel: UserRule, tegenpartijPatroon: string, omschrijvingPatroon?: string): UserRule {
+  const nextTegenpartijPatroon = tegenpartijPatroon.trim()
+  const nextOmschrijvingPatroon = (omschrijvingPatroon ?? '').trim()
+  const base: UserRule = {
+    ...regel,
+    tegenpartijPatroon: nextTegenpartijPatroon,
+  }
+  if (nextOmschrijvingPatroon) {
+    return { ...base, omschrijvingPatroon: nextOmschrijvingPatroon }
+  }
+  const { omschrijvingPatroon: _removed, ...withoutOmschrijving } = base
+  return withoutOmschrijving
 }
 
 // Merge new rules into existing, replacing on same key
@@ -107,14 +149,37 @@ export function bankOverzichtReducer(
       const ids = new Set(action.transactieIds)
       const updatedTxs = state.transacties.map((tx) =>
         ids.has(tx.id)
-          ? { ...tx, bucket: action.bucket, subCategorie: action.subCategorie, isHandmatig: true }
+          ? { ...tx, bucket: action.bucket, potje: action.potje, isHandmatig: true }
           : tx,
       )
+      if (action.zonderRegel) {
+        return { ...state, transacties: updatedTxs }
+      }
       const corrected = state.transacties.filter((tx) => ids.has(tx.id))
-      const newRules = corrected.map((tx) => deriveLearnedRule(tx, action.bucket, action.subCategorie))
+      const groupedCriterium = action.groepCriterium?.trim()
+      const newRules = groupedCriterium
+        ? [deriveLearnedRuleVoorGroep(groupedCriterium, corrected, action.bucket, action.potje)]
+        : corrected.map((tx) => deriveLearnedRule(tx, action.bucket, action.potje))
       const mergedRules = mergeLearnedRules(state.learnedRules, newRules)
       const finalTxs = applyLearnedToOnbekend(updatedTxs, mergedRules)
       return { ...state, transacties: finalTxs, learnedRules: mergedRules }
+    }
+
+    case 'REGEL_PATROON_OVERSCHRIJVEN': {
+      let vervangen = false
+      const update = (regels: UserRule[]) => regels.map((regel) => {
+        if (vervangen || !isZelfdeRegel(regel, action.oldRegel)) return regel
+        vervangen = true
+        return overschrijfPatronen(regel, action.tegenpartijPatroon, action.omschrijvingPatroon)
+      })
+
+      if (action.bron === 'user') {
+        return { ...state, userRules: update(state.userRules) }
+      }
+
+      const learnedRules = update(state.learnedRules)
+      const transacties = applyLearnedToOnbekend(state.transacties, learnedRules)
+      return { ...state, learnedRules, transacties }
     }
 
     case 'REGEL_TOEVOEGEN':
@@ -130,10 +195,10 @@ export function bankOverzichtReducer(
         ...state,
         userRules: [...state.userRules, lowercased],
         transacties: state.transacties.map((tx) => {
-          if (!tx.tegenpartij.toLowerCase().includes(pattern)) return tx
+          if (!tx.tegenpartij.toLowerCase().startsWith(pattern)) return tx
           if (lowercased.richting === 'debit' && tx.bedrag > 0) return tx
           if (lowercased.richting === 'credit' && tx.bedrag < 0) return tx
-          return { ...tx, bucket: lowercased.bucket, subCategorie: lowercased.subCategorie ?? null, isHandmatig: true }
+          return { ...tx, bucket: lowercased.bucket, potje: lowercased.potje ?? null, isHandmatig: true }
         }),
       }
     }
@@ -150,7 +215,7 @@ export function bankOverzichtReducer(
             // Preserve manually-corrected transactions untouched
             if (tx.isHandmatig) return tx
             // Strip categorization fields and re-categorize
-            const { bucket: _b, subCategorie: _s, isHandmatig: _h, isDuplicaat, regelNaam: _r, ...parsed } = tx
+            const { bucket: _b, potje: _s, isHandmatig: _h, isDuplicaat, regelNaam: _r, ...parsed } = tx
             const [recategorized] = applyRules([parsed], action.userRules, action.learnedRules)
             return { ...recategorized, isDuplicaat } // preserve duplicate flag
           })
@@ -161,6 +226,27 @@ export function bankOverzichtReducer(
         learnedRules: action.learnedRules,
         potjes: action.potjes,
         transacties: finalTxs,
+      }
+    }
+
+    case 'SNAPSHOT_IMPORTEREN': {
+      const bestandMap = new Map<string, { naam: string; format: CategorizedTransaction['bankFormat']; status: 'KLAAR' }>()
+      for (const tx of action.transacties) {
+        if (!bestandMap.has(tx.bronBestand)) {
+          bestandMap.set(tx.bronBestand, {
+            naam: tx.bronBestand,
+            format: tx.bankFormat,
+            status: 'KLAAR',
+          })
+        }
+      }
+      return {
+        ...state,
+        bestanden: [...bestandMap.values()],
+        transacties: action.transacties,
+        userRules: action.userRules,
+        learnedRules: action.learnedRules,
+        potjes: action.potjes,
       }
     }
 
@@ -179,14 +265,17 @@ export function bankOverzichtReducer(
         potjes: state.potjes.map((p) => p.id === action.id ? { ...p, naam: action.naam } : p),
       }
 
-    case 'NAAR_REVIEW':
-      return { ...state, stap: 'REVIEW' }
+    case 'NAAR_KOPPELEN':
+      return { ...state, stap: 'KOPPELEN' }
 
-    case 'NAAR_DASHBOARD':
-      return { ...state, stap: 'DASHBOARD' }
+    case 'NAAR_GEBRUIKEN':
+      return { ...state, stap: 'GEBRUIKEN' }
 
     case 'NAAR_UPLOAD':
       return { ...state, stap: 'UPLOAD' }
+
+    case 'NAAR_WELKOM':
+      return { ...state, stap: 'WELKOM' }
 
     default:
       return state

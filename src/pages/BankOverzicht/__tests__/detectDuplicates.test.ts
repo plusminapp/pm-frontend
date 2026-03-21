@@ -12,7 +12,7 @@ const tx = (id: string, overrides: Partial<CategorizedTransaction> = {}): Catego
   bronBestand: 'test.csv',
   bankFormat: 'ING',
   bucket: 'LEEFGELD',
-  subCategorie: null,
+  potje: null,
   isHandmatig: false,
   regelNaam: null,
   isDuplicaat: false,

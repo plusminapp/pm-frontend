@@ -12,7 +12,7 @@ const tx: CategorizedTransaction = {
   bronBestand: 'ing.csv',
   bankFormat: 'ING',
   bucket: 'LEEFGELD',
-  subCategorie: 'boodschappen',
+  potje: 'boodschappen',
   isHandmatig: false,
   isDuplicaat: false,
   regelNaam: 'Albert Heijn',
@@ -26,7 +26,7 @@ describe('buildCsvContent', () => {
   it('includes all 7 required column names in the header', () => {
     const csv = buildCsvContent([tx])
     const header = csv.split('\n')[0]
-    for (const col of ['datum', 'tegenpartij', 'omschrijving', 'bedrag', 'bucket', 'subCategorie', 'bronBestand']) {
+    for (const col of ['datum', 'tegenpartij', 'omschrijving', 'bedrag', 'bucket', 'potje', 'bronBestand']) {
       expect(header).toContain(col)
     }
   })

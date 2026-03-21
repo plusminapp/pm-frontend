@@ -13,7 +13,7 @@ const tx = (id: string, tegenpartij: string, bucket: CategorizedTransaction['buc
   bronBestand: 'test.csv',
   bankFormat: 'ING',
   bucket,
-  subCategorie: null,
+  potje: null,
   isHandmatig: false,
   isDuplicaat: false,
   regelNaam: null,

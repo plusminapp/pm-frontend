@@ -50,7 +50,7 @@ export function FileDropZone({ onFiles, isLoading = false }: Props) {
         ref={inputRef}
         type="file"
         multiple
-        accept=".csv,.xml"
+        accept=".csv,.xml,.json"
         className="hidden"
         onChange={handleChange}
         aria-hidden="true"
@@ -62,10 +62,10 @@ export function FileDropZone({ onFiles, isLoading = false }: Props) {
       )}
       <div className="text-center">
         <p className="text-base font-medium">
-          Sleep bestanden hierheen of klik om te selecteren
+          Sleep bankafschriften of regelsbestand hierheen of klik om te selecteren
         </p>
         <p className="mt-1 text-sm text-gray-500">
-          ING CSV · ABN AMRO CSV · Rabobank CSV · CAMT.053 XML
+          ING CSV · ABN AMRO CSV · Rabobank CSV · CAMT.053 XML · Regels JSON
         </p>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { FileDown, FileText, FileSpreadsheet } from 'lucide-react'
-import { triggerCsvDownload } from '../export/exportCsv'
+import { exportOverzicht } from '../export/exportRules'
 import { exportPdf } from '../export/exportPdf'
 import type { CategorizedTransaction, UserRule, Potje } from '../types'
 
@@ -13,11 +13,11 @@ interface Props {
   potjes?: Potje[]
 }
 
-export function ExportButtons({ transacties, jaar, userRules = [], learnedRules = [], potjes = [] }: Props) {
+export function OpslaanButtons({ transacties, jaar, userRules = [], learnedRules = [], potjes = [] }: Props) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null)
 
-  const handleCsv = () => {
-    triggerCsvDownload(transacties, jaar)
+  const handleJson = () => {
+    exportOverzicht(transacties, jaar, userRules, learnedRules, potjes)
     setAnchor(null)
   }
 
@@ -29,22 +29,22 @@ export function ExportButtons({ transacties, jaar, userRules = [], learnedRules 
   return (
     <>
       <Button
-        variant="contained"
+        variant="outlined"
         color="success"
         startIcon={<FileDown className="h-4 w-4" />}
         onClick={(e) => setAnchor(e.currentTarget)}
         size="small"
       >
-        Exporteren
+        Opslaan
       </Button>
       <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
-        <MenuItem onClick={handleCsv}>
+        <MenuItem onClick={handleJson}>
           <ListItemIcon><FileSpreadsheet className="h-4 w-4" /></ListItemIcon>
-          <ListItemText>CSV downloaden</ListItemText>
+          <ListItemText>JSON opslaan</ListItemText>
         </MenuItem>
         <MenuItem onClick={handlePdf}>
           <ListItemIcon><FileText className="h-4 w-4" /></ListItemIcon>
-          <ListItemText>PDF downloaden</ListItemText>
+          <ListItemText>PDF opslaan</ListItemText>
         </MenuItem>
       </Menu>
     </>

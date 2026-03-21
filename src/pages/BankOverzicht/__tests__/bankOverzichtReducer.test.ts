@@ -12,7 +12,7 @@ const makeTx = (overrides: Partial<CategorizedTransaction> = {}): CategorizedTra
   bronBestand: 'ing.csv',
   bankFormat: 'ING',
   bucket: 'ONBEKEND',
-  subCategorie: null,
+  potje: null,
   isHandmatig: false,
   regelNaam: null,
   isDuplicaat: false,
@@ -20,8 +20,8 @@ const makeTx = (overrides: Partial<CategorizedTransaction> = {}): CategorizedTra
 })
 
 describe('bankOverzichtReducer', () => {
-  it('starts in UPLOAD stap', () => {
-    expect(initialState.stap).toBe('UPLOAD')
+  it('starts in WELKOM stap', () => {
+    expect(initialState.stap).toBe('WELKOM')
   })
 
   it('BESTANDEN_TOEVOEGEN adds files with PARSING status', () => {
@@ -73,7 +73,7 @@ describe('bankOverzichtReducer', () => {
       type: 'CATEGORIE_WIJZIGEN',
       transactieIds: ['tx-1'],
       bucket: 'LEEFGELD',
-      subCategorie: null,
+      potje: null,
     })
     expect(next.transacties[0].bucket).toBe('LEEFGELD')
     expect(next.transacties[0].isHandmatig).toBe(true)
@@ -106,18 +106,13 @@ describe('bankOverzichtReducer', () => {
     expect(next.transacties[1].bucket).toBe('ONBEKEND') // no match
   })
 
-  it('NAAR_REVIEW sets stap to REVIEW', () => {
-    const next = bankOverzichtReducer(initialState, { type: 'NAAR_REVIEW' })
-    expect(next.stap).toBe('REVIEW')
-  })
-
-  it('NAAR_DASHBOARD sets stap to DASHBOARD', () => {
-    const next = bankOverzichtReducer(initialState, { type: 'NAAR_DASHBOARD' })
-    expect(next.stap).toBe('DASHBOARD')
+  it('NAAR_KOPPELEN sets stap to KOPPELEN', () => {
+    const next = bankOverzichtReducer(initialState, { type: 'NAAR_KOPPELEN' })
+    expect(next.stap).toBe('KOPPELEN')
   })
 
   it('NAAR_UPLOAD sets stap to UPLOAD', () => {
-    const state = { ...initialState, stap: 'DASHBOARD' as const }
+    const state = { ...initialState, stap: 'KOPPELEN' as const }
     const next = bankOverzichtReducer(state, { type: 'NAAR_UPLOAD' })
     expect(next.stap).toBe('UPLOAD')
   })
@@ -203,7 +198,7 @@ describe('learnedRules', () => {
       type: 'CATEGORIE_WIJZIGEN',
       transactieIds: ['tx-1'],
       bucket: 'VASTE_LASTEN',
-      subCategorie: null,
+      potje: null,
     })
     expect(next.learnedRules).toHaveLength(1)
     expect(next.learnedRules[0].tegenpartijPatroon).toBe('belastingdienst') // lowercased
@@ -218,9 +213,26 @@ describe('learnedRules', () => {
       type: 'CATEGORIE_WIJZIGEN',
       transactieIds: ['tx-1'],
       bucket: 'VASTE_LASTEN',
-      subCategorie: null,
+      potje: null,
     })
     expect(next.learnedRules[0].tegenpartijPatroon).toBe('ziggo bv')
+  })
+
+  it('CATEGORIE_WIJZIGEN with zonderRegel updates transaction without creating a learned rule', () => {
+    const tx = makeTx({ id: 'tx-1', tegenpartij: 'Albert Heijn', bedrag: -30, bucket: 'ONBEKEND' })
+    const state = makeLearnedState({ transacties: [tx] })
+    const next = bankOverzichtReducer(state, {
+      type: 'CATEGORIE_WIJZIGEN',
+      transactieIds: ['tx-1'],
+      bucket: 'LEEFGELD',
+      potje: 'Boodschappen',
+      zonderRegel: true,
+    })
+
+    expect(next.transacties[0].bucket).toBe('LEEFGELD')
+    expect(next.transacties[0].potje).toBe('Boodschappen')
+    expect(next.transacties[0].isHandmatig).toBe(true)
+    expect(next.learnedRules).toHaveLength(0)
   })
 
   it('REGEL_TOEPASSEN lowercases tegenpartijPatroon in userRules', () => {
@@ -294,80 +306,80 @@ describe('potje actions', () => {
   })
 })
 
-describe('CATEGORIE_WIJZIGEN with subCategorie', () => {
-  it('writes subCategorie onto updated transactions', () => {
+describe('CATEGORIE_WIJZIGEN with potje', () => {
+  it('writes potje onto updated transactions', () => {
     const state: BankOverzichtState = { ...initialState, transacties: [makeTx()] }
     const next = bankOverzichtReducer(state, {
       type: 'CATEGORIE_WIJZIGEN',
       transactieIds: ['tx-1'],
       bucket: 'LEEFGELD',
-      subCategorie: 'Boodschappen',
+      potje: 'Boodschappen',
     })
-    expect(next.transacties[0].subCategorie).toBe('Boodschappen')
+    expect(next.transacties[0].potje).toBe('Boodschappen')
     expect(next.transacties[0].bucket).toBe('LEEFGELD')
     expect(next.transacties[0].isHandmatig).toBe(true)
   })
 
-  it('writes null subCategorie when passed null', () => {
+  it('writes null potje when passed null', () => {
     const state: BankOverzichtState = {
       ...initialState,
-      transacties: [makeTx({ subCategorie: 'Huur' })],
+      transacties: [makeTx({ potje: 'Huur' })],
     }
     const next = bankOverzichtReducer(state, {
       type: 'CATEGORIE_WIJZIGEN',
       transactieIds: ['tx-1'],
       bucket: 'VASTE_LASTEN',
-      subCategorie: null,
+      potje: null,
     })
-    expect(next.transacties[0].subCategorie).toBeNull()
+    expect(next.transacties[0].potje).toBeNull()
   })
 
-  it('derives learned rule with user-chosen subCategorie, not hardcoded overig', () => {
+  it('derives learned rule with user-chosen potje, not hardcoded overig', () => {
     const state: BankOverzichtState = { ...initialState, transacties: [makeTx()] }
     const next = bankOverzichtReducer(state, {
       type: 'CATEGORIE_WIJZIGEN',
       transactieIds: ['tx-1'],
       bucket: 'LEEFGELD',
-      subCategorie: 'Boodschappen',
+      potje: 'Boodschappen',
     })
-    expect(next.learnedRules[0].subCategorie).toBe('Boodschappen')
+    expect(next.learnedRules[0].potje).toBe('Boodschappen')
   })
 
-  it('derives learned rule without subCategorie when null passed', () => {
+  it('derives learned rule without potje when null passed', () => {
     const state: BankOverzichtState = { ...initialState, transacties: [makeTx()] }
     const next = bankOverzichtReducer(state, {
       type: 'CATEGORIE_WIJZIGEN',
       transactieIds: ['tx-1'],
       bucket: 'LEEFGELD',
-      subCategorie: null,
+      potje: null,
     })
-    expect(next.learnedRules[0].subCategorie).toBeUndefined()
+    expect(next.learnedRules[0].potje).toBeUndefined()
   })
 })
 
-describe('REGEL_TOEPASSEN with subCategorie', () => {
-  it('writes subCategorie onto matched transactions', () => {
+describe('REGEL_TOEPASSEN with potje', () => {
+  it('writes potje onto matched transactions', () => {
     const state: BankOverzichtState = {
       ...initialState,
       transacties: [makeTx({ tegenpartij: 'Albert Heijn', bucket: 'ONBEKEND' })],
     }
     const next = bankOverzichtReducer(state, {
       type: 'REGEL_TOEPASSEN',
-      regel: { tegenpartijPatroon: 'albert heijn', bucket: 'LEEFGELD', subCategorie: 'Boodschappen' },
+      regel: { tegenpartijPatroon: 'albert heijn', bucket: 'LEEFGELD', potje: 'Boodschappen' },
     })
-    expect(next.transacties[0].subCategorie).toBe('Boodschappen')
+    expect(next.transacties[0].potje).toBe('Boodschappen')
   })
 
-  it('writes null subCategorie when rule has none', () => {
+  it('writes null potje when rule has none', () => {
     const state: BankOverzichtState = {
       ...initialState,
-      transacties: [makeTx({ tegenpartij: 'Albert Heijn', subCategorie: 'OldPotje' })],
+      transacties: [makeTx({ tegenpartij: 'Albert Heijn', potje: 'OldPotje' })],
     }
     const next = bankOverzichtReducer(state, {
       type: 'REGEL_TOEPASSEN',
       regel: { tegenpartijPatroon: 'albert heijn', bucket: 'LEEFGELD' },
     })
-    expect(next.transacties[0].subCategorie).toBeNull()
+    expect(next.transacties[0].potje).toBeNull()
   })
 })
 

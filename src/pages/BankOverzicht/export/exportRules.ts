@@ -1,11 +1,11 @@
-import type { UserRule, Potje } from '../types'
+import type { UserRule, Potje, CategorizedTransaction } from '../types'
 
 interface ExportedRule {
   tegenpartijPatroon: string
   omschrijvingPatroon: string | null
   richting: 'credit' | 'debit' | null
   bucket: string
-  subCategorie: string | null
+  potje: string | null
   bron: 'user' | 'learned'
 }
 
@@ -15,13 +15,17 @@ interface RulesFile {
   potjes: Potje[]
 }
 
+interface OverzichtFile extends RulesFile {
+  transacties: CategorizedTransaction[]
+}
+
 export function buildRulesJson(userRules: UserRule[], learnedRules: UserRule[], potjes: Potje[]): string {
   const toExported = (r: UserRule, bron: 'user' | 'learned'): ExportedRule => ({
     tegenpartijPatroon: r.tegenpartijPatroon,
     omschrijvingPatroon: r.omschrijvingPatroon ?? null,
     richting: r.richting ?? null,
     bucket: r.bucket,
-    subCategorie: r.subCategorie ?? null,
+    potje: r.potje ?? null,
     bron,
   })
 
@@ -47,7 +51,44 @@ export function exportRules(userRules: UserRule[], learnedRules: UserRule[], pot
   URL.revokeObjectURL(url)
 }
 
-export function importRules(json: string): { userRules: UserRule[]; learnedRules: UserRule[]; potjes: Potje[] } {
+export function buildOverzichtJson(
+  transacties: CategorizedTransaction[],
+  userRules: UserRule[],
+  learnedRules: UserRule[],
+  potjes: Potje[],
+): string {
+  const rulesOnly = JSON.parse(buildRulesJson(userRules, learnedRules, potjes)) as RulesFile
+  const file: OverzichtFile = {
+    ...rulesOnly,
+    versie: 2,
+    transacties,
+  }
+  return JSON.stringify(file, null, 2)
+}
+
+export function exportOverzicht(
+  transacties: CategorizedTransaction[],
+  jaar: number,
+  userRules: UserRule[],
+  learnedRules: UserRule[],
+  potjes: Potje[],
+): void {
+  const json = buildOverzichtJson(transacties, userRules, learnedRules, potjes)
+  const blob = new Blob([json], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `plusmin-jaaroverzicht-${jaar}.json`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+export function importRules(json: string): {
+  userRules: UserRule[]
+  learnedRules: UserRule[]
+  potjes: Potje[]
+  transacties: CategorizedTransaction[]
+} {
   let parsed: unknown
   try {
     parsed = JSON.parse(json)
@@ -64,8 +105,8 @@ export function importRules(json: string): { userRules: UserRule[]; learnedRules
     throw new Error('Ongeldig regelbestand: versie ontbreekt.')
   }
 
-  const file = parsed as RulesFile
-  if (file.versie > 1) {
+  const file = parsed as RulesFile | OverzichtFile
+  if (file.versie > 2) {
     throw new Error(
       'Dit regelbestand is van een nieuwere versie. Update de app om het te kunnen laden.',
     )
@@ -84,7 +125,7 @@ export function importRules(json: string): { userRules: UserRule[]; learnedRules
       ...(r.omschrijvingPatroon ? { omschrijvingPatroon: r.omschrijvingPatroon } : {}),
       ...(r.richting ? { richting: r.richting } : {}),
       bucket: r.bucket as UserRule['bucket'],
-      ...(r.subCategorie ? { subCategorie: r.subCategorie } : {}),
+      ...(r.potje ? { potje: r.potje } : {}),
     }
     if (r.bron === 'learned') {
       learnedRules.push(rule)
@@ -94,5 +135,9 @@ export function importRules(json: string): { userRules: UserRule[]; learnedRules
   }
 
   const potjes: Potje[] = Array.isArray((file as any).potjes) ? (file as any).potjes : []
-  return { userRules, learnedRules, potjes }
+  const transacties: CategorizedTransaction[] =
+    file.versie >= 2 && Array.isArray((file as OverzichtFile).transacties)
+      ? (file as OverzichtFile).transacties
+      : []
+  return { userRules, learnedRules, potjes, transacties }
 }

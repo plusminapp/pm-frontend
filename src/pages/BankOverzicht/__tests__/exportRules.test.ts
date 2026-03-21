@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { buildRulesJson, importRules } from '../export/exportRules'
-import type { UserRule, Potje } from '../types'
+import { buildOverzichtJson, buildRulesJson, importRules } from '../export/exportRules'
+import type { UserRule, Potje, CategorizedTransaction } from '../types'
 
 describe('buildRulesJson', () => {
   it('includes versie: 1', () => {
@@ -28,7 +28,7 @@ describe('buildRulesJson', () => {
       omschrijvingPatroon: null,
       richting: null,
       bucket: 'SPAREN',
-      subCategorie: null,
+      potje: null,
       bron: 'user',
     })
   })
@@ -51,7 +51,7 @@ describe('importRules', () => {
   })
 
   it('throws on versie > 1', () => {
-    const json = JSON.stringify({ versie: 2, regels: [] })
+    const json = JSON.stringify({ versie: 3, regels: [] })
     expect(() => importRules(json)).toThrow('nieuwere versie')
   })
 
@@ -101,5 +101,29 @@ describe('potjes round-trip', () => {
   it('includes versie:1 when potjes present', () => {
     const result = JSON.parse(buildRulesJson([], [], [{ id: 'p-1', naam: 'Test', bucket: 'SPAREN' }]))
     expect(result.versie).toBe(1)
+  })
+})
+
+describe('snapshot round-trip', () => {
+  it('imports v2 transacties from overzichtbestand', () => {
+    const tx: CategorizedTransaction = {
+      id: 't-1',
+      datum: '2025-01-15',
+      bedrag: -12.34,
+      omschrijving: 'Boodschappen',
+      tegenrekening: null,
+      tegenpartij: 'Albert Heijn',
+      bronBestand: 'ing.csv',
+      bankFormat: 'ING',
+      bucket: 'LEEFGELD',
+      potje: 'Boodschappen',
+      isHandmatig: true,
+      regelNaam: null,
+      isDuplicaat: false,
+    }
+    const json = buildOverzichtJson([tx], [], [], [])
+    const result = importRules(json)
+    expect(result.transacties).toHaveLength(1)
+    expect(result.transacties[0].id).toBe('t-1')
   })
 })
