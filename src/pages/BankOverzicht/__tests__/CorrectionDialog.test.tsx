@@ -159,4 +159,15 @@ describe('CorrectionDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: /opslaan/i }))
     expect(onCorrectie).toHaveBeenCalledWith(['1'], 'LEEFGELD', null, undefined, true)
   })
+
+  it('uses Negeren as potjesnaam when Negeren is selected', () => {
+    const onCorrectie = vi.fn()
+    render(
+      <CorrectionDialog open transacties={[{ ...tx('1'), bucket: 'LEEFGELD', potje: 'Boodschappen' }]} potjes={somePotjes}
+        onSluiten={vi.fn()} onCorrectie={onCorrectie} onPotjeToevoegen={vi.fn()} />,
+    )
+    fireEvent.click(screen.getByRole('radio', { name: /negeren/i }))
+    fireEvent.click(screen.getByRole('button', { name: /opslaan/i }))
+    expect(onCorrectie).toHaveBeenCalledWith(['1'], 'NEGEREN', 'Negeren', undefined)
+  })
 })

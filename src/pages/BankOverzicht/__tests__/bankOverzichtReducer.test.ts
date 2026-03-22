@@ -79,6 +79,21 @@ describe('bankOverzichtReducer', () => {
     expect(next.transacties[0].isHandmatig).toBe(true)
   })
 
+  it('CATEGORIE_WIJZIGEN forces potje to Negeren when bucket is NEGEREN', () => {
+    const state: BankOverzichtState = {
+      ...initialState,
+      transacties: [makeTx({ id: 'tx-1', bucket: 'LEEFGELD', potje: 'Boodschappen' })],
+    }
+    const next = bankOverzichtReducer(state, {
+      type: 'CATEGORIE_WIJZIGEN',
+      transactieIds: ['tx-1'],
+      bucket: 'NEGEREN',
+      potje: null,
+    })
+    expect(next.transacties[0].bucket).toBe('NEGEREN')
+    expect(next.transacties[0].potje).toBe('Negeren')
+  })
+
   it('REGEL_TOEVOEGEN appends a user rule', () => {
     const next = bankOverzichtReducer(initialState, {
       type: 'REGEL_TOEVOEGEN',

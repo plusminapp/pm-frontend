@@ -27,4 +27,24 @@ describe('OpslaanButtons', () => {
     expect(exportPdfMock).toHaveBeenCalledTimes(1)
     expect(exportOverzichtMock).not.toHaveBeenCalled()
   })
+
+  it('calls onJsonSaved after JSON opslaan', () => {
+    const onJsonSaved = vi.fn()
+    render(
+      <OpslaanButtons
+        transacties={[]}
+        jaar={2025}
+        userRules={[]}
+        learnedRules={[]}
+        potjes={[]}
+        onJsonSaved={onJsonSaved}
+      />, 
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /opslaan/i }))
+    fireEvent.click(screen.getByRole('menuitem', { name: /json opslaan/i }))
+
+    expect(exportOverzichtMock).toHaveBeenCalledTimes(1)
+    expect(onJsonSaved).toHaveBeenCalledTimes(1)
+  })
 })

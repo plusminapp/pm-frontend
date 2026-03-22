@@ -32,6 +32,7 @@ interface Props {
   compact?: boolean
   selectable?: boolean
   isSelectableTx?: (tx: CategorizedTransaction) => boolean
+  highlightTx?: (tx: CategorizedTransaction) => boolean
   selectedIds?: Set<string>
   onToggleSelect?: (txId: string, selected: boolean) => void
   onToggleSelectAll?: (txIds: string[], selected: boolean) => void
@@ -43,6 +44,7 @@ export function TransactionTable({
   compact = false,
   selectable = false,
   isSelectableTx,
+  highlightTx,
   selectedIds,
   onToggleSelect,
   onToggleSelectAll,
@@ -83,8 +85,10 @@ export function TransactionTable({
           </tr>
         </thead>
         <tbody className="divide-y">
-          {transacties.map((tx) => (
-            <tr key={tx.id} className="group hover:bg-gray-50">
+          {transacties.map((tx) => {
+            const isHighlighted = Boolean(highlightTx?.(tx))
+            return (
+            <tr key={tx.id} className={`group ${isHighlighted ? 'bg-yellow-50 hover:bg-yellow-100' : 'hover:bg-gray-50'}`}>
               {selectable && (
                 <td className="px-3 py-2">
                   <Checkbox
@@ -133,7 +137,8 @@ export function TransactionTable({
                 </div>
               </td>
             </tr>
-          ))}
+            )
+          })}
         </tbody>
       </table>
     </div>

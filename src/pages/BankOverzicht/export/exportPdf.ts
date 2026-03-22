@@ -1,8 +1,7 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import type { CategorizedTransaction, Bucket, UserRule, Potje } from '../types'
-import { formatTegenpartijVoorWeergave } from '../displayTegenpartij'
-import { matchesRulePattern, matchesOmschrijvingPattern } from '../categorize/patternMatcher'
+import plusMinLogoUrl from '../../../assets/plusminlogo.png'
 
 const BUCKET_LABELS: Record<Bucket, string> = {
   INKOMEN: 'Inkomsten',
@@ -22,47 +21,9 @@ const BUCKET_COLORS: Record<Bucket, [number, number, number]> = {
   NEGEREN:      [107, 114, 128],
 }
 
+const DARK_GRAY: [number, number, number] = [55, 65, 81]
+
 type MonthlyTotals = Record<number, Partial<Record<Bucket, number>>>
-type GroepeerRegel = Pick<UserRule, 'tegenpartijPatroon' | 'omschrijvingPatroon' | 'richting'>
-
-function normalizePattern(pattern: string): string {
-  return pattern.trim().toLowerCase()
-}
-
-function bepaalTegenpartijPatroon(
-  tx: CategorizedTransaction,
-  userRules: UserRule[],
-  learnedRules: UserRule[],
-): string | null {
-  const tegenpartij = formatTegenpartijVoorWeergave(tx.tegenpartij).toLowerCase()
-  const omschrijving = tx.omschrijving.toLowerCase()
-
-  const regelMatches = (rule: GroepeerRegel) => {
-    const pattern = normalizePattern(rule.tegenpartijPatroon)
-    if (!pattern) return false
-    const richtingMatch = !rule.richting
-      || (rule.richting === 'debit' && tx.bedrag < 0)
-      || (rule.richting === 'credit' && tx.bedrag > 0)
-    if (!richtingMatch) return false
-    if (matchesRulePattern(tegenpartij, pattern)) return true
-    return Boolean(rule.omschrijvingPatroon && matchesOmschrijvingPattern(omschrijving, normalizePattern(rule.omschrijvingPatroon)))
-  }
-
-  const candidates = [...userRules, ...learnedRules]
-    .filter(regelMatches)
-    .sort((a, b) => b.tegenpartijPatroon.length - a.tegenpartijPatroon.length)
-
-  return candidates[0] ? normalizePattern(candidates[0].tegenpartijPatroon) : null
-}
-
-function bepaalGroepNaam(
-  tx: CategorizedTransaction,
-  userRules: UserRule[],
-  learnedRules: UserRule[],
-): string {
-  const patroon = bepaalTegenpartijPatroon(tx, userRules, learnedRules)
-  return patroon ?? tx.tegenpartij
-}
 
 function buildMonthlyTotals(transactions: CategorizedTransaction[]): MonthlyTotals {
   const totals: MonthlyTotals = {}
@@ -90,22 +51,20 @@ function buildBucketSummary(
   ) as Record<Bucket, { totaal: number; gemiddeld: number }>
 }
 
-function topTegenpartijen(
+function buildPotjeTotals(
   transactions: CategorizedTransaction[],
   bucket: Bucket,
-  userRules: UserRule[],
-  learnedRules: UserRule[],
-  n = 10,
-): Array<{ naam: string; totaal: number }> {
-  const sums = new Map<string, number>()
+): Array<{ naam: string; totaal: number; aantal: number }> {
+  const sums = new Map<string, { naam: string; totaal: number; aantal: number }>()
   for (const tx of transactions.filter((t) => t.bucket === bucket)) {
-    const groepNaam = bepaalGroepNaam(tx, userRules, learnedRules)
-    sums.set(groepNaam, (sums.get(groepNaam) ?? 0) + tx.bedrag)
+    const potjeNaam = tx.potje?.trim() || 'Zonder potje'
+    const entry = sums.get(potjeNaam) ?? { naam: potjeNaam, totaal: 0, aantal: 0 }
+    entry.totaal += tx.bedrag
+    entry.aantal += 1
+    sums.set(potjeNaam, entry)
   }
-  return [...sums.entries()]
-    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
-    .slice(0, n)
-    .map(([naam, totaal]) => ({ naam, totaal }))
+  return [...sums.values()]
+    .sort((a, b) => Math.abs(b.totaal) - Math.abs(a.totaal))
 }
 
 function formatEur(amount: number): string {
@@ -113,13 +72,29 @@ function formatEur(amount: number): string {
 }
 
 const MAANDEN = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec']
+const PAGE_TOP_MARGIN = 14
+const PAGE_BOTTOM_MARGIN = 14
+const BUCKET_SECTION_GAP = 8
+const BUCKET_HEADER_HEIGHT = 14
+const BUCKET_TABLE_OFFSET = 4
+const BUCKET_TABLE_ROW_HEIGHT = 7
+const PDF_HEADER_HEIGHT = 22
+const LOGO_ASPECT_RATIO = 2
+const LOGO_RENDER_WIDTH = 20
+const LOGO_RENDER_HEIGHT = LOGO_RENDER_WIDTH / LOGO_ASPECT_RATIO
+const LOGO_RIGHT_PADDING = 4
+
+function estimateBucketSectionHeight(rowCount: number): number {
+  const tableRows = Math.max(rowCount, 1)
+  return BUCKET_HEADER_HEIGHT + BUCKET_TABLE_OFFSET + ((tableRows + 1) * BUCKET_TABLE_ROW_HEIGHT) + 6
+}
 
 async function loadLogoDataUrl(): Promise<string | null> {
   try {
-    const resp = await fetch('/plusmin.png')
+    const resp = await fetch(plusMinLogoUrl)
     if (!resp.ok) return null
     const blob = await resp.blob()
-    return new Promise((resolve) => {
+    return await new Promise((resolve) => {
       const reader = new FileReader()
       reader.onload = () => resolve(reader.result as string)
       reader.onerror = () => resolve(null)
@@ -127,6 +102,12 @@ async function loadLogoDataUrl(): Promise<string | null> {
     })
   } catch {
     return null
+  }
+}
+
+function alignNumericHeaderCells(data: { section: string; column: { index: number }; cell: { styles: { halign?: string } } }) {
+  if (data.section === 'head' && data.column.index > 0) {
+    data.cell.styles.halign = 'right'
   }
 }
 
@@ -148,11 +129,12 @@ export async function exportPdf(
   const summary = buildBucketSummary(transactions)
   const monthlyTotals = buildMonthlyTotals(transactions)
   const pageWidth = doc.internal.pageSize.getWidth()
+  const pageHeight = doc.internal.pageSize.getHeight()
 
   // Header
   doc.setFillColor(34, 197, 94)
-  doc.rect(0, 0, pageWidth, 22, 'F')
-  doc.setTextColor(255, 255, 255)
+  doc.rect(0, 0, pageWidth, PDF_HEADER_HEIGHT, 'F')
+  doc.setTextColor(...DARK_GRAY)
   doc.setFontSize(16)
   doc.setFont('helvetica', 'bold')
   doc.text(`PlusMin Jaaroverzicht ${jaar}`, 14, 11)
@@ -160,11 +142,13 @@ export async function exportPdf(
   doc.setFont('helvetica', 'normal')
   doc.text(`Gegenereerd op ${new Date().toLocaleDateString('nl-NL')}`, 14, 18)
   if (logoDataUrl) {
-    doc.addImage(logoDataUrl, 'PNG', pageWidth - 20, 3, 16, 16)
+    const logoX = pageWidth - LOGO_RENDER_WIDTH - LOGO_RIGHT_PADDING
+    const logoY = (PDF_HEADER_HEIGHT - LOGO_RENDER_HEIGHT) / 2
+    doc.addImage(logoDataUrl, 'PNG', logoX, logoY, LOGO_RENDER_WIDTH, LOGO_RENDER_HEIGHT)
   }
 
   // Bucket summary table
-  doc.setTextColor(0, 0, 0)
+  doc.setTextColor(...DARK_GRAY)
   doc.setFontSize(11)
   doc.setFont('helvetica', 'bold')
   doc.text('Jaaroverzicht per categorie', 14, 32)
@@ -180,6 +164,7 @@ export async function exportPdf(
     ]),
     headStyles: { fillColor: [34, 197, 94], textColor: 255 },
     styles: { fontSize: 10 },
+    didParseCell: alignNumericHeaderCells,
     columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' } },
   })
 
@@ -205,29 +190,39 @@ export async function exportPdf(
     }),
     headStyles: { fillColor: [59, 130, 246], textColor: 255 },
     styles: { fontSize: 9 },
+    didParseCell: alignNumericHeaderCells,
     columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } },
   })
 
-  // Top counterparties per bucket
+  // Totals per potje per bucket
+  let currentY = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10
   for (const bucket of buckets) {
-    doc.addPage()
+    const potjeTotals = buildPotjeTotals(transactions, bucket)
+    const sectionHeight = estimateBucketSectionHeight(potjeTotals.length)
+    if (currentY + sectionHeight > pageHeight - PAGE_BOTTOM_MARGIN) {
+      doc.addPage()
+      currentY = PAGE_TOP_MARGIN
+    }
+
     const [r, g, b] = BUCKET_COLORS[bucket]
     doc.setFillColor(r, g, b)
-    doc.rect(0, 0, pageWidth, 14, 'F')
+    doc.rect(0, currentY, pageWidth, BUCKET_HEADER_HEIGHT, 'F')
     doc.setTextColor(255, 255, 255)
     doc.setFontSize(13)
     doc.setFont('helvetica', 'bold')
-    doc.text(`Top tegenpartijen — ${BUCKET_LABELS[bucket]}`, 14, 10)
+    doc.text(`Totalen per potje — ${BUCKET_LABELS[bucket]}`, 14, currentY + 9)
 
-    const top = topTegenpartijen(transactions, bucket, userRules, learnedRules)
     autoTable(doc, {
-      startY: 18,
-      head: [['Tegenpartij', 'Totaal']],
-      body: top.map((r) => [r.naam, formatEur(r.totaal)]),
+      startY: currentY + BUCKET_HEADER_HEIGHT + BUCKET_TABLE_OFFSET,
+      head: [['Potje', 'Totaal', 'Aantal transacties']],
+      body: potjeTotals.map((row) => [row.naam, formatEur(row.totaal), String(row.aantal)]),
       headStyles: { fillColor: [r, g, b], textColor: 255 },
       styles: { fontSize: 10 },
-      columnStyles: { 1: { halign: 'right' } },
+      pageBreak: 'avoid',
+      didParseCell: alignNumericHeaderCells,
+      columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' } },
     })
+    currentY = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + BUCKET_SECTION_GAP
   }
 
   doc.save('plusmin-jaaroverzicht.pdf')
