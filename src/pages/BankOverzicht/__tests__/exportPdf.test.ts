@@ -3,8 +3,9 @@ import type { CategorizedTransaction } from '../types'
 
 const { mockDoc, autoTableMock } = vi.hoisted(() => {
   const localMockDoc = {
-    internal: { pageSize: { getWidth: () => 210 } },
+    internal: { pageSize: { getWidth: () => 210, getHeight: () => 297 } },
     setFillColor: vi.fn(),
+    circle: vi.fn(),
     rect: vi.fn(),
     setTextColor: vi.fn(),
     setFontSize: vi.fn(),
@@ -16,8 +17,11 @@ const { mockDoc, autoTableMock } = vi.hoisted(() => {
     lastAutoTable: { finalY: 60 },
   }
 
-  const localAutoTableMock = vi.fn((doc: typeof localMockDoc, _options?: unknown) => {
-    doc.lastAutoTable = { finalY: 80 }
+  const localAutoTableMock = vi.fn((doc: typeof localMockDoc, options?: unknown) => {
+    const tableOptions = options as { startY?: number; body?: unknown[] }
+    const startY = tableOptions?.startY ?? 20
+    const bodyLength = tableOptions?.body?.length ?? 0
+    doc.lastAutoTable = { finalY: startY + 8 + (bodyLength * 6) }
   })
 
   return { mockDoc: localMockDoc, autoTableMock: localAutoTableMock }
@@ -39,6 +43,10 @@ vi.mock('../export/exportRules', () => ({
 
 import { exportPdf } from '../export/exportPdf'
 import { exportRules } from '../export/exportRules'
+
+function formatEur(amount: number): string {
+  return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(amount)
+}
 
 const txBase: CategorizedTransaction = {
   id: 'tx-1',
@@ -74,6 +82,7 @@ describe('exportPdf', () => {
 
     expect(summaryLabels).toContain('Negeren')
     expect(summaryLabels[summaryLabels.length - 1]).toBe('Negeren')
+    expect(mockDoc.addPage).toHaveBeenCalledTimes(1)
   })
 
   it('does not export rules JSON alongside PDF when rules exist', async () => {
@@ -81,22 +90,40 @@ describe('exportPdf', () => {
     expect(exportRules).not.toHaveBeenCalled()
   })
 
-  it('groups top tegenpartijen by matching rule pattern', async () => {
-    const txA: CategorizedTransaction = { ...txBase, id: 'tx-a', tegenpartij: 'Eigen rekening A', bedrag: -10 }
-    const txB: CategorizedTransaction = { ...txBase, id: 'tx-b', tegenpartij: 'Eigen rekening B', bedrag: -20 }
+  it('exports totalen per potje per bucket', async () => {
+    const txA: CategorizedTransaction = { ...txBase, id: 'tx-a', potje: 'Buffer', bedrag: -10 }
+    const txB: CategorizedTransaction = { ...txBase, id: 'tx-b', potje: 'Buffer', bedrag: -20 }
+    const txC: CategorizedTransaction = { ...txBase, id: 'tx-c', potje: null, bedrag: -5 }
 
     await exportPdf(
-      [txA, txB],
+      [txA, txB, txC],
       2025,
       [{ tegenpartijPatroon: 'eigen rekening', bucket: 'NEGEREN' }],
       [],
       [],
     )
 
-    const negerenTopCall = autoTableMock.mock.calls[6]
-    const options = negerenTopCall[1] as unknown as { body: Array<[string, string]> }
+    const negerenPotjesCall = autoTableMock.mock.calls[6]
+    const options = negerenPotjesCall[1] as unknown as { body: Array<[string, string, string]>; head: string[][] }
 
-    expect(options.body).toHaveLength(1)
-    expect(options.body[0][0]).toBe('eigen rekening')
+    expect(options.head[0]).toEqual(['Potje', 'Totaal', 'Aantal transacties'])
+    expect(options.body).toEqual([
+      ['Buffer', formatEur(-30), '2'],
+      ['Zonder potje', formatEur(-5), '1'],
+    ])
+  })
+
+  it('starts a new page only when a full bucket section no longer fits', async () => {
+    const txs: CategorizedTransaction[] = [
+      { ...txBase, id: 'i-1', bucket: 'INKOMEN', potje: 'Salaris', bedrag: 1000 },
+      { ...txBase, id: 'l-1', bucket: 'LEEFGELD', potje: 'Boodschappen', bedrag: -100 },
+      { ...txBase, id: 'v-1', bucket: 'VASTE_LASTEN', potje: 'Huur', bedrag: -800 },
+      { ...txBase, id: 's-1', bucket: 'SPAREN', potje: 'Buffer', bedrag: -200 },
+      { ...txBase, id: 'n-1', bucket: 'NEGEREN', potje: 'Intern', bedrag: -10 },
+    ]
+
+    await exportPdf(txs, 2025, [], [], [])
+
+    expect(mockDoc.addPage).toHaveBeenCalledTimes(1)
   })
 })

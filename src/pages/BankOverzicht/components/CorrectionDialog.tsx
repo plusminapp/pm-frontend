@@ -58,6 +58,7 @@ function suggestBucket(transacties: CategorizedTransaction[]): Bucket {
 }
 
 function suggestPotje(transacties: CategorizedTransaction[], bucket: Bucket): string {
+  if (bucket === 'NEGEREN') return 'Negeren'
   const score = new Map<string, number>()
   for (const tx of transacties) {
     if (tx.bucket === bucket && tx.potje) {
@@ -113,18 +114,19 @@ export function CorrectionDialog({
     }
 
     const trimmedPotje = gekozenPotje.trim()
-    if (trimmedPotje) {
+    const finalPotje = gekozenBucket === 'NEGEREN' ? 'Negeren' : trimmedPotje || null
+    if (trimmedPotje && gekozenBucket !== 'NEGEREN') {
       const bestondAl = bucketPotjes.some((p) => p.naam.toLowerCase() === trimmedPotje.toLowerCase())
-      if (!bestondAl && gekozenBucket !== 'ONBEKEND' && gekozenBucket !== 'NEGEREN') {
+      if (!bestondAl && gekozenBucket !== 'ONBEKEND') {
         onPotjeToevoegen(trimmedPotje, gekozenBucket)
       }
     }
     const ids = transacties.map((t) => t.id)
     const groepCriterium = isGroepNiveau ? normalizedNaam || undefined : undefined
     if (zonderRegel) {
-      onCorrectie(ids, gekozenBucket, trimmedPotje || null, groepCriterium, true)
+      onCorrectie(ids, gekozenBucket, finalPotje, groepCriterium, true)
     } else {
-      onCorrectie(ids, gekozenBucket, trimmedPotje || null, groepCriterium)
+      onCorrectie(ids, gekozenBucket, finalPotje, groepCriterium)
     }
     onSluiten()
   }

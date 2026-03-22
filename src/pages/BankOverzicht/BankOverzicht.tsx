@@ -1,4 +1,4 @@
-import { useReducer, useState, useCallback } from 'react'
+import { useReducer, useState, useCallback, useMemo, useEffect } from 'react'
 import { Accordion, AccordionDetails, AccordionSummary, Alert, Button, Chip, Step, StepButton, Stepper } from '@mui/material'
 import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined'
 import { ChevronDown } from 'lucide-react'
@@ -18,7 +18,7 @@ import { MonthlyChart } from './components/MonthlyChart'
 import { CategoryBreakdown } from './components/CategoryBreakdown'
 import { OpslaanButtons } from './components/ExportButtons'
 import { PotjesBeheerDialog } from './components/PotjesBeheerDialog'
-import { importRules } from './export/exportRules'
+import { buildOverzichtJson, importRules } from './export/exportRules'
 import type { BankFormat, ParsedTransaction, CategorizedTransaction } from './types'
 
 function readFileAsText(file: File): Promise<string> {
@@ -59,11 +59,14 @@ export default function BankOverzicht() {
   const [potjesOpen, setPotjesOpen] = useState(false)
   const [selectedYear, setSelectedYear] = useState<number | null>(null)
   const [regelsImportStatus, setRegelsImportStatus] = useState<{ bericht: string; fout: boolean } | null>(null)
+  const [lastSavedJsonSnapshot, setLastSavedJsonSnapshot] = useState<string | null>(null)
 
   const handleFiles = useCallback(async (files: File[]) => {
     setIsLoading(true)
     const jsonFiles = files.filter((f) => f.name.toLowerCase().endsWith('.json'))
     const bankFiles = files.filter((f) => !f.name.toLowerCase().endsWith('.json'))
+    const uploadBerichten: string[] = []
+    let heeftUploadFout = false
 
     for (const file of jsonFiles) {
       try {
@@ -73,6 +76,9 @@ export default function BankOverzicht() {
         if (transacties.length > 0) {
           dispatch({ type: 'SNAPSHOT_IMPORTEREN', userRules, learnedRules, potjes, transacties })
           setSelectedYear(detectDominantYear(transacties))
+          uploadBerichten.push(
+            `${file.name}: ${transacties.length} transacties en ${userRules.length + learnedRules.length + potjes.length} regels/potjes geladen`,
+          )
           setRegelsImportStatus({
             bericht: `${file.name}: ${transacties.length} transacties en ${userRules.length + learnedRules.length + potjes.length} regels/potjes geladen`,
             fout: false,
@@ -82,12 +88,10 @@ export default function BankOverzicht() {
         }
 
         dispatch({ type: 'REGELS_IMPORTEREN', userRules, learnedRules, potjes })
-        setRegelsImportStatus({
-          bericht: `${file.name}: ${userRules.length + learnedRules.length + potjes.length} regels/potjes geladen`,
-          fout: false,
-        })
+        uploadBerichten.push(`${file.name}: ${userRules.length + learnedRules.length + potjes.length} regels/potjes geladen`)
       } catch (err) {
-        setRegelsImportStatus({ bericht: `${file.name}: ${String(err)}`, fout: true })
+        heeftUploadFout = true
+        uploadBerichten.push(`${file.name}: ${String(err)}`)
       }
     }
 
@@ -102,6 +106,8 @@ export default function BankOverzicht() {
         const content = await readFileAsText(file)
         const format = detectFormat(content)
         if (!format) {
+          heeftUploadFout = true
+          uploadBerichten.push(`${file.name}: Onbekend formaat`)
           dispatch({
             type: 'BESTAND_FOUT',
             bestandNaam: file.name,
@@ -112,7 +118,10 @@ export default function BankOverzicht() {
         const parsed = parseByFormat(content, file.name, format)
         const categorized = applyRecurrenceDetection(applyRules(parsed, state.userRules, state.learnedRules))
         fileResults.push({ naam: file.name, txs: categorized })
+        uploadBerichten.push(`${file.name}: ${categorized.length} transacties geladen`)
       } catch (e) {
+        heeftUploadFout = true
+        uploadBerichten.push(`${file.name}: ${String(e)}`)
         dispatch({ type: 'BESTAND_FOUT', bestandNaam: file.name, foutmelding: String(e) })
       }
     }
@@ -133,6 +142,14 @@ export default function BankOverzicht() {
       const year = detectDominantYear(allTxs)
       setSelectedYear(year)
     }
+
+    if (uploadBerichten.length > 0) {
+      setRegelsImportStatus({
+        bericht: uploadBerichten.join(' | '),
+        fout: heeftUploadFout,
+      })
+    }
+
     setIsLoading(false)
   }, [state.userRules, state.learnedRules, state.transacties])
 
@@ -145,6 +162,14 @@ export default function BankOverzicht() {
   const onbekendUitgegeven = jaarFiltered
     .filter((t) => t.bucket === 'ONBEKEND' && t.bedrag < 0)
     .reduce((s, t) => s + t.bedrag, 0)
+  const categorieZonderPotje = jaarFiltered.filter((t) => t.bucket !== 'ONBEKEND' && !(t.potje ?? '').trim())
+  const categorieZonderPotjeCount = categorieZonderPotje.length
+  const categorieZonderPotjeOntvangen = categorieZonderPotje
+    .filter((t) => t.bedrag > 0)
+    .reduce((s, t) => s + t.bedrag, 0)
+  const categorieZonderPotjeUitgegeven = categorieZonderPotje
+    .filter((t) => t.bedrag < 0)
+    .reduce((s, t) => s + t.bedrag, 0)
 
   const availableYears = [...new Set(
     state.transacties.map((t) => parseInt(t.datum.slice(0, 4), 10)).filter((y) => !isNaN(y)),
@@ -152,6 +177,24 @@ export default function BankOverzicht() {
 
   const stapIndex = { WELKOM: 0, UPLOAD: 1, KOPPELEN: 2, GEBRUIKEN: 3 }[state.stap]
   const heeftTransacties = state.transacties.length > 0
+  const currentJsonSnapshot = useMemo(
+    () => buildOverzichtJson(jaarFiltered, state.userRules, state.learnedRules, state.potjes),
+    [jaarFiltered, state.userRules, state.learnedRules, state.potjes],
+  )
+  const heeftWijzigingenSindsJsonOpslaan =
+    (state.transacties.length > 0 || state.userRules.length > 0 || state.learnedRules.length > 0 || state.potjes.length > 0)
+    && (lastSavedJsonSnapshot === null || currentJsonSnapshot !== lastSavedJsonSnapshot)
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!heeftWijzigingenSindsJsonOpslaan) return
+      event.preventDefault()
+      event.returnValue = ''
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [heeftWijzigingenSindsJsonOpslaan])
 
   return (
     <div>
@@ -280,13 +323,9 @@ export default function BankOverzicht() {
           </p>
           <FileDropZone onFiles={handleFiles} isLoading={isLoading} />
           {regelsImportStatus && (
-            <Chip
-              label={regelsImportStatus.bericht}
-              color={regelsImportStatus.fout ? 'error' : 'success'}
-              size="small"
-              className="mt-2"
-              onDelete={() => setRegelsImportStatus(null)}
-            />
+            <p className="mt-5 text-sm text-gray-500">
+              {regelsImportStatus.bericht}
+            </p>
           )}
           <div className="mt-8 flex justify-end">
             <Button
@@ -322,6 +361,7 @@ export default function BankOverzicht() {
               userRules={state.userRules}
               learnedRules={state.learnedRules}
               potjes={state.potjes}
+              onJsonSaved={() => setLastSavedJsonSnapshot(currentJsonSnapshot)}
             />
 
             {availableYears.length > 1 && (
@@ -351,14 +391,24 @@ export default function BankOverzicht() {
             </div>
           </div>
 
-          {onbekendCount > 0 && (
+          {(onbekendCount > 0 || categorieZonderPotjeCount > 0) && (
             <Alert severity="warning">
-              {onbekendCount} transacties zonder categorie zijn uitgesloten van de totalen
-              {onbekendOntvangen !== 0 && (
-                <> — ontvangen: {new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(onbekendOntvangen)}</>
+              {onbekendCount > 0 && (
+                <>
+                  {onbekendCount} transacties zonder categorie zijn uitgesloten van de totalen
+                  {onbekendOntvangen !== 0 && (
+                    <> — ontvangen: {new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(onbekendOntvangen)}</>
+                  )}
+                  {onbekendUitgegeven !== 0 && (
+                    <>, uitgegeven: {new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(onbekendUitgegeven)}</>
+                  )}
+                </>
               )}
-              {onbekendUitgegeven !== 0 && (
-                <>, uitgegeven: {new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(onbekendUitgegeven)}</>
+              {onbekendCount > 0 && categorieZonderPotjeCount > 0 && <br />}
+              {categorieZonderPotjeCount > 0 && (
+                <>
+                  {categorieZonderPotjeCount} transacties met categorie zonder potje — ontvangen: {new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(categorieZonderPotjeOntvangen)}, uitgegeven: {new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(categorieZonderPotjeUitgegeven)}
+                </>
               )}
             </Alert>
           )}

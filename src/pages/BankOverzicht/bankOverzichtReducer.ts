@@ -36,6 +36,11 @@ export const initialState: BankOverzichtState = {
   potjes: [],
 }
 
+function normalizePotjeForBucket(bucket: CategorizedTransaction['bucket'], potje: string | null): string | null {
+  if (bucket === 'NEGEREN') return 'Negeren'
+  return potje
+}
+
 // Deduplication key for learned rules
 function learnedKey(r: UserRule): string {
   return `${r.tegenpartijPatroon.toLowerCase()}|${r.richting ?? ''}|${r.omschrijvingPatroon ?? ''}`
@@ -43,11 +48,12 @@ function learnedKey(r: UserRule): string {
 
 // Derive a learned rule from a corrected transaction
 function deriveLearnedRule(tx: CategorizedTransaction, bucket: CategorizedTransaction['bucket'], potje: string | null): UserRule {
+  const normalizedPotje = normalizePotjeForBucket(bucket, potje)
   return {
     tegenpartijPatroon: tx.tegenpartij.toLowerCase(),
     richting: tx.bedrag < 0 ? 'debit' : tx.bedrag > 0 ? 'credit' : undefined,
     bucket,
-    ...(potje ? { potje } : {}),
+    ...(normalizedPotje ? { potje: normalizedPotje } : {}),
   }
 }
 
@@ -58,13 +64,14 @@ function deriveLearnedRuleVoorGroep(
   potje: string | null,
 ): UserRule {
   const normalized = criterium.trim()
+  const normalizedPotje = normalizePotjeForBucket(bucket, potje)
   const allDebit = txs.length > 0 && txs.every((tx) => tx.bedrag < 0)
   const allCredit = txs.length > 0 && txs.every((tx) => tx.bedrag > 0)
   return {
     tegenpartijPatroon: normalized,
     richting: allDebit ? 'debit' : allCredit ? 'credit' : undefined,
     bucket,
-    ...(potje ? { potje } : {}),
+    ...(normalizedPotje ? { potje: normalizedPotje } : {}),
   }
 }
 
@@ -159,9 +166,10 @@ export function bankOverzichtReducer(
 
     case 'CATEGORIE_WIJZIGEN': {
       const ids = new Set(action.transactieIds)
+      const normalizedPotje = normalizePotjeForBucket(action.bucket, action.potje)
       const updatedTxs = state.transacties.map((tx) =>
         ids.has(tx.id)
-          ? { ...tx, bucket: action.bucket, potje: action.potje, isHandmatig: true }
+          ? { ...tx, bucket: action.bucket, potje: normalizedPotje, isHandmatig: true }
           : tx,
       )
       if (action.zonderRegel) {
@@ -170,8 +178,8 @@ export function bankOverzichtReducer(
       const corrected = state.transacties.filter((tx) => ids.has(tx.id))
       const groupedCriterium = action.groepCriterium?.trim()
       const newRules = groupedCriterium
-        ? [deriveLearnedRuleVoorGroep(groupedCriterium, corrected, action.bucket, action.potje)]
-        : corrected.map((tx) => deriveLearnedRule(tx, action.bucket, action.potje))
+        ? [deriveLearnedRuleVoorGroep(groupedCriterium, corrected, action.bucket, normalizedPotje)]
+        : corrected.map((tx) => deriveLearnedRule(tx, action.bucket, normalizedPotje))
       const mergedRules = mergeLearnedRules(state.learnedRules, newRules)
       const finalTxs = applyLearnedToOnbekend(updatedTxs, mergedRules)
       return { ...state, transacties: finalTxs, learnedRules: mergedRules }

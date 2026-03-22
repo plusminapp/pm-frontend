@@ -11,13 +11,15 @@ interface Props {
   userRules?: UserRule[]
   learnedRules?: UserRule[]
   potjes?: Potje[]
+  onJsonSaved?: () => void
 }
 
-export function OpslaanButtons({ transacties, jaar, userRules = [], learnedRules = [], potjes = [] }: Props) {
+export function OpslaanButtons({ transacties, jaar, userRules = [], learnedRules = [], potjes = [], onJsonSaved }: Props) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null)
 
   const handleJson = () => {
     exportOverzicht(transacties, jaar, userRules, learnedRules, potjes)
+    onJsonSaved?.()
     setAnchor(null)
   }
 

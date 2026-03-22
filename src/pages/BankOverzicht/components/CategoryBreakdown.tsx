@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
-import { Button, Checkbox, Chip, IconButton, InputAdornment, Tab, Tabs, TextField } from '@mui/material'
+import { Button, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, InputAdornment, MenuItem, Tab, Tabs, TextField, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight, CircleHelp, Home, Pencil, PiggyBank, ShoppingCart, TrendingUp, X } from 'lucide-react'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
 import { CorrectionDialog } from './CorrectionDialog'
 import { TransactionTable } from './TransactionTable'
@@ -26,18 +28,28 @@ const BUCKET_ICONS: Record<Bucket, React.ComponentType<{ className?: string }>> 
   NEGEREN: VisibilityOffOutlinedIcon,
 }
 
-const TABS: { value: Bucket | 'ALLE'; label: string }[] = [
+type TabFilter = Bucket | 'ALLE' | 'ZONDER_POTJE'
+
+const TABS: { value: TabFilter; label: string }[] = [
   { value: 'ALLE', label: 'Alle' },
   { value: 'INKOMEN', label: 'Inkomsten' },
   { value: 'LEEFGELD', label: 'Leefgeld' },
   { value: 'VASTE_LASTEN', label: 'Vaste lasten' },
   { value: 'SPAREN', label: 'Sparen' },
-  { value: 'ONBEKEND', label: 'Onbekend' },
   { value: 'NEGEREN', label: 'Negeren' },
+  { value: 'ONBEKEND', label: 'Onbekend' },
+  { value: 'ZONDER_POTJE', label: 'Categorie zonder potje' },
 ]
 
 function formatEur(n: number) {
   return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(n)
+}
+
+function parseNonNegativeInt(value: string, fallback: number): number {
+  if (value.trim() === '') return fallback
+  const parsed = Number.parseInt(value, 10)
+  if (Number.isNaN(parsed)) return fallback
+  return Math.max(0, parsed)
 }
 
 type GroepeerRegel = Pick<UserRule, 'tegenpartijPatroon' | 'omschrijvingPatroon' | 'richting'>
@@ -166,6 +178,28 @@ type CounterpartyGroup = {
   maandGemiddeld: number
 }
 
+type SorteerOptie = 'naam' | 'categorie' | 'potje' | 'aantal' | 'bedrag'
+type SorteerRichting = 'asc' | 'desc'
+type RichtingFilter = 'alles' | 'inkomsten' | 'uitgaven'
+type Bewerking = 'niets' | 'samenvoegen' | 'eenmalig'
+
+const SORTEER_LABELS: Record<SorteerOptie, string> = {
+  naam: 'Naam',
+  categorie: 'Categorie',
+  potje: 'Potje',
+  aantal: 'Aantal transacties',
+  bedrag: 'Bedrag',
+}
+
+const BUCKET_SORT_ORDER: Record<Bucket, number> = {
+  INKOMEN: 0,
+  LEEFGELD: 1,
+  VASTE_LASTEN: 2,
+  SPAREN: 3,
+  NEGEREN: 4,
+  ONBEKEND: 5,
+}
+
 type GroupMerge = {
   id: string
   naam: string
@@ -174,21 +208,26 @@ type GroupMerge = {
 }
 
 export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules, onCorrectie, onPotjeToevoegen }: Props) {
-  const [activeTab, setActiveTab] = useState<Bucket | 'ALLE'>('ALLE')
+  const [activeTab, setActiveTab] = useState<TabFilter>('ALLE')
+  const [bewerking, setBewerking] = useState<Bewerking>('niets')
+  const [sorteerOp, setSorteerOp] = useState<SorteerOptie>('naam')
+  const [sorteerRichting, setSorteerRichting] = useState<SorteerRichting>('asc')
   const [expanded, setExpanded] = useState<string | null>(null)
   const [dialogTxs, setDialogTxs] = useState<CategorizedTransaction[]>([])
   const [dialogGroupKey, setDialogGroupKey] = useState<string | null>(null)
   const [dialogGroupNaam, setDialogGroupNaam] = useState('')
   const [dialogForceLeefgeldEenmalig, setDialogForceLeefgeldEenmalig] = useState(false)
+  const [bevestigEenmaligTxs, setBevestigEenmaligTxs] = useState<CategorizedTransaction[]>([])
   const [tegenpartijFilter, setTegenpartijFilter] = useState('')
-  const [toonInkomsten, setToonInkomsten] = useState(true)
-  const [toonUitgaven, setToonUitgaven] = useState(true)
+  const [minTransactiesFilter, setMinTransactiesFilter] = useState('0')
+  const [maxTransactiesFilter, setMaxTransactiesFilter] = useState('')
+  const [richtingFilter, setRichtingFilter] = useState<RichtingFilter>('alles')
   const [geselecteerdeGroepen, setGeselecteerdeGroepen] = useState<string[]>([])
   const [geselecteerdeTransacties, setGeselecteerdeTransacties] = useState<string[]>([])
   const [samengevoegdeGroepen, setSamengevoegdeGroepen] = useState<GroupMerge[]>([])
   const [groupNameOverrides, setGroupNameOverrides] = useState<Record<string, string>>({})
 
-  const isLeefgeldEenmaligKandidaat = (tx: CategorizedTransaction) => tx.bucket === 'ONBEKEND' && tx.bedrag < 0
+  const isAlGekoppeldVoorEenmalig = (tx: CategorizedTransaction) => tx.bucket !== 'ONBEKEND'
 
   const tabCounts = useMemo(() => (
     Object.fromEntries(
@@ -196,14 +235,18 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
         value,
         value === 'ALLE'
           ? transacties.length
+          : value === 'ZONDER_POTJE'
+            ? transacties.filter((t) => t.bucket !== 'ONBEKEND' && !(t.potje ?? '').trim()).length
           : transacties.filter((t) => t.bucket === value).length,
       ]),
-    ) as Record<Bucket | 'ALLE', number>
+    ) as Record<TabFilter, number>
   ), [transacties])
 
   const filtered = activeTab === 'ALLE'
     ? transacties
-    : transacties.filter((t) => t.bucket === activeTab)
+    : activeTab === 'ZONDER_POTJE'
+      ? transacties.filter((t) => t.bucket !== 'ONBEKEND' && !(t.potje ?? '').trim())
+      : transacties.filter((t) => t.bucket === activeTab)
 
   const basisRanking: CounterpartyGroup[] = buildCounterpartyRanking(filtered, userRules, learnedRules).map((item) => ({
     ...item,
@@ -244,37 +287,105 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
     return formatTegenpartijVoorWeergave(group.naam)
   }
 
-  const isAanHetFilteren = tegenpartijFilter.length > 0
+  const minTransacties = parseNonNegativeInt(minTransactiesFilter, 0)
+  const maxTransacties = maxTransactiesFilter.trim() === ''
+    ? Infinity
+    : parseNonNegativeInt(maxTransactiesFilter, Infinity)
   const rankingFiltered = ranking.filter((group) => {
     const naamMatch = tegenpartijFilter.trim() === ''
       || matchesRulePattern(getGroupNaamVoorWeergave(group), tegenpartijFilter)
     if (!naamMatch) return false
-    if (group.totaal > 0 && !toonInkomsten) return false
-    if (group.totaal < 0 && !toonUitgaven) return false
-    if (group.totaal === 0 && !(toonInkomsten || toonUitgaven)) return false
+    if (group.count < minTransacties) return false
+    if (group.count > maxTransacties) return false
+    if (richtingFilter === 'inkomsten' && group.totaal <= 0) return false
+    if (richtingFilter === 'uitgaven' && group.totaal >= 0) return false
     return true
   })
-  const zichtbareGroepen = rankingFiltered.map(({ key }) => key)
+
+  const getPrimaryBucket = (group: CounterpartyGroup): Bucket => {
+    const counts = new Map<Bucket, number>()
+    for (const tx of group.txs) {
+      counts.set(tx.bucket, (counts.get(tx.bucket) ?? 0) + 1)
+    }
+    let best: Bucket = group.txs[0]?.bucket ?? 'ONBEKEND'
+    let max = -1
+    for (const [bucket, count] of counts) {
+      if (count > max) {
+        max = count
+        best = bucket
+      }
+    }
+    return best
+  }
+
+  const getPrimaryPotje = (group: CounterpartyGroup): string => {
+    const counts = new Map<string, number>()
+    for (const tx of group.txs) {
+      const naam = tx.potje?.trim() || ''
+      counts.set(naam, (counts.get(naam) ?? 0) + 1)
+    }
+    let best = ''
+    let max = -1
+    for (const [potjeNaam, count] of counts) {
+      if (count > max) {
+        max = count
+        best = potjeNaam
+      }
+    }
+    return best
+  }
+
+  const getDefaultSorteerRichting = (optie: SorteerOptie): SorteerRichting => {
+    if (optie === 'aantal' || optie === 'bedrag') return 'desc'
+    return 'asc'
+  }
+
+  const toggleSorteerRichting = () => {
+    setSorteerRichting((current) => (current === 'asc' ? 'desc' : 'asc'))
+  }
+
+  const kiesSorteerOptie = (optie: SorteerOptie) => {
+    if (optie === sorteerOp) {
+      toggleSorteerRichting()
+      return
+    }
+    setSorteerOp(optie)
+    setSorteerRichting(getDefaultSorteerRichting(optie))
+  }
+
+  const renderSorteerPijl = () => (sorteerRichting === 'asc'
+    ? <KeyboardArrowUpIcon fontSize="small" />
+    : <KeyboardArrowDownIcon fontSize="small" />)
+
+  const rankingSorted = [...rankingFiltered].sort((a, b) => {
+    const direction = sorteerRichting === 'asc' ? 1 : -1
+    if (sorteerOp === 'naam') {
+      return direction * getGroupNaamVoorWeergave(a).localeCompare(getGroupNaamVoorWeergave(b), 'nl')
+    }
+    if (sorteerOp === 'categorie') {
+      const diff = (BUCKET_SORT_ORDER[getPrimaryBucket(a)] ?? 999) - (BUCKET_SORT_ORDER[getPrimaryBucket(b)] ?? 999)
+      if (diff !== 0) return direction * diff
+      return getGroupNaamVoorWeergave(a).localeCompare(getGroupNaamVoorWeergave(b), 'nl')
+    }
+    if (sorteerOp === 'potje') {
+      const potjeDiff = getPrimaryPotje(a).localeCompare(getPrimaryPotje(b), 'nl')
+      if (potjeDiff !== 0) return direction * potjeDiff
+      return getGroupNaamVoorWeergave(a).localeCompare(getGroupNaamVoorWeergave(b), 'nl')
+    }
+    if (sorteerOp === 'aantal') {
+      const diff = a.count - b.count
+      if (diff !== 0) return direction * diff
+      return getGroupNaamVoorWeergave(a).localeCompare(getGroupNaamVoorWeergave(b), 'nl')
+    }
+    const bedragDiff = Math.abs(a.totaal) - Math.abs(b.totaal)
+    if (bedragDiff !== 0) return direction * bedragDiff
+    return getGroupNaamVoorWeergave(a).localeCompare(getGroupNaamVoorWeergave(b), 'nl')
+  })
+
+  const zichtbareGroepen = rankingSorted.map(({ key }) => key)
   const geselecteerdSet = new Set(geselecteerdeGroepen)
   const geselecteerdeTxSet = new Set(geselecteerdeTransacties)
-  const bulkEenmaligBeschikbaar = activeTab === 'ONBEKEND'
-  const kandidaatTxIdSet = new Set(
-    filtered
-      .filter(isLeefgeldEenmaligKandidaat)
-      .map((tx) => tx.id),
-  )
-  const zichtbareKandidaatTxIds = rankingFiltered
-    .flatMap((group) => group.txs)
-    .filter(isLeefgeldEenmaligKandidaat)
-    .map((tx) => tx.id)
-  const zichtbareKandidaatTxIdSet = new Set(zichtbareKandidaatTxIds)
-  const geselecteerdeKandidaatAantal = geselecteerdeTransacties.filter((id) => kandidaatTxIdSet.has(id)).length
-  const alleZichtbareKandidatenGeselecteerd =
-    zichtbareKandidaatTxIds.length > 0
-    && zichtbareKandidaatTxIds.every((id) => geselecteerdeTxSet.has(id))
-  const deelsZichtbareKandidatenGeselecteerd =
-    zichtbareKandidaatTxIds.some((id) => geselecteerdeTxSet.has(id))
-    && !alleZichtbareKandidatenGeselecteerd
+  const toonSelectieCheckboxes = bewerking !== 'niets'
   const alleZichtbareGeselecteerd =
     zichtbareGroepen.length > 0 && zichtbareGroepen.every((key) => geselecteerdSet.has(key))
   const deelsZichtbaarGeselecteerd =
@@ -295,13 +406,6 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
     }
     const zichtbaarSet = new Set(zichtbareGroepen)
     setGeselecteerdeGroepen((current) => current.filter((key) => !zichtbaarSet.has(key)))
-  }
-
-  const toggleAlleZichtbareKandidaatTransacties = (checked: boolean) => {
-    setGeselecteerdeTransacties((current) => {
-      if (checked) return [...new Set([...current, ...zichtbareKandidaatTxIds])]
-      return current.filter((id) => !zichtbareKandidaatTxIdSet.has(id))
-    })
   }
 
   const samenvoegen = () => {
@@ -344,6 +448,13 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
     setExpanded(`merge:${nieuweMerge.id}`)
   }
 
+  const startEenmaligDialoog = (geselecteerdeTxs: CategorizedTransaction[]) => {
+    setDialogTxs(geselecteerdeTxs)
+    setDialogGroupKey(null)
+    setDialogGroupNaam('')
+    setDialogForceLeefgeldEenmalig(true)
+  }
+
   const toggleTransactieSelectie = (txId: string, checked: boolean) => {
     setGeselecteerdeTransacties((current) => {
       if (checked) return current.includes(txId) ? current : [...current, txId]
@@ -360,17 +471,30 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
   }
 
   const openBulkLeefgeldEenmalig = () => {
-    const geselecteerdeTxs = transacties.filter((tx) => geselecteerdeTxSet.has(tx.id) && isLeefgeldEenmaligKandidaat(tx))
+    const groepen = ranking.filter(({ key }) => geselecteerdSet.has(key))
+    const geselecteerdeTxs = groepen.flatMap((group) => group.txs)
     if (geselecteerdeTxs.length === 0) return
-    setDialogTxs(geselecteerdeTxs)
-    setDialogGroupKey(null)
-    setDialogGroupNaam('')
-    setDialogForceLeefgeldEenmalig(true)
+    if (geselecteerdeTxs.some(isAlGekoppeldVoorEenmalig)) {
+      setBevestigEenmaligTxs(geselecteerdeTxs)
+      return
+    }
+    startEenmaligDialoog(geselecteerdeTxs)
+  }
+
+  const wijzigBewerking = (nieuweBewerking: Bewerking) => {
+    const volgendeBewerking = nieuweBewerking
+    setBewerking(volgendeBewerking)
+    setGeselecteerdeGroepen([])
+    setGeselecteerdeTransacties([])
+            setBevestigEenmaligTxs([])
+    if (volgendeBewerking !== 'samenvoegen') {
+      setTegenpartijFilter('')
+    }
   }
 
   return (
     <div className="rounded-xl border bg-white shadow-sm">
-      <div className="border-b px-4 py-2">
+      <div className="sticky top-[-26px] z-20 border-b bg-white/95 px-4 py-2 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="min-w-0">
           <Tabs
             value={activeTab}
@@ -379,6 +503,7 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
               setExpanded(null)
               setGeselecteerdeGroepen([])
               setGeselecteerdeTransacties([])
+              setBevestigEenmaligTxs([])
             }}
             variant="scrollable"
             scrollButtons="auto"
@@ -388,120 +513,182 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
             ))}
           </Tabs>
         </div>
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          <Checkbox
-            size="small"
-            color="success"
-            checked={bulkEenmaligBeschikbaar ? alleZichtbareKandidatenGeselecteerd : alleZichtbareGeselecteerd}
-            indeterminate={bulkEenmaligBeschikbaar ? deelsZichtbareKandidatenGeselecteerd : deelsZichtbaarGeselecteerd}
-            onChange={(_, checked) => {
-              if (bulkEenmaligBeschikbaar) {
-                toggleAlleZichtbareKandidaatTransacties(checked)
-                return
-              }
-              toggleAllesZichtbaar(checked)
-            }}
-            inputProps={{ 'aria-label': bulkEenmaligBeschikbaar ? 'Alle zichtbare transacties voor leefgeld eenmalig (de)selecteren' : 'Alle zichtbare groepen (de)selecteren' }}
-            sx={{ visibility: (isAanHetFilteren || bulkEenmaligBeschikbaar) ? 'visible' : 'hidden' }}
-          />
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <div className="flex w-10 shrink-0 justify-center">
+            {toonSelectieCheckboxes ? (
+              <Checkbox
+                size="small"
+                color="success"
+                checked={alleZichtbareGeselecteerd}
+                indeterminate={deelsZichtbaarGeselecteerd}
+                onChange={(_, checked) => toggleAllesZichtbaar(checked)}
+                inputProps={{ 'aria-label': 'Alle zichtbare groepen (de)selecteren' }}
+              />
+            ) : (
+              <span className="invisible inline-flex h-10 w-10" aria-hidden="true" />
+            )}
+          </div>
           <TextField
+            select
             size="small"
-            label="Tegenpartij"
-            placeholder="Filter"
-            value={tegenpartijFilter}
-            onChange={(e) => {
-              const value = e.target.value
-              setTegenpartijFilter(value)
-              if (value === '') {
-                setGeselecteerdeGroepen([])
-              }
-            }}
-            slotProps={{
-              inputLabel: { sx: { color: 'text.disabled' } },
-              input: {
-                endAdornment: tegenpartijFilter ? (
-                  <InputAdornment position="end">
-                    <IconButton
-                      size="small"
-                      aria-label="filter wissen"
-                      onClick={() => {
-                        setTegenpartijFilter('')
-                        setGeselecteerdeGroepen([])
-                      }}
-                      edge="end"
-                    >
-                      <X size={14} />
-                    </IconButton>
-                  </InputAdornment>
-                ) : undefined,
-              },
-            }}
-          />
-          <Button
-            size="small"
-            variant="outlined"
-            color="success"
-            onClick={samenvoegen}
-            disabled={geselecteerdeGroepen.length < 2}
+            label="Bewerking"
+            value={bewerking}
+            onChange={(e) => wijzigBewerking(e.target.value as Bewerking)}
+            sx={{ minWidth: 180 }}
           >
-            Samenvoegen ({geselecteerdeGroepen.length})
-          </Button>
-          <Chip
-            size="small"
-            label="Inkomsten"
-            color="success"
-            variant={toonInkomsten ? 'filled' : 'outlined'}
-            onClick={() => {
-              setToonInkomsten((current) => {
-                const next = !current
-                if (activeTab !== 'ONBEKEND' || next || !toonUitgaven) setGeselecteerdeTransacties([])
-                return next
-              })
-            }}
-            sx={{ ml: 2 }}
-          />
-          <Chip
-            size="small"
-            label="Uitgaven"
-            color="error"
-            variant={toonUitgaven ? 'filled' : 'outlined'}
-            onClick={() => {
-              setToonUitgaven((current) => {
-                const next = !current
-                if (activeTab !== 'ONBEKEND' || !next || toonInkomsten) setGeselecteerdeTransacties([])
-                return next
-              })
-            }}
-          />
-          <div className="ml-auto" />
-          {bulkEenmaligBeschikbaar && (
+            <MenuItem value="niets">Niets</MenuItem>
+            <MenuItem value="samenvoegen">Samenvoegen</MenuItem>
+            <MenuItem value="eenmalig">Eenmalig koppelen</MenuItem>
+          </TextField>
+          {bewerking === 'samenvoegen' && (
+            <>
+              <TextField
+                size="small"
+                label="Tegenpartij"
+                placeholder="Filter"
+                value={tegenpartijFilter}
+                onChange={(e) => {
+                  const value = e.target.value
+                  setTegenpartijFilter(value)
+                  if (value === '') {
+                    setGeselecteerdeGroepen([])
+                  }
+                }}
+                slotProps={{
+                  inputLabel: { sx: { color: 'text.disabled' } },
+                  input: {
+                    endAdornment: tegenpartijFilter ? (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          aria-label="filter wissen"
+                          onClick={() => {
+                            setTegenpartijFilter('')
+                            setGeselecteerdeGroepen([])
+                          }}
+                          edge="end"
+                        >
+                          <X size={14} />
+                        </IconButton>
+                      </InputAdornment>
+                    ) : undefined,
+                  },
+                }}
+              />
+              <Button
+                size="small"
+                variant="outlined"
+                color="success"
+                onClick={samenvoegen}
+                disabled={tegenpartijFilter.trim() === '' || geselecteerdeGroepen.length < 2}
+              >
+                Samenvoegen ({geselecteerdeGroepen.length})
+              </Button>
+            </>
+          )}
+          {bewerking === 'eenmalig' && (
             <Button
               size="small"
               variant="outlined"
               color="success"
               onClick={openBulkLeefgeldEenmalig}
-              disabled={geselecteerdeKandidaatAantal === 0}
+              disabled={geselecteerdeGroepen.length === 0}
             >
-              Koppel eenmalig aan leefgeld ({geselecteerdeKandidaatAantal})
+              Eenmalig koppelen ({geselecteerdeGroepen.length})
             </Button>
           )}
+          <div className="ml-auto" />
+          <TextField
+            size="small"
+            type="number"
+            label="Min transacties"
+            value={minTransactiesFilter}
+            onChange={(e) => setMinTransactiesFilter(e.target.value)}
+            slotProps={{ htmlInput: { min: 0 } }}
+            sx={{ width: 140 }}
+          />
+          <TextField
+            size="small"
+            type="number"
+            label="Max transacties"
+            placeholder="∞"
+            value={maxTransactiesFilter}
+            onChange={(e) => setMaxTransactiesFilter(e.target.value)}
+            slotProps={{ htmlInput: { min: 0 } }}
+            sx={{ width: 140 }}
+          />
+          <TextField
+            select
+            size="small"
+            label="Sorteer op"
+            value={sorteerOp}
+            onChange={() => {}}
+            sx={{ minWidth: 170 }}
+            SelectProps={{
+              renderValue: (value) => (
+                <span className="inline-flex items-center">
+                  {SORTEER_LABELS[value as SorteerOptie]}
+                  {renderSorteerPijl()}
+                </span>
+              ),
+            }}
+          >
+            <MenuItem value="naam" onClick={() => kiesSorteerOptie('naam')}>
+              <span className="inline-flex items-center">
+                {SORTEER_LABELS.naam}
+                {sorteerOp === 'naam' ? renderSorteerPijl() : null}
+              </span>
+            </MenuItem>
+            <MenuItem value="categorie" onClick={() => kiesSorteerOptie('categorie')}>
+              <span className="inline-flex items-center">
+                {SORTEER_LABELS.categorie}
+                {sorteerOp === 'categorie' ? renderSorteerPijl() : null}
+              </span>
+            </MenuItem>
+            <MenuItem value="potje" onClick={() => kiesSorteerOptie('potje')}>
+              <span className="inline-flex items-center">
+                {SORTEER_LABELS.potje}
+                {sorteerOp === 'potje' ? renderSorteerPijl() : null}
+              </span>
+            </MenuItem>
+            <MenuItem value="aantal" onClick={() => kiesSorteerOptie('aantal')}>
+              <span className="inline-flex items-center">
+                {SORTEER_LABELS.aantal}
+                {sorteerOp === 'aantal' ? renderSorteerPijl() : null}
+              </span>
+            </MenuItem>
+            <MenuItem value="bedrag" onClick={() => kiesSorteerOptie('bedrag')}>
+              <span className="inline-flex items-center">
+                {SORTEER_LABELS.bedrag}
+                {sorteerOp === 'bedrag' ? renderSorteerPijl() : null}
+              </span>
+            </MenuItem>
+          </TextField>
+          <TextField
+            select
+            size="small"
+            label="In/Uit"
+            value={richtingFilter}
+            onChange={(e) => {
+              setRichtingFilter(e.target.value as RichtingFilter)
+              if (activeTab === 'ONBEKEND') setGeselecteerdeTransacties([])
+            }}
+            sx={{ minWidth: 140 }}
+          >
+            <MenuItem value="alles">Alles</MenuItem>
+            <MenuItem value="inkomsten">Inkomsten</MenuItem>
+            <MenuItem value="uitgaven">Uitgaven</MenuItem>
+          </TextField>
         </div>
       </div>
 
       <div className="divide-y">
-        {rankingFiltered.length === 0 && (
+        {rankingSorted.length === 0 && (
           <p className="py-8 text-center text-sm text-gray-500">Geen transacties</p>
         )}
-        {rankingFiltered.map((group) => {
+        {rankingSorted.map((group) => {
           const { key, patroonGedreven, totaal, count, txs, maandGemiddeld } = group
           const weergaveNaam = getGroupNaamVoorWeergave(group)
-          const groepKandidaatTxIds = txs.filter(isLeefgeldEenmaligKandidaat).map((tx) => tx.id)
-          const groepAllesGeselecteerd =
-            groepKandidaatTxIds.length > 0
-            && groepKandidaatTxIds.every((txId) => geselecteerdeTxSet.has(txId))
-          const groepDeelsGeselecteerd =
-            groepKandidaatTxIds.some((txId) => geselecteerdeTxSet.has(txId))
-            && !groepAllesGeselecteerd
           return (
             <div key={key}>
               <div
@@ -520,28 +707,15 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
                   ? <ChevronDown className="h-4 w-4 shrink-0 text-gray-400" />
                   : <ChevronRight className="h-4 w-4 shrink-0 text-gray-400" />
                 }
-                {(isAanHetFilteren || bulkEenmaligBeschikbaar) && (
-                  bulkEenmaligBeschikbaar ? (
-                    <Checkbox
-                      size="small"
-                      color="success"
-                      disabled={groepKandidaatTxIds.length === 0}
-                      checked={groepAllesGeselecteerd}
-                      indeterminate={groepDeelsGeselecteerd}
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={(_, checked) => toggleAlleTransactiesInGroep(groepKandidaatTxIds, checked)}
-                      inputProps={{ 'aria-label': `Alle transacties van ${weergaveNaam} selecteren voor leefgeld eenmalig` }}
-                    />
-                  ) : (
-                    <Checkbox
-                      size="small"
-                      color="success"
-                      checked={geselecteerdSet.has(key)}
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={() => toggleGroepSelectie(key)}
-                      inputProps={{ 'aria-label': `Groep ${weergaveNaam} selecteren om samen te voegen` }}
-                    />
-                  )
+                {toonSelectieCheckboxes && (
+                  <Checkbox
+                    size="small"
+                    color="success"
+                    checked={geselecteerdSet.has(key)}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={() => toggleGroepSelectie(key)}
+                    inputProps={{ 'aria-label': `Groep ${weergaveNaam} selecteren` }}
+                  />
                 )}
                 <span className="flex-1 font-medium">
                   {weergaveNaam}
@@ -589,8 +763,8 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
                 <div className="border-t bg-gray-50 px-4 py-3">
                   <TransactionTable
                     transacties={txs}
-                    selectable={bulkEenmaligBeschikbaar}
-                    isSelectableTx={bulkEenmaligBeschikbaar ? isLeefgeldEenmaligKandidaat : undefined}
+                    selectable={false}
+                    isSelectableTx={undefined}
                     selectedIds={geselecteerdeTxSet}
                     onToggleSelect={toggleTransactieSelectie}
                     onToggleSelectAll={toggleAlleTransactiesInGroep}
@@ -620,6 +794,7 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
             setDialogGroupKey(null)
             setDialogGroupNaam('')
             setDialogForceLeefgeldEenmalig(false)
+            setBevestigEenmaligTxs([])
           }}
           onPotjeToevoegen={onPotjeToevoegen}
           onGroepNaamWijzigen={(nieuweNaam) => {
@@ -655,9 +830,43 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
             setDialogGroupNaam('')
             setDialogForceLeefgeldEenmalig(false)
             setGeselecteerdeTransacties([])
+            setBevestigEenmaligTxs([])
           }}
         />
       )}
+
+      <Dialog
+        open={bevestigEenmaligTxs.length > 0}
+        onClose={() => setBevestigEenmaligTxs([])}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Waarschuwing bij eenmalig koppelen</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Er zitten al gekoppelde transacties in je selectie. Deze transacties zijn hieronder geel gemarkeerd.
+            Als je doorgaat, worden ook deze transacties eenmalig opnieuw gekoppeld.
+          </Typography>
+          <TransactionTable
+            transacties={bevestigEenmaligTxs}
+            highlightTx={isAlGekoppeldVoorEenmalig}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setBevestigEenmaligTxs([])} color="success">Annuleren</Button>
+          <Button
+            onClick={() => {
+              const txs = bevestigEenmaligTxs
+              setBevestigEenmaligTxs([])
+              startEenmaligDialoog(txs)
+            }}
+            variant="contained"
+            color="success"
+          >
+            Doorgaan
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   )
 }

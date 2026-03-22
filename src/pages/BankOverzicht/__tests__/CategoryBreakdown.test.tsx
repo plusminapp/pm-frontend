@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { CategoryBreakdown } from '../components/CategoryBreakdown'
 import type { CategorizedTransaction, UserRule } from '../types'
 
@@ -20,6 +20,12 @@ const tx = (id: string, tegenpartij: string): CategorizedTransaction => ({
 })
 
 describe('CategoryBreakdown', () => {
+  const kiesBewerking = (waarde: RegExp) => {
+    const bewerkingInput = screen.getByLabelText(/bewerking/i)
+    fireEvent.mouseDown(bewerkingInput)
+    fireEvent.click(screen.getByRole('option', { name: waarde }))
+  }
+
   it('groups transactions together when one tegenpartij has a payment prefix and both match the same Jumbo rule', () => {
     render(
       <CategoryBreakdown
@@ -76,12 +82,12 @@ describe('CategoryBreakdown', () => {
     )
   })
 
-  it('shows bulk leefgeld action on Onbekend tab and supports header/group selection', () => {
+  it('shows no checkboxes on niets and enables one-time linking only after groups are selected', () => {
     render(
       <CategoryBreakdown
         transacties={[
           tx('t-1', 'Albert Heijn'),
-          tx('t-2', 'Jumbo'),
+          { ...tx('t-2', 'Jumbo'), bedrag: 25.5 },
         ]}
         potjes={[]}
         userRules={[]}
@@ -93,13 +99,104 @@ describe('CategoryBreakdown', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: /onbekend/i }))
 
-    expect(screen.getByRole('button', { name: /koppel eenmalig aan leefgeld \(0\)/i })).toBeInTheDocument()
-    expect(screen.getByRole('checkbox', { name: /alle zichtbare transacties voor leefgeld eenmalig/i })).toBeInTheDocument()
-    expect(screen.getByRole('checkbox', { name: /alle transacties van albert heijn selecteren voor leefgeld eenmalig/i })).toBeInTheDocument()
-    expect(screen.getByRole('checkbox', { name: /alle transacties van jumbo selecteren voor leefgeld eenmalig/i })).toBeInTheDocument()
+    expect(screen.queryByRole('checkbox', { name: /alle zichtbare groepen/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /eenmalig koppelen/i })).not.toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('checkbox', { name: /alle zichtbare transacties voor leefgeld eenmalig/i }))
-    expect(screen.getByRole('button', { name: /koppel eenmalig aan leefgeld \(2\)/i })).toBeInTheDocument()
+    kiesBewerking(/eenmalig koppelen/i)
+
+    expect(screen.getByRole('checkbox', { name: /alle zichtbare groepen/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /eenmalig koppelen \(0\)/i })).toBeDisabled()
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /alle zichtbare groepen/i }))
+    expect(screen.getByRole('button', { name: /eenmalig koppelen \(2\)/i })).toBeEnabled()
+  })
+
+  it('allows selecting eenmalig koppelen outside the onbekend tab', () => {
+    render(
+      <CategoryBreakdown
+        transacties={[
+          { ...tx('t-1', 'Werkgever'), bucket: 'INKOMEN', bedrag: 2500 },
+        ]}
+        potjes={[]}
+        userRules={[]}
+        learnedRules={[]}
+        onCorrectie={vi.fn()}
+        onPotjeToevoegen={vi.fn()}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('tab', { name: /inkomsten/i }))
+    kiesBewerking(/eenmalig koppelen/i)
+
+    expect(screen.getByRole('checkbox', { name: /alle zichtbare groepen/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /eenmalig koppelen \(0\)/i })).toBeDisabled()
+  })
+
+  it('warns when selected groups contain already linked transactions and allows continue or cancel', async () => {
+    render(
+      <CategoryBreakdown
+        transacties={[
+          tx('t-1', 'Albert Heijn'),
+          { ...tx('t-2', 'Werkgever'), bucket: 'INKOMEN', bedrag: 2500, potje: 'Salaris' },
+        ]}
+        potjes={[]}
+        userRules={[]}
+        learnedRules={[]}
+        onCorrectie={vi.fn()}
+        onPotjeToevoegen={vi.fn()}
+      />,
+    )
+
+    kiesBewerking(/eenmalig koppelen/i)
+    fireEvent.click(screen.getByRole('checkbox', { name: /alle zichtbare groepen/i }))
+    fireEvent.click(screen.getByRole('button', { name: /eenmalig koppelen \(2\)/i }))
+
+    expect(screen.getByText(/er zitten al gekoppelde transacties in je selectie/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /doorgaan/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /annuleren/i })).toBeInTheDocument()
+
+    const gekoppeldeRij = screen.getAllByText(/werkgever/i)[1].closest('tr')
+    expect(gekoppeldeRij).toHaveClass('bg-yellow-50')
+
+    fireEvent.click(screen.getAllByRole('button', { name: /^annuleren$/i }).at(-1) as HTMLElement)
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: /waarschuwing bij eenmalig koppelen/i })).not.toBeInTheDocument()
+    })
+  })
+
+  it('applies one-time linking to all selected transactions after warning confirmation', () => {
+    const onCorrectie = vi.fn()
+
+    render(
+      <CategoryBreakdown
+        transacties={[
+          tx('t-1', 'Albert Heijn'),
+          { ...tx('t-2', 'Werkgever'), bucket: 'INKOMEN', bedrag: 2500, potje: 'Salaris' },
+        ]}
+        potjes={[]}
+        userRules={[]}
+        learnedRules={[]}
+        onCorrectie={onCorrectie}
+        onPotjeToevoegen={vi.fn()}
+      />,
+    )
+
+    kiesBewerking(/eenmalig koppelen/i)
+    fireEvent.click(screen.getByRole('checkbox', { name: /alle zichtbare groepen/i }))
+    fireEvent.click(screen.getByRole('button', { name: /eenmalig koppelen \(2\)/i }))
+    fireEvent.click(screen.getByRole('button', { name: /doorgaan/i }))
+
+    expect(screen.getByText(/deze koppeling geldt alleen voor de geselecteerde transacties/i)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /opslaan/i }))
+
+    expect(onCorrectie).toHaveBeenCalledWith(
+      ['t-1', 't-2'],
+      'LEEFGELD',
+      null,
+      undefined,
+      true,
+    )
   })
 
   it('supports wildcard in tegenpartij filter', () => {
@@ -117,6 +214,8 @@ describe('CategoryBreakdown', () => {
         onPotjeToevoegen={vi.fn()}
       />,
     )
+
+    kiesBewerking(/samenvoegen/i)
 
     const filterInput = screen.getByLabelText(/tegenpartij/i)
 
@@ -144,6 +243,8 @@ describe('CategoryBreakdown', () => {
       />,
     )
 
+    kiesBewerking(/samenvoegen/i)
+
     const filterInput = screen.getByLabelText(/tegenpartij/i)
     fireEvent.change(filterInput, { target: { value: 'asn*sparen' } })
 
@@ -151,5 +252,103 @@ describe('CategoryBreakdown', () => {
     fireEvent.click(screen.getByRole('button', { name: /samenvoegen \(2\)/i }))
 
     expect(screen.getByText('asn*sparen')).toBeInTheDocument()
+  })
+
+  it('shows merge controls only in samenvoegen mode and requires a tegenpartij value', () => {
+    render(
+      <CategoryBreakdown
+        transacties={[
+          tx('t-1', 'ASN Sparen'),
+          tx('t-2', 'ASN Ideaalsparen'),
+        ]}
+        potjes={[]}
+        userRules={[]}
+        learnedRules={[]}
+        onCorrectie={vi.fn()}
+        onPotjeToevoegen={vi.fn()}
+      />,
+    )
+
+    expect(screen.queryByLabelText(/tegenpartij/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /samenvoegen/i })).not.toBeInTheDocument()
+
+    kiesBewerking(/samenvoegen/i)
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /alle zichtbare groepen/i }))
+
+    expect(screen.getByLabelText(/tegenpartij/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /samenvoegen \(2\)/i })).toBeDisabled()
+
+    fireEvent.change(screen.getByLabelText(/tegenpartij/i), { target: { value: 'asn' } })
+    expect(screen.getByRole('button', { name: /samenvoegen \(2\)/i })).toBeEnabled()
+  })
+
+  it('filters groups by minimum and maximum number of transactions', () => {
+    render(
+      <CategoryBreakdown
+        transacties={[
+          tx('t-1', 'Albert Heijn'),
+          tx('t-2', 'Jumbo'),
+          tx('t-3', 'Jumbo'),
+          tx('t-4', 'Jumbo'),
+        ]}
+        potjes={[]}
+        userRules={[]}
+        learnedRules={[]}
+        onCorrectie={vi.fn()}
+        onPotjeToevoegen={vi.fn()}
+      />,
+    )
+
+    const minInput = screen.getByLabelText(/min transacties/i)
+    const maxInput = screen.getByLabelText(/max transacties/i)
+
+    fireEvent.change(minInput, { target: { value: '2' } })
+    expect(screen.queryByText(/albert heijn/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/jumbo/i)).toBeInTheDocument()
+
+    fireEvent.change(minInput, { target: { value: '0' } })
+    fireEvent.change(maxInput, { target: { value: '1' } })
+    expect(screen.getByText(/albert heijn/i)).toBeInTheDocument()
+    expect(screen.queryByText(/jumbo/i)).not.toBeInTheDocument()
+  })
+
+  it('sorts groups by selected sort option', () => {
+    render(
+      <CategoryBreakdown
+        transacties={[
+          tx('t-1', 'Albert Heijn'),
+          tx('t-2', 'Jumbo'),
+          tx('t-3', 'Jumbo'),
+          tx('t-4', 'Jumbo'),
+        ]}
+        potjes={[]}
+        userRules={[]}
+        learnedRules={[]}
+        onCorrectie={vi.fn()}
+        onPotjeToevoegen={vi.fn()}
+      />,
+    )
+
+    const sortInput = screen.getByLabelText(/sorteer op/i)
+    fireEvent.mouseDown(sortInput)
+    fireEvent.click(screen.getByRole('option', { name: /aantal transacties/i }))
+
+    const rijTeksten = screen.getAllByText(/albert heijn|jumbo/i)
+      .map((el) => el.textContent ?? '')
+
+    expect(rijTeksten[0]).toMatch(/jumbo/i)
+
+    fireEvent.mouseDown(sortInput)
+    fireEvent.click(screen.getByRole('option', { name: /aantal transacties ▼/i }))
+
+    fireEvent.mouseDown(sortInput)
+    expect(screen.getByRole('option', { name: /aantal transacties ▲/i })).toBeInTheDocument()
+    fireEvent.click(document.body)
+
+    const rijTekstenAsc = screen.getAllByText(/albert heijn|jumbo/i)
+      .map((el) => el.textContent ?? '')
+
+    expect(rijTekstenAsc[0]).toMatch(/albert heijn/i)
   })
 })

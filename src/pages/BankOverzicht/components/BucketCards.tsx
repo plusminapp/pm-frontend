@@ -1,7 +1,8 @@
-import type { ElementType } from 'react'
+import { useState, type ElementType } from 'react'
 import type { CategorizedTransaction, Bucket } from '../types'
 import { TrendingUp, ShoppingCart, Home, PiggyBank } from 'lucide-react'
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
+import { Chip } from '@mui/material'
 
 interface Props {
   transacties: CategorizedTransaction[]
@@ -28,6 +29,7 @@ function formatEur(n: number) {
 }
 
 export function BucketCards({ transacties }: Props) {
+  const [toonPotjesPerBucket, setToonPotjesPerBucket] = useState<Partial<Record<Bucket, boolean>>>({})
   const aantalMaanden = new Set(transacties.map((t) => t.datum.slice(0, 7))).size || 1
 
   const totals = Object.fromEntries(
@@ -36,6 +38,24 @@ export function BucketCards({ transacties }: Props) {
       transacties.filter((t) => t.bucket === bucket).reduce((sum, t) => sum + t.bedrag, 0),
     ]),
   ) as Record<Bucket, number>
+
+  const potjeTotalsPerBucket = Object.fromEntries(
+    BUCKET_CONFIG.map(({ bucket }) => {
+      const bucketTxs = transacties.filter((t) => t.bucket === bucket)
+      const map = new Map<string, { potjeNaam: string; totaal: number; count: number }>()
+      for (const tx of bucketTxs) {
+        const potjeNaam = tx.potje?.trim() || 'Zonder potje'
+        const entry = map.get(potjeNaam) ?? { potjeNaam, totaal: 0, count: 0 }
+        entry.totaal += tx.bedrag
+        entry.count += 1
+        map.set(potjeNaam, entry)
+      }
+      return [
+        bucket,
+        [...map.values()].sort((a, b) => Math.abs(b.totaal) - Math.abs(a.totaal)),
+      ]
+    }),
+  ) as Record<Bucket, Array<{ potjeNaam: string; totaal: number; count: number }>>
 
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
@@ -53,6 +73,42 @@ export function BucketCards({ transacties }: Props) {
           <p className="mt-1 text-xs text-gray-500">
             Gem. {formatEur(totals[bucket] / aantalMaanden)} / maand
           </p>
+
+          <div className="mt-3 border-t pt-2">
+            <button
+              type="button"
+              className="text-xs font-medium text-gray-600 hover:text-gray-900"
+              onClick={() =>
+                setToonPotjesPerBucket((current) => ({
+                  ...current,
+                  [bucket]: !current[bucket],
+                }))
+              }
+            >
+              {toonPotjesPerBucket[bucket] ? 'Verberg potjes' : 'Toon potjes'}
+            </button>
+
+            {toonPotjesPerBucket[bucket] && (
+              <div className="mt-2 space-y-1.5">
+                {potjeTotalsPerBucket[bucket].length === 0 && (
+                  <p className="text-xs text-gray-500">Geen transacties</p>
+                )}
+                {potjeTotalsPerBucket[bucket].map(({ potjeNaam, totaal, count }) => (
+                  <div key={`${bucket}-${potjeNaam}`} className="flex items-center justify-between gap-2">
+                    <Chip
+                      size="small"
+                      label={potjeNaam}
+                      icon={<Icon className="h-3.5 w-3.5" />}
+                      variant="outlined"
+                    />
+                    <span className="text-xs text-gray-700">
+                      {formatEur(totaal)} ({count})
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       ))}
     </div>
