@@ -318,7 +318,7 @@ export function AppSidebar({
           )}
           {isCollapsed && (
             <div className="flex items-center justify-center w-full">
-              <span className="text-lg text-center font-bold"><PlusLogo/></span>
+              <span className="text-lg text-center font-bold"><PlusLogo /></span>
             </div>
           )}
           {/* Close button for mobile */}
@@ -351,27 +351,6 @@ export function AppSidebar({
               </Button>
             </TooltipTrigger>
             {isCollapsed && <TooltipContent side="right">Home</TooltipContent>}
-          </Tooltip>
-
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <Button
-                variant={pathname === '/bankoverzicht' ? 'secondary' : 'ghost'}
-                className={cn(
-                  'w-full justify-start gap-3 text-foreground hover:text-foreground',
-                  isCollapsed && 'justify-center',
-                )}
-                onClick={() => handleNavigation('/bankoverzicht')}
-              >
-                <BarChart2 className="h-5 w-5 shrink-0" />
-                {!isCollapsed && (
-                  <span className="text-sm text-foreground">
-                    {t(`${I18N_KEY}.bankoverzicht`)}
-                  </span>
-                )}
-              </Button>
-            </TooltipTrigger>
-            {isCollapsed && <TooltipContent side="right">{t(`${I18N_KEY}.bankoverzicht`)}</TooltipContent>}
           </Tooltip>
 
           {state.isAuthenticated &&
@@ -407,6 +386,32 @@ export function AppSidebar({
                 </Tooltip>
               );
             })}
+
+          {state.isAuthenticated &&
+            <div className="flex-1" />
+          }
+
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <Button
+                variant={pathname === '/bankoverzicht' ? 'secondary' : 'ghost'}
+                className={cn(
+                  'w-full justify-start gap-3 text-foreground hover:text-foreground',
+                  isCollapsed && 'justify-center',
+                )}
+                onClick={() => handleNavigation('/bankoverzicht')}
+              >
+                <BarChart2 className="h-5 w-5 shrink-0" />
+                {!isCollapsed && (
+                  <span className="text-sm text-foreground">
+                    {t(`${I18N_KEY}.bankoverzicht`)}
+                  </span>
+                )}
+              </Button>
+            </TooltipTrigger>
+            {isCollapsed && <TooltipContent side="right">{t(`${I18N_KEY}.bankoverzicht`)}</TooltipContent>}
+          </Tooltip>
+
 
           {/* Spacer */}
           <div className="flex-1" />
@@ -506,7 +511,7 @@ export function AppSidebar({
 
         {/* Footer - Login */}
         <div className="border-t p-2 space-y-4">
-          {!state.isAuthenticated  && (
+          {!state.isAuthenticated && (
             <Button color="success" onClick={handleLogin} className="w-full" size="sm">
               <LoginIcon />{!isCollapsed ? 'Inloggen' : ''}
             </Button>

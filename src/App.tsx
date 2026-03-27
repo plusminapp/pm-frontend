@@ -30,6 +30,7 @@ import { useState } from 'react';
 import BeslisboomWrapper from './pages/BeslisboomWrapper';
 
 const BankOverzicht = React.lazy(() => import('./pages/BankOverzicht/BankOverzicht'));
+const BankOverzichtHelp = React.lazy(() => import('./pages/BankOverzicht/Help').then(m => ({ default: m.BankOverzichtHelp })));
 
 const ProtectedRoute: React.FC<{ element: JSX.Element }> = ({ element }) => {
   const { state } = useAuthContext();
@@ -68,6 +69,7 @@ const App: React.FC = () => {
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<LoginPagina />} />
               <Route path="/bankoverzicht" element={<BankOverzicht />} />
+              <Route path="/bankoverzicht/help" element={<BankOverzichtHelp />} />
 
               {/* Beschermde routes */}
               <Route

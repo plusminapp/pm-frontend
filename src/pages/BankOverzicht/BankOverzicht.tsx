@@ -1,7 +1,9 @@
 import { useReducer, useState, useCallback, useMemo, useEffect } from 'react'
 import { Accordion, AccordionDetails, AccordionSummary, Alert, Button, Chip, Step, StepButton, Stepper } from '@mui/material'
 import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined'
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined'
 import { ChevronDown } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 import { bankOverzichtReducer, initialState } from './bankOverzichtReducer'
 import { detectFormat } from './parsers/detectFormat'
@@ -19,7 +21,58 @@ import { CategoryBreakdown } from './components/CategoryBreakdown'
 import { OpslaanButtons } from './components/ExportButtons'
 import { PotjesBeheerDialog } from './components/PotjesBeheerDialog'
 import { buildOverzichtJson, importRules } from './export/exportRules'
-import type { BankFormat, ParsedTransaction, CategorizedTransaction } from './types'
+import type { BankFormat, ParsedTransaction, CategorizedTransaction, BankOverzichtState } from './types'
+
+const BANKOVERZICHT_SESSION_KEY = 'bankoverzicht-session-v1'
+const BANKOVERZICHT_CLEAR_ON_NEXT_LOAD_KEY = 'bankoverzicht-clear-on-next-load-v1'
+
+type BankOverzichtSession = {
+  state: BankOverzichtState
+  selectedYear: number | null
+  lastSavedJsonSnapshot: string | null
+}
+
+function isLegeBankOverzichtSessie(session: BankOverzichtSession): boolean {
+  return (
+    session.state.stap === 'WELKOM'
+    && session.state.bestanden.length === 0
+    && session.state.transacties.length === 0
+    && session.state.userRules.length === 0
+    && session.state.learnedRules.length === 0
+    && session.state.potjes.length === 0
+    && session.selectedYear === null
+    && session.lastSavedJsonSnapshot === null
+  )
+}
+
+function loadBankOverzichtSession(): BankOverzichtSession | null {
+  try {
+    if (localStorage.getItem(BANKOVERZICHT_CLEAR_ON_NEXT_LOAD_KEY) === '1') {
+      localStorage.removeItem(BANKOVERZICHT_CLEAR_ON_NEXT_LOAD_KEY)
+      sessionStorage.removeItem(BANKOVERZICHT_SESSION_KEY)
+      return null
+    }
+
+    const raw = sessionStorage.getItem(BANKOVERZICHT_SESSION_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as Partial<BankOverzichtSession>
+    if (!parsed || typeof parsed !== 'object' || !parsed.state) return null
+    const restored: BankOverzichtSession = {
+      state: parsed.state,
+      selectedYear: typeof parsed.selectedYear === 'number' ? parsed.selectedYear : null,
+      lastSavedJsonSnapshot: typeof parsed.lastSavedJsonSnapshot === 'string' ? parsed.lastSavedJsonSnapshot : null,
+    }
+
+    if (isLegeBankOverzichtSessie(restored)) {
+      sessionStorage.removeItem(BANKOVERZICHT_SESSION_KEY)
+      return null
+    }
+
+    return restored
+  } catch {
+    return null
+  }
+}
 
 function readFileAsText(file: File): Promise<string> {
   const lowerName = file.name.toLowerCase()
@@ -35,10 +88,10 @@ function readFileAsText(file: File): Promise<string> {
 
 function parseByFormat(content: string, fileName: string, format: BankFormat): ParsedTransaction[] {
   switch (format) {
-    case 'ING':      return parseIng(content, fileName)
+    case 'ING': return parseIng(content, fileName)
     case 'ABN_AMRO': return parseAbnAmro(content, fileName)
     case 'RABOBANK': return parseRabobank(content, fileName)
-    case 'CAMT053':  return parseCamt053(content, fileName)
+    case 'CAMT053': return parseCamt053(content, fileName)
   }
 }
 
@@ -54,12 +107,27 @@ function detectDominantYear(txs: CategorizedTransaction[]): number {
 }
 
 export default function BankOverzicht() {
-  const [state, dispatch] = useReducer(bankOverzichtReducer, initialState)
+  const restoredSession = useMemo(() => loadBankOverzichtSession(), [])
+  const [state, dispatch] = useReducer(bankOverzichtReducer, restoredSession?.state ?? initialState)
   const [isLoading, setIsLoading] = useState(false)
   const [potjesOpen, setPotjesOpen] = useState(false)
-  const [selectedYear, setSelectedYear] = useState<number | null>(null)
+  const [selectedYear, setSelectedYear] = useState<number | null>(restoredSession?.selectedYear ?? null)
   const [regelsImportStatus, setRegelsImportStatus] = useState<{ bericht: string; fout: boolean } | null>(null)
-  const [lastSavedJsonSnapshot, setLastSavedJsonSnapshot] = useState<string | null>(null)
+  const [lastSavedJsonSnapshot, setLastSavedJsonSnapshot] = useState<string | null>(
+    restoredSession?.lastSavedJsonSnapshot ?? null,
+  )
+
+  const handleUploadsWissen = useCallback(() => {
+    dispatch({ type: 'RESET' })
+    dispatch({ type: 'NAAR_UPLOAD' })
+    setSelectedYear(null)
+    setRegelsImportStatus(null)
+    setLastSavedJsonSnapshot(null)
+    setIsLoading(false)
+    setPotjesOpen(false)
+    sessionStorage.removeItem(BANKOVERZICHT_SESSION_KEY)
+    localStorage.removeItem(BANKOVERZICHT_CLEAR_ON_NEXT_LOAD_KEY)
+  }, [])
 
   const handleFiles = useCallback(async (files: File[]) => {
     setIsLoading(true)
@@ -186,15 +254,70 @@ export default function BankOverzicht() {
     && (lastSavedJsonSnapshot === null || currentJsonSnapshot !== lastSavedJsonSnapshot)
 
   useEffect(() => {
+    let pendingUnloadConfirm = false
+    let pageHideFired = false
+    let cancelTimer: ReturnType<typeof setTimeout> | null = null
+
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (!heeftWijzigingenSindsJsonOpslaan) return
+
+      // Mark this unload attempt; if user confirms, the next load clears session storage.
+      pendingUnloadConfirm = true
+      pageHideFired = false
+      localStorage.setItem(BANKOVERZICHT_CLEAR_ON_NEXT_LOAD_KEY, '1')
+
       event.preventDefault()
       event.returnValue = ''
     }
 
+    // pagehide fires reliably when the page is actually leaving (user confirmed).
+    const handlePageHide = () => {
+      pageHideFired = true
+      if (cancelTimer) { clearTimeout(cancelTimer); cancelTimer = null }
+    }
+
+    // focus/visibilitychange can fire both on confirm AND cancel.
+    // Use a 300ms debounce: if pagehide hasn't fired yet, the user cancelled.
+    const handleMaybeCancelled = () => {
+      if (!pendingUnloadConfirm) return
+      if (cancelTimer) clearTimeout(cancelTimer)
+      cancelTimer = setTimeout(() => {
+        cancelTimer = null
+        if (!pageHideFired) {
+          // Page is still alive → user cancelled the unload dialog
+          pendingUnloadConfirm = false
+          localStorage.removeItem(BANKOVERZICHT_CLEAR_ON_NEXT_LOAD_KEY)
+        }
+      }, 300)
+    }
+
     window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+    window.addEventListener('pagehide', handlePageHide)
+    window.addEventListener('focus', handleMaybeCancelled)
+    document.addEventListener('visibilitychange', handleMaybeCancelled)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      window.removeEventListener('pagehide', handlePageHide)
+      window.removeEventListener('focus', handleMaybeCancelled)
+      document.removeEventListener('visibilitychange', handleMaybeCancelled)
+      if (cancelTimer) clearTimeout(cancelTimer)
+    }
   }, [heeftWijzigingenSindsJsonOpslaan])
+
+  useEffect(() => {
+    const sessionState: BankOverzichtSession = {
+      state,
+      selectedYear,
+      lastSavedJsonSnapshot,
+    }
+
+    if (isLegeBankOverzichtSessie(sessionState)) {
+      sessionStorage.removeItem(BANKOVERZICHT_SESSION_KEY)
+      return
+    }
+
+    sessionStorage.setItem(BANKOVERZICHT_SESSION_KEY, JSON.stringify(sessionState))
+  }, [state, selectedYear, lastSavedJsonSnapshot])
 
   return (
     <div>
@@ -269,7 +392,7 @@ export default function BankOverzicht() {
 
       {/* ── WELKOM ────────────────────────────────────────────────────────── */}
       {state.stap === 'WELKOM' && (
-        <div className="mx-auto max-w-2xl py-12 space-y-6">
+        <div className="py-12 space-y-6 px-[10%]">
           <h1 className="text-2xl font-bold">Bankafschriften overzicht</h1>
 
           <p>
@@ -297,12 +420,56 @@ export default function BankOverzicht() {
           <p>
             Nog een belangrijke privacy-voordeel: Je bestanden verlaten je computer of telefoon nooit.
             Alle verwerking gebeurt volledig in je browser, rechtstreeks op jouw apparaat. Twijfel je
-            hierover? Geen probleem: download de app, zorg dat je bestanden op je apparaat staan en
+            hierover? Geen probleem: open de app in je browser, zorg dat je bestanden op je apparaat staan en
             verbreek daarna je internetverbinding. Alles blijft gewoon werken, omdat we niets naar
             externe servers sturen. Je bent volledig zelf baas over je data.
           </p>
 
-          <div className="flex justify-end">
+          <p>
+            Wil je eerst rustig lezen hoe alles werkt? Open dan de
+            {' '}
+            <Link className="text-green-700 underline hover:text-green-800" to="/bankoverzicht/help">
+              online handleiding
+            </Link>
+            .
+            Daar vind je alle stappen met uitleg en schermafbeeldingen.
+          </p>
+
+          <div className="rounded-md border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700 space-y-2">
+            <p className="font-semibold text-gray-900">Handig om te starten</p>
+            <p>
+              De <Link className="text-green-700 underline hover:text-green-800" to="/bankoverzicht/help">
+                online handleiding
+              </Link>
+              : alle stappen met uitleg en schermafbeeldingen.
+            </p>
+            <p>
+              <a className="text-green-700 underline hover:text-green-800" href="/docs/bankoverzicht/BankOverzicht.pdf" target="_blank" rel="noreferrer">
+                BankOverzicht.pdf
+              </a>
+              : een pdf versie van de handleiding, om te bewaren of te lezen als je geen internet hebt.
+            </p>
+            <p>
+              <a className="text-green-700 underline hover:text-green-800" href="/docs/bankoverzicht/voorbeelden/demo-johan.csv" target="_blank" rel="noreferrer">
+                voorbeelden/demo-johan.csv
+              </a>
+              : een voorbeeld van een bankbestand met alleen betalingen zonder uitgewerkte koppelingen, dus waarmee je kunt starten.
+            </p>
+            <p>
+              <a className="text-green-700 underline hover:text-green-800" href="/docs/bankoverzicht/voorbeelden/demo-johan-ingevuld.json" target="_blank" rel="noreferrer">
+                voorbeelden/demo-johan-ingevuld.json
+              </a>
+              : een voorbeeld van een bewaard bestand met betalingen, koppelingen en regels, zodat je ziet wat het eindresultaat zou kunnen zijn.
+            </p>
+            <p>
+              <a className="text-green-700 underline hover:text-green-800" href="/docs/bankoverzicht/voorbeelden/demo-johan-ingevuld.pdf" target="_blank" rel="noreferrer">
+                voorbeelden/demo-johan-ingevuld.pdf
+              </a>
+              : het bijbehorende jaaroverzicht als pdf, zodat je ziet hoe de uitvoer eruit ziet.
+            </p>
+          </div>
+
+          <div className="flex justify-end items-center">
             <Button
               color="success"
               variant="contained"
@@ -317,17 +484,42 @@ export default function BankOverzicht() {
 
       {/* ── UPLOAD ────────────────────────────────────────────────────────── */}
       {state.stap === 'UPLOAD' && (
-        <div className="mx-auto max-w-2xl py-8">
-          <p className="mb-8 text-gray-500">
-            Upload je bankafschriften (en eventueel regelsbestanden) voor een overzicht van het jaar. Alle data blijft in je browser.
+        <div className="py-12 space-y-6 px-[10%]">
+          <p className="mb-8">
+            Upload je bankafschriften, of bewaarde gegevens van een vorige sessie, voor een overzicht van ontvangsten en uitgaven van een jaar. Alle data blijft in je browser.
           </p>
-          <FileDropZone onFiles={handleFiles} isLoading={isLoading} />
+          <div className="w-full lg:w-1/2 lg:mx-auto">
+            <FileDropZone onFiles={handleFiles} isLoading={isLoading} />
+          </div>
           {regelsImportStatus && (
-            <p className="mt-5 text-sm text-gray-500">
+            <p className="mt-5 text-sm">
               {regelsImportStatus.bericht}
             </p>
           )}
-          <div className="mt-8 flex justify-end">
+          <p className="mt-10 mb-4">
+            Voor het eerst hier? Dan upload je één of meer bankbestanden (CSV of XML/CAMT.053). Heb je meerdere rekeningen, zoals een betaalrekening, spaarrekening en creditcard? Dan kun je die hier allemaal tegelijk aanbieden. Lees eerst even hoofdstuk 2 als je niet zeker weet welke bestanden je nu wel of niet mee wil nemen.
+          </p>
+          <p className="mb-4">
+            Terugkomen en verdergaan? Dan upload je het JSON-bestand dat je de vorige keer hebt opgeslagen. Daarin zitten al je eerder geüploade betalingen en alle koppelingen die je al had gemaakt. Je gaat gewoon verder waar je was gebleven — je hoeft dan geen losse bankbestanden meer toe te voegen.
+          </p>
+          <p className="mb-4">
+            Nieuwe betalingen toevoegen aan een bestaand overzicht? Dan upload je tegelijk het JSON-bestand én de nieuwe bankbestanden met de extra betalingen. Bankoverzicht voegt de nieuwe betalingen toe aan wat er al in het JSON-bestand zat. Zorg wel dat je geen periodes dubbel meeneemt.
+          </p>
+          <p className="mb-8">
+            Zodra je bestanden zijn ingelezen, zie je direct terugkoppeling onder de uploadzone. Per bestand staat de bestandsnaam en het aantal ingelezen betalingen. Zo check je snel of alles goed is gegaan.
+          </p>
+
+          <div className="mt-8 flex items-center justify-between gap-2">
+            <Button
+              variant="outlined"
+              color="success"
+              size="small"
+              disabled={!heeftTransacties}
+              startIcon={<DeleteOutlineOutlinedIcon fontSize="small" />}
+              onClick={() => { if (window.confirm('Weet je het zeker? Alle uploads en koppelingen worden gewist.')) handleUploadsWissen() }}
+            >
+              Uploads wissen
+            </Button>
             <Button
               color="success"
               variant="contained"
@@ -453,9 +645,9 @@ export default function BankOverzicht() {
           dispatch({ type: 'REGEL_PATROON_OVERSCHRIJVEN', bron, oldRegel, tegenpartijPatroon, omschrijvingPatroon, potje: potje ?? null })
         }
         onSluiten={() => setPotjesOpen(false)}
-          onPotjeWijzigen={(bucket, oudeNaam, nieuweNaam) =>
-            dispatch({ type: 'POTJE_HERNOEMEN_BY_BUCKET_EN_NAAM', bucket, oudeNaam, nieuweNaam })
-          }
+        onPotjeWijzigen={(bucket, oudeNaam, nieuweNaam) =>
+          dispatch({ type: 'POTJE_HERNOEMEN_BY_BUCKET_EN_NAAM', bucket, oudeNaam, nieuweNaam })
+        }
       />
     </div>
   )

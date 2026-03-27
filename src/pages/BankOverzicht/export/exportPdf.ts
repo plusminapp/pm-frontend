@@ -54,7 +54,7 @@ function buildBucketSummary(
 function buildPotjeTotals(
   transactions: CategorizedTransaction[],
   bucket: Bucket,
-): Array<{ naam: string; totaal: number; aantal: number }> {
+): Array<{ naam: string; totaal: number; gemiddeld: number; aantal: number }> {
   const sums = new Map<string, { naam: string; totaal: number; aantal: number }>()
   for (const tx of transactions.filter((t) => t.bucket === bucket)) {
     const potjeNaam = tx.potje?.trim() || 'Zonder potje'
@@ -65,6 +65,7 @@ function buildPotjeTotals(
   }
   return [...sums.values()]
     .sort((a, b) => Math.abs(b.totaal) - Math.abs(a.totaal))
+    .map((row) => ({ ...row, gemiddeld: row.totaal / 12 }))
 }
 
 function formatEur(amount: number): string {
@@ -154,10 +155,11 @@ export async function exportPdf(
   doc.text('Jaaroverzicht per categorie', 14, 32)
 
   const buckets: Bucket[] = ['INKOMEN', 'LEEFGELD', 'VASTE_LASTEN', 'SPAREN', 'NEGEREN']
+  const activeBuckets = buckets.filter((b) => summary[b].totaal !== 0)
   autoTable(doc, {
     startY: 36,
     head: [['Categorie', 'Jaartotaal', 'Maandgemiddelde']],
-    body: buckets.map((b) => [
+    body: activeBuckets.map((b) => [
       BUCKET_LABELS[b],
       formatEur(summary[b].totaal),
       formatEur(summary[b].gemiddeld),
@@ -174,30 +176,31 @@ export async function exportPdf(
   doc.setFont('helvetica', 'bold')
   doc.text('Maandelijks overzicht', 14, afterSummary)
 
+  const monthlyBuckets = (['INKOMEN', 'LEEFGELD', 'VASTE_LASTEN', 'SPAREN'] as Bucket[]).filter(
+    (b) => summary[b].totaal !== 0,
+  )
+  const monthlyColumnStyles = Object.fromEntries(
+    monthlyBuckets.map((_, i) => [i + 1, { halign: 'right' as const }]),
+  )
   autoTable(doc, {
     startY: afterSummary + 4,
-    head: [['Maand', 'Inkomsten', 'Leefgeld', 'Vaste lasten', 'Sparen']],
+    head: [['Maand', ...monthlyBuckets.map((b) => BUCKET_LABELS[b])]],
     body: Array.from({ length: 12 }, (_, i) => {
       const m = i + 1
       const t = monthlyTotals[m]
-      return [
-        MAANDEN[i],
-        formatEur(t.INKOMEN ?? 0),
-        formatEur(t.LEEFGELD ?? 0),
-        formatEur(t.VASTE_LASTEN ?? 0),
-        formatEur(t.SPAREN ?? 0),
-      ]
+      return [MAANDEN[i], ...monthlyBuckets.map((b) => formatEur(t[b] ?? 0))]
     }),
     headStyles: { fillColor: [59, 130, 246], textColor: 255 },
     styles: { fontSize: 9 },
     didParseCell: alignNumericHeaderCells,
-    columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } },
+    columnStyles: monthlyColumnStyles,
   })
 
   // Totals per potje per bucket
   let currentY = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10
-  for (const bucket of buckets) {
+  for (const bucket of activeBuckets) {
     const potjeTotals = buildPotjeTotals(transactions, bucket)
+    if (potjeTotals.length === 0) continue
     const sectionHeight = estimateBucketSectionHeight(potjeTotals.length)
     if (currentY + sectionHeight > pageHeight - PAGE_BOTTOM_MARGIN) {
       doc.addPage()
@@ -214,13 +217,13 @@ export async function exportPdf(
 
     autoTable(doc, {
       startY: currentY + BUCKET_HEADER_HEIGHT + BUCKET_TABLE_OFFSET,
-      head: [['Potje', 'Totaal', 'Aantal transacties']],
-      body: potjeTotals.map((row) => [row.naam, formatEur(row.totaal), String(row.aantal)]),
+      head: [['Potje', 'Totaal', 'Gemiddeld per maand', 'Aantal transacties']],
+      body: potjeTotals.map((row) => [row.naam, formatEur(row.totaal), formatEur(row.gemiddeld), String(row.aantal)]),
       headStyles: { fillColor: [r, g, b], textColor: 255 },
       styles: { fontSize: 10 },
       pageBreak: 'avoid',
       didParseCell: alignNumericHeaderCells,
-      columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' } },
+      columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } },
     })
     currentY = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + BUCKET_SECTION_GAP
   }

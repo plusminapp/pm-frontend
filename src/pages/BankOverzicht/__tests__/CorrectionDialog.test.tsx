@@ -140,22 +140,22 @@ describe('CorrectionDialog', () => {
     expect(onSluiten).toHaveBeenCalled()
   })
 
-  it('shows Leefgeld eenmalig as radio option on the Leefgeld row', () => {
+  it('shows Leefgeld zonder regel as radio option on the Leefgeld row', () => {
     render(
       <CorrectionDialog open transacties={[tx('1')]} potjes={noPotjes}
         onSluiten={vi.fn()} onCorrectie={vi.fn()} onPotjeToevoegen={vi.fn()} />,
     )
     expect(screen.getByRole('radio', { name: /^leefgeld$/i })).toBeInTheDocument()
-    expect(screen.getByRole('radio', { name: /leefgeld eenmalig/i })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: /leefgeld zonder regel/i })).toBeInTheDocument()
   })
 
-  it('passes zonderRegel=true when Leefgeld eenmalig is selected', () => {
+  it('passes zonderRegel=true when Leefgeld zonder regel is selected', () => {
     const onCorrectie = vi.fn()
     render(
       <CorrectionDialog open transacties={[tx('1')]} potjes={noPotjes}
         onSluiten={vi.fn()} onCorrectie={onCorrectie} onPotjeToevoegen={vi.fn()} />,
     )
-    fireEvent.click(screen.getByRole('radio', { name: /leefgeld eenmalig/i }))
+    fireEvent.click(screen.getByRole('radio', { name: /leefgeld zonder regel/i }))
     fireEvent.click(screen.getByRole('button', { name: /opslaan/i }))
     expect(onCorrectie).toHaveBeenCalledWith(['1'], 'LEEFGELD', null, undefined, true)
   })

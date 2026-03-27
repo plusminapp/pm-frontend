@@ -65,7 +65,7 @@ export function FileDropZone({ onFiles, isLoading = false }: Props) {
           Sleep bankafschriften of regelsbestand hierheen of klik om te selecteren
         </p>
         <p className="mt-1 text-sm text-gray-500">
-          ING CSV · ABN AMRO CSV · Rabobank CSV · CAMT.053 XML · Regels JSON
+          ING CSV · ABN AMRO CSV · Rabobank CSV · CAMT.053 XML · Bewaarde&nbsp;JSON
         </p>
       </div>
     </div>

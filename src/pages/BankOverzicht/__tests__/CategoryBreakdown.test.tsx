@@ -82,7 +82,7 @@ describe('CategoryBreakdown', () => {
     )
   })
 
-  it('shows no checkboxes on niets and enables one-time linking only after groups are selected', () => {
+  it('defaults to samenvoegen and enables one-time linking only after groups are selected', () => {
     render(
       <CategoryBreakdown
         transacties={[
@@ -99,19 +99,20 @@ describe('CategoryBreakdown', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: /onbekend/i }))
 
-    expect(screen.queryByRole('checkbox', { name: /alle zichtbare groepen/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /eenmalig koppelen/i })).not.toBeInTheDocument()
+  expect(screen.getByRole('checkbox', { name: /alle zichtbare groepen/i })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: /samenvoegen \(0\)/i })).toBeDisabled()
+    expect(screen.queryByRole('button', { name: /koppelen zonder regel/i })).not.toBeInTheDocument()
 
-    kiesBewerking(/eenmalig koppelen/i)
+    kiesBewerking(/koppelen zonder regel/i)
 
     expect(screen.getByRole('checkbox', { name: /alle zichtbare groepen/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /eenmalig koppelen \(0\)/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /koppelen zonder regel \(0\)/i })).toBeDisabled()
 
     fireEvent.click(screen.getByRole('checkbox', { name: /alle zichtbare groepen/i }))
-    expect(screen.getByRole('button', { name: /eenmalig koppelen \(2\)/i })).toBeEnabled()
+    expect(screen.getByRole('button', { name: /koppelen zonder regel \(2\)/i })).toBeEnabled()
   })
 
-  it('allows selecting eenmalig koppelen outside the onbekend tab', () => {
+  it('allows selecting koppelen zonder regel outside the onbekend tab', () => {
     render(
       <CategoryBreakdown
         transacties={[
@@ -126,10 +127,10 @@ describe('CategoryBreakdown', () => {
     )
 
     fireEvent.click(screen.getByRole('tab', { name: /inkomsten/i }))
-    kiesBewerking(/eenmalig koppelen/i)
+    kiesBewerking(/koppelen zonder regel/i)
 
     expect(screen.getByRole('checkbox', { name: /alle zichtbare groepen/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /eenmalig koppelen \(0\)/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /koppelen zonder regel \(0\)/i })).toBeDisabled()
   })
 
   it('warns when selected groups contain already linked transactions and allows continue or cancel', async () => {
@@ -147,9 +148,9 @@ describe('CategoryBreakdown', () => {
       />,
     )
 
-    kiesBewerking(/eenmalig koppelen/i)
+    kiesBewerking(/koppelen zonder regel/i)
     fireEvent.click(screen.getByRole('checkbox', { name: /alle zichtbare groepen/i }))
-    fireEvent.click(screen.getByRole('button', { name: /eenmalig koppelen \(2\)/i }))
+    fireEvent.click(screen.getByRole('button', { name: /koppelen zonder regel \(2\)/i }))
 
     expect(screen.getByText(/er zitten al gekoppelde transacties in je selectie/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /doorgaan/i })).toBeInTheDocument()
@@ -160,7 +161,7 @@ describe('CategoryBreakdown', () => {
 
     fireEvent.click(screen.getAllByRole('button', { name: /^annuleren$/i }).at(-1) as HTMLElement)
     await waitFor(() => {
-      expect(screen.queryByRole('dialog', { name: /waarschuwing bij eenmalig koppelen/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('dialog', { name: /waarschuwing bij koppelen zonder regel/i })).not.toBeInTheDocument()
     })
   })
 
@@ -181,9 +182,9 @@ describe('CategoryBreakdown', () => {
       />,
     )
 
-    kiesBewerking(/eenmalig koppelen/i)
+    kiesBewerking(/koppelen zonder regel/i)
     fireEvent.click(screen.getByRole('checkbox', { name: /alle zichtbare groepen/i }))
-    fireEvent.click(screen.getByRole('button', { name: /eenmalig koppelen \(2\)/i }))
+    fireEvent.click(screen.getByRole('button', { name: /koppelen zonder regel \(2\)/i }))
     fireEvent.click(screen.getByRole('button', { name: /doorgaan/i }))
 
     expect(screen.getByText(/deze koppeling geldt alleen voor de geselecteerde transacties/i)).toBeInTheDocument()
@@ -217,7 +218,7 @@ describe('CategoryBreakdown', () => {
 
     kiesBewerking(/samenvoegen/i)
 
-    const filterInput = screen.getByLabelText(/tegenpartij/i)
+    const filterInput = screen.getByRole('textbox', { name: /zoeken/i })
 
     fireEvent.change(filterInput, { target: { value: '*philips' } })
     expect(screen.getByText(/stichting philips/i)).toBeInTheDocument()
@@ -245,7 +246,7 @@ describe('CategoryBreakdown', () => {
 
     kiesBewerking(/samenvoegen/i)
 
-    const filterInput = screen.getByLabelText(/tegenpartij/i)
+    const filterInput = screen.getByRole('textbox', { name: /zoeken/i })
     fireEvent.change(filterInput, { target: { value: 'asn*sparen' } })
 
     fireEvent.click(screen.getByRole('checkbox', { name: /alle zichtbare groepen/i }))
@@ -254,7 +255,7 @@ describe('CategoryBreakdown', () => {
     expect(screen.getByText('asn*sparen')).toBeInTheDocument()
   })
 
-  it('shows merge controls only in samenvoegen mode and requires a tegenpartij value', () => {
+  it('shows merge controls by default and hides them outside samenvoegen mode', () => {
     render(
       <CategoryBreakdown
         transacties={[
@@ -269,18 +270,18 @@ describe('CategoryBreakdown', () => {
       />,
     )
 
-    expect(screen.queryByLabelText(/tegenpartij/i)).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /samenvoegen/i })).not.toBeInTheDocument()
-
-    kiesBewerking(/samenvoegen/i)
-
     fireEvent.click(screen.getByRole('checkbox', { name: /alle zichtbare groepen/i }))
 
-    expect(screen.getByLabelText(/tegenpartij/i)).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: /zoeken/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /samenvoegen \(2\)/i })).toBeDisabled()
 
-    fireEvent.change(screen.getByLabelText(/tegenpartij/i), { target: { value: 'asn' } })
+    fireEvent.change(screen.getByRole('textbox', { name: /zoeken/i }), { target: { value: 'asn' } })
     expect(screen.getByRole('button', { name: /samenvoegen \(2\)/i })).toBeEnabled()
+
+    kiesBewerking(/koppelen zonder regel/i)
+
+    expect(screen.queryByRole('textbox', { name: /zoeken/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /samenvoegen \(/i })).not.toBeInTheDocument()
   })
 
   it('filters groups by minimum and maximum number of transactions', () => {
@@ -313,6 +314,30 @@ describe('CategoryBreakdown', () => {
     expect(screen.queryByText(/jumbo/i)).not.toBeInTheDocument()
   })
 
+  it('filters transactions by datum van/tot inclusively', () => {
+    render(
+      <CategoryBreakdown
+        transacties={[
+          { ...tx('t-1', 'Albert Heijn'), datum: '2025-01-10' },
+          { ...tx('t-2', 'Jumbo'), datum: '2025-01-15' },
+          { ...tx('t-3', 'Netflix'), datum: '2025-01-20' },
+        ]}
+        potjes={[]}
+        userRules={[]}
+        learnedRules={[]}
+        onCorrectie={vi.fn()}
+        onPotjeToevoegen={vi.fn()}
+      />,
+    )
+
+    fireEvent.change(screen.getByLabelText(/datum van/i), { target: { value: '2025-01-15' } })
+    fireEvent.change(screen.getByLabelText(/datum tot/i), { target: { value: '2025-01-20' } })
+
+    expect(screen.queryByText(/albert heijn/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/jumbo/i)).toBeInTheDocument()
+    expect(screen.getByText(/netflix/i)).toBeInTheDocument()
+  })
+
   it('sorts groups by selected sort option', () => {
     render(
       <CategoryBreakdown
@@ -340,10 +365,10 @@ describe('CategoryBreakdown', () => {
     expect(rijTeksten[0]).toMatch(/jumbo/i)
 
     fireEvent.mouseDown(sortInput)
-    fireEvent.click(screen.getByRole('option', { name: /aantal transacties ▼/i }))
+    fireEvent.click(screen.getByRole('option', { name: /aantal transacties/i }))
 
     fireEvent.mouseDown(sortInput)
-    expect(screen.getByRole('option', { name: /aantal transacties ▲/i })).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: /aantal transacties/i })).toBeInTheDocument()
     fireEvent.click(document.body)
 
     const rijTekstenAsc = screen.getAllByText(/albert heijn|jumbo/i)

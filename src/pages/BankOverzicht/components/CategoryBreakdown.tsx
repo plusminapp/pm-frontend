@@ -180,8 +180,8 @@ type CounterpartyGroup = {
 
 type SorteerOptie = 'naam' | 'categorie' | 'potje' | 'aantal' | 'bedrag'
 type SorteerRichting = 'asc' | 'desc'
-type RichtingFilter = 'alles' | 'inkomsten' | 'uitgaven'
-type Bewerking = 'niets' | 'samenvoegen' | 'eenmalig'
+type RichtingFilter = 'alles' | 'ontvangsten' | 'uitgaven'
+type Bewerking = 'samenvoegen' | 'eenmalig'
 
 const SORTEER_LABELS: Record<SorteerOptie, string> = {
   naam: 'Naam',
@@ -209,7 +209,7 @@ type GroupMerge = {
 
 export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules, onCorrectie, onPotjeToevoegen }: Props) {
   const [activeTab, setActiveTab] = useState<TabFilter>('ALLE')
-  const [bewerking, setBewerking] = useState<Bewerking>('niets')
+  const [bewerking, setBewerking] = useState<Bewerking>('samenvoegen')
   const [sorteerOp, setSorteerOp] = useState<SorteerOptie>('naam')
   const [sorteerRichting, setSorteerRichting] = useState<SorteerRichting>('asc')
   const [expanded, setExpanded] = useState<string | null>(null)
@@ -219,6 +219,8 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
   const [dialogForceLeefgeldEenmalig, setDialogForceLeefgeldEenmalig] = useState(false)
   const [bevestigEenmaligTxs, setBevestigEenmaligTxs] = useState<CategorizedTransaction[]>([])
   const [tegenpartijFilter, setTegenpartijFilter] = useState('')
+  const [datumVanFilter, setDatumVanFilter] = useState('')
+  const [datumTotFilter, setDatumTotFilter] = useState('')
   const [minTransactiesFilter, setMinTransactiesFilter] = useState('0')
   const [maxTransactiesFilter, setMaxTransactiesFilter] = useState('')
   const [richtingFilter, setRichtingFilter] = useState<RichtingFilter>('alles')
@@ -229,24 +231,32 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
 
   const isAlGekoppeldVoorEenmalig = (tx: CategorizedTransaction) => tx.bucket !== 'ONBEKEND'
 
+  const transactiesBinnenDatumBereik = useMemo(() => (
+    transacties.filter((tx) => {
+      if (datumVanFilter && tx.datum < datumVanFilter) return false
+      if (datumTotFilter && tx.datum > datumTotFilter) return false
+      return true
+    })
+  ), [transacties, datumVanFilter, datumTotFilter])
+
   const tabCounts = useMemo(() => (
     Object.fromEntries(
       TABS.map(({ value }) => [
         value,
         value === 'ALLE'
-          ? transacties.length
+          ? transactiesBinnenDatumBereik.length
           : value === 'ZONDER_POTJE'
-            ? transacties.filter((t) => t.bucket !== 'ONBEKEND' && !(t.potje ?? '').trim()).length
-          : transacties.filter((t) => t.bucket === value).length,
+            ? transactiesBinnenDatumBereik.filter((t) => t.bucket !== 'ONBEKEND' && !(t.potje ?? '').trim()).length
+          : transactiesBinnenDatumBereik.filter((t) => t.bucket === value).length,
       ]),
     ) as Record<TabFilter, number>
-  ), [transacties])
+  ), [transactiesBinnenDatumBereik])
 
   const filtered = activeTab === 'ALLE'
-    ? transacties
+    ? transactiesBinnenDatumBereik
     : activeTab === 'ZONDER_POTJE'
-      ? transacties.filter((t) => t.bucket !== 'ONBEKEND' && !(t.potje ?? '').trim())
-      : transacties.filter((t) => t.bucket === activeTab)
+      ? transactiesBinnenDatumBereik.filter((t) => t.bucket !== 'ONBEKEND' && !(t.potje ?? '').trim())
+      : transactiesBinnenDatumBereik.filter((t) => t.bucket === activeTab)
 
   const basisRanking: CounterpartyGroup[] = buildCounterpartyRanking(filtered, userRules, learnedRules).map((item) => ({
     ...item,
@@ -297,7 +307,7 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
     if (!naamMatch) return false
     if (group.count < minTransacties) return false
     if (group.count > maxTransacties) return false
-    if (richtingFilter === 'inkomsten' && group.totaal <= 0) return false
+    if (richtingFilter === 'ontvangsten' && group.totaal <= 0) return false
     if (richtingFilter === 'uitgaven' && group.totaal >= 0) return false
     return true
   })
@@ -385,7 +395,7 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
   const zichtbareGroepen = rankingSorted.map(({ key }) => key)
   const geselecteerdSet = new Set(geselecteerdeGroepen)
   const geselecteerdeTxSet = new Set(geselecteerdeTransacties)
-  const toonSelectieCheckboxes = bewerking !== 'niets'
+  const toonSelectieCheckboxes = true
   const alleZichtbareGeselecteerd =
     zichtbareGroepen.length > 0 && zichtbareGroepen.every((key) => geselecteerdSet.has(key))
   const deelsZichtbaarGeselecteerd =
@@ -486,7 +496,7 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
     setBewerking(volgendeBewerking)
     setGeselecteerdeGroepen([])
     setGeselecteerdeTransacties([])
-            setBevestigEenmaligTxs([])
+    setBevestigEenmaligTxs([])
     if (volgendeBewerking !== 'samenvoegen') {
       setTegenpartijFilter('')
     }
@@ -536,15 +546,14 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
             onChange={(e) => wijzigBewerking(e.target.value as Bewerking)}
             sx={{ minWidth: 180 }}
           >
-            <MenuItem value="niets">Niets</MenuItem>
-            <MenuItem value="samenvoegen">Samenvoegen</MenuItem>
-            <MenuItem value="eenmalig">Eenmalig koppelen</MenuItem>
+            <MenuItem value="samenvoegen">Zoeken/samenvoegen</MenuItem>
+            <MenuItem value="eenmalig">Koppelen zonder regel</MenuItem>
           </TextField>
           {bewerking === 'samenvoegen' && (
             <>
               <TextField
                 size="small"
-                label="Tegenpartij"
+                label="Zoeken"
                 placeholder="Filter"
                 value={tegenpartijFilter}
                 onChange={(e) => {
@@ -594,10 +603,28 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
               onClick={openBulkLeefgeldEenmalig}
               disabled={geselecteerdeGroepen.length === 0}
             >
-              Eenmalig koppelen ({geselecteerdeGroepen.length})
+              Koppelen zonder regel ({geselecteerdeGroepen.length})
             </Button>
           )}
           <div className="ml-auto" />
+          <TextField
+            size="small"
+            type="date"
+            label="Datum van"
+            value={datumVanFilter}
+            onChange={(e) => setDatumVanFilter(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{ width: 150 }}
+          />
+          <TextField
+            size="small"
+            type="date"
+            label="Datum tot"
+            value={datumTotFilter}
+            onChange={(e) => setDatumTotFilter(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{ width: 150 }}
+          />
           <TextField
             size="small"
             type="number"
@@ -676,7 +703,7 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
             sx={{ minWidth: 140 }}
           >
             <MenuItem value="alles">Alles</MenuItem>
-            <MenuItem value="inkomsten">Inkomsten</MenuItem>
+            <MenuItem value="ontvangsten">Ontvangsten</MenuItem>
             <MenuItem value="uitgaven">Uitgaven</MenuItem>
           </TextField>
         </div>
@@ -841,11 +868,11 @@ export function CategoryBreakdown({ transacties, potjes, userRules, learnedRules
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>Waarschuwing bij eenmalig koppelen</DialogTitle>
+        <DialogTitle>Waarschuwing bij koppelen zonder regel</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             Er zitten al gekoppelde transacties in je selectie. Deze transacties zijn hieronder geel gemarkeerd.
-            Als je doorgaat, worden ook deze transacties eenmalig opnieuw gekoppeld.
+            Als je doorgaat, worden ook deze transacties opnieuw gekoppeld zonder regel.
           </Typography>
           <TransactionTable
             transacties={bevestigEenmaligTxs}

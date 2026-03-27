@@ -35,7 +35,7 @@ interface PotjeOption {
 
 const ASSIGNABLE_BUCKETS: Bucket[] = BUCKET_OPTIONS.map((b) => b.value)
 const filter = createFilterOptions<PotjeOption>()
-type CategorieKeuze = Bucket | 'LEEFGELD_EENMALIG'
+type CategorieKeuze = Bucket | 'LEEFGELD_ZONDER_REGEL'
 
 function suggestBucket(transacties: CategorizedTransaction[]): Bucket {
   const score = new Map<Bucket, number>()
@@ -86,7 +86,7 @@ export function CorrectionDialog({
   useEffect(() => {
     if (!open) return
     if (forceLeefgeldEenmalig) {
-      setCategorieKeuze('LEEFGELD_EENMALIG')
+      setCategorieKeuze('LEEFGELD_ZONDER_REGEL')
       setGekozenPotje(suggestPotje(transacties, 'LEEFGELD'))
       setBewerkteGroepNaam('')
       return
@@ -98,8 +98,8 @@ export function CorrectionDialog({
     setBewerkteGroepNaam(titleCaseWoorden(initNaam))
   }, [open, transacties, groepNaam, forceLeefgeldEenmalig])
 
-  const gekozenBucket: Bucket = categorieKeuze === 'LEEFGELD_EENMALIG' ? 'LEEFGELD' : categorieKeuze
-  const zonderRegel = categorieKeuze === 'LEEFGELD_EENMALIG'
+  const gekozenBucket: Bucket = categorieKeuze === 'LEEFGELD_ZONDER_REGEL' ? 'LEEFGELD' : categorieKeuze
+  const zonderRegel = categorieKeuze === 'LEEFGELD_ZONDER_REGEL'
 
   const tegenpartij = formatTegenpartijVoorWeergave(transacties[0]?.tegenpartij ?? '')
   const isGroepNiveau = !forceLeefgeldEenmalig && (transacties.length > 1 || Boolean(groepNaam))
@@ -140,7 +140,7 @@ export function CorrectionDialog({
 
   return (
     <Dialog open={open} onClose={onSluiten} onKeyDown={handleDialogKeyDown} maxWidth="xs" fullWidth>
-      <DialogTitle>{forceLeefgeldEenmalig ? 'Leefgeld eenmalig koppelen' : 'Potjes koppelen'}</DialogTitle>
+      <DialogTitle>{forceLeefgeldEenmalig ? 'Leefgeld koppelen zonder regel' : 'Potjes koppelen'}</DialogTitle>
       <DialogContent>
         <Typography variant="body2" color="text.secondary" gutterBottom>
           {aantalTekst} voor <strong>{isGroepNiveau ? bewerkteGroepNaam || tegenpartij : tegenpartij}</strong>
@@ -166,7 +166,7 @@ export function CorrectionDialog({
 
         {!forceLeefgeldEenmalig && (
           <FormControl component="fieldset" sx={{ mt: 2, width: '100%' }}>
-            <FormLabel component="legend" sx={{ color: 'success.main', '&.Mui-focused': { color: 'success.main' } }}>Nieuwe categorie</FormLabel>
+            <FormLabel component="legend" sx={{ color: 'success.main', '&.Mui-focused': { color: 'success.main' } }}>Categorie</FormLabel>
             <RadioGroup value={categorieKeuze} onChange={(e) => setCategorieKeuze(e.target.value as CategorieKeuze)}>
               {BUCKET_OPTIONS.map(({ value, label }) => {
                 if (value !== 'LEEFGELD') {
@@ -175,7 +175,7 @@ export function CorrectionDialog({
                 return (
                   <div key={value} className="flex items-center gap-4">
                     <FormControlLabel value="LEEFGELD" control={<Radio color="success" />} label="Leefgeld" />
-                    <FormControlLabel value="LEEFGELD_EENMALIG" control={<Radio color="success" />} label="Leefgeld eenmalig" />
+                    <FormControlLabel value="LEEFGELD_ZONDER_REGEL" control={<Radio color="success" />} label="Leefgeld zonder regel" />
                   </div>
                 )
               })}

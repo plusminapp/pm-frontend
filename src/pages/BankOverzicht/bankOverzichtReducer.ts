@@ -11,6 +11,7 @@ export type BankOverzichtAction =
   | { type: 'BESTANDEN_TOEVOEGEN'; bestanden: File[] }
   | { type: 'BESTAND_PARSED'; bestandNaam: string; transacties: CategorizedTransaction[] }
   | { type: 'BESTAND_FOUT'; bestandNaam: string; foutmelding: string }
+    | { type: 'RESET' }
   | { type: 'CATEGORIE_WIJZIGEN'; transactieIds: string[]; bucket: CategorizedTransaction['bucket']; potje: string | null; groepCriterium?: string; zonderRegel?: boolean }
   | { type: 'REGEL_PATROON_OVERSCHRIJVEN'; bron: 'user' | 'learned'; oldRegel: UserRule; tegenpartijPatroon: string; omschrijvingPatroon?: string; potje: string | null }
   | { type: 'REGEL_TOEVOEGEN'; regel: UserRule }
@@ -132,6 +133,9 @@ export function bankOverzichtReducer(
   action: BankOverzichtAction,
 ): BankOverzichtState {
   switch (action.type) {
+    case 'RESET':
+      return initialState
+
     case 'BESTANDEN_TOEVOEGEN':
       return {
         ...state,
