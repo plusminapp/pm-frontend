@@ -224,7 +224,7 @@ export const PotjesActies: React.FC<PotjesActiesProps> = ({
       </ButtonGroup>
       : <ButtonGroup variant="contained" color="success" disabled>
         <Button sx={{ fontSize: '0.875rem' }}>
-          Toewijzen
+          Vullen
         </Button>
       </ButtonGroup>;
 
