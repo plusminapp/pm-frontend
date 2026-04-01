@@ -29,8 +29,8 @@ import { AppHeader } from '@/components/AppHeader';
 import { useState } from 'react';
 import BeslisboomWrapper from './pages/BeslisboomWrapper';
 
-const BankOverzicht = React.lazy(() => import('./pages/BankOverzicht/BankOverzicht'));
-const BankOverzichtHelp = React.lazy(() => import('./pages/BankOverzicht/Help').then(m => ({ default: m.BankOverzichtHelp })));
+const BudgetScanner = React.lazy(() => import('./pages/BudgetScanner/BudgetScanner'));
+const BudgetScannerHelp = React.lazy(() => import('./pages/BudgetScanner/Help').then(m => ({ default: m.BudgetScannerHelp })));
 
 const ProtectedRoute: React.FC<{ element: JSX.Element }> = ({ element }) => {
   const { state } = useAuthContext();
@@ -68,8 +68,8 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<LoginPagina />} />
-              <Route path="/bankoverzicht" element={<BankOverzicht />} />
-              <Route path="/bankoverzicht/help" element={<BankOverzichtHelp />} />
+              <Route path="/budgetscanner" element={<BudgetScanner />} />
+              <Route path="/budgetscanner/help" element={<BudgetScannerHelp />} />
 
               {/* Beschermde routes */}
               <Route

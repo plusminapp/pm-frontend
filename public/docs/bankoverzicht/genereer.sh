@@ -1,8 +1,8 @@
 #!/bin/bash
 
-echo "BankOverzicht.pdf opnieuw genereren starten"
+echo "BudgetScanner.pdf opnieuw genereren starten"
 
-pandoc BankOverzicht.md -o BankOverzicht.pdf \
+pandoc BudgetScanner.md -o BudgetScanner.pdf \
   --pdf-engine=xelatex \
   -V lang=nl \
   -V mainfont='Trebuchet MS' \
@@ -16,4 +16,4 @@ pandoc BankOverzicht.md -o BankOverzicht.pdf \
   -V 'geometry:bottom=2cm' \
   --resource-path=.
 
-echo "BankOverzicht.pdf opnieuw genereren afgerond"
+echo "BudgetScanner.pdf opnieuw genereren afgerond"

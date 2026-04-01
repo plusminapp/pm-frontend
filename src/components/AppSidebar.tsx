@@ -394,22 +394,22 @@ export function AppSidebar({
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <Button
-                variant={pathname === '/bankoverzicht' ? 'secondary' : 'ghost'}
+                variant={pathname === '/budgetscanner' ? 'secondary' : 'ghost'}
                 className={cn(
                   'w-full justify-start gap-3 text-foreground hover:text-foreground',
                   isCollapsed && 'justify-center',
                 )}
-                onClick={() => handleNavigation('/bankoverzicht')}
+                onClick={() => handleNavigation('/budgetscanner')}
               >
                 <BarChart2 className="h-5 w-5 shrink-0" />
                 {!isCollapsed && (
                   <span className="text-sm text-foreground">
-                    {t(`${I18N_KEY}.bankoverzicht`)}
+                    {t(`${I18N_KEY}.budgetscanner`)}
                   </span>
                 )}
               </Button>
             </TooltipTrigger>
-            {isCollapsed && <TooltipContent side="right">{t(`${I18N_KEY}.bankoverzicht`)}</TooltipContent>}
+            {isCollapsed && <TooltipContent side="right">{t(`${I18N_KEY}.budgetscanner`)}</TooltipContent>}
           </Tooltip>
 
 

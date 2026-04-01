@@ -1,8 +1,8 @@
-# BankOverzicht Categorization Improvements
+# BudgetScanner Categorization Improvements
 
 **Date:** 2026-03-16
 **Status:** Draft
-**Scope:** `pm-frontend/src/pages/BankOverzicht/`
+**Scope:** `pm-frontend/src/pages/BudgetScanner/`
 
 ## Problem
 
@@ -200,7 +200,7 @@ Both single-transaction and bulk corrections via `CATEGORIE_WIJZIGEN` create lea
 **State:**
 
 ```typescript
-export interface BankOverzichtState {
+export interface BudgetScannerState {
   // ... existing fields
   learnedRules: UserRule[]   // new — in-memory only, lost on page refresh
 }
@@ -211,7 +211,7 @@ Learned rules are in-memory only and must be exported to survive a page refresh.
 **New reducer action types:**
 
 ```typescript
-// Added to BankOverzichtAction union
+// Added to BudgetScannerAction union
 | { type: 'REGEL_GELEERD'; regel: UserRule }
 | { type: 'REGELS_IMPORTEREN'; userRules: UserRule[]; learnedRules: UserRule[] }
 ```
@@ -251,7 +251,7 @@ Learned rules are in-memory only and must be exported to survive a page refresh.
 
 Each rule includes all fields: `tegenpartijPatroon`, `omschrijvingPatroon` (null if not set), `richting` (null if not set), `bucket`, `subCategorie` (null if not set), and `bron`. The `bron` field is `"user"` (from manual rule creation / REGEL_TOEPASSEN) or `"learned"` (from correction-derived learning). This preserves the priority distinction on re-import.
 
-Downloaded as `bankoverzicht-regels.json`.
+Downloaded as `budgetscanner-regels.json`.
 
 **PDF auto-export:** When the user exports a PDF from the dashboard, the JSON rules file is also automatically triggered as a separate download. **Only if there are user or learned rules** — if both lists are empty, no JSON is downloaded. Note: some browsers may block the second download as a popup; if `document.createElement('a').click()` fails silently, this is acceptable — the user can always manually export from REVIEW.
 
@@ -288,13 +288,13 @@ Rules that are unambiguously one direction (e.g. `albert heijn` is always a debi
 
 | File | Changes |
 |------|---------|
-| `types.ts` | Add `richting`, `omschrijvingPatroon`, `subCategorie` to `UserRule`. Add `learnedRules` to `BankOverzichtState`. |
+| `types.ts` | Add `richting`, `omschrijvingPatroon`, `subCategorie` to `UserRule`. Add `learnedRules` to `BudgetScannerState`. |
 | `categorize/rules.ts` | Add `omschrijvingPatroon` and `richting` to `Rule` interface. Split ambiguous default rules into direction variants. |
 | `categorize/ruleEngine.ts` | `MatchableRule` adapter with `fromDefault`/`fromUser`, `matches()` function, two-pass cascade, generic tegenpartij detection. New signature: `applyRules(txs, userRules, learnedRules = [])`. |
-| `bankOverzichtReducer.ts` | Add `learnedRules` to state/initial. Add `REGEL_GELEERD` and `REGELS_IMPORTEREN` to action union with typed payloads. Update `CATEGORIE_WIJZIGEN` to derive learned rules. Update `REGEL_TOEPASSEN` to add to learnedRules and filter by `richting` when applying. |
+| `budgetScannerReducer.ts` | Add `learnedRules` to state/initial. Add `REGEL_GELEERD` and `REGELS_IMPORTEREN` to action union with typed payloads. Update `CATEGORIE_WIJZIGEN` to derive learned rules. Update `REGEL_TOEPASSEN` to add to learnedRules and filter by `richting` when applying. |
 | `export/exportPdf.ts` | Trigger JSON rules download alongside PDF export (only if rules exist). |
 | `components/CorrectionDialog.tsx` | No changes needed — learning is handled in the reducer. |
-| `BankOverzicht.tsx` | Import UI on UPLOAD step (new). Export button on REVIEW step action bar (new). Update `handleFiles` to pass `state.learnedRules` to `applyRules`. |
+| `BudgetScanner.tsx` | Import UI on UPLOAD step (new). Export button on REVIEW step action bar (new). Update `handleFiles` to pass `state.learnedRules` to `applyRules`. |
 
 ## New Files
 
@@ -307,7 +307,7 @@ Rules that are unambiguously one direction (e.g. `albert heijn` is always a debi
 - `ruleEngine.test.ts` — Direction-aware matching, omschrijving fallback (only for generic tegenpartij), two-pass priority cascade, direction-specific beats directionless, learned rules priority, empty tegenpartij handling, zero-amount direction matching, `learnedRules` default parameter backward compat
 - `recurrenceDetector.test.ts` — Unchanged (recurrence still runs after rules)
 - `exportRules.test.ts` — New: export format with `bron` field, import validation, `versie` rejection for unknown versions, malformed JSON handling, backward compat for missing `bron`, round-trip (export then import preserves rule tiers)
-- `bankOverzichtReducer.test.ts` — New cases: `REGEL_GELEERD` (add + dedup by key + auto-apply to ONBEKEND), `REGELS_IMPORTEREN` (split by bron, re-categorize), learning from `CATEGORIE_WIJZIGEN` (reducer lookup), learning from `REGEL_TOEPASSEN` (direction-aware apply), lowercasing enforcement, last-correction-wins behavior
+- `budgetScannerReducer.test.ts` — New cases: `REGEL_GELEERD` (add + dedup by key + auto-apply to ONBEKEND), `REGELS_IMPORTEREN` (split by bron, re-categorize), learning from `CATEGORIE_WIJZIGEN` (reducer lookup), learning from `REGEL_TOEPASSEN` (direction-aware apply), lowercasing enforcement, last-correction-wins behavior
 
 ## Backward Compatibility
 

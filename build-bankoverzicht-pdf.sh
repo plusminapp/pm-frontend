@@ -2,7 +2,7 @@
 
 PROJECT_FOLDER=${PWD}/..
 
-pushd 	${PROJECT_FOLDER}/pm-frontend/public/docs/bankoverzicht/
+pushd 	${PROJECT_FOLDER}/pm-frontend/public/docs/budgetscanner/
 
 ./genereer.sh 2> /dev/null
 

@@ -1,18 +1,18 @@
-# Bankoverzicht
+# BudgetScanner
 
-## 1. Wat is Bankoverzicht?
+## 1. Wat is BudgetScanner?
 
-[Bankoverzicht](#bankoverzicht) helpt je om overzicht te krijgen in je [budget](#budget). Het is ideaal als je wilt starten met budgetteren. Je kunt je [betalingen](#betaalgroep) eenvoudig downloaden bij je bank en aanbieden aan de app. Met de app zet je je bankbetalingen om in een duidelijk overzicht van [inkomsten](#inkomsten) en [uitgaven](#uitgaven). Je [koppelt](#koppelen) elke [betaling](#betaalgroep) aan een [potje](#potje), zodat je goed ziet waar je geld naartoe gaat of vandaan komt.
+[BudgetScanner](#budgetscanner) helpt je om overzicht te krijgen in je [budget](#budget). Het is ideaal als je wilt starten met budgetteren. Je kunt je [betalingen](#betaalgroep) eenvoudig downloaden bij je bank en aanbieden aan de app. Met de app zet je je bankbetalingen om in een duidelijk overzicht van [inkomsten](#inkomsten) en [uitgaven](#uitgaven). Je [koppelt](#koppelen) elke [betaling](#betaalgroep) aan een [potje](#potje), zodat je goed ziet waar je geld naartoe gaat of vandaan komt.
 
 Bovenaan elke pagina staat een zogenaamde [Stepper](#stepper) met 4 stappen: 1 Welkom, 2 Uploaden, 3 [Koppelen](#koppelen) en 4 Gebruiken. De verschillende stappen worden in de rest van de handleiding uitgebreid toegelicht. Je kunt de [Stepper](#stepper) gebruiken om snel naar een andere stap te gaan door op die stap te klikken. Als je nog geen [betalingen](#betaalgroep) hebt geüpload (zie Stap 2), dan zijn de stappen 3 en 4 lichtgrijs. Zodra je stap 2 hebt afgerond, worden de laatste 2 stappen ook donkerder en kun je er wel naar toe.
 
-![Startscherm van [Bankoverzicht](#bankoverzicht) met welkomsttekst](images/h1-startscherm-welkom.png)
+![Startscherm van [BudgetScanner](#budgetscanner) met welkomsttekst](images/h1-startscherm-welkom.png)
 
 Als je elke [betaling](#betaalgroep) hebt [gekoppeld](#koppelen) aan een [potje](#potje), kun je de app vragen om een administratie in te richten in de [PlusMin app](#plusmin-app) zelf. Dit is niet verplicht, maar het kan wel. Anders weet je in elk geval welke [budgetten](#budget) voor jou van belang zijn. Je kunt het overzicht opslaan in een overzichtelijk rapport om het altijd na te kunnen kijken.
 
-Als hulpvrager sta jij natuurlijk centraal: jij wilt leren budgetteren en daar kan [Bankoverzicht](#bankoverzicht) je heel goed bij helpen. Je hoeft niet alles in één keer te begrijpen. Het is heel normaal als dit in het begin redelijk ingewikkeld voelt. Kom je er niet goed uit? Dan kun je altijd ondersteuning vragen aan je [budgetcoach](#budgetcoach). Als je geen [budgetcoach](#budgetcoach) hebt, kun je contact met ons opnemen: wij kennen veel organisaties die jou kunnen helpen. Het is belangrijk dat je eruit komt, dus zet die stap.
+Als hulpvrager sta jij natuurlijk centraal: jij wilt leren budgetteren en daar kan [BudgetScanner](#budgetscanner) je heel goed bij helpen. Je hoeft niet alles in één keer te begrijpen. Het is heel normaal als dit in het begin redelijk ingewikkeld voelt. Kom je er niet goed uit? Dan kun je altijd ondersteuning vragen aan je [administratiemaatje](#administratiemaatje). Als je geen [administratiemaatje](#administratiemaatje) hebt, kun je contact met ons opnemen: wij kennen veel organisaties die jou kunnen helpen. Het is belangrijk dat je eruit komt, dus zet die stap.
 
-Het belangrijkste doel van [Bankoverzicht](#bankoverzicht) is:
+Het belangrijkste doel van [BudgetScanner](#budgetscanner) is:
 
 - op basis van je bestaande [betalingen](#betaalgroep) overzicht krijgen van waar je geld vandaan komt en waar het naartoe gaat
 - daardoor je [budgetten](#budget) kunnen inschatten op basis van echte gegevens, bij voorkeur van een jaar
@@ -20,7 +20,7 @@ Het belangrijkste doel van [Bankoverzicht](#bankoverzicht) is:
 
 ## 2. Stap 1: Welkom {#2-stap-1-welkom}
 
-Voordat je start, is het goed om te weten welke soorten bestanden je kunt gebruiken. In [Bankoverzicht](#bankoverzicht) werk je met [CSV/XML/CAMT.053](#csvxmlcamt053) en/of [JSON-bestand](#json-bestand).
+Voordat je start, is het goed om te weten welke soorten bestanden je kunt gebruiken. In [BudgetScanner](#budgetscanner) werk je met [CSV/XML/CAMT.053](#csvxmlcamt053) en/of [JSON-bestand](#json-bestand).
 
 [CSV/XML](#csvxmlcamt053)-bestanden komen rechtstreeks van je bank. Op dit moment ondersteunen we ABN, ING en Rabo voor de [CSV-bestanden](#csvxmlcamt053). [XML](#csvxmlcamt053), door de bank ook CAMT.053 genoemd, ondersteunen we voor alle banken. Als je bank CAMT.053 aanbiedt, heeft dat daarom de voorkeur. Al die bestanden bevatten alleen [betalingen](#betaalgroep). Meestal is dat per bestand van één bankrekening (of spaarrekening of creditcard) tegelijk.
 
@@ -28,7 +28,7 @@ Kies bij voorkeur een periode van een heel jaar. In een jaar komen (bijna) alle 
 
 ![Voorbeeld downloadscherm (ASN bank)](images/h2-asn-camt053.png)
 
-Het [JSON-bestand](#json-bestand) is anders. Dat is een bestand dat je eerder vanuit [Bankoverzicht](#bankoverzicht) hebt opgeslagen. In dit bestand staan alle [betalingen](#betaalgroep) die je toen hebt geüpload (ook als dat van meerdere rekeningen of banken was) en alle [koppelingen](#koppelen) met [potjes](#potje) die je toen hebt gemaakt. Op die manier kun je doorgaan waar je de vorige keer bent gebleven. Als je de browser sluit terwijl je nog dingen hebt veranderd, waarschuwt de browser. Als je dan *Opslaan als [JSON](#json-bestand)* gebruikt, weet je zeker dat er niets verloren gaat. De knop *Opslaan* zit in de stap *[Koppelen](#koppelen)*; daar komen we nog op terug.
+Het [JSON-bestand](#json-bestand) is anders. Dat is een bestand dat je eerder vanuit [BudgetScanner](#budgetscanner) hebt opgeslagen. In dit bestand staan alle [betalingen](#betaalgroep) die je toen hebt geüpload (ook als dat van meerdere rekeningen of banken was) en alle [koppelingen](#koppelen) met [potjes](#potje) die je toen hebt gemaakt. Op die manier kun je doorgaan waar je de vorige keer bent gebleven. Als je de browser sluit terwijl je nog dingen hebt veranderd, waarschuwt de browser. Als je dan *Opslaan als [JSON](#json-bestand)* gebruikt, weet je zeker dat er niets verloren gaat. De knop *Opslaan* zit in de stap *[Koppelen](#koppelen)*; daar komen we nog op terug.
 
 Gebruik je een [JSON-bestand](#json-bestand)? Dan heb je doorgaans geen andere bestanden meer nodig, want daar zitten alle [betalingen](#betaalgroep) al in. Alleen als je nieuwe [betalingen](#betaalgroep), van een andere rekening of van andere maanden, wilt toevoegen, heeft dat nut.
 
@@ -40,11 +40,11 @@ Het is daarom vaak verstandiger niet alle rekeningen te uploaden:
 - credit cards zijn ook gekoppeld aan een betaalrekening. Als je de credit card veel, en voor heel verschillende dingen gebruikt kan het goed zijn ook de credit card te uploaden. Je kunt dan elke betaling met de credit card aan een ander potje koppelen. Gebruik je de credit card voor zelzefde soort dingen? Gebruik dan alleen de betaling van de betaalrekening naar de credit card.
 - cash betalingen kun je niet uploaden, want daar heb je geen bestand van. Je hebt het cash geld misschien wel opgenomen van de betaalrekening. Dan kun je die betaling gebruiken om het aan een potje te koppelen. Is de cash een inkomsten? dan kun je dat het beste onthouden voor de stap [Gebruiken](#6-stap-4-gebruiken). Daar kun je het dan wel kwijt.
 
-Welke rekeningen wel, en welke niet uploaden is best ingewikkeld. Typisch een onderwerp om met je [budgetcoach](#budgetcoach) te bespreken.
+Welke rekeningen wel, en welke niet uploaden is best ingewikkeld. Typisch een onderwerp om met je [administratiemaatje](#administratiemaatje) te bespreken.
 
 ### Privacy en veiligheid
 
-Je bestanden blijven op je eigen apparaat. [Bankoverzicht](#bankoverzicht) verwerkt je gegevens in je browser. Je data wordt niet naar een externe server gestuurd.
+Je bestanden blijven op je eigen apparaat. [BudgetScanner](#budgetscanner) verwerkt je gegevens in je browser. Je data wordt niet naar een externe server gestuurd.
 
 ### Korte samenvatting
 
@@ -62,20 +62,20 @@ Hoe je begint, hangt af van of je hier voor het eerst bent of terugkomt.
 
 **Terugkomen en verdergaan?** Dan upload je het [JSON-bestand](#json-bestand) dat je de vorige keer hebt opgeslagen. Daarin zitten al je eerder geüploade [betalingen](#betaalgroep) en alle [koppelingen](#koppelen) die je al had gemaakt. Je gaat gewoon verder waar je was gebleven — je hoeft dan geen losse bankbestanden meer toe te voegen.
 
-**Nieuwe betalingen toevoegen aan een bestaand overzicht?** Dan upload je tegelijk het [JSON-bestand](#json-bestand) én de nieuwe bankbestanden met de extra [betalingen](#betaalgroep). [Bankoverzicht](#bankoverzicht) voegt de nieuwe [betalingen](#betaalgroep) toe aan wat er al in het [JSON-bestand](#json-bestand) zat. Zorg wel dat je geen betalimngen dubbel meeneemt.
+**Nieuwe betalingen toevoegen aan een bestaand overzicht?** Dan upload je tegelijk het [JSON-bestand](#json-bestand) én de nieuwe bankbestanden met de extra [betalingen](#betaalgroep). [BudgetScanner](#budgetscanner) voegt de nieuwe [betalingen](#betaalgroep) toe aan wat er al in het [JSON-bestand](#json-bestand) zat. Zorg wel dat je geen betalimngen dubbel meeneemt.
 
 Zodra je bestanden zijn ingelezen, zie je direct terugkoppeling onder de uploadzone. Per bestand staat de bestandsnaam en het aantal ingelezen [betalingen](#betaalgroep). Zo controleer je snel of alles goed is gegaan.
 
-Zie je een foutmelding? Controleer dan of het bestandstype klopt ([CSV](#csvxmlcamt053), [XML/CAMT.053](#csvxmlcamt053) of [JSON](#json-bestand)), of het bestand echt van je bank komt en niet handmatig is aangepast, en of je niet per ongeluk een leeg of beschadigd bestand hebt gekozen. Als het daarna nog niet lukt, download het bestand opnieuw bij je bank en probeer het nog een keer. Kom je er dan nog niet uit, vraag hulp aan je [budgetcoach](#budgetcoach).
+Zie je een foutmelding? Controleer dan of het bestandstype klopt ([CSV](#csvxmlcamt053), [XML/CAMT.053](#csvxmlcamt053) of [JSON](#json-bestand)), of het bestand echt van je bank komt en niet handmatig is aangepast, en of je niet per ongeluk een leeg of beschadigd bestand hebt gekozen. Als het daarna nog niet lukt, download het bestand opnieuw bij je bank en probeer het nog een keer. Kom je er dan nog niet uit, vraag hulp aan je [administratiemaatje](#administratiemaatje).
 
-Als alle bestanden goed zijn ingelezen, ga je door naar stap 3: *[Koppelen](#koppelen)*. Dat is de kern van [Bankoverzicht](#bankoverzicht), daar zet je de [betalingen](#betaalgroep) om naar een overzicht dat voor jou klopt.
+Als alle bestanden goed zijn ingelezen, ga je door naar stap 3: *[Koppelen](#koppelen)*. Dat is de kern van [BudgetScanner](#budgetscanner), daar zet je de [betalingen](#betaalgroep) om naar een overzicht dat voor jou klopt.
 
 ### Korte samenvatting {#korte-samenvatting-1}
 Begin je voor het eerst, dan upload je bankbestanden ([CSV/XML](#csvxmlcamt053)). Kom je terug, dan upload je je opgeslagen [JSON](#json-bestand). Wil je nieuwe [betalingen](#betaalgroep) toevoegen, dan combineer je beide. Na het uploaden ga je door naar stap 3: *[Koppelen](#koppelen)*.
 
 ## 4. Stap 3: Categorieën en potjes koppelen
 
-Dit is de kern van [Bankoverzicht](#bankoverzicht). Hier geef je aan wat elke [betaling](#betaalgroep) betekent voor jouw [budget](#budget). Je ziet alle [betalingen](#betaalgroep) in groepen, op basis van de naam van de [tegenpartij](#tegenpartij). Per groep [koppel](#koppelen) je een [categorie](#categorie) en een [potje](#potje).
+Dit is de kern van [BudgetScanner](#budgetscanner). Hier geef je aan wat elke [betaling](#betaalgroep) betekent voor jouw [budget](#budget). Je ziet alle [betalingen](#betaalgroep) in groepen, op basis van de naam van de [tegenpartij](#tegenpartij). Per groep [koppel](#koppelen) je een [categorie](#categorie) en een [potje](#potje).
 
 Als je [betalingen](#betaalgroep) aan een [potje](#potje) [koppelt](#koppelen), leert de app daarvan. Hij maakt dan een regel aan, zodat [betalingen](#betaalgroep) van die [tegenpartij](#tegenpartij) voortaan automatisch aan dat [potje](#potje) worden [gekoppeld](#koppelen).
 
@@ -89,9 +89,9 @@ Onder de [stepper](#stepper) staan twee belangrijke knoppen: *Koppelingsregels* 
 
 #### Koppelingsregels
 
-In *Koppelingsregels* zie je welke herkenningsregels [Bankoverzicht](#bankoverzicht) heeft gemaakt om [betalingen](#betaalgroep) automatisch te [koppelen](#koppelen) aan een [categorie](#categorie) en een [potje](#potje).
+In *Koppelingsregels* zie je welke herkenningsregels [BudgetScanner](#budgetscanner) heeft gemaakt om [betalingen](#betaalgroep) automatisch te [koppelen](#koppelen) aan een [categorie](#categorie) en een [potje](#potje).
 
-[Koppelingsregels](#koppelingsregels) zijn vooral handig als je ook de [PlusMin app](#plusmin-app) gaat gebruiken. Als je dan nieuwe [betalingen](#betaalgroep) invoert, herkent [PlusMin](#plusmin-app) welk [potje](#potje) daarbij hoort. [Bankoverzicht](#bankoverzicht) maakt nu de regels vanzelf aan; daar hoef je niets voor te doen. Je kunt wel zeggen dat je wilt [koppelen](#koppelen) [zonder regel](#koppelen-zonder-regel) omdat een [betaling](#betaalgroep) nooit meer voorkomt. Een regel is dan zinloos. In [Koppelen zonder regel](#koppelen-zonder-regel) lees je daar meer over.
+[Koppelingsregels](#koppelingsregels) zijn vooral handig als je ook de [PlusMin app](#plusmin-app) gaat gebruiken. Als je dan nieuwe [betalingen](#betaalgroep) invoert, herkent [PlusMin](#plusmin-app) welk [potje](#potje) daarbij hoort. [BudgetScanner](#budgetscanner) maakt nu de regels vanzelf aan; daar hoef je niets voor te doen. Je kunt wel zeggen dat je wilt [koppelen](#koppelen) [zonder regel](#koppelen-zonder-regel) omdat een [betaling](#betaalgroep) nooit meer voorkomt. Een regel is dan zinloos. In [Koppelen zonder regel](#koppelen-zonder-regel) lees je daar meer over.
 
 Elke regel bevat een patroon op de naam van [tegenpartij](#tegenpartij) (en soms ook de omschrijving). Als een nieuwe [betaling](#betaalgroep) daarbij past, krijgt die automatisch de juiste [koppeling](#koppelen). Dat scheelt veel handmatig werk. In dit scherm kun je regels nalopen en aanpassen.
 
@@ -106,7 +106,7 @@ Je kunt hier ook [potjes](#potje)namen aanpassen. De regel blijft dan bestaan, m
 Bij *Opslaan* kun je twee soorten bestanden bewaren:
 
 - **JSON**: dit is je werkbestand. Hierin staan alle [betalingen](#betaalgroep), [koppelingen](#koppelen), regels en [potjes](#potje) die je hebt gemaakt. Wil je later verdergaan? Upload dan je opgeslagen [JSON](#json-bestand) opnieuw in [stap 2: Uploaden](#3-stap-2-bestanden-uploaden). Dan ga je verder waar je was gebleven toen je het bestand bewaarde.
-- **PDF**: dit is je rapportbestand. Hierin staat een samenvatting van alle bedragen per [potje](#potje). Gebruik [PDF](#pdf-rapport) vooral om je overzicht terug te lezen, te delen of te bespreken met je [budgetcoach](#budgetcoach).
+- **PDF**: dit is je rapportbestand. Hierin staat een samenvatting van alle bedragen per [potje](#potje). Gebruik [PDF](#pdf-rapport) vooral om je overzicht terug te lezen, te delen of te bespreken met je [administratiemaatje](#administratiemaatje).
 
 Sla regelmatig op. Als je per ongeluk de pagina sluit nadat je dingen hebt gewijzigd, worden wijzigingen niet bewaard. Je browser waarschuwt je dan. Klik dan op Annuleren en sla op als [JSON](#json-bestand).
 
@@ -194,7 +194,7 @@ Klik op het potlood-icoontje, helemaal rechts, bij een groep om te [koppelen](#k
 
 Gewoonlijk is de Groepsnaam de naam van de [tegenpartij](#tegenpartij) waar de [betaling](#betaalgroep) naartoe is gegaan of van wie de [betaling](#betaalgroep) is ontvangen. Als je met zoeken en samenvoegen [betalingen](#betaalgroep) in een groep hebt gestopt, is het de zoekterm die je daarvoor hebt gebruikt.
 
-In beide gevallen maakt [Bankoverzicht](#bankoverzicht) een regel aan dat een [betaling](#betaalgroep) van/naar die Groepsnaam aan het [potje](#potje) wordt [gekoppeld](#koppelen) dat je straks gaat kiezen.
+In beide gevallen maakt [BudgetScanner](#budgetscanner) een regel aan dat een [betaling](#betaalgroep) van/naar die Groepsnaam aan het [potje](#potje) wordt [gekoppeld](#koppelen) dat je straks gaat kiezen.
 
 #### Categorieën
 
@@ -222,7 +222,7 @@ Als het niet nodig is dat er een regel wordt aangemaakt voor deze [tegenpartij](
 
 Dat geldt niet altijd. Een maandelijkse donatie aan een goed doel noemen we ook een [vaste last](#vaste-lasten). Soms kun je het ook opzeggen zonder gevolgen. Voorbeeld: een abonnement op een tijdschrift.
 
-In de [PlusMin app](#plusmin-app) geven we [vaste lasten](#vaste-lasten) daarom een prioriteit. Hoe belangrijker de [vaste last](#vaste-lasten), hoe zorgvuldiger je moet zorgen dat je hem elke keer betaalt. In het [Bankoverzicht](#bankoverzicht) is dat nog niet van belang: pas in stap 4, Gebruiken, gaan we de prioriteit van [potjes](#potje) bepalen.
+In de [PlusMin app](#plusmin-app) geven we [vaste lasten](#vaste-lasten) daarom een prioriteit. Hoe belangrijker de [vaste last](#vaste-lasten), hoe zorgvuldiger je moet zorgen dat je hem elke keer betaalt. In het [BudgetScanner](#budgetscanner) is dat nog niet van belang: pas in stap 4, Gebruiken, gaan we de prioriteit van [potjes](#potje) bepalen.
 
 #### Sparen
 
@@ -230,7 +230,7 @@ In de [PlusMin app](#plusmin-app) geven we [vaste lasten](#vaste-lasten) daarom 
 
 [Sparen](#sparen) kan zowel gaan over het geld IN je spaarpot stoppen als er geld UIT halen. Als je de [betalingen](#betaalgroep) van je betaalrekening hebt geüpload, is [sparen](#sparen) een afschrijving (een [uitgave](#uitgaven), want van betaal- naar spaarrekening). Bij het opnemen van spaargeld is het juist een ontvangst (want van spaar- naar betaalrekening). Als je er vervolgens weer wat mee koopt, is dat weer 'gewoon' een [uitgave](#uitgaven).
 
-Als je meer geld hebt gespaard dan dat je aan spaargeld hebt uitgegeven, is [Sparen](#sparen) in het [dashboard](#bankoverzicht) dus negatief. Raar maar waar. En als je het weet, hoef je er niet van te schrikken.
+Als je meer geld hebt gespaard dan dat je aan spaargeld hebt uitgegeven, is [Sparen](#sparen) in het [dashboard](#budgetscanner) dus negatief. Raar maar waar. En als je het weet, hoef je er niet van te schrikken.
 
 #### Negeren
 
@@ -272,19 +272,19 @@ In hoofdstuk 4 is uitgebreid uitgelegd hoe het [koppelen](#koppelen) werkt. Maar
 
 Het is verstandig om het aantal niet-[gekoppelde](#koppelen) [betalingen](#betaalgroep) zo snel mogelijk te verminderen. Uiteindelijk zijn ze dan allemaal verwerkt. Volg hiervoor de onderstaande stappen:
 
-1.  Zodra je je [betalingen](#betaalgroep) van de bank hebt gedownload en in [Bankoverzicht](#bankoverzicht) hebt geüpload, zijn er waarschijnlijk al enkele herkend. Als je ongeveer twaalf keer hetzelfde bedrag van dezelfde [tegenpartij](#tegenpartij) hebt ontvangen, gaat het waarschijnlijk om [Inkomsten](#inkomsten). Als je twaalf keer hetzelfde bedrag hebt betaald aan dezelfde [tegenpartij](#tegenpartij), zijn dit waarschijnlijk [vaste lasten](#vaste-lasten). Begin met het verwerken van deze groepen: klik op het tabblad [Inkomsten](#inkomsten) en [koppel](#koppelen) deze aan een [potje](#potje). Doe hetzelfde voor de [vaste lasten](#vaste-lasten). Het is raadzaam om elke [vaste last](#vaste-lasten) een eigen [potje](#potje) te geven.
+1.  Zodra je je [betalingen](#betaalgroep) van de bank hebt gedownload en in [BudgetScanner](#budgetscanner) hebt geüpload, zijn er waarschijnlijk al enkele herkend. Als je ongeveer twaalf keer hetzelfde bedrag van dezelfde [tegenpartij](#tegenpartij) hebt ontvangen, gaat het waarschijnlijk om [Inkomsten](#inkomsten). Als je twaalf keer hetzelfde bedrag hebt betaald aan dezelfde [tegenpartij](#tegenpartij), zijn dit waarschijnlijk [vaste lasten](#vaste-lasten). Begin met het verwerken van deze groepen: klik op het tabblad [Inkomsten](#inkomsten) en [koppel](#koppelen) deze aan een [potje](#potje). Doe hetzelfde voor de [vaste lasten](#vaste-lasten). Het is raadzaam om elke [vaste last](#vaste-lasten) een eigen [potje](#potje) te geven.
 2.  Zoek naar andere [inkomsten](#inkomsten). Filter op [Ontvangsten](#inkomsten). Let op: niet alle ontvangen [betalingen](#betaalgroep) zijn [inkomsten](#inkomsten). Bij een Tikkie of een retourbetaling bij Bol.com ontvang je wel geld, maar dit telt niet als inkomen.
 3.  Zoek de overige [vaste lasten](#vaste-lasten). Filter op het aantal [betalingen](#betaalgroep) en stel dit in op een bereik tussen de 10 en 14. Filter daarna alleen op [Uitgaven](#uitgaven).
 4.  Zoek naar [leefgeld](#leefgeld). [Groepeer](#zoekensamenvoegen) de [betalingen](#betaalgroep) bij winkels waar je vaak komt en waar je [leefgeld](#leefgeld) uitgeeft, zoals de supermarkt of de drogist.
 5.  Zoek naar [sparen](#sparen). [Sparen](#sparen) is een uitzondering: het opnemen van geld en het [sparen](#sparen) ervan hebben bij de bank vaak verschillende namen.
 6.  Zoek naar echt eenmalige [inkomsten](#inkomsten) of [uitgaven](#uitgaven). Deze wil je niet opnemen in je [budget](#budget) en kun je daarom [negeren](#negeren). Pas wel op: een nieuwe wasmachine gaat niet snel kapot, maar is het dit jaar misschien de droger of de koelkast? Bedenk bij een eenmalige [uitgave](#uitgaven) of er soortgelijke situaties kunnen ontstaan en reserveer daarvoor wel geld.
 7.  Als het goed is, zijn er nu veel minder [betalingen](#betaalgroep) die niet zijn [gekoppeld](#koppelen) (zie het tabblad [Onbekend](#onbekend)) en geen [Categorie zonder potje](#categorie-zonder-potje) hebben. Alle andere [betalingen](#betaalgroep) zijn nu aan een [potje](#potje) [gekoppeld](#koppelen). Nu is het tijd om door de lijst te lopen. Hierin zitten vaak veel eenmalige [uitgaven](#uitgaven) waarvoor geen regel nodig is. Met de optie [Koppelen zonder regel](#koppelen-zonder-regel) kun je deze snel selecteren en [koppelen](#koppelen). Je kunt eventueel alle resterende [betalingen](#betaalgroep) selecteren via de checkbox naast het menu *Bewerking*. Haal vervolgens de uitzonderingen uit de selectie en [koppel](#koppelen) de rest [zonder regel](#koppelen-zonder-regel).
-8.  Als alle [betalingen](#betaalgroep) [gekoppeld](#koppelen) zijn, sla je eerst op als [JSON-bestand](#json-bestand) om je werk niet te verliezen, en daarna als [PDF-rapport](#pdf-rapport). Kijk in het [PDF-rapport](#pdf-rapport) naar uitschieters en probeer deze te verklaren. Dat je in mei (en misschien ook in december) meer [inkomsten](#inkomsten) had, is logisch. Maar hoe zit het met de uitschieter in het [leefgeld](#leefgeld) in augustus? Ga terug naar [Bankoverzicht](#bankoverzicht), filter op de betreffende [categorie](#categorie) en de maand, en sorteer op bedrag. Uitschieters zitten vaak in hogere bedragen. Heb je een verklaring gevonden? Beslis dan of je bepaalde [betalingen](#betaalgroep) aan een ander [potje](#potje) wilt toewijzen. Blijf zoeken tot je alles kunt verklaren.
+8.  Als alle [betalingen](#betaalgroep) [gekoppeld](#koppelen) zijn, sla je eerst op als [JSON-bestand](#json-bestand) om je werk niet te verliezen, en daarna als [PDF-rapport](#pdf-rapport). Kijk in het [PDF-rapport](#pdf-rapport) naar uitschieters en probeer deze te verklaren. Dat je in mei (en misschien ook in december) meer [inkomsten](#inkomsten) had, is logisch. Maar hoe zit het met de uitschieter in het [leefgeld](#leefgeld) in augustus? Ga terug naar [BudgetScanner](#budgetscanner), filter op de betreffende [categorie](#categorie) en de maand, en sorteer op bedrag. Uitschieters zitten vaak in hogere bedragen. Heb je een verklaring gevonden? Beslis dan of je bepaalde [betalingen](#betaalgroep) aan een ander [potje](#potje) wilt toewijzen. Blijf zoeken tot je alles kunt verklaren.
 9.  Als alle [betalingen](#betaalgroep) [gekoppeld](#koppelen) zijn en het [PDF-rapport](#pdf-rapport) geen geheimen meer bevat, kun je doorgaan naar de volgende stap: *Gebruiken*. Gefeliciteerd, je hebt je [budget](#budget) volledig in kaart gebracht!
 
 ### Korte samenvatting {#korte-samenvatting-3}
 
-[Koppelen](#koppelen) in de praktijk geeft een aanpak om [betalingen](#betaalgroep) in [Bankoverzicht](#bankoverzicht) snel aan [potjes](#potje) te [koppelen](#koppelen). Begin met [inkomsten](#inkomsten) en [vaste lasten](#vaste-lasten), omdat deze door [Bankoverzicht](#bankoverzicht) al zijn herkend. Zoek daarna andere [inkomsten](#inkomsten) en [vaste lasten](#vaste-lasten) via filters, [groepeer](#zoekensamenvoegen) [leefgeld](#leefgeld) bij veelbezochte winkels en [koppel](#koppelen) [sparen](#sparen). Eenmalige bedragen kun je [negeren](#negeren), maar bedenk wel of er vergelijkbare kosten in de toekomst kunnen ontstaan. Wanneer de meeste [betalingen](#betaalgroep) [gekoppeld](#koppelen) zijn, verwerk je de resterende eenmalige [uitgaven](#uitgaven) via '[Koppelen zonder regel](#koppelen-zonder-regel)'. 
+[Koppelen](#koppelen) in de praktijk geeft een aanpak om [betalingen](#betaalgroep) in [BudgetScanner](#budgetscanner) snel aan [potjes](#potje) te [koppelen](#koppelen). Begin met [inkomsten](#inkomsten) en [vaste lasten](#vaste-lasten), omdat deze door [BudgetScanner](#budgetscanner) al zijn herkend. Zoek daarna andere [inkomsten](#inkomsten) en [vaste lasten](#vaste-lasten) via filters, [groepeer](#zoekensamenvoegen) [leefgeld](#leefgeld) bij veelbezochte winkels en [koppel](#koppelen) [sparen](#sparen). Eenmalige bedragen kun je [negeren](#negeren), maar bedenk wel of er vergelijkbare kosten in de toekomst kunnen ontstaan. Wanneer de meeste [betalingen](#betaalgroep) [gekoppeld](#koppelen) zijn, verwerk je de resterende eenmalige [uitgaven](#uitgaven) via '[Koppelen zonder regel](#koppelen-zonder-regel)'. 
 
 Sla op als [JSON-bestand](#json-bestand) om je werk niet te verliezen en als [PDF-rapport](#pdf-rapport) om uitschieters te analyseren. Zodra alle [betalingen](#betaalgroep) [gekoppeld](#koppelen) zijn en het rapport geen onverklaarde bedragen meer bevat, kun je doorgaan naar de volgende stap: Gebruiken.
 
@@ -296,7 +296,10 @@ Wordt later ingevuld
 
 Hieronder vind je de uitleg van de specifieke termen die in deze handleiding worden gebruikt.
 
-#### Bankoverzicht
+#### Administratiemaatje
+Een professional of vrijwilliger die een hulpvrager begeleidt naar financiële redzaamheid.
+
+#### BudgetScanner
 De applicatie die helpt om inzicht te krijgen in je [budgetten](#budget) door [bankbetalingen](#betaalgroep) om te zetten in een overzicht van [inkomsten](#inkomsten) en [uitgaven](#uitgaven).
 
 #### Betaalgroep
@@ -307,9 +310,6 @@ Een verzameling van [betalingen](#betaalgroep) van dezelfde [tegenpartij](#tegen
 - voor leefgeld: de begrenzing van de besteding per periode
 - voor vaste lasten/aflossing: het bedrag dat wordt afgeschreven, als er wordt afgeschreven; m.a.w.: als er elke 3 maanden € 90 wordt afgeschreven is het budget € 90 ondanks dat er maandelijks maar € 30 opzij wordt gezet; zie ook periodebudget
 - voor sparen: het bedrag dat maandelijks opzij wordt gezet; als er een doelbedrag met een doeldatum is gesteld wordt de gebruiker gewaarschuwd als met het budget het doelbedrag op de doeldatum niet wordt gehaald
-
-#### Budgetcoach
-Een professional of vrijwilliger die een hulpvrager begeleidt naar financiële redzaamheid.
 
 #### Categorie
 Een van de vijf hoofdindelingen voor [betalingen](#betaalgroep): [Inkomsten](#inkomsten), [Leefgeld](#leefgeld), [Vaste lasten](#vaste-lasten), [Sparen](#sparen) of [Negeren](#negeren).
@@ -348,7 +348,7 @@ Een tabblad met [betalingen](#betaalgroep) die nog geen [categorie](#categorie) 
 Een rapportbestand met een samenvatting van alle bedragen per [potje](#potje), geschikt om te delen of te bespreken.
 
 #### PlusMin app
-De app van PlusMin waarin je, op basis van potjes, een administratie kunt inrichten op basis van de gegevens uit [Bankoverzicht](#bankoverzicht).
+De app van PlusMin waarin je, op basis van potjes, een administratie kunt inrichten op basis van de gegevens uit [BudgetScanner](#budgetscanner).
 
 #### Potje
 Een onderverdeling binnen een [categorie](#categorie) waar je geld voor een specifiek doel aan [koppelt](#koppelen), zoals 'boodschappen' of 'vakantie'.

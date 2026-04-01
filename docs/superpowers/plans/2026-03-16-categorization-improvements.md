@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Upgrade the BankOverzicht categorization engine with direction-aware rules, omschrijving matching, session-based learning from corrections, and JSON rules export/import.
+**Goal:** Upgrade the BudgetScanner categorization engine with direction-aware rules, omschrijving matching, session-based learning from corrections, and JSON rules export/import.
 
 **Architecture:** The existing `applyRules()` function is replaced with a two-pass cascade engine using a `MatchableRule` adapter to unify `Rule` and `UserRule` matching. Learning is handled inline in the reducer's `CATEGORIE_WIJZIGEN` case. Export/import lives in a new `exportRules.ts` file.
 
@@ -14,14 +14,14 @@
 
 ## Chunk 1: Types, Rule Interface & Direction-Aware Default Rules
 
-### Task 1: Extend `UserRule` and `BankOverzichtState` types
+### Task 1: Extend `UserRule` and `BudgetScannerState` types
 
 **Files:**
-- Modify: `src/pages/BankOverzicht/types.ts`
+- Modify: `src/pages/BudgetScanner/types.ts`
 
-- [ ] **Step 1: Update `UserRule` and `BankOverzichtState` in `types.ts`**
+- [ ] **Step 1: Update `UserRule` and `BudgetScannerState` in `types.ts`**
 
-Replace the existing `UserRule` and `BankOverzichtState` interfaces:
+Replace the existing `UserRule` and `BudgetScannerState` interfaces:
 
 ```typescript
 export interface UserRule {
@@ -32,7 +32,7 @@ export interface UserRule {
   subCategorie?: string          // new
 }
 
-export interface BankOverzichtState {
+export interface BudgetScannerState {
   stap: 'UPLOAD' | 'REVIEW' | 'DASHBOARD'
   bestanden: BestandStatus[]
   transacties: CategorizedTransaction[]
@@ -53,8 +53,8 @@ Expected: all existing tests pass (new fields are optional, no existing tests re
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/pages/BankOverzicht/types.ts
-git commit -m "feat(bank-overzicht): extend UserRule and BankOverzichtState types for direction-aware learning"
+git add src/pages/BudgetScanner/types.ts
+git commit -m "feat(bank-overzicht): extend UserRule and BudgetScannerState types for direction-aware learning"
 ```
 
 ---
@@ -62,7 +62,7 @@ git commit -m "feat(bank-overzicht): extend UserRule and BankOverzichtState type
 ### Task 2: Extend `Rule` interface and add direction-aware default rules
 
 **Files:**
-- Modify: `src/pages/BankOverzicht/categorize/rules.ts`
+- Modify: `src/pages/BudgetScanner/categorize/rules.ts`
 
 - [ ] **Step 1: Add optional fields to `Rule` interface**
 
@@ -124,7 +124,7 @@ Expected: all existing tests pass (the rule engine still uses `patroon` directly
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/pages/BankOverzicht/categorize/rules.ts
+git add src/pages/BudgetScanner/categorize/rules.ts
 git commit -m "feat(bank-overzicht): add direction-aware default rules for belastingdienst, svb, gemeente, nationale nederlanden"
 ```
 
@@ -135,8 +135,8 @@ git commit -m "feat(bank-overzicht): add direction-aware default rules for belas
 ### Task 3: Rewrite `ruleEngine.ts` with two-pass cascade
 
 **Files:**
-- Modify: `src/pages/BankOverzicht/categorize/ruleEngine.ts`
-- Modify: `src/pages/BankOverzicht/__tests__/ruleEngine.test.ts`
+- Modify: `src/pages/BudgetScanner/categorize/ruleEngine.ts`
+- Modify: `src/pages/BudgetScanner/__tests__/ruleEngine.test.ts`
 
 - [ ] **Step 1: Write new failing tests in `ruleEngine.test.ts`**
 
@@ -419,7 +419,7 @@ Expected: all tests pass including the new ones
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/pages/BankOverzicht/categorize/ruleEngine.ts src/pages/BankOverzicht/__tests__/ruleEngine.test.ts
+git add src/pages/BudgetScanner/categorize/ruleEngine.ts src/pages/BudgetScanner/__tests__/ruleEngine.test.ts
 git commit -m "feat(bank-overzicht): rewrite rule engine with two-pass cascade, direction-awareness, omschrijving fallback"
 ```
 
@@ -430,10 +430,10 @@ git commit -m "feat(bank-overzicht): rewrite rule engine with two-pass cascade, 
 ### Task 4: Update reducer with `learnedRules`, `REGEL_GELEERD`, `REGELS_IMPORTEREN`, and learning from corrections
 
 **Files:**
-- Modify: `src/pages/BankOverzicht/bankOverzichtReducer.ts`
-- Modify: `src/pages/BankOverzicht/__tests__/bankOverzichtReducer.test.ts`
+- Modify: `src/pages/BudgetScanner/budgetScannerReducer.ts`
+- Modify: `src/pages/BudgetScanner/__tests__/budgetScannerReducer.test.ts`
 
-- [ ] **Step 1: Write new failing tests in `bankOverzichtReducer.test.ts`**
+- [ ] **Step 1: Write new failing tests in `budgetScannerReducer.test.ts`**
 
 **First, fix an existing test that will break after the reducer rewrite.** The existing test for `REGEL_TOEPASSEN` asserts `tegenpartijPatroon` is stored as-is (e.g. `'Jumbo'`). After the rewrite it will be lowercased. Find and update this assertion in the existing test file:
 
@@ -448,7 +448,7 @@ Then add a helper and new describe block at the end of the file:
 
 ```typescript
 // Helper for learned rule tests
-const makeLearnedState = (overrides: Partial<BankOverzichtState> = {}): BankOverzichtState => ({
+const makeLearnedState = (overrides: Partial<BudgetScannerState> = {}): BudgetScannerState => ({
   ...initialState,
   learnedRules: [],
   ...overrides,
@@ -461,7 +461,7 @@ describe('learnedRules', () => {
 
   it('REGEL_GELEERD adds a learned rule', () => {
     const regel: UserRule = { tegenpartijPatroon: 'test', richting: 'debit', bucket: 'VASTE_LASTEN' }
-    const next = bankOverzichtReducer(makeLearnedState(), { type: 'REGEL_GELEERD', regel })
+    const next = budgetScannerReducer(makeLearnedState(), { type: 'REGEL_GELEERD', regel })
     expect(next.learnedRules).toHaveLength(1)
     expect(next.learnedRules[0].tegenpartijPatroon).toBe('test')
   })
@@ -470,7 +470,7 @@ describe('learnedRules', () => {
     const existing: UserRule = { tegenpartijPatroon: 'test', richting: 'debit', bucket: 'VASTE_LASTEN' }
     const updated: UserRule = { tegenpartijPatroon: 'test', richting: 'debit', bucket: 'LEEFGELD' }
     const state = makeLearnedState({ learnedRules: [existing] })
-    const next = bankOverzichtReducer(state, { type: 'REGEL_GELEERD', regel: updated })
+    const next = budgetScannerReducer(state, { type: 'REGEL_GELEERD', regel: updated })
     expect(next.learnedRules).toHaveLength(1)
     expect(next.learnedRules[0].bucket).toBe('LEEFGELD')
   })
@@ -479,7 +479,7 @@ describe('learnedRules', () => {
     const tx = makeTx({ id: 'tx-1', tegenpartij: 'belastingdienst', bedrag: -100, bucket: 'ONBEKEND' })
     const state = makeLearnedState({ transacties: [tx] })
     const regel: UserRule = { tegenpartijPatroon: 'belastingdienst', richting: 'debit', bucket: 'VASTE_LASTEN' }
-    const next = bankOverzichtReducer(state, { type: 'REGEL_GELEERD', regel })
+    const next = budgetScannerReducer(state, { type: 'REGEL_GELEERD', regel })
     expect(next.transacties[0].bucket).toBe('VASTE_LASTEN')
   })
 
@@ -487,14 +487,14 @@ describe('learnedRules', () => {
     const tx = makeTx({ id: 'tx-1', tegenpartij: 'belastingdienst', bedrag: -100, bucket: 'LEEFGELD' })
     const state = makeLearnedState({ transacties: [tx] })
     const regel: UserRule = { tegenpartijPatroon: 'belastingdienst', richting: 'debit', bucket: 'VASTE_LASTEN' }
-    const next = bankOverzichtReducer(state, { type: 'REGEL_GELEERD', regel })
+    const next = budgetScannerReducer(state, { type: 'REGEL_GELEERD', regel })
     expect(next.transacties[0].bucket).toBe('LEEFGELD') // unchanged
   })
 
   it('REGELS_IMPORTEREN replaces userRules and learnedRules', () => {
     const userRules: UserRule[] = [{ tegenpartijPatroon: 'test', bucket: 'SPAREN' }]
     const learnedRules: UserRule[] = [{ tegenpartijPatroon: 'foo', richting: 'debit', bucket: 'VASTE_LASTEN' }]
-    const next = bankOverzichtReducer(makeLearnedState(), {
+    const next = budgetScannerReducer(makeLearnedState(), {
       type: 'REGELS_IMPORTEREN',
       userRules,
       learnedRules,
@@ -507,7 +507,7 @@ describe('learnedRules', () => {
     const tx = makeTx({ id: 'tx-1', tegenpartij: 'test', bedrag: -50, bucket: 'ONBEKEND' })
     const state = makeLearnedState({ transacties: [tx] })
     const userRules: UserRule[] = [{ tegenpartijPatroon: 'test', bucket: 'VASTE_LASTEN' }]
-    const next = bankOverzichtReducer(state, { type: 'REGELS_IMPORTEREN', userRules, learnedRules: [] })
+    const next = budgetScannerReducer(state, { type: 'REGELS_IMPORTEREN', userRules, learnedRules: [] })
     expect(next.transacties[0].bucket).toBe('VASTE_LASTEN')
   })
 
@@ -515,14 +515,14 @@ describe('learnedRules', () => {
     const manual = makeTx({ id: 'tx-1', tegenpartij: 'test', bedrag: -50, bucket: 'SPAREN', isHandmatig: true })
     const state = makeLearnedState({ transacties: [manual] })
     const userRules: UserRule[] = [{ tegenpartijPatroon: 'test', bucket: 'VASTE_LASTEN' }]
-    const next = bankOverzichtReducer(state, { type: 'REGELS_IMPORTEREN', userRules, learnedRules: [] })
+    const next = budgetScannerReducer(state, { type: 'REGELS_IMPORTEREN', userRules, learnedRules: [] })
     expect(next.transacties[0].bucket).toBe('SPAREN') // manual correction preserved
   })
 
   it('CATEGORIE_WIJZIGEN derives a learned rule from corrected transactions', () => {
     const tx = makeTx({ id: 'tx-1', tegenpartij: 'Belastingdienst', bedrag: -300, bucket: 'INKOMEN' })
     const state = makeLearnedState({ transacties: [tx] })
-    const next = bankOverzichtReducer(state, {
+    const next = budgetScannerReducer(state, {
       type: 'CATEGORIE_WIJZIGEN',
       transactieIds: ['tx-1'],
       bucket: 'VASTE_LASTEN',
@@ -536,7 +536,7 @@ describe('learnedRules', () => {
   it('CATEGORIE_WIJZIGEN lowercases tegenpartijPatroon in learned rule', () => {
     const tx = makeTx({ id: 'tx-1', tegenpartij: 'ZIGGO BV', bedrag: -50, bucket: 'ONBEKEND' })
     const state = makeLearnedState({ transacties: [tx] })
-    const next = bankOverzichtReducer(state, {
+    const next = budgetScannerReducer(state, {
       type: 'CATEGORIE_WIJZIGEN',
       transactieIds: ['tx-1'],
       bucket: 'VASTE_LASTEN',
@@ -545,7 +545,7 @@ describe('learnedRules', () => {
   })
 
   it('REGEL_TOEPASSEN lowercases tegenpartijPatroon in userRules', () => {
-    const next = bankOverzichtReducer(makeLearnedState(), {
+    const next = budgetScannerReducer(makeLearnedState(), {
       type: 'REGEL_TOEPASSEN',
       regel: { tegenpartijPatroon: 'Albert Heijn', bucket: 'SPAREN' },
     })
@@ -556,7 +556,7 @@ describe('learnedRules', () => {
     const debit = makeTx({ id: 'tx-1', tegenpartij: 'gemeente', bedrag: -50, bucket: 'ONBEKEND' })
     const credit = makeTx({ id: 'tx-2', tegenpartij: 'gemeente', bedrag: 200, bucket: 'ONBEKEND' })
     const state = makeLearnedState({ transacties: [debit, credit] })
-    const next = bankOverzichtReducer(state, {
+    const next = budgetScannerReducer(state, {
       type: 'REGEL_TOEPASSEN',
       regel: { tegenpartijPatroon: 'gemeente', richting: 'debit', bucket: 'VASTE_LASTEN' },
     })
@@ -569,24 +569,24 @@ describe('learnedRules', () => {
 - [ ] **Step 2: Run tests to confirm new tests fail**
 
 ```bash
-cd /projects/plusmin/pm-frontend && npm run test -- bankOverzichtReducer
+cd /projects/plusmin/pm-frontend && npm run test -- budgetScannerReducer
 ```
 
 Expected: new tests FAIL (TypeScript compile errors because `learnedRules` not yet in `initialState`, and new action types not handled — a compile failure counts as a "fail" here)
 
-- [ ] **Step 3: Update `bankOverzichtReducer.ts`**
+- [ ] **Step 3: Update `budgetScannerReducer.ts`**
 
 Replace the full file content:
 
 ```typescript
 import type {
-  BankOverzichtState,
+  BudgetScannerState,
   CategorizedTransaction,
   UserRule,
 } from './types'
 import { applyRules } from './categorize/ruleEngine'
 
-export type BankOverzichtAction =
+export type BudgetScannerAction =
   | { type: 'BESTANDEN_TOEVOEGEN'; bestanden: File[] }
   | { type: 'BESTAND_PARSED'; bestandNaam: string; transacties: CategorizedTransaction[] }
   | { type: 'BESTAND_FOUT'; bestandNaam: string; foutmelding: string }
@@ -600,7 +600,7 @@ export type BankOverzichtAction =
   | { type: 'NAAR_DASHBOARD' }
   | { type: 'NAAR_UPLOAD' }
 
-export const initialState: BankOverzichtState = {
+export const initialState: BudgetScannerState = {
   stap: 'UPLOAD',
   bestanden: [],
   transacties: [],
@@ -644,10 +644,10 @@ function applyLearnedToOnbekend(
   })
 }
 
-export function bankOverzichtReducer(
-  state: BankOverzichtState,
-  action: BankOverzichtAction,
-): BankOverzichtState {
+export function budgetScannerReducer(
+  state: BudgetScannerState,
+  action: BudgetScannerAction,
+): BudgetScannerState {
   switch (action.type) {
     case 'BESTANDEN_TOEVOEGEN':
       return {
@@ -777,7 +777,7 @@ Expected: all tests pass
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/pages/BankOverzicht/bankOverzichtReducer.ts src/pages/BankOverzicht/__tests__/bankOverzichtReducer.test.ts
+git add src/pages/BudgetScanner/budgetScannerReducer.ts src/pages/BudgetScanner/__tests__/budgetScannerReducer.test.ts
 git commit -m "feat(bank-overzicht): add learnedRules state, REGEL_GELEERD, REGELS_IMPORTEREN, learning from CATEGORIE_WIJZIGEN"
 ```
 
@@ -788,12 +788,12 @@ git commit -m "feat(bank-overzicht): add learnedRules state, REGEL_GELEERD, REGE
 ### Task 5: Create `exportRules.ts` and its tests
 
 **Files:**
-- Create: `src/pages/BankOverzicht/export/exportRules.ts`
-- Create: `src/pages/BankOverzicht/__tests__/exportRules.test.ts`
+- Create: `src/pages/BudgetScanner/export/exportRules.ts`
+- Create: `src/pages/BudgetScanner/__tests__/exportRules.test.ts`
 
 - [ ] **Step 1: Write tests first**
 
-Create `src/pages/BankOverzicht/__tests__/exportRules.test.ts`:
+Create `src/pages/BudgetScanner/__tests__/exportRules.test.ts`:
 
 ```typescript
 import { describe, it, expect } from 'vitest'
@@ -936,7 +936,7 @@ export function exportRules(userRules: UserRule[], learnedRules: UserRule[]): vo
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = 'bankoverzicht-regels.json'
+  a.download = 'budgetscanner-regels.json'
   a.click()
   URL.revokeObjectURL(url)
 }
@@ -1002,7 +1002,7 @@ Expected: all exportRules tests pass
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/pages/BankOverzicht/export/exportRules.ts src/pages/BankOverzicht/__tests__/exportRules.test.ts
+git add src/pages/BudgetScanner/export/exportRules.ts src/pages/BudgetScanner/__tests__/exportRules.test.ts
 git commit -m "feat(bank-overzicht): add exportRules — JSON rules export/import with bron tagging and versie validation"
 ```
 
@@ -1011,7 +1011,7 @@ git commit -m "feat(bank-overzicht): add exportRules — JSON rules export/impor
 ### Task 6: Update `exportPdf.ts` to auto-download rules JSON
 
 **Files:**
-- Modify: `src/pages/BankOverzicht/export/exportPdf.ts`
+- Modify: `src/pages/BudgetScanner/export/exportPdf.ts`
 
 - [ ] **Step 1: Update `exportPdf` signature and add rules auto-download**
 
@@ -1056,7 +1056,7 @@ Expected: all tests pass (the new parameters default to `[]`)
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/pages/BankOverzicht/export/exportPdf.ts
+git add src/pages/BudgetScanner/export/exportPdf.ts
 git commit -m "feat(bank-overzicht): auto-download rules JSON alongside PDF export when rules exist"
 ```
 
@@ -1064,16 +1064,16 @@ git commit -m "feat(bank-overzicht): auto-download rules JSON alongside PDF expo
 
 ## Chunk 5: UI Wiring
 
-### Task 7: Wire up `BankOverzicht.tsx` — learnedRules in pipeline, import UI, export button
+### Task 7: Wire up `BudgetScanner.tsx` — learnedRules in pipeline, import UI, export button
 
 **Files:**
-- Modify: `src/pages/BankOverzicht/BankOverzicht.tsx`
-- Modify: `src/pages/BankOverzicht/components/ExportButtons.tsx`
+- Modify: `src/pages/BudgetScanner/BudgetScanner.tsx`
+- Modify: `src/pages/BudgetScanner/components/ExportButtons.tsx`
 
 - [ ] **Step 1: Read `ExportButtons.tsx` to understand its current API**
 
 ```bash
-cat /projects/plusmin/pm-frontend/src/pages/BankOverzicht/components/ExportButtons.tsx
+cat /projects/plusmin/pm-frontend/src/pages/BudgetScanner/components/ExportButtons.tsx
 ```
 
 - [ ] **Step 2: Update `ExportButtons.tsx` to accept and pass rules to `exportPdf`**
@@ -1090,7 +1090,7 @@ interface ExportButtonsProps {
 }
 ```
 
-- [ ] **Step 3: Update `BankOverzicht.tsx`**
+- [ ] **Step 3: Update `BudgetScanner.tsx`**
 
 Make these three changes in the page component:
 
@@ -1113,7 +1113,7 @@ const categorized = applyRecurrenceDetection(applyRules(parsed, state.userRules,
 import { importRules, exportRules } from './export/exportRules'
 import { Download } from 'lucide-react'
 
-// Inside the BankOverzicht component, add state for import confirmation:
+// Inside the BudgetScanner component, add state for import confirmation:
 const [regelsImportStatus, setRegelsImportStatus] = useState<string | null>(null)
 ```
 
@@ -1197,7 +1197,7 @@ Expected: all tests pass
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/pages/BankOverzicht/BankOverzicht.tsx src/pages/BankOverzicht/components/ExportButtons.tsx
+git add src/pages/BudgetScanner/BudgetScanner.tsx src/pages/BudgetScanner/components/ExportButtons.tsx
 git commit -m "feat(bank-overzicht): wire learnedRules into pipeline, add rules import UI and export button"
 ```
 
