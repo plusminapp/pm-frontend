@@ -13,8 +13,8 @@ import {
   ToggleButtonGroup,
 } from '@mui/material';
 import { PeriodeSelect } from '../Periode/PeriodeSelect';
-import { useCustomContext } from '@/context/CustomContext';
-import { SaldoDTO } from '@/model/Saldo';
+import { useCustomContext } from '../../context/CustomContext';
+import { SaldoDTO } from '../../model/Saldo';
 
 type SaldoStatusFilter = NonNullable<SaldoDTO['saldoStatus']>;
 

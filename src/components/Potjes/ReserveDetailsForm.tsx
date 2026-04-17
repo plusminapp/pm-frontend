@@ -15,9 +15,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { SaldoDTO } from '../../model/Saldo';
-import { BetalingDTO, BetalingsSoort } from '@/model/Betaling';
+import { BetalingDTO, BetalingsSoort } from '../../model/Betaling';
 import BetalingTabel from '../Kasboek/BetalingTabel';
-import { useCustomContext } from '@/context/CustomContext';
+import { useCustomContext } from '../../context/CustomContext';
 import dayjs from 'dayjs';
 
 interface ReserveDetailsFormProps {

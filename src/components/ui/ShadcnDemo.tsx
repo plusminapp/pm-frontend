@@ -2,10 +2,10 @@
  * Demo component to test ShadCN UI setup
  * 
  * This component can be imported anywhere to test the ShadCN installation.
- * To use: import { ShadcnDemo } from '@/components/ui/ShadcnDemo';
+ * To use: import { ShadcnDemo } from './ShadcnDemo';
  */
 
-import { Button } from '@/components/ui/button';
+import { Button } from './button';
 
 export function ShadcnDemo() {
   return (

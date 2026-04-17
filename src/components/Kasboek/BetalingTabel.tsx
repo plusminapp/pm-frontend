@@ -35,7 +35,7 @@ import UpsertBetalingDialoog from './UpsertBetalingDialoog';
 import { InfoIcon } from '../../icons/Info';
 import { SaldoDTO } from '../../model/Saldo';
 import { berekenRekeningGroepIcoon } from '../Stand/BerekenStandKleurEnTekst';
-import { getEersteBetaalMethode } from '@/model/Rekening';
+import { getEersteBetaalMethode } from '../../model/Rekening';
 
 type BetalingTabelProps = {
   betalingen: BetalingDTO[];

@@ -10,7 +10,7 @@ import { SaldoDTO } from '../../model/Saldo';
 import { useState } from 'react';
 import { HevelReserveOverForm } from './HevelReserveOverForm';
 import { ReserveDetailsForm } from './ReserveDetailsForm';
-import { BetalingDTO } from '@/model/Betaling';
+import { BetalingDTO } from '../../model/Betaling';
 import PotjesUitgave from './PotjesUitgave';
 
 const IconButton = styled(Box)({

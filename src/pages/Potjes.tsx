@@ -7,7 +7,7 @@ import { PotjesVisualisatie } from '../components/Potjes/PotjesVisualisatie';
 import { PotjesTabel } from '../components/Potjes/PotjesTabel';
 import { usePlusminApi } from '../api/plusminApi';
 import { PotjesActies } from '../components/Potjes/PotjesActies';
-import { SaldoDTO } from '@/model/Saldo';
+import { SaldoDTO } from '../model/Saldo';
 
 type SaldoStatusFilter = NonNullable<SaldoDTO['saldoStatus']>;
 const SALDO_STATUS_OPSLAG_SLEUTEL = 'potjesSaldoStatusFilter';

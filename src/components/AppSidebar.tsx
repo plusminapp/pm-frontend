@@ -3,17 +3,17 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthContext } from '@asgardeo/auth-react';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
-import { cn } from '@/lib/utils';
+import { cn } from '../lib/utils';
 
-import { Button } from '@/components/ui/button';
+import { Button } from './ui/button';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from './ui/tooltip';
 import LoginIcon from '@mui/icons-material/Login';
-import { Separator } from '@/components/ui/separator';
+import { Separator } from './ui/separator';
 
 import { usePlusminApi } from '../api/plusminApi';
 import { useCustomContext } from '../context/CustomContext';
@@ -30,11 +30,10 @@ import {
   TrendingDown,
   PieChart,
   X,
-  BarChart2,
 } from 'lucide-react';
-import { CupIcon } from '@/icons/Cup';
-import { PlusMinLogo } from '@/assets/PlusMinLogo';
-import { PlusLogo } from '@/assets/PlusLogo';
+import { CupIcon } from '../icons/Cup';
+import { PlusMinLogo } from '../assets/PlusMinLogo';
+import { PlusLogo } from '../assets/PlusLogo';
 const I18N_KEY = 'components.header';
 
 interface AppSidebarProps {
@@ -391,26 +390,6 @@ export function AppSidebar({
             <div className="flex-1" />
           }
 
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <Button
-                variant={pathname === '/budgetscanner' ? 'secondary' : 'ghost'}
-                className={cn(
-                  'w-full justify-start gap-3 text-foreground hover:text-foreground',
-                  isCollapsed && 'justify-center',
-                )}
-                onClick={() => handleNavigation('/budgetscanner')}
-              >
-                <BarChart2 className="h-5 w-5 shrink-0" />
-                {!isCollapsed && (
-                  <span className="text-sm text-foreground">
-                    {t(`${I18N_KEY}.budgetscanner`)}
-                  </span>
-                )}
-              </Button>
-            </TooltipTrigger>
-            {isCollapsed && <TooltipContent side="right">{t(`${I18N_KEY}.budgetscanner`)}</TooltipContent>}
-          </Tooltip>
 
 
           {/* Spacer */}

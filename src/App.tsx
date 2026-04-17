@@ -24,13 +24,10 @@ import GebruikersProfiel from './pages/GebruikersProfiel';
 import Potjes from './pages/Potjes';
 import PotjesDemoWrapper from './pages/PotjesDemoWrapper';
 
-import { AppSidebar } from '@/components/AppSidebar';
-import { AppHeader } from '@/components/AppHeader';
+import { AppSidebar } from './components/AppSidebar';
+import { AppHeader } from './components/AppHeader';
 import { useState } from 'react';
 import BeslisboomWrapper from './pages/BeslisboomWrapper';
-
-const BudgetScanner = React.lazy(() => import('./pages/BudgetScanner/BudgetScanner'));
-const BudgetScannerHelp = React.lazy(() => import('./pages/BudgetScanner/Help').then(m => ({ default: m.BudgetScannerHelp })));
 
 const ProtectedRoute: React.FC<{ element: JSX.Element }> = ({ element }) => {
   const { state } = useAuthContext();
@@ -68,8 +65,6 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<LoginPagina />} />
-              <Route path="/budgetscanner" element={<BudgetScanner />} />
-              <Route path="/budgetscanner/help" element={<BudgetScannerHelp />} />
 
               {/* Beschermde routes */}
               <Route

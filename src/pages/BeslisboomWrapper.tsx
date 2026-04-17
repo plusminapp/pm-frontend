@@ -1,6 +1,6 @@
 import React from 'react';
-import { Beslisboom as BeslisboomComponent } from '@/components/Beslisboom/Beslisboom';
-import potjesSoortBeslisboom from '@/components/Beslisboom/PotjesSoortBeslisboom.json';
+import { Beslisboom as BeslisboomComponent } from '../components/Beslisboom/Beslisboom';
+import potjesSoortBeslisboom from '../components/Beslisboom/PotjesSoortBeslisboom.json';
 
 const BeslisboomWrapper: React.FC = () => {
     return (

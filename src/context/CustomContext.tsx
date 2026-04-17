@@ -12,7 +12,7 @@ import { SnackbarMessage } from '../components/StyledSnackbar';
 import { Stand } from '../model/Saldo';
 import { Administratie } from '../model/Administratie';
 import dayjs from 'dayjs';
-import { BetalingDTO } from '@/model/Betaling';
+import { BetalingDTO } from '../model/Betaling';
 
 interface CustomContextType {
   gebruiker: Gebruiker | undefined;

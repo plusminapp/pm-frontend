@@ -16,7 +16,7 @@ import {
 import { useCustomContext } from '../../context/CustomContext';
 import { useState } from 'react';
 import { HevelReserveOverForm } from './HevelReserveOverForm';
-import { SaldoDTO } from '@/model/Saldo';
+import { SaldoDTO } from '../../model/Saldo';
 
 interface PotjesTabelProps {
   selectedLabels: string[];
